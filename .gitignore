@@ -36,6 +36,10 @@
 *.exe
 *.out
 *.app
+*.pdf
 
 # debug information files
 *.dwo
+.vs/
+x64/
+Log.txt
