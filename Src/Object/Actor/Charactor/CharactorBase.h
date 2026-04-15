@@ -44,8 +44,6 @@ protected:
     float stepJump_;
     // ジャンプ判定
     bool isJump_;
-    // 丸影画像
-    int imgShadow_;
     // リソースロード
     virtual void InitLoad(void) override;
     // 更新系
@@ -60,11 +58,5 @@ protected:
     void Collision(void);
     void CollisionGravity(void);
     void CollisionCapsule(void);
-
-    // 丸影描画
-    void DrawShadow(void);
-
-    //リアルシャドウ
-    void DrawShadowMap(void);
 };
 

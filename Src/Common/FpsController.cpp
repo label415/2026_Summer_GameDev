@@ -1,20 +1,22 @@
-#include "../Application.h"
 #include "FpsController.h"
+#include <DxLib.h>
+#include <string>
+#include <thread>
 
 FpsController::FpsController(int fixedFps)
     :
-	// 最大FPSを超えないように制限
+    // 最大FPSを超えないように制限
     fixedFps_(fixedFps > MAX_FPS ? MAX_FPS : fixedFps),
-	// 1フレームの理想時間を計算
-	idealFrameTime_(1.0f / static_cast<double>(fixedFps_)),
+    // 1フレームの理想時間を計算
+    idealFrameTime_(1.0f / static_cast<double>(fixedFps_)),
     fps_(0.0f),
-	timeList_(),
-	prevTime_()
+    timeList_(),
+    prevTime_()
 {
 
     prevTime_ = std::chrono::high_resolution_clock::now();
 
-	// DxLibの垂直同期待ちを無効化
+    // DxLibの垂直同期待ちを無効化
     SetWaitVSyncFlag(false);
 
 }
@@ -29,17 +31,17 @@ void FpsController::Wait()
     // 現在時間
     auto nowTime = std::chrono::high_resolution_clock::now();
 
-	// 前回からの経過時間
+    // 前回からの経過時間
     std::chrono::duration<double> delta = nowTime - prevTime_;
 
-	// 経過時間(秒)
+    // 経過時間(秒)
     double deltaTime = delta.count();
 
     // 経過時間が理想時間よりも短ければ待機
     if (deltaTime < idealFrameTime_)
     {
 
-		// 待つべき時間(ミリ秒)
+        // 待つべき時間(ミリ秒)
         double waitMiliSecond = (idealFrameTime_ - deltaTime) * 1000.0;
 
         // Sleepで待ち時間分を待機
@@ -61,7 +63,7 @@ void FpsController::Wait()
 
     }
 
-	// 前回時間を更新
+    // 前回時間を更新
     prevTime_ = nowTime;
 
     // FPS計測(指定された最新フレーム数分の平均）
@@ -85,15 +87,5 @@ void FpsController::Wait()
 
 void FpsController::Draw()
 {
-
-    // 描画する文字列の幅を取得(デフォルトフォントの場合)
-    int textWidth = GetDrawFormatStringWidth(TEXT_FORMAT.c_str(), fps_);
-
-    // 右上位置を計算
-    int x = Application::SCREEN_SIZE_X - textWidth - MARGIN;
-    int y = MARGIN;
-
-    // 右寄せ描画
-    DrawFormatString(x, y, COLOR, TEXT_FORMAT.c_str(), fps_);
-
+    DrawFormatString(POS_X, POS_Y, COLOR, "FPS : %.2f", fps_);
 }
