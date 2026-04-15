@@ -3,17 +3,16 @@ class Vector2
 {
 public:
 
-	float x;
-	float y;
+	int x;
+	int y;
 
 	// コンストラクタ
 	Vector2(void);
 
 	// コンストラクタ
-	Vector2(float vX, float vY);
+	Vector2(int vX, int vY);
 
 	// デストラクタ
 	~Vector2(void);
 
 };
-

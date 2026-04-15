@@ -1,6 +1,5 @@
 #pragma once
 #include <DxLib.h>
-#include <iostream>
 #include <algorithm>
 class Quaternion
 {
@@ -14,10 +13,12 @@ public:
 	double y;
 	double z;
 
+	// コンストラクタ
 	Quaternion(void);
-	Quaternion(const VECTOR& rad);
+	explicit Quaternion(const VECTOR& rad);
 	Quaternion(double w, double x, double y, double z);
 
+	// デストラクタ
 	~Quaternion(void);
 
 	// オイラー角からクォータニオンへ変換
@@ -44,11 +45,11 @@ public:
 	MATRIX ToMatrix(void) const;
 
 	// ベクトルからクォータニオンに変換
-	static Quaternion LookRotation(VECTOR dir);
-	static Quaternion LookRotation(VECTOR dir, VECTOR up);
+	static Quaternion LookRotation(const VECTOR& dir);
+	static Quaternion LookRotation(const VECTOR& dir, const VECTOR& up);
 
 	// 行列からクォータニオンに変換
-	static Quaternion GetRotation(MATRIX mat);
+	static Quaternion GetRotation(const MATRIX& mat);
 
 	// 基本ベクトルを取得
 	VECTOR GetForward(void) const;
@@ -71,15 +72,16 @@ public:
 	Quaternion Inverse(void) const;
 
 	// 球面補間
-	static Quaternion Slerp(Quaternion from, Quaternion to, double t);
+	static Quaternion Slerp(const Quaternion& from, const Quaternion& to, double t);
 
 	// ２つのベクトル間の回転量を取得する
-	static Quaternion FromToRotation(VECTOR fromDir, VECTOR toDir);
+	static Quaternion FromToRotation(const VECTOR& fromDir, const VECTOR& toDir);
 	static Quaternion RotateTowards(const Quaternion& from, const Quaternion& to, float maxDegreesDelta);
 	static double Angle(const Quaternion& q1, const Quaternion& q2);
 	static Quaternion SlerpUnclamped(Quaternion a, Quaternion b, float t);
 	static Quaternion Identity(void);
 
+	// 長さ
 	double Length(void) const;
 	double LengthSquared(void) const;
 	VECTOR xyz(void) const;
@@ -92,9 +94,7 @@ private:
 	// 基本ベクトルを取得
 	VECTOR GetDir(VECTOR dir) const;
 
-	Quaternion operator*(float& rhs);
-	const Quaternion operator*(const float& rhs);
-	Quaternion operator+(Quaternion& rhs);
-	const Quaternion operator+(const Quaternion& rhs);
+	Quaternion operator*(float rhs);
+	Quaternion operator+(const Quaternion& rhs);
 	
 };

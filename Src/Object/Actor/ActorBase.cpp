@@ -1,30 +1,13 @@
-#include "../../Application.h"
-#include "../../Utility/AsoUtility.h"
-#include "../../Utility/MatrixUtility.h"
-#include "../Common/AnimationController.h"
+#include "../../Manager/ResourceManager.h"
+#include "../../Manager/SceneManager.h"
 #include "ActorBase.h"
 
 ActorBase::ActorBase(void)
-{ 
-	animationController_ = nullptr;
-
-	animType_ = 0;
-
-	modelId_ = -1;
-	pos_ = { 0.0f,0.0f,0.0f };
-	angle_ = { 0.0f,0.0f,0.0f };
-	localAngle_ = { 0.0f,0.0f,0.0f };
-	scale_ = { 0.0f,0.0f,0.0f };
-
-	startCapsulePos_ = { 0.0f,0.0f,0.0f };
-	endCapsulePos_ = { 0.0f,0.0f,0.0f };
-	capsuleRadius_ = 0.0f;
-
-	preInputDir_ = { 0.0f,0.0f,0.0f };
-
-	moveDir_ = { 0.0f,0.0f,0.0f };
-	jumpPow_ = 0.0f;
-	isCollision_ = false;
+	: 
+	resMng_(ResourceManager::GetInstance()),
+	scnMng_(SceneManager::GetInstance()),
+	transform_()
+{
 }
 
 ActorBase::~ActorBase(void)
@@ -33,100 +16,80 @@ ActorBase::~ActorBase(void)
 
 void ActorBase::Init(void)
 {
+
+	// リソースロード
+	InitLoad();
+
 	// Transform初期化
 	InitTransform();
+
+	// 衝突判定の初期化
+	InitCollider();
 
 	// アニメーションの初期化
 	InitAnimation();
 
 	// 初期化後の個別処理
 	InitPost();
-}
 
-void ActorBase::Load(void)
-{
-	// リソースロード
-	InitLoad();
-}
-
-void ActorBase::LoadEnd(void)
-{
-	// 初期化
-	Init();
-}
-
-void ActorBase::Update(void)
-{
-	// プレイヤーの遅延回転処理
-	DelayRotate();
-
-	// 行列の合成(子, 親と指定すると親⇒子の順に適用される)
-	MATRIX mat = MatrixUtility::Multiplication(localAngle_, angle_);
-
-	// 回転行列をモデルに反映
-	MV1SetRotationMatrix(modelId_, mat);
-
-	// プレイヤーの移動処理
-	Move();
-
-	// 重力(加速度を速度に加算していく)
-	jumpPow_ -= 0.8f;
-
-	// プレイヤーの座標に移動量(速度、ジャンプ力)を加算する
-	pos_.y += jumpPow_;
-
-	// モデルに座標を設定する
-	MV1SetPosition(modelId_, pos_);
-
-	// アニメーションの更新
-	animationController_->Update();
 }
 
 void ActorBase::Draw(void)
 {
-	MV1DrawModel(modelId_);
 
-	DrawSphere3D(
-		VAdd(pos_,startCapsulePos_),
-		capsuleRadius_,
-		16,
-		0x00ff00,
-		0x00ff00,
-		false
-	);
+#ifdef _DEBUG
+	// 所有しているコライダの描画
+	for (const auto& own : ownColliders_)
+	{
+		own.second->Draw();
+	}
+#endif // _DEBUG
 
-	DrawSphere3D(
-		VAdd(pos_, endCapsulePos_),
-		capsuleRadius_,
-		16,
-		0x00ff00,
-		0x00ff00,
-		false
-	);
+	if (transform_.modelId != -1)
+	{
+		MV1DrawModel(transform_.modelId);
+	}
 }
 
 void ActorBase::Release(void)
 {
-	MV1DeleteModel(modelId_);
-	delete animationController_;
+	transform_.Release();
+
+	// 自身のコライダ解放
+	for (auto& own : ownColliders_)
+	{
+		delete own.second;
+	}
 }
 
-void ActorBase::CollisionStage(const VECTOR& pos)
+const Transform& ActorBase::GetTransform(void) const
 {
-	// 衝突判定に指定座標に押し戻す
-	pos_ = pos;
-	jumpPow_ = 0.0f;
+	return transform_;
 }
 
-void ActorBase::Move(void)
+const ColliderBase* ActorBase::GetOwnCollider(int key) const
 {
+	if (ownColliders_.count(key) == 0)
+	{
+		return nullptr;
+	}
+	return ownColliders_.at(key);
 }
 
-void ActorBase::DelayRotate(void)
+void ActorBase::AddHitCollider(const ColliderBase* hitCollider)
 {
-	// 移動方向から角度に変換する
-	float goal = atan2f(moveDir_.x, moveDir_.z);
+	for (const auto& c : hitColliders_)
+	{
+			if (c == hitCollider)
+			{
+				return;
+			}
+	}
+	hitColliders_.emplace_back(hitCollider);
 
-	// 常に最短経路で補間
-	angle_.y = AsoUtility::LerpAngle(angle_.y, goal, 0.2f);
+}
+
+void ActorBase::ClearHitCollider(void)
+{
+	hitColliders_.clear();
 }

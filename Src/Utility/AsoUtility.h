@@ -1,6 +1,6 @@
 #pragma once
-#include <string>
 #include <vector>
+#include <string>
 #include <DxLib.h>
 #include "../Common/Vector2.h"
 #include "../Common/Quaternion.h"
@@ -31,11 +31,11 @@ public:
 
 	static constexpr float kEpsilonNormalSqrt = 1e-15F;
 
+	// ’l‚ğ”ÍˆÍ‚Éû‚ß‚é
+	static float Clamp(float v, float min, float max);
+
 	// lÌŒÜ“ü
 	static int Round(float v);
-
-	// •¶š—ñ‚Ì•ªŠ„
-	static std::vector <std::string> Split(std::string& line, char delimiter);
 
 	// ƒ‰ƒWƒAƒ“(rad)‚©‚ç“x(deg)
 	static double Rad2DegD(double rad);
@@ -59,9 +59,6 @@ public:
 	// ‰ñ“]‚ª­‚È‚¢•û‚Ì‰ñ“]Œü‚«‚ğæ“¾‚·‚é(Œv‰ñ‚è:1A”½Œv‰ñ‚è:-1)
 	static int DirNearAroundDeg(float from, float to);
 	
-	// Šp“x‚ğ -ƒÎ ` +ƒÎ ‚É³‹K‰»
-	static float NormalizeAngle(float rad);
-
 	// üŒ`•âŠÔ
 	static int Lerp(int start, int end, float t);
 	static float Lerp(float start, float end, float t);
@@ -71,9 +68,6 @@ public:
 
 	// Šp“x‚ÌüŒ`•âŠÔ
 	static double LerpDeg(double start, double end, double t);
-
-	// Šp“x‚ÌüŒ`•âŠÔ(í‚ÉÅ’ZŒo˜H)
-	static float LerpAngle(float from, float to, float t);
 
 	// F‚ÌüŒ`•âŠÔ
 	static COLOR_F Lerp(const COLOR_F& start, const COLOR_F& end, float t);
@@ -89,7 +83,7 @@ public:
 	static double Magnitude(const Vector2& v);
 	static double Magnitude(const VECTOR& v);
 	static float MagnitudeF(const VECTOR& v);
-	static float SqrMagnitude(const Vector2& v);
+	static int SqrMagnitude(const Vector2& v);
 	static float SqrMagnitudeF(const VECTOR& v);
 	static double SqrMagnitude(const VECTOR& v);
 	static double SqrMagnitude(const VECTOR& v1, const VECTOR& v2);
@@ -118,7 +112,11 @@ public:
 
 	// •`‰æŒn
 	static void DrawLineDir(const VECTOR& pos, const VECTOR& dir, int color, float len = 50.0f);
+	static void DrawLineXYZ(const VECTOR& pos, const MATRIX& rot, float len = 50.0f);
 	static void DrawLineXYZ(const VECTOR& pos, const Quaternion& rot, float len = 50.0f);
+
+	// •¶š—ñ‚Ì•ªŠ„
+	static std::vector<std::string> Split(std::string& line, char delimiter);
 
 };
 

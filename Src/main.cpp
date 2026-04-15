@@ -1,5 +1,4 @@
 #include <DxLib.h>
-
 #include "Application.h"
 
 // WinMain関数
@@ -11,27 +10,27 @@ int WINAPI WinMain(
 
 	// インスタンスの生成
 	Application::CreateInstance();
-	Application::GetInstance()->Init();
 
-	if (Application::GetInstance()->IsInitFail())
+	// インスタンスの取得
+	Application& instance = Application::GetInstance();
+
+	if (instance.IsInitFail())
 	{
 		// 初期化失敗
 		return -1;
 	}
 
 	// 実行
-	Application::GetInstance()->Run();
+	instance.Run();
 
 	// 解放
-	Application::GetInstance()->Delete();
+	instance.Destroy();
 
-	if (Application::GetInstance()->IsReleaseFail())
+	if (instance.IsReleaseFail())
 	{
 		// 解放失敗
 		return -1;
 	}
-
-	Application::GetInstance()->DeleteInstance();
 
 	return 0;
 

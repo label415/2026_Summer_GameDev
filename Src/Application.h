@@ -1,17 +1,14 @@
 #pragma once
 #include <string>
 
-// クラスの前方宣言
-class FpsControl;
-
 class Application
 {
 
 public:
 
 	// スクリーンサイズ
-	static constexpr int SCREEN_SIZE_X = 1024;
-	static constexpr int SCREEN_SIZE_Y = 640;
+	static constexpr int SCREEN_SIZE_X = 1280;
+	static constexpr int SCREEN_SIZE_Y = 720;
 
 	// データパス関連
 	//-------------------------------------------
@@ -19,46 +16,45 @@ public:
 	static const std::string PATH_IMAGE;
 	static const std::string PATH_MODEL;
 	static const std::string PATH_EFFECT;
+	static const std::string PATH_CSV;
+
+	static const std::string PATH_KEY_CONFIG;
+	static const std::string PATH_KEY_CONFIG_GAMEPAD;
+	static const std::string PATH_KEY_CONFIG_KEYBOARD;
 	//-------------------------------------------
 
-public:
-	// シングルトン（生成・取得・削除）
-	static void CreateInstance(void) { if (instance_ == nullptr) { instance_ = new Application(); } }
-	static Application* GetInstance(void) { return instance_; }
-	static void DeleteInstance(void) { if (instance_ != nullptr) delete instance_; instance_ = nullptr; }
+	// 重力
+	static constexpr float GRAVITY = 9.81f * 100.0f;
+	static constexpr float GRAVITY_SCALE = 0.7f;
+
+	// インスタンスを明示的に生成
+	static void CreateInstance(void);
+
+	// インスタンスの取得
+	static Application& GetInstance(void);
+
+	// 初期化
+	void Init(void);
+
+	// ゲームループの開始
+	void Run(void);
+
+	// リソースの破棄
+	void Destroy(void);
+
+	// 初期化成功／失敗の判定
+	bool IsInitFail(void) const;
+
+	// 解放成功／失敗の判定
+	bool IsReleaseFail(void) const;
+
+	// 重力の取得
+	float GetGravityPow(void) const { return GRAVITY * GRAVITY_SCALE; }
 
 private:
+
 	// 静的インスタンス
 	static Application* instance_;
-
-	// デフォルトコンストラクタをprivateにして、
-	// 外部から生成できない様にする
-	Application(void);
-
-	// デストラクタも同様
-	~Application(void);
-
-	// コピー・ムーブ操作を禁止
-	Application(const Application&) = delete;
-	Application& operator=(const Application&) = delete;
-	Application(Application&&) = delete;
-	Application& operator=(Application&&) = delete;
-
-	// 下記をコンパイルエラーさせるため 上記を追加
-	// Application copy = *Application::GetInstance();
-	// Application copied(*Application::GetInstance());
-	// Application moved = std::move(*Application::GetInstance());
-
-public:
-
-	void Init(void);		// 初期化
-	void Run(void);			// ゲームループの開始
-	void Delete(void);		// リソースの破棄
-	
-	bool IsInitFail(void) const;	// 初期化成功／失敗の判定
-	bool IsReleaseFail(void) const;	// 解放成功／失敗の判定
-
-private:
 
 	// 初期化失敗
 	bool isInitFail_;
@@ -66,6 +62,17 @@ private:
 	// 解放失敗
 	bool isReleaseFail_;
 
-	// FPS
-	FpsControl* fps_;
+	// デフォルトコンストラクタをprivateにして、
+	// 外部から生成できない様にする
+	Application(void);
+
+	// コピーコンストラクタも同様
+	Application(const Application& instance) = default;
+
+	// デストラクタも同様
+	~Application(void) = default;
+
+	// エフェクシアの初期化
+	void InitEffekseer(void);
+
 };

@@ -249,27 +249,27 @@ MATRIX Quaternion::ToMatrix(void) const
     return ToMatrix(Quaternion(w, x, y, z));
 }
 
-Quaternion Quaternion::LookRotation(VECTOR dir)
+Quaternion Quaternion::LookRotation(const VECTOR& dir)
 {
     VECTOR up = { 0.0f, 1.0f, 0.0f };
     return LookRotation(dir, up);
 }
 
-Quaternion Quaternion::LookRotation(VECTOR dir, VECTOR up)
+Quaternion Quaternion::LookRotation(const VECTOR& dir, const VECTOR& up)
 {
 
-    dir = AsoUtility::VNormalize(dir);
-    VECTOR right = AsoUtility::VNormalize(VCross(up, dir));
-    up = VCross(dir, right);
+    VECTOR norDir = AsoUtility::VNormalize(dir);
+    VECTOR right = AsoUtility::VNormalize(VCross(up, norDir));
+    VECTOR crossUp = VCross(norDir, right);
     auto m00 = right.x;
     auto m01 = right.y;
     auto m02 = right.z;
-    auto m10 = up.x;
-    auto m11 = up.y;
-    auto m12 = up.z;
-    auto m20 = dir.x;
-    auto m21 = dir.y;
-    auto m22 = dir.z;
+    auto m10 = crossUp.x;
+    auto m11 = crossUp.y;
+    auto m12 = crossUp.z;
+    auto m20 = norDir.x;
+    auto m21 = norDir.y;
+    auto m22 = norDir.z;
 
 
     float num8 = (m00 + m11) + m22;
@@ -322,7 +322,7 @@ Quaternion Quaternion::LookRotation(VECTOR dir, VECTOR up)
 
 }
 
-Quaternion Quaternion::GetRotation(MATRIX mat)
+Quaternion Quaternion::GetRotation(const MATRIX& mat)
 {
 
     Quaternion ret;
@@ -516,7 +516,7 @@ Quaternion Quaternion::Inverse(void) const
 
 }
 
-Quaternion Quaternion::Slerp(Quaternion from, Quaternion to, double t)
+Quaternion Quaternion::Slerp(const Quaternion& from, const Quaternion& to, double t)
 {
     if (t > 1) t = 1;
     if (t < 0) t = 0;
@@ -529,10 +529,10 @@ inline float SIGN(float x) {
 }
 
 inline float NORM(float a, float b, float c, float d) {
-    return sqrt(a * a + b * b + c * c + d * d);
+    return sqrtf(a * a + b * b + c * c + d * d);
 }
 
-Quaternion Quaternion::FromToRotation(VECTOR fromDir, VECTOR toDir)
+Quaternion Quaternion::FromToRotation(const VECTOR& fromDir, const VECTOR& toDir)
 {
 
 	VECTOR axis = VCross(fromDir, toDir);
@@ -692,18 +692,10 @@ void Quaternion::ToAngleAxis(float* angle, VECTOR* axis)
 
 }
 
-Quaternion Quaternion::operator*(float& f) {
+Quaternion Quaternion::operator*(float f) {
     return Quaternion(w * f, x * f, y * f, z * f);
 }
 
-const Quaternion Quaternion::operator*(const float& f) {
-    return Quaternion(w * f, x * f, y * f, z * f);
-}
-
-Quaternion Quaternion::operator+(Quaternion& rhs) {
-    return Quaternion(w + rhs.w, x + rhs.x, y + rhs.y, z + rhs.z);
-}
-
-const Quaternion Quaternion::operator+(const Quaternion& rhs) {
+Quaternion Quaternion::operator+(const Quaternion& rhs) {
     return Quaternion(w + rhs.w, x + rhs.x, y + rhs.y, z + rhs.z);
 }

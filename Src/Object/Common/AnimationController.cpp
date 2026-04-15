@@ -1,11 +1,14 @@
 #include <DxLib.h>
+#include "../../Manager/SceneManager.h"
 #include "AnimationController.h"
 
 AnimationController::AnimationController(int modelId)
+	:
+	modelId_(modelId),
+	playType_(-1),
+	playAnim_(),
+	isLoop_(true)
 {
-	modelId_ = modelId;
-	playType_ = -1;
-	animCount_ = 0;
 }
 
 AnimationController::~AnimationController(void)
@@ -76,8 +79,12 @@ void AnimationController::Play(int type, bool isLoop)
 
 void AnimationController::Update(void)
 {
+
+	// 経過時間の取得
+	float deltaTime = SceneManager::GetInstance().GetDeltaTime();
+
 	// 再生
-	playAnim_.step += playAnim_.speed;
+	playAnim_.step += (deltaTime * playAnim_.speed);
 
 	// アニメーションが終了したら
 	if (playAnim_.step > playAnim_.totalTime)

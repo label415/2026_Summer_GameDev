@@ -1,66 +1,66 @@
 #pragma once
-#include <string>
-#include <DxLib.h>
-class AnimationController;
+#include <map>
+#include <vector>
+#include "../Common/Transform.h"
+#include "../Common/Collider/ColliderBase.h"
+class ResourceManager;
+class SceneManager;
 
 class ActorBase
 {
+
 public:
 
-	ActorBase(void);			// コンストラクタ
-	virtual ~ActorBase(void);	// デストラクタ
+	// コンストラクタ
+	ActorBase(void);
 
-	void Init(void);			// 初期化
-	void Load(void);			// 読み込み
-	void LoadEnd(void);			// 読み込み後
-	virtual void Update(void);	// 更新
-	virtual void Draw(void);	// 描画
-	virtual void Release(void);	// 解放
+	// デストラクタ
+	virtual ~ActorBase(void);
 
-	// 座標を取得
-	const VECTOR& GetPos(void) const { return pos_; }
+	// 初期化
+	void Init(void);
 
-	// カプセルの当たり判定を取得
-	const VECTOR& GetStartCapsulePos(void) const { return startCapsulePos_; }
-	const VECTOR& GetEndCapsulePos(void) const { return endCapsulePos_; }
-	const float& GetCapsuleRadius(void) const { return capsuleRadius_; }
+	// 更新
+	virtual void Update(void) = 0;
 
-	const bool& GetisCollision(void) const { return isCollision_; }
+	// 描画
+	virtual void Draw(void);
 
-	// ステージと衝突
-	void CollisionStage(const VECTOR& pos);
+	// 解放
+	virtual void Release(void);
+
+	// 大きさ、回転、座標等の取得
+	const Transform& GetTransform(void) const;
+
+	// 自身の衝突情報取得
+	const std::map<int, ColliderBase*>& GetOwnColliders(void) const
+	{
+		return ownColliders_;
+	}
+
+	// 特定の自身の衝突情報取得
+	const ColliderBase* GetOwnCollider(int key) const;
+
+	// 衝突対象となるコライダを登録
+	void AddHitCollider(const ColliderBase* hitCollider);
+	// 衝突対象となるコライダをクリア
+	void ClearHitCollider(void);
+
 
 protected:
 
-	// アニメーション制御
-	AnimationController* animationController_;
+	// シングルトン参照
+	ResourceManager& resMng_;
+	SceneManager& scnMng_;
 
-	// アニメーション種別
-	int animType_;
+	// モデル制御の基本情報
+	Transform transform_;
 
-	// モデル情報
-	int modelId_;
-	VECTOR pos_;
-	VECTOR angle_;
-	VECTOR localAngle_;
-	VECTOR scale_;
+	// 自身の衝突情報
+	std::map<int, ColliderBase*> ownColliders_;
 
-	// カプセルの当たり判定座標
-	VECTOR startCapsulePos_;
-	VECTOR endCapsulePos_;
-	float capsuleRadius_;
-
-	// 当たり判定を取るか
-	bool isCollision_;
-
-	// パッド入力値の補間
-	VECTOR preInputDir_;
-
-	// 移動方向
-	VECTOR moveDir_;
-
-	// ジャンプ力
-	float jumpPow_;
+	// 衝突相手の情報
+	std::vector<const ColliderBase*> hitColliders_;
 
 	// リソースロード
 	virtual void InitLoad(void) = 0;
@@ -68,16 +68,12 @@ protected:
 	// 大きさ、回転、座標の初期化
 	virtual void InitTransform(void) = 0;
 
+	// 衝突判定の初期化
+	virtual void InitCollider(void) = 0;
+
 	// アニメーションの初期化
 	virtual void InitAnimation(void) = 0;
 
 	// 初期化後の個別処理
 	virtual void InitPost(void) = 0;
-
-	// 移動処理
-	virtual void Move(void);
-
-	// 遅延回転処理
-	void DelayRotate(void);
-
 };

@@ -6,24 +6,25 @@
 #include <DxLib.h>
 #include "AsoUtility.h"
 
+float AsoUtility::Clamp(float v, float min, float max)
+{
+
+    if (v > max)
+    {
+        v = max;
+    }
+    if (v < min)
+    {
+        v = min;
+    }
+
+    return v;
+
+}
+
 int AsoUtility::Round(float v)
 {
     return static_cast<int>(roundf(v));
-}
-
-std::vector<std::string> AsoUtility::Split(std::string& line, char delimiter)
-{
-
-    std::istringstream stream(line);
-    std::string field;
-    std::vector<std::string> result;
-    
-    while (getline(stream, field, delimiter)) {
-        result.push_back(field);
-    }
-
-    return result;
-
 }
 
 double AsoUtility::Rad2DegD(double rad)
@@ -168,19 +169,6 @@ int AsoUtility::DirNearAroundDeg(float from, float to)
 
 }
 
-float AsoUtility::NormalizeAngle(float rad)
-{
-    while (rad > DX_PI_F)
-    {
-        rad -= DX_TWO_PI_F;
-    }
-    while (rad < -DX_PI_F)
-    {
-        rad += DX_TWO_PI_F;
-    }
-    return rad;
-}
-
 int AsoUtility::Lerp(int start, int end, float t)
 {
     // üŒ`•âŠÔ
@@ -283,12 +271,6 @@ double AsoUtility::LerpDeg(double start, double end, double t)
 
 }
 
-float AsoUtility::LerpAngle(float from, float to, float t)
-{
-    float diff = NormalizeAngle(to - from);  // Å’ZŒo˜H‚ÌŠp“x·‚ðŒvŽZ
-    return from + diff * t;                  // ·•ª‚¾‚¯•âŠÔ‚µ‚Ä‘«‚·
-}
-
 COLOR_F AsoUtility::Lerp(const COLOR_F& start, const COLOR_F& end, float t)
 {
     // üŒ`•âŠÔ
@@ -341,7 +323,7 @@ float AsoUtility::MagnitudeF(const VECTOR& v)
     return sqrtf((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
 }
 
-float AsoUtility::SqrMagnitude(const Vector2& v)
+int AsoUtility::SqrMagnitude(const Vector2& v)
 {
     return v.x * v.x + v.y * v.y;
 }
@@ -534,6 +516,25 @@ void AsoUtility::DrawLineDir(const VECTOR& pos, const VECTOR& dir, int color, fl
     DrawSphere3D(ePos, 5.0f, 5, color, color, true);
 }
 
+void AsoUtility::DrawLineXYZ(const VECTOR& pos, const MATRIX& rot, float len)
+{
+
+    VECTOR dir;
+
+    // X
+    dir = VTransform(AsoUtility::DIR_R, rot);
+    DrawLineDir(pos, dir, 0xff0000, len);
+
+    // Y
+    dir = VTransform(AsoUtility::DIR_U, rot);
+    DrawLineDir(pos, dir, 0x00ff00, len);
+
+    // Z
+    dir = VTransform(AsoUtility::DIR_F, rot);
+    DrawLineDir(pos, dir, 0x0000ff, len);
+
+}
+
 void AsoUtility::DrawLineXYZ(const VECTOR& pos, const Quaternion& rot, float len)
 {
 
@@ -551,6 +552,19 @@ void AsoUtility::DrawLineXYZ(const VECTOR& pos, const Quaternion& rot, float len
     dir = rot.GetForward();
     DrawLineDir(pos, dir, 0x0000ff, len);
 
+}
+
+std::vector<std::string> AsoUtility::Split(std::string& line, char delimiter)
+{
+    std::istringstream stream(line);
+    std::string field;
+    std::vector<std::string> result;
+
+    while (getline(stream, field, delimiter)) {
+        result.push_back(field);
+    }
+
+    return result;
 }
 
 

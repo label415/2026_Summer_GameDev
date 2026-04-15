@@ -33,7 +33,10 @@ public:
 	// アニメーション再生
 	void Play(int type, bool isLoop = true);
 
+	// 更新
 	void Update(void);
+
+	// 解放
 	void Release(void);
 
 	// 再生中のアニメーション
@@ -46,8 +49,6 @@ public:
 	const Animation& GetPlayAnim(void) const;
 
 private:
-	// アニメーションのカウント
-	int animCount_;
 
 	// アニメーションするモデルのハンドルID
 	int modelId_;
