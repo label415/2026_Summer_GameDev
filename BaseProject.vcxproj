@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Manager\FontManager.cpp" />
     <ClCompile Include="Src\Utility\ModelFrameUtility.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyRobot.cpp" />
     <ClCompile Include="Src\Scene\DebugScene.cpp" />
@@ -59,6 +60,7 @@
     <ClCompile Include="Src\Object\Actor\Wepon\WeponBlade.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Manager\FontManager.h" />
     <ClInclude Include="Src\Utility\ModelFrameUtility.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyRobot.h" />
     <ClInclude Include="Src\Scene\DebugScene.h" />
