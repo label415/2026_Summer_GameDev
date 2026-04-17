@@ -40,17 +40,17 @@ protected:
 private:
 
 	// 除外フレーム名称
-	const std::vector<std::string> EXCLUDE_FRAME_NAMES = { "Mush", "Grass", };
+	const std::vector<std::wstring> EXCLUDE_FRAME_NAMES = {	L"Mush", L"Grass", };
 
 	// 対象フレーム
-	const std::vector<std::string> TARGET_FRAME_NAMES = { "Ground", };
+	const std::vector<std::wstring> TARGET_FRAME_NAMES = { L"Ground", };
 
 	std::vector<int> frameOpacityRate_;
 
 	// 衝突判定
 	void Collision(void);
 
-	void RateFrameIds(const std::string& name);
+	void RateFrameIds(const std::wstring& name);
 
 	bool IsRateFrame(int frameIdx) const;
 };

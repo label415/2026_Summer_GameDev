@@ -56,7 +56,7 @@ void EnemyManager::AddHitCollider(const ColliderBase* hitCollider)
 void EnemyManager::LoadCsvData(void)
 {
 	// ファイルの読込
-	std::ifstream ifs = std::ifstream(Application::PATH_CSV + "EnemyData.csv");
+	std::ifstream ifs = std::ifstream(Application::PATH_CSV + L"EnemyData.csv");
 	if (!ifs)
 	{
 		// エラーが発生

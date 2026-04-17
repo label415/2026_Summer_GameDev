@@ -3,6 +3,8 @@
 #include "../Application.h"
 #include "FontManager.h"
 
+FontManager* FontManager::instance_ = nullptr;
+
 void FontManager::CreateInstance()
 {
 	if (instance_ == nullptr)

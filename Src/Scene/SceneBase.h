@@ -1,6 +1,7 @@
 #pragma once
 class ResourceManager;
 class SceneManager;
+class FontManager;	
 
 class SceneBase
 {
@@ -32,5 +33,8 @@ protected:
 
 	// シーン管理
 	SceneManager& sceMng_;
+
+	// フォント管理
+	FontManager& fontMng_;
 
 };

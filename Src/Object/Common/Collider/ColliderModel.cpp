@@ -10,15 +10,15 @@ ColliderModel::~ColliderModel(void)
 {
 }
 
-void ColliderModel::AddExcludeFrameIds(const std::string& name)
+void ColliderModel::AddExcludeFrameIds(const std::wstring& name)
 {
 	// フレーム数を取得
 	int num = MV1GetFrameNum(follow_->modelId);
 	for (int i = 0; i < num; i++)
 	{
 		// フレーム名称を取得
-		std::string frameName = MV1GetFrameName(follow_->modelId, i);
-		if (frameName.find(name) != std::string::npos)
+		std::wstring frameName = MV1GetFrameName(follow_->modelId, i);
+		if (frameName.find(name) != std::wstring::npos)
 		{
 			// 除外フレームに追加
 			excludeFrameIds_.push_back(i);
@@ -45,15 +45,15 @@ bool ColliderModel::IsExcludeFrame(int frameIdx) const
 	return false;
 }
 
-void ColliderModel::AddTargetFrameIds(const std::string& name)
+void ColliderModel::AddTargetFrameIds(const std::wstring& name)
 {
 	// フレーム数を取得
 	int num = MV1GetFrameNum(follow_->modelId);
 	for (int i = 0; i < num; i++)
 	{
 		// フレーム名称を取得
-		std::string frameName = MV1GetFrameName(follow_->modelId, i);
-		if (frameName.find(name) != std::string::npos)
+		std::wstring frameName = MV1GetFrameName(follow_->modelId, i);
+		if (frameName.find(name) != std::wstring::npos)
 		{
 			// 除外フレームに追加
 			targetFrameIds_.push_back(i);

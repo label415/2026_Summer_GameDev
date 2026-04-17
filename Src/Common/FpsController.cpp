@@ -87,5 +87,5 @@ void FpsController::Wait()
 
 void FpsController::Draw()
 {
-    DrawFormatString(POS_X, POS_Y, COLOR, "FPS : %.2f", fps_);
+    DrawFormatString(POS_X, POS_Y, COLOR, L"FPS : %.2f", fps_);
 }

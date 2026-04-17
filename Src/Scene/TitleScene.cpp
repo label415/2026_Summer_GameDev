@@ -4,6 +4,7 @@
 #include "../Manager/InputManager.h"
 #include "../Manager/SceneManager.h"
 #include "../Manager/ResourceManager.h"
+#include "../Manager/FontManager.h"
 #include "../Manager/Camera.h"
 #include "../Object/Actor/Stage/SkyDome.h"
 #include "TitleScene.h"
@@ -71,8 +72,9 @@ void TitleScene::Init(void)
 
 	anim_ = new AnimationController(player_.modelId);
 	anim_->Add(static_cast<int>(ANIM_TYPE::RUN),
-		30.0f, Application::PATH_MODEL + "Player/Run.mv1");
+		30.0f, Application::PATH_MODEL + L"Player/Run.mv1");
 
+	pauseFont_ = fontMng_.CreateMyFont(L"ƒ^ƒCƒgƒ‹‚¾‚æI",56,5);
 }
 
 void TitleScene::Update(void)
@@ -100,29 +102,44 @@ void TitleScene::Draw(void)
 {
 	skydome_->Draw();
 
-	// ƒ‚ƒfƒ‹•`‰æ
-	MV1DrawModel(bigPlanet_.modelId);
-	MV1DrawModel(spherPlanet_.modelId);
-	MV1DrawModel(player_.modelId);
+	//// ƒ‚ƒfƒ‹•`‰æ
+	//MV1DrawModel(bigPlanet_.modelId);
+	//MV1DrawModel(spherPlanet_.modelId);
+	//MV1DrawModel(player_.modelId);
 
 
-	//UI•`‰æ
-	DrawRotaGraph(
-		Application::SCREEN_SIZE_X / 2,
-		Application::SCREEN_SIZE_Y / 3,
-		1.0f,
-		0.0f,
-		imgTitle_,
-		TRUE);
+	////UI•`‰æ
+	//DrawRotaGraph(
+	//	Application::SCREEN_SIZE_X / 2,
+	//	Application::SCREEN_SIZE_Y / 3,
+	//	1.0f,
+	//	0.0f,
+	//	imgTitle_,
+	//	TRUE);
 
-	DrawRotaGraph(
-		Application::SCREEN_SIZE_X / 2,
-		(Application::SCREEN_SIZE_Y -
-			(Application::SCREEN_SIZE_Y / 3)),
-		1.0f,
-		0.0f,
-		imgPushSpace_,
-		TRUE);
+	//DrawRotaGraph(
+	//	Application::SCREEN_SIZE_X / 2,
+	//	(Application::SCREEN_SIZE_Y -
+	//		(Application::SCREEN_SIZE_Y / 3)),
+	//	1.0f,
+	//	0.0f,
+	//	imgPushSpace_,
+	//	TRUE);
+
+	for (int i = 0; i < LIST_MAX; ++i)
+	{
+		//À•WˆÊ’u‚ðÝ’è
+		int posX = static_cast<int>(Application::SCREEN_SIZE_X/2 - pasueList_[i].length() * 56 / 2);
+		int posY = Application::SCREEN_SIZE_Y/2 - 200 + 150.0f * i;
+
+		//•¶Žš—ñ‚ð•`‰æ
+		DrawFormatStringToHandle(
+			posX,
+			posY,
+			0x000000,
+			pauseFont_,
+			pasueList_[i].c_str());
+	}
 }
 
 void TitleScene::Release(void)

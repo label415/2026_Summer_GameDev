@@ -2,6 +2,7 @@
 #include "../Manager/Camera.h"
 #include "../Manager/SceneManager.h"
 #include "../Manager/InputManager.h"
+#include "../Manager/FontManager.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/Stage/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"

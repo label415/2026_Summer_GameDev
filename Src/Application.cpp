@@ -8,10 +8,11 @@
 
 Application* Application::instance_ = nullptr;
 
-const std::string Application::PATH_IMAGE = "Data/Image/";
-const std::string Application::PATH_MODEL = "Data/Model/";
-const std::string Application::PATH_EFFECT = "Data/Effect/";
-const std::string Application::PATH_CSV = "Data/Csv/";
+const std::wstring Application::PATH_IMAGE = L"Data/Image/";
+const std::wstring Application::PATH_MODEL = L"Data/Model/";
+const std::wstring Application::PATH_EFFECT = L"Data/Effect/";
+const std::wstring Application::PATH_FONT = L"Data/Font/";
+const std::wstring Application::PATH_CSV = L"Data/Csv/";
 
 void Application::CreateInstance(void)
 {
@@ -31,7 +32,7 @@ void Application::Init(void)
 {
 
 	// アプリケーションの初期設定
-	SetWindowText("2416001_阿津坂 圭吾");
+	SetWindowText(L"2416001_阿津坂 圭吾");
 
 	// ウィンドウサイズ
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, 32);

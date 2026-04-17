@@ -17,15 +17,16 @@ public:
 
 	// データパス関連
 	//-------------------------------------------
-	static const std::string PATH_DATA;
-	static const std::string PATH_IMAGE;
-	static const std::string PATH_MODEL;
-	static const std::string PATH_EFFECT;
-	static const std::string PATH_CSV;
+	static const std::wstring PATH_DATA;
+	static const std::wstring PATH_IMAGE;
+	static const std::wstring PATH_MODEL;
+	static const std::wstring PATH_EFFECT;
+	static const std::wstring PATH_FONT;
+	static const std::wstring PATH_CSV;
 
-	static const std::string PATH_KEY_CONFIG;
-	static const std::string PATH_KEY_CONFIG_GAMEPAD;
-	static const std::string PATH_KEY_CONFIG_KEYBOARD;
+	static const std::wstring PATH_KEY_CONFIG;
+	static const std::wstring PATH_KEY_CONFIG_GAMEPAD;
+	static const std::wstring PATH_KEY_CONFIG_KEYBOARD;
 	//-------------------------------------------
 
 	// 重力

@@ -56,13 +56,13 @@ void Stage::InitCollider(void)
 		new ColliderModel(ColliderBase::TAG::STAGE, &transform_);
 
 	//除外フレーム格納処理
-	for (const std::string& name : EXCLUDE_FRAME_NAMES)
+	for (const std::wstring& name : EXCLUDE_FRAME_NAMES)
 	{
 		colModel->AddExcludeFrameIds(name);
 	}
 
 	//対象フレーム格納処理
-	for (const std::string& name : TARGET_FRAME_NAMES)
+	for (const std::wstring& name : TARGET_FRAME_NAMES)
 	{
 		colModel->AddTargetFrameIds(name);
 	}
@@ -107,7 +107,7 @@ void Stage::Collision(void)
 		{
 			const auto& hit = hits.Dim[i];
 
-			for (const std::string& name : TARGET_FRAME_NAMES)
+			for (const std::wstring& name : TARGET_FRAME_NAMES)
 			{
 				RateFrameIds(name);
 			}
@@ -124,14 +124,14 @@ void Stage::Collision(void)
 	}
 }
 
-void Stage::RateFrameIds(const std::string& name)
+void Stage::RateFrameIds(const std::wstring& name)
 {
 	// フレーム数を取得
 	int num = MV1GetFrameNum(transform_.modelId);
 	for (int i = 0; i < num; i++)
 	{
 		// フレーム名称を取得
-		std::string frameName = MV1GetFrameName(transform_.modelId, i);
+		std::wstring frameName = MV1GetFrameName(transform_.modelId, i);
 		if (frameName.find(name) != std::string::npos)
 		{
 			// 除外フレームに追加

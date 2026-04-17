@@ -25,7 +25,7 @@ public:
 	~AnimationController(void);
 
 	// 外部FBXからアニメーション追加
-	void Add(int type, float speed, const std::string path);
+	void Add(int type, float speed, const std::wstring path);
 	
 	// 同じFBX内のアニメーションを準備
 	void AddInFbx(int type, float speed, int animIndex);

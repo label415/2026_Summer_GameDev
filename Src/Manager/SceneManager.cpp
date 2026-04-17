@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "ResourceManager.h"
 #include "../Scene/DebugScene.h"
+#include "FontManager.h"
 #include "SceneManager.h"
 
 SceneManager* SceneManager::instance_ = nullptr;
@@ -39,6 +40,9 @@ void SceneManager::Init(void)
 	camera_ = new Camera();
 	camera_->Init();
 
+	// フォント管理クラス生成
+	FontManager::CreateInstance();
+
 	// 画面遷移中判定
 	isSceneChanging_ = false;
 
@@ -49,7 +53,7 @@ void SceneManager::Init(void)
 	Init3D();
 
 	// 初期シーンの設定
-	DoChangeScene(SCENE_ID::GAME);
+	DoChangeScene(SCENE_ID::TITLE);
 
 }
 
@@ -160,6 +164,8 @@ void SceneManager::Destroy(void)
 
 	camera_->Release();
 	delete camera_;
+
+	FontManager::GetInstance().Destroy();
 
 
 	// インスタンスのメモリ解放

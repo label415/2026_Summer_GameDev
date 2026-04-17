@@ -15,7 +15,7 @@ AnimationController::~AnimationController(void)
 {
 }
 
-void AnimationController::Add(int type, float speed, const std::string path)
+void AnimationController::Add(int type, float speed, const std::wstring path)
 {
 	Animation animation;
 	animation.model = MV1LoadModel(path.c_str());

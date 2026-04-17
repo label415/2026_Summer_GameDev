@@ -5,7 +5,7 @@
 Resource::Resource(void)
 	:
 	type_(TYPE::NONE),
-	path_(""),
+	path_(L""),
 	numX_(-1),
 	numY_(-1),
 	sizeX_(-1),
@@ -15,7 +15,7 @@ Resource::Resource(void)
 {
 }
 
-Resource::Resource(TYPE type, const std::string& path)
+Resource::Resource(TYPE type, const std::wstring& path)
 	:
 	type_(type),
 	path_(path),
@@ -28,7 +28,7 @@ Resource::Resource(TYPE type, const std::string& path)
 {
 }
 
-Resource::Resource(TYPE type, const std::string& path, int numX, int numY, int sizeX, int sizeY)
+Resource::Resource(TYPE type, const std::wstring& path, int numX, int numY, int sizeX, int sizeY)
 	:
 	type_(type),
 	path_(path),
@@ -69,6 +69,11 @@ void Resource::Load(void)
 	case Resource::TYPE::MODEL:
 		// モデル
 		handleId_ = MV1LoadModel(path_.c_str());
+		break;
+    
+	case Resource::TYPE::FONT:
+		// フォント
+		handleIds_ = Load;
 		break;
 
 	case Resource::TYPE::EFFEKSEER:

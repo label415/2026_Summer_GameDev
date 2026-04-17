@@ -24,6 +24,7 @@ public:
 		VIEW_RANGE,
 		UI_SURPRISE,
 		WEAPON_BLADE,
+		FONT,
 	};
 
 	// 明示的にインステンスを生成する

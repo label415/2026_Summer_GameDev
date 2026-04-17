@@ -10,6 +10,17 @@ class TitleScene : public SceneBase
 
 public:
 
+	enum class LIST
+	{
+		RESUME,		// 続ける
+		TITLE,		// タイトルに戻る
+		GAME_END,   // ゲームの終了
+		MAX
+	};
+
+	//リスト
+	static constexpr int LIST_MAX = static_cast<int>(LIST::MAX);
+
 	enum class ANIM_TYPE
 	{
 		RUN,
@@ -47,6 +58,20 @@ private:
 
 	//プレイヤー
 	Transform player_;
+
+	//ポーズフォント
+	int pauseFont_;
+
+	//ポーズリストの選択
+	int selectIndex_;
+
+	//選択リスト
+	std::wstring pasueList_[LIST_MAX] =
+	{
+		L"つづける",
+		L"タイトルへ戻る",
+		L"ゲーム終了"
+	};
 
 	// 画像読み込み
 	int imgTitle_;

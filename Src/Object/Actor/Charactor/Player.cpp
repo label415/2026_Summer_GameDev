@@ -71,13 +71,13 @@ void Player::InitAnimation(void)
 	anim_ = new AnimationController(transform_.modelId);
 
 	anim_->Add(static_cast<int>(ANIM_TYPE::IDLE),
-		30.0f, Application::PATH_MODEL + "Player/Idle.mv1");
+		30.0f, Application::PATH_MODEL + L"Player/Idle.mv1");
 	anim_->Add(static_cast<int>(ANIM_TYPE::RUN),
-		30.0f, Application::PATH_MODEL + "Player/Run.mv1");
+		30.0f, Application::PATH_MODEL + L"Player/Run.mv1");
 	anim_->Add(static_cast<int>(ANIM_TYPE::FAST_RUN),
-		30.0f, Application::PATH_MODEL + "Player/FastRun.mv1");
+		30.0f, Application::PATH_MODEL + L"Player/FastRun.mv1");
 	anim_->Add(static_cast<int>(ANIM_TYPE::JUMP),
-		60.0f, Application::PATH_MODEL + "Player/JumpRising.mv1");
+		60.0f, Application::PATH_MODEL + L"Player/JumpRising.mv1");
 
 	anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 }
