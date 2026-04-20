@@ -74,7 +74,10 @@ void TitleScene::Init(void)
 	anim_->Add(static_cast<int>(ANIM_TYPE::RUN),
 		30.0f, Application::PATH_MODEL + L"Player/Run.mv1");
 
-	pauseFont_ = fontMng_.CreateMyFont(L"タイトルだよ！",56,5);
+	resMng_.GetInstance().Load(ResourceManager::SRC::FONT);
+
+	// フォントハンドルの作成
+	pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"はなぞめフォント", 56, 20);
 }
 
 void TitleScene::Update(void)
@@ -102,35 +105,35 @@ void TitleScene::Draw(void)
 {
 	skydome_->Draw();
 
-	//// モデル描画
-	//MV1DrawModel(bigPlanet_.modelId);
-	//MV1DrawModel(spherPlanet_.modelId);
-	//MV1DrawModel(player_.modelId);
+	// モデル描画
+	MV1DrawModel(bigPlanet_.modelId);
+	MV1DrawModel(spherPlanet_.modelId);
+	MV1DrawModel(player_.modelId);
 
 
-	////UI描画
-	//DrawRotaGraph(
-	//	Application::SCREEN_SIZE_X / 2,
-	//	Application::SCREEN_SIZE_Y / 3,
-	//	1.0f,
-	//	0.0f,
-	//	imgTitle_,
-	//	TRUE);
+	//UI描画
+	DrawRotaGraph(
+		Application::SCREEN_SIZE_X / 2,
+		Application::SCREEN_SIZE_Y / 3,
+		1.0f,
+		0.0f,
+		imgTitle_,
+		TRUE);
 
-	//DrawRotaGraph(
-	//	Application::SCREEN_SIZE_X / 2,
-	//	(Application::SCREEN_SIZE_Y -
-	//		(Application::SCREEN_SIZE_Y / 3)),
-	//	1.0f,
-	//	0.0f,
-	//	imgPushSpace_,
-	//	TRUE);
+	DrawRotaGraph(
+		Application::SCREEN_SIZE_X / 2,
+		(Application::SCREEN_SIZE_Y -
+			(Application::SCREEN_SIZE_Y / 3)),
+		1.0f,
+		0.0f,
+		imgPushSpace_,
+		TRUE);
 
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
 		//座標位置を設定
-		int posX = static_cast<int>(Application::SCREEN_SIZE_X/2 - pasueList_[i].length() * 56 / 2);
-		int posY = Application::SCREEN_SIZE_Y/2 - 200 + 150.0f * i;
+		int posX = static_cast<int>(Application::SCREEN_SIZE_X/1.5f - pasueList_[i].length() * 56 / 2);
+		int posY = Application::SCREEN_SIZE_Y/1.5 - 200 + 150.0f * i;
 
 		//文字列を描画
 		DrawFormatStringToHandle(
@@ -158,4 +161,7 @@ void TitleScene::Release(void)
 
 	anim_->Release();
 	delete anim_;
+
+	// フォントハンドルを削除
+	DeleteFontToHandle(pauseFont_);
 }

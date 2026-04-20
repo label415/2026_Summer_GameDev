@@ -72,8 +72,15 @@ void Resource::Load(void)
 		break;
     
 	case Resource::TYPE::FONT:
-		// フォント
-		handleIds_ = Load;
+		//フォント
+		if (AddFontResourceEx(
+			path_.c_str(),
+			FR_PRIVATE,
+			NULL)
+			== -1)
+		{
+			return;
+		}
 		break;
 
 	case Resource::TYPE::EFFEKSEER:
@@ -112,6 +119,19 @@ void Resource::Release(void)
 		for (auto id : ids)
 		{
 			MV1DeleteModel(id);
+		}
+	}
+		break;
+
+	case Resource::TYPE::FONT:
+	{
+		if (RemoveFontResourceEx(
+			path_.c_str(),
+			FR_PRIVATE,
+			NULL)
+			== -1)
+		{
+			return;
 		}
 	}
 		break;

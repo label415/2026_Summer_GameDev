@@ -36,7 +36,7 @@ void Application::Init(void)
 
 	// ウィンドウサイズ
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, 32);
-	ChangeWindowMode(false);
+	ChangeWindowMode(true);
 	// FPS制御初期化
 	fpsController_ = new FpsController(FRAME_RATE);
 	// DxLibの初期化

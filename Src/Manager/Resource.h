@@ -46,6 +46,9 @@ public:
 	// 画像とモデルのハンドルID
 	int handleId_;
 
+	//フォントハンドル
+	std::wstring fontId_;
+
 	// IMGS::LoadDivGraph用
 	int* handleIds_;
 	int numX_;

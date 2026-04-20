@@ -85,7 +85,7 @@ void ResourceManager::Init(void)
 
 
 	//ƒtƒHƒ“ƒg
-	res = new RES(RES_T::FONT, PATH_FONT + L"Font.ttf");
+	res = new RES(RES_T::FONT, PATH_FONT + L"Hanazome.ttf");
 	resourcesMap_.emplace(SRC::FONT, res);
 
 }
