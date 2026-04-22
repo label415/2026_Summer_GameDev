@@ -44,15 +44,22 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::MODEL, PATH_MDL +
 		L"Stage/SpherePlanet/SpherePlanet.mv1");
 	resourcesMap_.emplace(SRC::SPHERE_PLANET, res);
+
+	//プレイヤー
 	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player.mv1");
 	resourcesMap_.emplace(SRC::PLAYER, res);
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Idle.mv1");
+	resourcesMap_.emplace(SRC::ANIM_PLAYER_IDLE, res);
+
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Run.mv1");
+	resourcesMap_.emplace(SRC::ANIM_PLAYER_RUN, res);
 
 	//ゲームシーン
-	res = new RES(RES_T::MODEL, PATH_MDL + L"Stage/MainStage/MainStage.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Stage/Stage/Stage00.mv1");
 	resourcesMap_.emplace(SRC::MAIN_STAGE, res);
 
 	//スカイドーム
-	res = new RES(RES_T::MODEL, PATH_MDL + L"SkyDome/SkyDome.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + L"SkyDome/Skydome.mv1");
 	resourcesMap_.emplace(SRC::SKY_DOME, res);
 
 	// プレイヤー影

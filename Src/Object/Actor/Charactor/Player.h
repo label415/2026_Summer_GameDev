@@ -95,6 +95,18 @@ private:
 	// ジャンプ受付時間
 	static constexpr float TIME_JUMP_INPUT = 0.5f;
 
+
+	//武器衝突判定用カプセル上部球体
+	static constexpr VECTOR WEAPON_TOP_LOCAL_POS = { 0.0f, 110.0f, 0.0f };
+	//武器衝突判定用カプセル下部球体
+	static constexpr VECTOR WEAPON_DOWN_LOCAL_POS = { 0.0f, 30.0f, 0.0f };
+	// 衝突判定用カプセル球体半径
+	static constexpr float WEAPON_CAPSULE_RADIUS = 100.0f;
+	//武器フレーム
+	static constexpr int WEAPON_FRAME = 58;
+	//武器情報
+	Transform  weponTrans_;
+
 	// 操作
 	void ProcessMove(void);
 	void ProcessJump(void);

@@ -15,7 +15,12 @@ public:
 		PUSHSPACE,
 		PIT_FALL_PLANET,
 		SPHERE_PLANET,
+
+		//プレイヤー
 		PLAYER,
+		ANIM_PLAYER_IDLE,
+		ANIM_PLAYER_RUN,
+
 		MAIN_STAGE,
 		SKY_DOME,
 		PLAYER_SHADOW,
@@ -25,6 +30,7 @@ public:
 		UI_SURPRISE,
 		WEAPON_BLADE,
 		FONT,
+
 	};
 
 	// 明示的にインステンスを生成する

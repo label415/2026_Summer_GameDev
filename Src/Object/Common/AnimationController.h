@@ -26,6 +26,7 @@ public:
 
 	// 外部FBXからアニメーション追加
 	void Add(int type, float speed, const std::wstring path);
+	void Add(int type, float speed, int handlId);
 	
 	// 同じFBX内のアニメーションを準備
 	void AddInFbx(int type, float speed, int animIndex);

@@ -48,6 +48,8 @@ void Player::InitTransform(void)
 			Quaternion::AngleAxis(AsoUtility::Deg2RadF(180.0f), AsoUtility::AXIS_Y));
 	transform_.pos = { 0.0f, 0.0f, 0.0f };
 	transform_.Update();
+
+	weponTrans_.pos = MV1GetFramePosition(transform_.modelId, WEAPON_FRAME);
 }
 
 void Player::InitCollider(void)
@@ -64,6 +66,14 @@ void Player::InitCollider(void)
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
 		COL_CAPSULE_RADIUS);
 	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule);
+
+
+	ColliderCapsule* weponColCapsule = new ColliderCapsule(
+		ColliderBase::TAG::WEPON, &weponTrans_,
+		WEAPON_TOP_LOCAL_POS, WEAPON_DOWN_LOCAL_POS,
+		WEAPON_CAPSULE_RADIUS);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColCapsule);
+
 }
 
 void Player::InitAnimation(void)
@@ -71,14 +81,9 @@ void Player::InitAnimation(void)
 	anim_ = new AnimationController(transform_.modelId);
 
 	anim_->Add(static_cast<int>(ANIM_TYPE::IDLE),
-		30.0f, Application::PATH_MODEL + L"Player/Idle.mv1");
+		30.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_IDLE));
 	anim_->Add(static_cast<int>(ANIM_TYPE::RUN),
-		30.0f, Application::PATH_MODEL + L"Player/Run.mv1");
-	anim_->Add(static_cast<int>(ANIM_TYPE::FAST_RUN),
-		30.0f, Application::PATH_MODEL + L"Player/FastRun.mv1");
-	anim_->Add(static_cast<int>(ANIM_TYPE::JUMP),
-		60.0f, Application::PATH_MODEL + L"Player/JumpRising.mv1");
-
+		30.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
 	anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 }
 

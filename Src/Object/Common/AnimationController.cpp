@@ -24,6 +24,15 @@ void AnimationController::Add(int type, float speed, const std::wstring path)
 	Add(type, speed, animation);
 }
 
+void AnimationController::Add(int type, float speed, int handlId)
+{
+	Animation animation;
+	animation.model = handlId;
+	animation.animIndex = -1;
+
+	Add(type, speed, animation);
+}
+
 void AnimationController::AddInFbx(int type, float speed, int animIndex)
 {
 	Animation animation;
