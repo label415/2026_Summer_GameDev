@@ -1,5 +1,6 @@
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Manager/ResourceManager.h"
+#include "../../Common/Collider/ColliderCapsule.h"
 #include "WeponBlade.h"
 WeponBlade::WeponBlade(const Transform& followTransform, int followFrameId)
 	:
@@ -34,10 +35,18 @@ void WeponBlade::InitTransform(void)
 }
 void WeponBlade::InitCollider(void)
 {
+	// 主に壁や木などの衝突で仕様するカプセルコライダ
+	ColliderCapsule* colCapsule = new ColliderCapsule(
+		ColliderBase::TAG::WEPON, &transform_,
+		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
+		COL_CAPSULE_RADIUS);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule);
 }
+
 void WeponBlade::InitAnimation(void)
 {
 }
+
 void WeponBlade::InitPost(void)
 {
 }

@@ -50,9 +50,12 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::PLAYER, res);
 	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Idle.mv1");
 	resourcesMap_.emplace(SRC::ANIM_PLAYER_IDLE, res);
-
 	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Run.mv1");
 	resourcesMap_.emplace(SRC::ANIM_PLAYER_RUN, res);
+
+	//武器
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Wepon/KeyBlade1.mv1");
+	resourcesMap_.emplace(SRC::WEAPON_BLADE, res);
 
 	//ゲームシーン
 	res = new RES(RES_T::MODEL, PATH_MDL + L"Stage/Stage/Stage00.mv1");
@@ -61,10 +64,6 @@ void ResourceManager::Init(void)
 	//スカイドーム
 	res = new RES(RES_T::MODEL, PATH_MDL + L"SkyDome/Skydome.mv1");
 	resourcesMap_.emplace(SRC::SKY_DOME, res);
-
-	// プレイヤー影
-	res = new RES(RES_T::IMG, PATH_IMG + L"Shadow.png");
-	resourcesMap_.emplace(SRC::PLAYER_SHADOW, res);
 
 	// プレイヤー影
 	res = new RES(RES_T::IMG, PATH_IMG + L"Shadow.png");

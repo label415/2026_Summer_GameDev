@@ -8,10 +8,12 @@
 #include "../../../Common/Quaternion.h"
 #include "../../Common/Collider/ColliderLine.h"
 #include "../../Common/Collider/ColliderCapsule.h"
+#include "../Wepon/WeponBlade.h"
 #include "Player.h"
 
 Player::Player(void)
 {
+	weponBlade_ = nullptr;
 }
 
 Player::~Player(void)
@@ -21,11 +23,17 @@ Player::~Player(void)
 void Player::Draw(void)
 {
 	CharactorBase::Draw();
+
+	weponBlade_->Draw();
 }
 
 void Player::Release(void)
 {
 	transform_.Release();
+
+	weponBlade_->Release();
+	delete weponBlade_;
+	weponBlade_ = nullptr;
 }
 
 void Player::InitLoad(void)
@@ -44,12 +52,10 @@ void Player::InitTransform(void)
 	transform_.quaRot = Quaternion::Identity();
 	transform_.quaRotLocal = Quaternion::Identity();
 	transform_.quaRotLocal =
-		Quaternion::Mult(transform_.quaRotLocal,
+		Quaternion::Mult(transform_.quaRotLocal,   
 			Quaternion::AngleAxis(AsoUtility::Deg2RadF(180.0f), AsoUtility::AXIS_Y));
 	transform_.pos = { 0.0f, 0.0f, 0.0f };
 	transform_.Update();
-
-	weponTrans_.pos = MV1GetFramePosition(transform_.modelId, WEAPON_FRAME);
 }
 
 void Player::InitCollider(void)
@@ -66,14 +72,6 @@ void Player::InitCollider(void)
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
 		COL_CAPSULE_RADIUS);
 	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule);
-
-
-	ColliderCapsule* weponColCapsule = new ColliderCapsule(
-		ColliderBase::TAG::WEPON, &weponTrans_,
-		WEAPON_TOP_LOCAL_POS, WEAPON_DOWN_LOCAL_POS,
-		WEAPON_CAPSULE_RADIUS);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColCapsule);
-
 }
 
 void Player::InitAnimation(void)
@@ -97,6 +95,10 @@ void Player::InitPost(void)
 	movePow_ = AsoUtility::VECTOR_ZERO;
 	//ó‘Ô
 	state_ = STATE::IDLE;
+
+	//•Ší
+	weponBlade_ = new WeponBlade(transform_,48);
+	weponBlade_->Init();
 }
 
 void Player::ProcessMove(void)
@@ -263,6 +265,11 @@ void Player::UpdateProcess(void)
 
 	// ƒWƒƒƒ“ƒvˆ—
 	ProcessJump();
+
+	// •Šíˆ—
+	if (weponBlade_){
+		weponBlade_->Update();
+	}
 }
 
 void Player::UpdateProcessPost(void)

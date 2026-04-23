@@ -19,7 +19,7 @@ void WeponBase::Update(void)
 	// 対象フレームの回転に加え、指定した相対座標・回転を加える
 	ModelFrameUtility::SetFrameWorldMatrix(
 		followTransform_, followFrameId_, transform_,
-		localPos_, localRot_
+		localPos_, localRot_ 
 	);
 	// 上記関数内で更新された行列情報からクォータニオンに変換
 	transform_.quaRot = Quaternion::GetRotation(transform_.matRot);
