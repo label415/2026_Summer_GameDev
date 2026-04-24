@@ -4,6 +4,7 @@
 class SkyDome;
 class Stage;
 class Player;
+class Camera;
 class EnemyManager;
 
 class GameScene : public SceneBase
@@ -43,6 +44,12 @@ private:
 	//エネミー
 	EnemyManager* enemys_;
 
+	//カメラ
+	Camera* camera_;
+
 	int ShadowMapHandle;
+
+	//コライダー登録
+	void RegistCollider(void);
 
 };

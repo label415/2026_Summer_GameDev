@@ -22,7 +22,7 @@ GameScene::~GameScene(void)
 
 void GameScene::Init(void)
 {
-	Camera* camera = SceneManager::GetInstance().GetCamera();
+	camera_ = SceneManager::GetInstance().GetCamera();
 
 	skydome_ = new SkyDome();
 	skydome_->Init();
@@ -32,27 +32,16 @@ void GameScene::Init(void)
 	stage_->Init();
 
 	player_ = new Player();
-	camera->SetFollow(&player_->GetTransform());
+	camera_->SetFollow(&player_->GetTransform());
 	player_->Init();
 
 	enemys_ = new EnemyManager();
 	enemys_->Init();
 
-	camera->ChangeMode(Camera::MODE::FOLLOW);
+	camera_->ChangeMode(Camera::MODE::FOLLOW);
 
-	// ステージモデルのコライダーをプレイヤーに登録
-	const ColliderBase* stageCollider =
-		stage_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::MODEL));
-	const ColliderBase* PlayerCollider =
-		player_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-	const ColliderBase* cameraCollider =
-		camera->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
-
-	player_->AddHitCollider(stageCollider);
-	enemys_->AddHitCollider(stageCollider);
-	enemys_->AddHitCollider(PlayerCollider);
-	camera->AddHitCollider(stageCollider);
-	stage_->AddHitCollider(cameraCollider);
+	// コライダ登録
+	RegistCollider();
 
 	ShadowMapHandle = MakeShadowMap(1024, 1024);
 
@@ -122,4 +111,21 @@ void GameScene::Release(void)
 
 	// シャドウマップの削除
 	DeleteShadowMap(ShadowMapHandle);
+}
+
+void GameScene::RegistCollider(void)
+{
+	// ステージモデルのコライダーをプレイヤーに登録
+	const ColliderBase* stageCollider =
+		stage_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::MODEL));
+	const ColliderBase* PlayerCollider =
+		player_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+	const ColliderBase* cameraCollider =
+		camera_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
+
+	player_->AddHitCollider(stageCollider);
+	enemys_->AddHitCollider(stageCollider);
+	enemys_->AddHitCollider(PlayerCollider);
+	camera_->AddHitCollider(stageCollider);
+	stage_->AddHitCollider(cameraCollider);
 }

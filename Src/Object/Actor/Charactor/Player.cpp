@@ -44,6 +44,10 @@ void Player::InitLoad(void)
 	//ƒvƒŒƒCƒ„[
 	transform_.SetModel(resMng_.LoadModelDuplicate(
 		ResourceManager::SRC::PLAYER));
+
+	//•Ší
+	weponBlade_ = new WeponBlade(transform_, 48);
+	weponBlade_->Init();
 }
 
 void Player::InitTransform(void)
@@ -93,12 +97,9 @@ void Player::InitPost(void)
 	moveSpeed_ = 0.0f;
 	// ˆÚ“®—Ê
 	movePow_ = AsoUtility::VECTOR_ZERO;
+
 	//ó‘Ô
 	state_ = STATE::IDLE;
-
-	//•Ší
-	weponBlade_ = new WeponBlade(transform_,48);
-	weponBlade_->Init();
 }
 
 void Player::ProcessMove(void)

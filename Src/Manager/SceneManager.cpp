@@ -4,6 +4,7 @@
 #include "../Common/Fader.h"
 #include "../Scene/TitleScene.h"
 #include "../Scene/GameScene.h"
+#include "../Scene/Loading/Loading.h"
 #include "Camera.h"
 #include "ResourceManager.h"
 #include "../Scene/DebugScene.h"
@@ -32,6 +33,11 @@ void SceneManager::Init(void)
 	sceneId_ = SCENE_ID::TITLE;
 	waitSceneId_ = SCENE_ID::NONE;
 
+	// ロード画面生成
+	load_ = new Loading();
+	load_->Init();
+	load_->Load();
+
 	// フェード機能の初期化
 	fader_ = new Fader();
 	fader_->Init();
@@ -54,7 +60,6 @@ void SceneManager::Init(void)
 
 	// 初期シーンの設定
 	DoChangeScene(SCENE_ID::TITLE);
-
 }
 
 void SceneManager::Init3D(void)
@@ -90,11 +95,7 @@ void SceneManager::Init3D(void)
 
 void SceneManager::Update(void)
 {
-
-	if (scene_ == nullptr)
-	{
-		return;
-	}
+	if (scene_ == nullptr){return;}
 
 	// デルタタイム
 	auto nowTime = std::chrono::system_clock::now();
@@ -102,22 +103,40 @@ void SceneManager::Update(void)
 		std::chrono::duration_cast<std::chrono::nanoseconds>(nowTime - preTime_).count() / 1000000000.0);
 	preTime_ = nowTime;
 
-	// フェード機能の更新
-	fader_->Update();
-	if (isSceneChanging_)
+	//// フェード機能の更新
+	//fader_->Update();
+	//if (isSceneChanging_)
+	//{
+	//	// フェード状態の切替処理
+	//	Fade();
+	//}
+	//else
+	//{
+	//	// 各シーンの更新処理
+	//	scene_->Update();
+	//}
+
+	// ロード中
+	if (load_->IsLoading())
 	{
-		// フェード状態の切替処理
-		Fade();
+		// ロード更新
+		load_->Update();
+
+		// ロードの更新が終了していたら
+		if (load_->IsLoading() == false)
+		{
+			// ロード後の初期化
+			/*scene_->LoadEnd();*/
+		}
 	}
+	// 通常の更新処理
 	else
 	{
-		// 各シーンの更新処理
+		// 現在のシーンの更新
 		scene_->Update();
+		// カメラ更新
+		camera_->Update();
 	}
-
-	// カメラ更新
-	camera_->Update();
-
 }
 
 void SceneManager::Draw(void)
@@ -136,17 +155,27 @@ void SceneManager::Draw(void)
 	// Effekseerにより再生中のエフェクトを更新する。
 	UpdateEffekseer3D();
 
-	// 各シーンの描画処理
-	scene_->Draw();
+	// ロード中ならロード画面を描画
+	if (load_->IsLoading())
+	{
+		// ロードの描画
+		load_->Draw();
+	}
+	// 通常の更新
+	else
+	{
+		// 各シーンの描画処理
+		scene_->Draw();
 
-	// カメラ描画
-	camera_->DrawDebug();
+		// カメラ描画
+		camera_->DrawDebug();
+	}
 
 	// Effekseerにより再生中のエフェクトを描画する。
 	DrawEffekseer3D();
 	
-	// 暗転・明転
-	fader_->Draw();
+	//// 暗転・明転
+	//fader_->Draw();
 
 }
 
@@ -164,6 +193,10 @@ void SceneManager::Destroy(void)
 
 	camera_->Release();
 	delete camera_;
+
+	// ロード画面の削除
+	load_->Release();
+	delete load_;
 
 	FontManager::GetInstance().Destroy();
 
@@ -217,6 +250,7 @@ SceneManager::SceneManager(void)
 	deltaTime_ = 1.0f / 60.0f;
 
 	camera_ = nullptr;
+	load_ = nullptr;
 
 }
 

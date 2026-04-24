@@ -24,31 +24,32 @@ void ModelFrameUtility::SetFrameWorldMatrix(
 	const Transform & follow, int followFrameIdx,
 	Transform & target, VECTOR localPos, VECTOR localRot)
 {
-	// 親フレームのワールド合成行列（スケール・回転・位置）を取得
+	// 親フレームのワールド合成行列を取得
 	MATRIX parentWorldMat = MV1GetFrameLocalWorldMatrix(follow.modelId, followFrameIdx);
 
-	// 子ローカル行列を作成（スケール * ローカル回転 * ローカル移動）
+	// 子ローカル行列を作成
 	MATRIX matLocal = MGetIdent();
 	matLocal = MMult(matLocal, MGetScale(target.scl));
 	matLocal = MMult(matLocal, MatrixUtility::GetMatrixRotateXYZ(localRot));
 	matLocal = MMult(matLocal, MGetTranslate(localPos));
 
-	// ワールド行列を合成（子ローカル * 親ワールド）
+	// ワールド行列を合成
 	MATRIX worldMat = MMult(matLocal, parentWorldMat);
 
-	// ワールド行列から大きさ・回転（行列）・位置を抽出
+	// ワールド行列から大きさ・回転・位置を抽出
 	VECTOR scl = MGetSize(worldMat);
-	// ゼロ防止（万が一）
-	if (scl.x == 0.0f) scl.x = 1.0f;
-	if (scl.y == 0.0f) scl.y = 1.0f;
-	if (scl.z == 0.0f) scl.z = 1.0f;
 
+	// ゼロ防止
+	if (scl.x == 0.0f || scl.y == 0.0f || scl.z == 0.0f) { scl = AsoUtility::VECTOR_ONE; }
 	target.scl = scl;
+
 	// 回転成分（まずは回転＋スケール成分を抜く）
 	target.matRot = MGetRotElem(worldMat);
+
 	// 回転のみを残す（スケールを除去）
 	auto revScl = VGet(1.0f / scl.x, 1.0f / scl.y, 1.0f / scl.z);
 	target.matRot = MMult(target.matRot, MGetScale(revScl));
+
 	// 位置
 	target.pos = MGetTranslateElem(worldMat);
 
