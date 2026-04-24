@@ -32,6 +32,10 @@ void ResourceManager::Init(void)
 
 	Resource* res;
 
+	// ローディング画面
+	res = new RES(RES_T::IMG, PATH_IMG + L"Loading.png");
+	resourcesMap_.emplace(SRC::LOADING, res);
+
 	// タイトル画像
 	res = new RES(RES_T::IMG, PATH_IMG + L"Title.png");
 	resourcesMap_.emplace(SRC::TITLE, res);

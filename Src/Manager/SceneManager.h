@@ -4,6 +4,7 @@
 class SceneBase;
 class Fader;
 class Camera;
+class Loading;
 
 class SceneManager
 {
@@ -76,6 +77,9 @@ private:
 
 	// カメラ
 	Camera* camera_;
+
+	// ロード画面
+	Loading* load_;
 
 	// シーン遷移中判定
 	bool isSceneChanging_;

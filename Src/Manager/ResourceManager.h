@@ -11,6 +11,7 @@ public:
 	// ÉäÉ\Å[ÉXñº
 	enum class SRC
 	{
+		LOADING,
 		TITLE,
 		PUSHSPACE,
 		PIT_FALL_PLANET,
