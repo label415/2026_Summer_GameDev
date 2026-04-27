@@ -289,7 +289,9 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 	}
 
 	// ŠeƒV[ƒ“‚Ì‰Šú‰»
+	load_->StartAsyncLoad();
 	scene_->Init();
+	load_->EndAsyncLoad();
 
 	ResetDeltaTime();
 
