@@ -1,5 +1,6 @@
 #include <DxLib.h>
 #include "../../Manager/ResourceManager.h"
+#include "../../Application.h"
 #include "Loading.h"
 
 // コンストラクタ
@@ -27,8 +28,9 @@ void Loading::Init(void)
 // 読み込み
 void Loading::Load(void)
 {
-	ResourceManager& resMng = ResourceManager::GetInstance();
-	handle_ = resMng.Load(ResourceManager::SRC::LOADING).handleId_;
+	auto& resMng = ResourceManager::GetInstance();
+
+	handle_ = resMng.Load(ResourceManager::SRC::TITLE).handleId_;
 }
 
 // 更新
@@ -52,11 +54,13 @@ void Loading::Update(void)
 // 描画
 void Loading::Draw(void)
 {
-	DrawGraphF(
-		pos_.x, pos_.y,	// 座標
-		handle_,		// ハンドル
-		true			// 透過フラグ
-	);
+	DrawRotaGraph(
+		Application::SCREEN_SIZE_X / 2,
+		Application::SCREEN_SIZE_Y / 3,
+		1.0f,
+		0.0f,
+		handle_,
+		TRUE);
 }
 
 // 解放
