@@ -14,7 +14,6 @@ public:
 
 	static constexpr int FRAME_RATE = 60;
 
-
 	// データパス関連
 	//-------------------------------------------
 	static const std::wstring PATH_DATA;

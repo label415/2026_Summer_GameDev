@@ -59,7 +59,7 @@ void SceneManager::Init(void)
 	Init3D();
 
 	// ‰ŠúƒV[ƒ“‚Ìİ’è
-	DoChangeScene(SCENE_ID::TITLE);
+	DoChangeScene(SCENE_ID::GAME);
 }
 
 void SceneManager::Init3D(void)
@@ -227,7 +227,6 @@ SceneManager::SCENE_ID SceneManager::GetSceneID(void)
 float SceneManager::GetDeltaTime(void) const
 {
 	return 1.0f / 60.0f;
-	//return deltaTime_;
 }
 
 Camera* SceneManager::GetCamera(void) const

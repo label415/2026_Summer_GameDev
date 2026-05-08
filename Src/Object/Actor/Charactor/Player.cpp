@@ -25,6 +25,8 @@ void Player::Draw(void)
 	CharactorBase::Draw();
 
 	weponBlade_->Draw();
+
+	DrawFormatString(0, 0, 0x000000, L"スタミナ(%.2f)",st_);
 }
 
 void Player::Release(void)
@@ -82,6 +84,8 @@ void Player::InitAnimation(void)
 		30.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_IDLE));
 	anim_->Add(static_cast<int>(ANIM_TYPE::RUN),
 		30.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
+	anim_->Add(static_cast<int>(ANIM_TYPE::FAST_RUN),
+		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
 	anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 }
 
@@ -100,6 +104,9 @@ void Player::InitPost(void)
 	//武器
 	weponBlade_ = new WeponBlade(transform_,48);
 	weponBlade_->Init();
+
+	//スタミナ
+	st_ = MAX_ST;
 }
 
 void Player::ProcessMove(void)
@@ -145,8 +152,9 @@ void Player::ProcessMove(void)
 			//ジャンプ中はアニメーションを変えない
 			if(!isJump_)
 			{
-				if (isD) {
+				if (isD && st_ >= 0.0f) {
 					moveSpeed_ = SPEED_DASH;
+					st_ -= (CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
 					anim_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
 				}
 				else {
@@ -261,6 +269,10 @@ void Player::CollisionReserve(void)
 
 void Player::UpdateProcess(void)
 {
+	if (st_ <= MAX_ST) {
+		st_ += (RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
+	}
+
 	// 移動操作
 	ProcessMove();
 

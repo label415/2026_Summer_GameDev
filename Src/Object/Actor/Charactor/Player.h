@@ -15,6 +15,7 @@ public:
 		RUN,
 		FAST_RUN,
 		JUMP,
+		ROLLING
 	};
 
 	enum class STATE
@@ -28,6 +29,15 @@ public:
 	static constexpr float SPEED_MOVE = 5.0f;
 	// 移動速度(ダッシュ)
 	static constexpr float SPEED_DASH = 10.0f;
+
+	//スタミナ最大値
+	static constexpr float MAX_ST = 100.0f;
+
+	//スタミナ回復速度
+	static constexpr float RECOVERY_ST_SPEED = 10.0f;
+
+	//ダッシュ時スタミナ消費量
+	static constexpr float CONSUMPTION_ST_FAST_RUN = 25.0f;
 
 	// 衝突判定用線分開始
 	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
@@ -73,6 +83,9 @@ protected:
 private:
 
 	WeponBlade* weponBlade_;	
+
+	//スタミナ
+	float st_;
 
 	// 衝突判定用カプセル上部球体(ジャンプ時)
 	static constexpr VECTOR COL_CAPSULE_TOP_JUMP_LOCAL_POS =
