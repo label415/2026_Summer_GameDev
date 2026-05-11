@@ -15,15 +15,25 @@ public:
 		RUN,
 		FAST_RUN,
 		JUMP,
-		ROLLING
+		ROLLING,
+		ATTACK,
+		AVOIDANCE
 	};
 
 	enum class STATE
 	{
 		IDLE,
 		RUN,
-		FAST_RUN
+		FAST_RUN,
+		ATTACK,
+		AVOIDANCE
 	};
+
+	//初期Y軸角度
+	static constexpr float ANGLE_AXIS_Y = 180.0f;
+
+	//回避Y軸角度
+	static constexpr float AVOIDANCE_ANGLE_AXIS_Y = 100.0f;
 
 	// 移動速度(通常)
 	static constexpr float SPEED_MOVE = 5.0f;
@@ -87,6 +97,12 @@ private:
 	//スタミナ
 	float st_;
 
+	//攻撃フラグ
+	bool isAttack_;
+
+	//初期角度を保存
+	Quaternion lastQrot_;
+
 	// 衝突判定用カプセル上部球体(ジャンプ時)
 	static constexpr VECTOR COL_CAPSULE_TOP_JUMP_LOCAL_POS =
 	{ 0.0f, 160.0f, 0.0f };
@@ -114,6 +130,8 @@ private:
 	// 操作
 	void ProcessMove(void);
 	void ProcessJump(void);
+	void ProcessAttack(void);
+	void ProcessAvoidance(void);
 
 	// 衝突判定
 	void CollisionReserve(void) override;

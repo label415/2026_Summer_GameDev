@@ -35,12 +35,6 @@ void WeponBlade::InitTransform(void)
 }
 void WeponBlade::InitCollider(void)
 {
-	// 主に壁や木などの衝突で仕様するカプセルコライダ
-	ColliderCapsule* colCapsule = new ColliderCapsule(
-		ColliderBase::TAG::WEPON, &transform_,
-		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
-		COL_CAPSULE_RADIUS);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule);
 }
 
 void WeponBlade::InitAnimation(void)
@@ -49,4 +43,19 @@ void WeponBlade::InitAnimation(void)
 
 void WeponBlade::InitPost(void)
 {
+}
+
+void WeponBlade::UpdateCollider(void)
+{
+	ColliderCapsule* colCapsule = new ColliderCapsule(
+		ColliderBase::TAG::WEPON, &transform_,
+		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
+		COL_CAPSULE_RADIUS);
+	ownColliders_.emplace(
+		static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule);
+}
+
+void WeponBlade::ClearCollider(void)
+{
+	ownColliders_.erase(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 }

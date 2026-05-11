@@ -56,6 +56,12 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::ANIM_PLAYER_IDLE, res);
 	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Run.mv1");
 	resourcesMap_.emplace(SRC::ANIM_PLAYER_RUN, res);
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Attack.mv1");
+	resourcesMap_.emplace(SRC::ANIM_PLSYER_ATTACK, res);
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Attack.mv1");
+	resourcesMap_.emplace(SRC::ANIM_PLSYER_ATTACK, res);
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Running.mv1");
+	resourcesMap_.emplace(SRC::ANIM_PLAYER_AVOIDANCE, res);
 
 	//ïêäÌ
 	res = new RES(RES_T::MODEL, PATH_MDL + L"Wepon/KeyBlade1.mv1");

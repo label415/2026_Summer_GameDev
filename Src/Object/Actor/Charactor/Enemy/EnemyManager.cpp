@@ -23,10 +23,10 @@ void EnemyManager::Init(void)
 
 void EnemyManager::Update(void)
 {
-	for (auto& enemy : enemys_)
+	/*for (auto& enemy : enemys_)
 	{
 		enemy->Update();
-	}
+	}*/
 }
 
 void EnemyManager::Draw(void)

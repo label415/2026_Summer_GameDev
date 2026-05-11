@@ -11,6 +11,12 @@ public:
 	~WeponBlade(void) override;
 	// 更新
 	void Update(void) override;
+
+	//更新時当たり判定登録
+	void UpdateCollider(void) override;
+
+	void ClearCollider(void) override;
+
 protected:
 	// リソースロード
 	void InitLoad(void) override;
@@ -26,10 +32,11 @@ private:
 	// モデルの大きさ
 	static constexpr float SCALE = 0.2f;
 	// 衝突判定用カプセル上部球体
-	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 130.0f, 0.0f };
+	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 110.0f, 0.0f };
 	// 衝突判定用カプセル下部球体
 		static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 20.0f, 0.0f };
 	// 衝突判定用カプセル球体半径
-	static constexpr float COL_CAPSULE_RADIUS = 30.0f;
+	static constexpr float COL_CAPSULE_RADIUS = 20.0f;
+
 };
 

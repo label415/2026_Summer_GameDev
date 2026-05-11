@@ -86,6 +86,10 @@ void Player::InitAnimation(void)
 		30.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
 	anim_->Add(static_cast<int>(ANIM_TYPE::FAST_RUN),
 		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
+	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK),
+		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK));
+	anim_->Add(static_cast<int>(ANIM_TYPE::AVOIDANCE),
+		50.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_AVOIDANCE));
 	anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 }
 
@@ -111,13 +115,13 @@ void Player::InitPost(void)
 
 void Player::ProcessMove(void)
 {
-	if (state_ != STATE::IDLE) {
-		return;
-	}
-
 	moveSpeed_ = 0.0f;
 	movePow_ = AsoUtility::VECTOR_ZERO;
 	VECTOR dir = AsoUtility::VECTOR_ZERO;
+
+	if (state_ != STATE::IDLE) {
+		return;
+	}
 
 	auto& ins = InputManager::GetInstance();
 	if (GetJoypadNum() == 0){
@@ -183,6 +187,10 @@ void Player::ProcessMove(void)
 
 void Player::ProcessJump(void)
 {
+	if (state_ != STATE::IDLE) {
+		return;
+	}
+
 	auto& ins = InputManager::GetInstance();
 	// 持続ジャンプ処理
 	bool isHitKeyNew = ins.IsNew(KEY_INPUT_BACKSLASH)
@@ -222,6 +230,60 @@ void Player::ProcessJump(void)
 		anim_->Play(
 			static_cast<int>(ANIM_TYPE::JUMP), false);
 	}
+}
+
+void Player::ProcessAttack(void)
+{
+	auto& ins = InputManager::GetInstance();
+
+	bool isHitAttack = ins.IsTrgDown(KEY_INPUT_SPACE)
+	|| ins.IsPadBtnTrgDown(
+		InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
+
+	if (isHitAttack && !isJump_ && state_ == STATE::IDLE){
+		state_ = STATE::ATTACK;
+		weponBlade_->UpdateCollider();
+	}
+
+	if (state_ != STATE::ATTACK) return;
+
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::ATTACK), false);
+
+	if (anim_->IsEnd()) {
+		weponBlade_->ClearCollider();
+		state_ = STATE::IDLE;
+	}
+}
+
+void Player::ProcessAvoidance(void)
+{
+	auto& ins = InputManager::GetInstance();
+
+	bool isHitAvoidance = ins.IsTrgDown(KEY_INPUT_LSHIFT)
+		|| ins.IsPadBtnTrgDown(
+			InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
+
+	if (isHitAvoidance && !isJump_ && state_ == STATE::IDLE) {
+		state_ = STATE::AVOIDANCE; 
+		lastQrot_ = transform_.quaRotLocal;
+		transform_.quaRotLocal =
+			Quaternion::Mult(transform_.quaRotLocal,
+				Quaternion::AngleAxis(AsoUtility::Deg2RadF(100.0f), AsoUtility::AXIS_Y));
+	}
+
+	if (state_ != STATE::AVOIDANCE) return;
+
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::AVOIDANCE), false);
+
+	transform_.pos = MV1GetFramePosition(transform_.modelId, 2);
+
+	if (anim_->IsEnd()) {
+		transform_.quaRotLocal = lastQrot_;
+		state_ = STATE::IDLE;
+	}
+
 }
 
 void Player::CollisionReserve(void)
@@ -273,11 +335,17 @@ void Player::UpdateProcess(void)
 		st_ += (RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
 	}
 
+	//攻撃処理
+	ProcessAttack();
+
 	// 移動操作
 	ProcessMove();
 
 	// ジャンプ処理
 	ProcessJump();
+
+	//回避処理
+	ProcessAvoidance();
 
 	// 武器処理
 	if (weponBlade_){

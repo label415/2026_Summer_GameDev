@@ -11,6 +11,13 @@ public:
 	virtual ~WeponBase(void) override;
 	// XV
 	virtual void Update(void) override;
+
+	//XV“–‚½‚è”»’è“o˜^
+	virtual void UpdateCollider(void){}
+
+	//“–‚½‚è”»’è‰ğœ
+	virtual void ClearCollider(void) {}
+
 protected:
 	// ’Ç]æTransform
 	const Transform& followTransform_;
