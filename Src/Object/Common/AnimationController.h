@@ -49,10 +49,14 @@ public:
 	// 再生中のアニメーション情報を取得
 	const Animation& GetPlayAnim(void) const;
 
+	void SetRoot(std::wstring root);
+
 private:
 
 	// アニメーションするモデルのハンドルID
 	int modelId_;
+
+	int frnNo;
 
 	// 種類別のアニメーションデータ
 	std::map<int, Animation> animations_;

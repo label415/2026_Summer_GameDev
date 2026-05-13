@@ -110,6 +110,19 @@ private:
 	static constexpr VECTOR COL_CAPSULE_DOWN_JUMP_LOCAL_POS =
 	{ 0.0f, 80.0f, 0.0f };
 
+	// 衝突判定用カプセル上部球体(回避時)
+	static constexpr VECTOR COL_CAPSULE_TOP_AVOIDANCE_LOCAL_POS =
+	{ 0.0f, 80.0f, 0.0f };
+	// 衝突判定用カプセル下部球体(回避時)
+	static constexpr VECTOR COL_CAPSULE_DOWN_AVOIDANCE_LOCAL_POS =
+	{ 0.0f, 30.0f, 0.0f };
+	// 衝突判定用線分開始(回避時)
+	static constexpr VECTOR COL_LINE_AVOIDANCE_START_LOCAL_POS =
+	{ 0.0f, 40.0f, 0.0f };
+	// 衝突判定用線分終了(回避時)
+	static constexpr VECTOR COL_LINE_AVOIDANCE_END_LOCAL_POS =
+	{ 0.0f, -10.0f, 0.0f };
+
 	// 衝突判定用線分開始(ジャンプ時)
 	static constexpr VECTOR COL_LINE_JUMP_START_LOCAL_POS = { 0.0f, 130.0f, 0.0f };
 	// 衝突判定用線分終了(ジャンプ時)

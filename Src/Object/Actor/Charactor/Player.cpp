@@ -89,7 +89,7 @@ void Player::InitAnimation(void)
 	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK),
 		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK));
 	anim_->Add(static_cast<int>(ANIM_TYPE::AVOIDANCE),
-		50.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_AVOIDANCE));
+		80.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_AVOIDANCE));
 	anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 }
 
@@ -276,8 +276,11 @@ void Player::ProcessAvoidance(void)
 
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::AVOIDANCE), false);
+	anim_->SetRoot(L"mixamorig:Hips");
 
-	transform_.pos = MV1GetFramePosition(transform_.modelId, 2);
+	moveSpeed_ = 10.0f;
+
+	movePow_ = VScale(moveDir_, moveSpeed_);
 
 	if (anim_->IsEnd()) {
 		transform_.quaRotLocal = lastQrot_;
@@ -306,6 +309,25 @@ void Player::CollisionReserve(void)
 				ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE)));
 			colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_JUMP_LOCAL_POS);
 			colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_JUMP_LOCAL_POS);
+		}
+	}
+	else if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::AVOIDANCE))
+	{
+		// ジャンプ中は線分を伸ばす
+		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)
+		{
+			ColliderLine* colLine = dynamic_cast<ColliderLine*>(
+				ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE)));
+			colLine->SetLocalPosStart(COL_LINE_AVOIDANCE_START_LOCAL_POS);
+			colLine->SetLocalPosEnd(COL_LINE_AVOIDANCE_END_LOCAL_POS);
+		}
+		// ジャンプ中はカプセルを伸ばす
+		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE)) != 0)
+		{
+			ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(
+				ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE)));
+			colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_AVOIDANCE_LOCAL_POS);
+			colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_AVOIDANCE_LOCAL_POS);
 		}
 	}
 	else
