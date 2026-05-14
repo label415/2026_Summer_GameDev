@@ -39,6 +39,8 @@ public:
 	// エネミー生成
 	EnemyBase* Create(const EnemyBase::EnemyData& data);
 
+	const std::vector<EnemyBase*>& GetEnemys(void) const;
+
 private:
 	// エネミー
 	std::vector<EnemyBase*> enemys_;

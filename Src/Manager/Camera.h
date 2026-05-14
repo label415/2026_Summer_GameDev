@@ -45,6 +45,7 @@ public:
 		FIXED_POINT,
 		FREE,
 		FOLLOW,
+		TARGET_ROCKE,
 	};
 
 	// コンストラクタ
@@ -87,6 +88,9 @@ public:
 	// 追従対象の設定
 	void SetFollow(const Transform* follow);
 
+	//ロックオン対象の設定
+	void SetTargetFollow(const Transform* target);
+
 	// 衝突対象となるコライダを登録
     void AddHitCollider(const ColliderBase * hitCollider);
 
@@ -106,6 +110,9 @@ private:
 
 	// カメラが追従対象とするTransform
 	const Transform* followTransform_;
+
+	//ロックオン対象のTransform
+	const Transform* targetTransform_;
 
 	// 衝突時の押し戻し試行回数
 	static constexpr int CNT_TRY_COLLISION_CAMERA = 10;
@@ -137,6 +144,9 @@ private:
 	// 追従対象との位置同期を取る
 	void SyncFollow(void);
 
+	// ターゲットとの位置同期を取る
+	void SynLockOn(void);
+
 	// カメラ操作
 	void ProcessRot(bool isLimit);
 	void ProcessMove(void);
@@ -151,6 +161,7 @@ private:
 	void SetBeforeDrawFixedPoint(void);
 	void SetBeforeDrawFree(void);
 	void SetBeforeDrawFollow(void);
+	void SetBeforeDrawTargetLockeOn(void);
 
 	// 衝突判定
 	void Collision(void);

@@ -32,6 +32,9 @@ public:
 
 private:
 
+	//ロックオン対象範囲
+	static constexpr float MAX_LOCKON_DIFF = 5000.0f;
+
 	//スカイドーム
 	SkyDome* skydome_;
 
@@ -51,5 +54,8 @@ private:
 
 	//コライダー登録
 	void RegistCollider(void);
+
+	//自動ロックオン対象選別
+	void UpdateAutoLockOn(void);
 
 };

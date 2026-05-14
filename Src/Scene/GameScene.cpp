@@ -129,3 +129,30 @@ void GameScene::RegistCollider(void)
 	camera_->AddHitCollider(stageCollider);
 	stage_->AddHitCollider(cameraCollider);
 }
+
+void GameScene::UpdateAutoLockOn(void)
+{
+	Camera* camera = SceneManager::GetInstance().GetCamera();
+	auto& enemys = enemys_->GetEnemys();
+	auto& inp = InputManager::GetInstance();
+	EnemyBase* targetEnemy;
+	float diffMin = MAX_LOCKON_DIFF;
+
+	for (auto& enemy : enemys) {
+
+		if (enemy == nullptr)continue;
+
+		//プレイヤーと敵のベクトルの大きさ
+		VECTOR playerPos = player_->GetTransform().pos;
+		VECTOR enemyPos = enemy->GetTransform().pos;
+		float lockonDiff = VSize(VSub(enemyPos, playerPos));
+
+		if (lockonDiff >= diffMin)continue;
+		diffMin = lockonDiff;
+		targetEnemy = enemy;
+	}
+
+	if (targetEnemy != nullptr) {
+		camera->SetTargetFollow(&targetEnemy->GetTransform());
+	}
+}

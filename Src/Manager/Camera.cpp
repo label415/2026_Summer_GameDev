@@ -10,6 +10,7 @@
 Camera::Camera(void)
 	:
 	followTransform_(nullptr),
+	targetTransform_(nullptr),
 	mode_(MODE::NONE),
 	angles_(AsoUtility::VECTOR_ZERO),
 	rotY_(Quaternion::Identity()),
@@ -50,6 +51,10 @@ void Camera::SetBeforeDraw(void)
 	case Camera::MODE::FOLLOW:
 		SetBeforeDrawFollow();
 		break;
+		break;
+	case Camera::MODE::TARGET_ROCKE:
+		SetBeforeDrawTargetLockeOn();
+		break;
 	}
 
 	// カメラの設定(位置と注視点による制御)
@@ -75,6 +80,11 @@ void Camera::Release(void)
 void Camera::SetFollow(const Transform* follow)
 {
 	followTransform_ = follow;
+}
+
+void Camera::SetTargetFollow(const Transform* target)
+{
+	targetTransform_ = target;
 }
 
 void Camera::AddHitCollider(const ColliderBase* hitCollider)
@@ -156,6 +166,8 @@ void Camera::ChangeMode(MODE mode)
 		break;
 	case Camera::MODE::FOLLOW:
 		break;
+	case Camera::MODE::TARGET_ROCKE:
+		break;
 	}
 
 }
@@ -195,6 +207,17 @@ void Camera::SyncFollow(void)
 	// カメラ位置
 	localPos = transform_.quaRot.PosAxis(FOLLOW_CAMERA_LOCAL_POS);
 	transform_.pos = VAdd(pos, localPos);
+
+}
+
+void Camera::SynLockOn(void)
+{
+	//同期先の位置
+	VECTOR followPos = followTransform_->pos;
+	VECTOR TargetPos = targetTransform_->pos;
+
+
+
 
 }
 
@@ -301,6 +324,21 @@ void Camera::SetBeforeDrawFollow(void)
 			AsoUtility::Lerp(prePos_, transform_.pos, LERP_RATE_MOVE);
 	}
 
+}
+
+void Camera::SetBeforeDrawTargetLockeOn(void)
+{
+	// 追従対象との相対位置を同期
+	SynLockOn();
+
+	// 衝突判定
+	Collision();
+
+	// カメラ位置の補間
+	if (isCameraLope_) {
+		transform_.pos =
+			AsoUtility::Lerp(prePos_, transform_.pos, LERP_RATE_MOVE);
+	}
 }
 
 void Camera::Collision(void)

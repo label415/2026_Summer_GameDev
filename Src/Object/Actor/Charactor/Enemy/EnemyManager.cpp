@@ -127,3 +127,8 @@ EnemyBase* EnemyManager::Create(const EnemyBase::EnemyData& data)
 
 	return enemy;
 }
+
+const std::vector<EnemyBase*>& EnemyManager::GetEnemys(void) const
+{
+	return enemys_;
+}
