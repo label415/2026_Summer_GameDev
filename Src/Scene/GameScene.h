@@ -6,6 +6,7 @@ class Stage;
 class Player;
 class Camera;
 class EnemyManager;
+class EnemyBase;
 
 class GameScene : public SceneBase
 {
@@ -46,6 +47,9 @@ private:
 
 	//エネミー
 	EnemyManager* enemys_;
+
+	//ロックオン対象のエネミー
+	EnemyBase* targetEnemy_;
 
 	//カメラ
 	Camera* camera_;

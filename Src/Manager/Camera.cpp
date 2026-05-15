@@ -172,6 +172,11 @@ void Camera::ChangeMode(MODE mode)
 
 }
 
+const Camera::MODE& Camera::GetCameraMode(void) const
+{
+	return mode_;
+}
+
 void Camera::SetDefault(void)
 {
 
@@ -216,8 +221,19 @@ void Camera::SynLockOn(void)
 	VECTOR followPos = followTransform_->pos;
 	VECTOR TargetPos = targetTransform_->pos;
 
+	// Yé≤
+	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
 
+	// Yé≤ + Xé≤
+	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
+	VECTOR localPos;
+	// íçéãì_
+	localPos = transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS);
+	targetPos_ = VAdd(TargetPos, localPos);
+	// ÉJÉÅÉâà íu
+	localPos = transform_.quaRot.PosAxis(FOLLOW_CAMERA_LOCAL_POS);
+	transform_.pos = VAdd(followPos, localPos);
 
 }
 

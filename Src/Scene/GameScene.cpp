@@ -37,6 +37,7 @@ void GameScene::Init(void)
 
 	enemys_ = new EnemyManager();
 	enemys_->Init();
+	targetEnemy_ = nullptr;
 
 	camera_->ChangeMode(Camera::MODE::FOLLOW);
 
@@ -69,6 +70,8 @@ void GameScene::Update(void)
 	player_->Update();
 
 	enemys_->Update();
+
+	UpdateAutoLockOn();
 }
 
 void GameScene::Draw(void)
@@ -108,6 +111,7 @@ void GameScene::Release(void)
 
 	enemys_->Release();
 	delete enemys_;
+	delete targetEnemy_;
 
 	// シャドウマップの削除
 	DeleteShadowMap(ShadowMapHandle);
@@ -135,24 +139,34 @@ void GameScene::UpdateAutoLockOn(void)
 	Camera* camera = SceneManager::GetInstance().GetCamera();
 	auto& enemys = enemys_->GetEnemys();
 	auto& inp = InputManager::GetInstance();
-	EnemyBase* targetEnemy;
 	float diffMin = MAX_LOCKON_DIFF;
 
-	for (auto& enemy : enemys) {
+	bool isLockOn = inp.IsTrgDown(KEY_INPUT_L);
+	bool isNextUp = inp.IsTrgDown(KEY_INPUT_UP);
+	bool isNextDown = inp.IsTrgDown(KEY_INPUT_DOWN);
+	bool isNextLeft = inp.IsTrgDown(KEY_INPUT_LEFT);
+	bool isNextRight = inp.IsTrgDown(KEY_INPUT_RIGHT);
 
-		if (enemy == nullptr)continue;
+	if (isLockOn) {
+		if (camera_->GetCameraMode() == Camera::MODE::FOLLOW) {
+			for (auto& enemy : enemys) {
 
-		//プレイヤーと敵のベクトルの大きさ
-		VECTOR playerPos = player_->GetTransform().pos;
-		VECTOR enemyPos = enemy->GetTransform().pos;
-		float lockonDiff = VSize(VSub(enemyPos, playerPos));
+				if (enemy == nullptr)continue;
 
-		if (lockonDiff >= diffMin)continue;
-		diffMin = lockonDiff;
-		targetEnemy = enemy;
-	}
+				//プレイヤーと敵のベクトルの大きさ
+				VECTOR playerPos = player_->GetTransform().pos;
+				VECTOR enemyPos = enemy->GetTransform().pos;
+				float lockonDiff = VSize(VSub(enemyPos, playerPos));
 
-	if (targetEnemy != nullptr) {
-		camera->SetTargetFollow(&targetEnemy->GetTransform());
+				if (lockonDiff >= diffMin)continue;
+				diffMin = lockonDiff;
+				targetEnemy_ = enemy;
+				camera_->ChangeMode(Camera::MODE::TARGET_ROCKE);
+				camera->SetTargetFollow(&targetEnemy_->GetTransform());
+			}
+		}
+		else if (camera_->GetCameraMode() == Camera::MODE::TARGET_ROCKE) {
+			camera_->ChangeMode(Camera::MODE::FOLLOW);
+		}
 	}
 }

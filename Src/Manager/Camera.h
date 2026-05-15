@@ -85,6 +85,9 @@ public:
 	// カメラモードの変更
 	void ChangeMode(MODE mode);
 
+	//カメラモードの取得
+	const MODE& GetCameraMode(void)const;
+
 	// 追従対象の設定
 	void SetFollow(const Transform* follow);
 
