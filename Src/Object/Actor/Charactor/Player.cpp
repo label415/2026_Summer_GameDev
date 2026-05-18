@@ -38,6 +38,11 @@ void Player::Release(void)
 	weponBlade_ = nullptr;
 }
 
+void Player::SetTargetTransform(const Transform* transform)
+{
+	targetTrans_ = transform;
+}
+
 void Player::InitLoad(void)
 {
 	// 基底クラスのリソースロード
@@ -167,9 +172,22 @@ void Player::ProcessMove(void)
 				}
 			}
 		}
-	
-		Quaternion cameraRot = scnMng_.GetCamera()->GetQuaRotY();
-		moveDir_ = Quaternion::PosAxis(cameraRot, dir);
+		if (targetTrans_ != nullptr)
+		{
+			VECTOR toTarget = VSub(targetTrans_->pos, transform_.pos);
+			toTarget.y = 0.0f;
+			VECTOR targetDir = VNorm(toTarget);
+			float targetAngleY = atan2f(targetDir.x, targetDir.z);
+			Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
+			transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetRot, 0.8f);
+			moveDir_ = Quaternion::PosAxis(targetRot, dir);
+		}
+		else
+		{
+			// 通常時：カメラ方向を基準に移動
+			Quaternion cameraRot = scnMng_.GetCamera()->GetQuaRotY();
+			moveDir_ = Quaternion::PosAxis(cameraRot, dir);
+		}
 		movePow_ = VScale(moveDir_, moveSpeed_);
 	}
 	else {

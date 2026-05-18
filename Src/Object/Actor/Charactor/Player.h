@@ -66,6 +66,10 @@ public:
 	// 解放
 	void Release(void)override;
 
+	//ロックオン対象の設定
+	void SetTargetTransform(const Transform* transform);
+
+
 protected:
 
 	//状態
@@ -93,6 +97,9 @@ protected:
 private:
 
 	WeponBlade* weponBlade_;	
+
+	//ロックオン対象Transform
+	const Transform* targetTrans_;
 
 	//スタミナ
 	float st_;

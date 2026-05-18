@@ -95,6 +95,18 @@ void GameScene::Draw(void)
 	stage_->Draw();
 	// 描画に使用するシャドウマップの設定を解除
 	SetUseShadowMap(0, -1);
+
+	if(targetEnemy_ != nullptr)
+	{
+		Transform enemyTransform = targetEnemy_->GetTransform();
+		enemyTransform.pos.y += 100.0f;
+		DrawSphere3D(enemyTransform.pos,
+			20.0f,
+			10,
+			0xfff000,
+			0xfff000,
+			true);
+	}
 }
 
 void GameScene::Release(void)
@@ -139,7 +151,9 @@ void GameScene::UpdateAutoLockOn(void)
 	Camera* camera = SceneManager::GetInstance().GetCamera();
 	auto& enemys = enemys_->GetEnemys();
 	auto& inp = InputManager::GetInstance();
+	VECTOR playerPos = player_->GetTransform().pos;
 	float diffMin = MAX_LOCKON_DIFF;
+	bool isChanger = false;
 
 	bool isLockOn = inp.IsTrgDown(KEY_INPUT_L);
 	bool isNextUp = inp.IsTrgDown(KEY_INPUT_UP);
@@ -147,26 +161,145 @@ void GameScene::UpdateAutoLockOn(void)
 	bool isNextLeft = inp.IsTrgDown(KEY_INPUT_LEFT);
 	bool isNextRight = inp.IsTrgDown(KEY_INPUT_RIGHT);
 
-	if (isLockOn) {
-		if (camera_->GetCameraMode() == Camera::MODE::FOLLOW) {
-			for (auto& enemy : enemys) {
+	if(camera_->GetCameraMode() == Camera::MODE::TARGET_ROCKE){
 
-				if (enemy == nullptr)continue;
+		EnemyBase* lastTagerEnemy = targetEnemy_;
+
+		VECTOR targetPos = targetEnemy_->GetTransform().pos;
+		float diff = VSize(VSub(targetPos, playerPos));
+
+		if (diff >= MAX_LOCKON_DIFF || isLockOn){
+			camera_->ChangeMode(Camera::MODE::FOLLOW);
+			targetEnemy_ = nullptr;
+			isChanger = true;
+			player_->SetTargetTransform(nullptr);
+		}
+
+		if (isNextUp) {
+			diffMin = 0.0f;
+			for (auto& enemy : enemys) {
+				if (enemy == nullptr
+					|| lastTagerEnemy == enemy)continue;
+
+				VECTOR enemyPos = enemy->GetTransform().pos;
 
 				//プレイヤーと敵のベクトルの大きさ
-				VECTOR playerPos = player_->GetTransform().pos;
-				VECTOR enemyPos = enemy->GetTransform().pos;
 				float lockonDiff = VSize(VSub(enemyPos, playerPos));
+				diffMin = VSize(VSub(enemyPos, playerPos));
+				if (lockonDiff <= diffMin)continue;
 
-				if (lockonDiff >= diffMin)continue;
+				float dot = VDot(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+				float angle = acosf(dot);
+				float a = AsoUtility::Deg2RadF(30.0f);
+				if (angle >= a)continue;
+
+				VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+
+				if (cross.y < 0.0f)continue;
+
 				diffMin = lockonDiff;
 				targetEnemy_ = enemy;
-				camera_->ChangeMode(Camera::MODE::TARGET_ROCKE);
 				camera->SetTargetFollow(&targetEnemy_->GetTransform());
+				player_->SetTargetTransform(&targetEnemy_->GetTransform());
 			}
 		}
-		else if (camera_->GetCameraMode() == Camera::MODE::TARGET_ROCKE) {
-			camera_->ChangeMode(Camera::MODE::FOLLOW);
+
+		if (isNextDown) {
+			for (auto& enemy : enemys) {
+				if (enemy == nullptr
+					|| lastTagerEnemy == enemy)continue;
+
+				VECTOR enemyPos = enemy->GetTransform().pos;
+
+				//プレイヤーと敵のベクトルの大きさ
+				float lockonDiff = VSize(VSub(enemyPos, playerPos));
+				if (lockonDiff >= diffMin)continue;
+
+				float dot = VDot(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+				float angle = acosf(dot);
+				float a = AsoUtility::Deg2RadF(20.0f);
+				if (angle >= a)continue;
+
+				diffMin = lockonDiff;
+				targetEnemy_ = enemy;
+				camera->SetTargetFollow(&targetEnemy_->GetTransform());
+				player_->SetTargetTransform(&targetEnemy_->GetTransform());
+			}
+		}
+
+		if (isNextLeft) {
+			for (auto& enemy : enemys) {
+
+				if (enemy == nullptr
+					|| lastTagerEnemy == enemy)continue;
+
+				VECTOR enemyPos = enemy->GetTransform().pos;
+
+				//プレイヤーと敵のベクトルの大きさ
+				float lockonDiff = VSize(VSub(enemyPos, playerPos));
+				if (lockonDiff >= diffMin)continue;
+
+				float dot = VDot(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+				float angle = acosf(dot);
+				float a = AsoUtility::Deg2RadF(30.0f);
+				if (angle >= a)continue;
+
+				VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+
+				if (cross.y > 0.0f)continue;
+
+				diffMin = lockonDiff;
+				targetEnemy_ = enemy;
+				camera->SetTargetFollow(&targetEnemy_->GetTransform());
+				player_->SetTargetTransform(&targetEnemy_->GetTransform());
+			}
+		}
+
+		if (isNextRight) {
+			for (auto& enemy : enemys) {
+				if (enemy == nullptr
+					|| lastTagerEnemy == enemy)continue;
+
+				VECTOR enemyPos = enemy->GetTransform().pos;
+
+				//プレイヤーと敵のベクトルの大きさ
+				float lockonDiff = VSize(VSub(enemyPos, playerPos));
+				if (lockonDiff >= diffMin)continue;
+
+				float dot = VDot(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+				float angle = acosf(dot);
+				float a = AsoUtility::Deg2RadF(30.0f);
+				if (angle >= a)continue;
+
+				VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+
+				if (cross.y < 0.0f)continue;
+
+				diffMin = lockonDiff;
+				targetEnemy_ = enemy;
+				camera->SetTargetFollow(&targetEnemy_->GetTransform());
+				player_->SetTargetTransform(&targetEnemy_->GetTransform());
+			}
+		}
+	}
+
+	if (camera_->GetCameraMode() == Camera::MODE::FOLLOW
+		&& isChanger == false) {
+		if (!isLockOn)return;
+		for (auto& enemy : enemys) {
+
+			if (enemy == nullptr)continue;
+
+			//プレイヤーと敵のベクトルの大きさ
+			VECTOR enemyPos = enemy->GetTransform().pos;
+			float lockonDiff = VSize(VSub(enemyPos, playerPos));
+
+			if (lockonDiff >= diffMin)continue;
+			diffMin = lockonDiff;
+			targetEnemy_ = enemy;
+			camera_->ChangeMode(Camera::MODE::TARGET_ROCKE);
+			camera->SetTargetFollow(&targetEnemy_->GetTransform());
+			player_->SetTargetTransform(&targetEnemy_->GetTransform());
 		}
 	}
 }

@@ -221,18 +221,22 @@ void Camera::SynLockOn(void)
 	VECTOR followPos = followTransform_->pos;
 	VECTOR TargetPos = targetTransform_->pos;
 
+	VECTOR toTarget = VSub(TargetPos, followPos);
+	float angleY = atan2f(toTarget.x, toTarget.z);
+	angles_.y = angleY;
+
 	// Yé≤
-	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
+	rotY_ = Quaternion::AngleAxis(angleY, AsoUtility::AXIS_Y);
 
 	// Yé≤ + Xé≤
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
 	VECTOR localPos;
 	// íçéãì_
-	localPos = transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS);
+	localPos = transform_.quaRot.PosAxis(LOCKON_TARGET_LOCAL_POS);
 	targetPos_ = VAdd(TargetPos, localPos);
 	// ÉJÉÅÉâà íu
-	localPos = transform_.quaRot.PosAxis(FOLLOW_CAMERA_LOCAL_POS);
+	localPos = transform_.quaRot.PosAxis(LOCKON_CAMERA_LOCAL_POS);
 	transform_.pos = VAdd(followPos, localPos);
 
 }

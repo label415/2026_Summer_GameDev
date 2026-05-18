@@ -34,7 +34,7 @@ public:
 private:
 
 	//ロックオン対象範囲
-	static constexpr float MAX_LOCKON_DIFF = 5000.0f;
+	static constexpr float MAX_LOCKON_DIFF = 1000.0f;
 
 	//スカイドーム
 	SkyDome* skydome_;
