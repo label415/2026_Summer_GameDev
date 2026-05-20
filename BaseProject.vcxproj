@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyDragon.cpp" />
     <ClCompile Include="Src\Scene\Loading\Loading.cpp" />
     <ClCompile Include="Src\Manager\FontManager.cpp" />
     <ClCompile Include="Src\Utility\ModelFrameUtility.cpp" />
@@ -61,6 +62,7 @@
     <ClCompile Include="Src\Object\Actor\Wepon\WeponBlade.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyDragon.h" />
     <ClInclude Include="Src\Scene\Loading\Loading.h" />
     <ClInclude Include="Src\Manager\FontManager.h" />
     <ClInclude Include="Src\Utility\ModelFrameUtility.h" />

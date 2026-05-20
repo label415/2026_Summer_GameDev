@@ -87,6 +87,10 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::MODEL, PATH_MDL + L"Enemy/Robot/Robot.mv1");
 	resourcesMap_.emplace(SRC::ENEMY_ROBOT, res);
 
+	//エネミードラゴン
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Enemy/Dragon/Dragon.mv1");
+	resourcesMap_.emplace(SRC::ENEMY_DRAGON, res);
+
 	//エネミーロボット円錐モデル
 	res = new RES(RES_T::MODEL, PATH_MDL + L"Enemy/Robot/Cone.mv1");
 	resourcesMap_.emplace(SRC::VIEW_RANGE, res);
@@ -94,10 +98,6 @@ void ResourceManager::Init(void)
 	//エネミーロボット円錐モデル
 	res = new RES(RES_T::IMG, PATH_IMG + L"Surprise.png");
 	resourcesMap_.emplace(SRC::UI_SURPRISE, res);
-
-	//エネミーロボット
-	res = new RES(RES_T::MODEL, PATH_MDL + L"Wepon/KeyBlade1.mv1");
-	resourcesMap_.emplace(SRC::WEAPON_BLADE, res);
 
 
 	//フォント

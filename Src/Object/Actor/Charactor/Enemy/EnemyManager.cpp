@@ -5,6 +5,7 @@
 #include "../../../Common/Collider/ColliderBase.h"
 #include "EnemyRat.h"
 #include "EnemyRobot.h"
+#include "EnemyDragon.h"
 #include "EnemyManager.h"
 
 EnemyManager::EnemyManager(void)
@@ -23,10 +24,10 @@ void EnemyManager::Init(void)
 
 void EnemyManager::Update(void)
 {
-	/*for (auto& enemy : enemys_)
+	for (auto& enemy : enemys_)
 	{
 		enemy->Update();
-	}*/
+	}
 }
 
 void EnemyManager::Draw(void)
@@ -109,10 +110,13 @@ EnemyBase* EnemyManager::Create(const EnemyBase::EnemyData& data)
 	switch (data.type)
 	{
 	case EnemyBase::TYPE::RAT:
-		enemy = new EnemyRat(data);
+		/*enemy = new EnemyRat(data);*/
 		break;
 	case EnemyBase::TYPE::ROBOT:
-		enemy = new EnemyRobot(data);
+		/*enemy = new EnemyRobot(data);*/
+		break;
+	case EnemyBase::TYPE::DRAGON:
+		enemy = new EnemyDragon(data);
 		break;
 	default:
 		break;

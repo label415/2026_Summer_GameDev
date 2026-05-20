@@ -12,6 +12,7 @@ public:
     {
         RAT,
         ROBOT,
+        DRAGON,
     };
 
     // エネミーデータ
