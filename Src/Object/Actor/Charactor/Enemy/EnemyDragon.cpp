@@ -69,12 +69,12 @@ void EnemyDragon::InitCollider(void)
 		static_cast<int>(ColliderBase::SHAPE::LINE), colLine);
 
 	// 主に壁や木などの衝突で仕様するカプセルコライダ
-	ColliderCapsule* colCapsule = new ColliderCapsule(
+	ColliderCapsule* colCapsule1 = new ColliderCapsule(
 		ColliderBase::TAG::ENEMY, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS,
 		COL_CAPSULE_DOWN_LOCAL_POS, COL_CAPSULE_RADIUS);
 	ownColliders_.emplace(
-		static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule);
+		static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule1);
 }
 
 void EnemyDragon::InitAnimation(void)
