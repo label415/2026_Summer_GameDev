@@ -315,18 +315,30 @@ void Player::CollisionReserve(void)
 		// ジャンプ中は線分を伸ばす
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)
 		{
-			ColliderLine* colLine = dynamic_cast<ColliderLine*>(
-				ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE)));
-			colLine->SetLocalPosStart(COL_LINE_JUMP_START_LOCAL_POS);
-			colLine->SetLocalPosEnd(COL_LINE_JUMP_END_LOCAL_POS);
+			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE));
+			if (!vec.empty())
+			{
+				ColliderLine* colLine = dynamic_cast<ColliderLine*>(vec.front());
+				if (colLine)
+				{
+					colLine->SetLocalPosStart(COL_LINE_JUMP_START_LOCAL_POS);
+					colLine->SetLocalPosEnd(COL_LINE_JUMP_END_LOCAL_POS);
+				}
+			}
 		}
 		// ジャンプ中はカプセルを伸ばす
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE)) != 0)
 		{
-			ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(
-				ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE)));
-			colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_JUMP_LOCAL_POS);
-			colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_JUMP_LOCAL_POS);
+			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+			if (!vec.empty())
+			{
+				ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(vec.front());
+				if (colCapsule)
+				{
+					colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_JUMP_LOCAL_POS);
+					colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_JUMP_LOCAL_POS);
+				}
+			}
 		}
 	}
 	else if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::AVOIDANCE))

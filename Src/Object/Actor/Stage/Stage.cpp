@@ -21,9 +21,13 @@ void Stage::Draw(void)
 {
 #ifdef _DEBUG
 	// 所有しているコライダの描画
-	for (const auto& own : ownColliders_)
-	{
-		own.second->Draw();
+	for (const auto& own : ownColliders_){
+		for (const auto& collider : own.second){
+			if (collider)
+			{
+				collider->Draw();
+			}
+		}
 	}
 #endif // _DEBUG
 
@@ -88,39 +92,42 @@ void Stage::Collision(void)
 
 	for (const auto& hitCol : hitColliders_)
 	{
-		// モデル以外は処理を飛ばす
-		if (hitCol->GetShape() != ColliderBase::SHAPE::SPHERE) continue;
-
-		//派生クラスへキャスト
-		const ColliderSphere* colliderSphere =
-			dynamic_cast<const ColliderSphere*>(hitCol);
-
-		if (colliderSphere == nullptr)continue;
-
-		auto hits = MV1CollCheck_Sphere(
-			transform_.modelId,
-			-1,
-			colliderSphere->GetPos(),
-			colliderSphere->GetRadius());
-
-		for (int i = 0; i < hits.HitNum; i++)
+		for(const auto& i : hitCol)
 		{
-			const auto& hit = hits.Dim[i];
+			// モデル以外は処理を飛ばす
+			if (i->GetShape() != ColliderBase::SHAPE::SPHERE) continue;
 
-			for (const std::wstring& name : TARGET_FRAME_NAMES)
+			//派生クラスへキャスト
+			const ColliderSphere* colliderSphere =
+				dynamic_cast<const ColliderSphere*>(i);
+
+			if (colliderSphere == nullptr)continue;
+
+			auto hits = MV1CollCheck_Sphere(
+				transform_.modelId,
+				-1,
+				colliderSphere->GetPos(),
+				colliderSphere->GetRadius());
+
+			for (int i = 0; i < hits.HitNum; i++)
 			{
-				RateFrameIds(name);
+				const auto& hit = hits.Dim[i];
+
+				for (const std::wstring& name : TARGET_FRAME_NAMES)
+				{
+					RateFrameIds(name);
+				}
+
+				if (IsRateFrame(hit.FrameIndex))continue;
+
+				MV1SetFrameOpacityRate(transform_.modelId, hit.FrameIndex, 0.3f);
+
+				frameOpacityRate_.emplace_back(hit.FrameIndex);
+
 			}
-
-			if (IsRateFrame(hit.FrameIndex))continue;
-
-			MV1SetFrameOpacityRate(transform_.modelId, hit.FrameIndex, 0.3f);
-
-			frameOpacityRate_.emplace_back(hit.FrameIndex);
-
+			// 検出した地面ポリゴン情報の後始末
+			MV1CollResultPolyDimTerminate(hits);
 		}
-		// 検出した地面ポリゴン情報の後始末
-		MV1CollResultPolyDimTerminate(hits);
 	}
 }
 

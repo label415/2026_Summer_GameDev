@@ -33,16 +33,16 @@ public:
 	const Transform& GetTransform(void) const;
 
 	// 自身の衝突情報取得
-	const std::map<int, ColliderBase*>& GetOwnColliders(void) const
+	const std::map<int, std::vector<ColliderBase*>>& GetOwnColliders(void) const
 	{
 		return ownColliders_;
 	}
 
 	// 特定の自身の衝突情報取得
-	const ColliderBase* GetOwnCollider(int key) const;
+	const std::vector<ColliderBase*> GetOwnCollider(int key) const;
 
 	// 衝突対象となるコライダを登録
-	void AddHitCollider(const ColliderBase* hitCollider);
+	void AddHitCollider(const std::vector<ColliderBase*> hitCollider);
 	// 衝突対象となるコライダをクリア
 	void ClearHitCollider(void);
 
@@ -58,10 +58,10 @@ protected:
 	Transform transform_;
 
 	// 自身の衝突情報
-	std::map<int, ColliderBase*> ownColliders_;
+	std::map<int, std::vector<ColliderBase*>> ownColliders_;
 
 	// 衝突相手の情報
-	std::vector<const ColliderBase*> hitColliders_;
+	std::vector<const std::vector<ColliderBase*>> hitColliders_;
 
 	// リソースロード
 	virtual void InitLoad(void) = 0;

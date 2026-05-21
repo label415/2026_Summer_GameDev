@@ -87,7 +87,7 @@ void Camera::SetTargetFollow(const Transform* target)
 	targetTransform_ = target;
 }
 
-void Camera::AddHitCollider(const ColliderBase* hitCollider)
+void Camera::AddHitCollider(const std::vector<ColliderBase*> hitCollider)
 {
 	for (const auto& c : hitColliders_)
 	{

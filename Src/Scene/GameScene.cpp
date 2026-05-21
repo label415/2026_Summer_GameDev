@@ -132,11 +132,11 @@ void GameScene::Release(void)
 void GameScene::RegistCollider(void)
 {
 	// ステージモデルのコライダーをプレイヤーに登録
-	const ColliderBase* stageCollider =
+	const std::vector<ColliderBase*> stageCollider =
 		stage_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::MODEL));
-	const ColliderBase* PlayerCollider =
+	const std::vector<ColliderBase*> PlayerCollider =
 		player_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-	const ColliderBase* cameraCollider =
+	const std::vector<ColliderBase*> cameraCollider =
 		camera_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
 
 	player_->AddHitCollider(stageCollider);

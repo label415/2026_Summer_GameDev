@@ -41,7 +41,9 @@ void ActorBase::Draw(void)
 	// 所有しているコライダの描画
 	for (const auto& own : ownColliders_)
 	{
-		own.second->Draw();
+		for (const auto& collider : own.second) {
+			collider->Draw();
+		}
 	}
 #endif // _DEBUG
 
@@ -55,11 +57,13 @@ void ActorBase::Release(void)
 {
 	transform_.Release();
 
-	// 自身のコライダ解放
-	for (auto& own : ownColliders_)
+	for (const auto& own : ownColliders_)
 	{
-		delete own.second;
+		for (const auto& collider : own.second) {
+			delete collider;
+		}
 	}
+	ownColliders_.clear();
 }
 
 const Transform& ActorBase::GetTransform(void) const
@@ -67,16 +71,16 @@ const Transform& ActorBase::GetTransform(void) const
 	return transform_;
 }
 
-const ColliderBase* ActorBase::GetOwnCollider(int key) const
+const std::vector<ColliderBase*> ActorBase::GetOwnCollider(int key) const
 {
 	if (ownColliders_.count(key) == 0)
 	{
-		return nullptr;
+		return std::vector<ColliderBase*>();
 	}
 	return ownColliders_.at(key);
 }
 
-void ActorBase::AddHitCollider(const ColliderBase* hitCollider)
+void ActorBase::AddHitCollider(const std::vector<ColliderBase*> hitCollider)
 {
 	for (const auto& c : hitColliders_)
 	{

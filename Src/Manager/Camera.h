@@ -99,7 +99,7 @@ public:
 	void SetTargetFollow(const Transform* target);
 
 	// 衝突対象となるコライダを登録
-    void AddHitCollider(const ColliderBase* hitCollider);
+    void AddHitCollider(const std::vector<ColliderBase*> hitCollider);
 
 protected:
 	// リソースロード
