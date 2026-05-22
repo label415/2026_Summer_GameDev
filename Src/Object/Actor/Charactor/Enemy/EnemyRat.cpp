@@ -93,22 +93,33 @@ void EnemyRat::UpdateProcessPost(void)
 
 void EnemyRat::CollisionReserve(void)
 {
-
 	// í èÌéûÇÃê¸ï™Ç…ñﬂÇ∑
 	if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)
 	{
-		ColliderLine* colLine = dynamic_cast<ColliderLine*>(
-			ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE)));
-		colLine->SetLocalPosStart(COL_LINE_START_LOCAL_POS);
-		colLine->SetLocalPosEnd(COL_LINE_END_LOCAL_POS);
+		const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE));
+		if (!vec.empty())
+		{
+			ColliderLine* colLine = dynamic_cast<ColliderLine*>(vec.front());
+			if (colLine)
+			{
+				colLine->SetLocalPosStart(COL_LINE_START_LOCAL_POS);
+				colLine->SetLocalPosEnd(COL_LINE_END_LOCAL_POS);
+			}
+		}
 	}
 	// í èÌéûÇÃÉJÉvÉZÉãÇ…ñﬂÇ∑
 	if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE)) != 0)
 	{
-		ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(
-			ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE)));
-		colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
-		colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
+		const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+		if (!vec.empty())
+		{
+			ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(vec.front());
+			if (colCapsule)
+			{
+				colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
+				colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
+			}
+		}
 	}
 }
 

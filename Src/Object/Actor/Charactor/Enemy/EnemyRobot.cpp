@@ -338,13 +338,16 @@ void EnemyRobot::ChangeStateAttackShoot(void)
 
 	for (const auto& hitCol : hitColliders_)
 	{
-		// プレイヤーのカプセル以外は処理を飛ばす
-		if (hitCol->GetTag() != ColliderBase::TAG::PLAYER) continue;
-		//派生クラスへキャスト
-		const ColliderCapsule* colliderCapsule =
-			dynamic_cast<const ColliderCapsule*>(hitCol);
-		VECTOR diff = VSub(colliderCapsule->GetFollow()->pos, transform_.pos);
-		attackShere.moveDir_ = VNorm(diff);
+		for (const auto& i : hitCol)
+		{
+			// プレイヤーのカプセル以外は処理を飛ばす
+			if (i->GetTag() != ColliderBase::TAG::PLAYER) continue;
+			//派生クラスへキャスト
+			const ColliderCapsule* colliderCapsule =
+				dynamic_cast<const ColliderCapsule*>(i);
+			VECTOR diff = VSub(colliderCapsule->GetFollow()->pos, transform_.pos);
+			attackShere.moveDir_ = VNorm(diff);
+		}
 	}
 	attackShere.isAlive = true;
 
@@ -462,18 +465,21 @@ void EnemyRobot::UpdateChase(void)
 
 	for (const auto& hitCol : hitColliders_)
 	{
-		// プレイヤーのカプセル以外は処理を飛ばす
-		if (hitCol->GetTag() != ColliderBase::TAG::PLAYER) continue;
-		//派生クラスへキャスト
-		const ColliderCapsule* colliderCapsule =
-			dynamic_cast<const ColliderCapsule*>(hitCol);
+		for (const auto& i : hitCol)
+		{
+			// プレイヤーのカプセル以外は処理を飛ばす
+			if (i->GetTag() != ColliderBase::TAG::PLAYER) continue;
+			//派生クラスへキャスト
+			const ColliderCapsule* colliderCapsule =
+				dynamic_cast<const ColliderCapsule*>(i);
 
-		VECTOR diff = VSub(colliderCapsule->GetFollow()->pos, transform_.pos);
+			VECTOR diff = VSub(colliderCapsule->GetFollow()->pos, transform_.pos);
 
-		moveDir_ = VNorm(diff);
+			moveDir_ = VNorm(diff);
 
-		if (VSize(diff) <= VIEW_ANGLE_ATTACK) {
-			ChangeState(STATE::ATTACK_KICK);
+			if (VSize(diff) <= VIEW_ANGLE_ATTACK) {
+				ChangeState(STATE::ATTACK_KICK);
+			}
 		}
 	}
 
@@ -495,17 +501,20 @@ void EnemyRobot::UpdateAttackKick(void)
 
 	for (const auto& hitCol : hitColliders_)
 	{
-		// プレイヤーのカプセル以外は処理を飛ばす
-		if (hitCol->GetTag() != ColliderBase::TAG::PLAYER) continue;
-		//派生クラスへキャスト
-		const ColliderCapsule* colliderCapsule =
-			dynamic_cast<const ColliderCapsule*>(hitCol);
-		VECTOR diff = VSub(colliderCapsule->GetFollow()->pos, transform_.pos);
-		moveDir_ = VNorm(diff);
+		for (const auto& i : hitCol)
+		{
+			// プレイヤーのカプセル以外は処理を飛ばす
+			if (i->GetTag() != ColliderBase::TAG::PLAYER) continue;
+			//派生クラスへキャスト
+			const ColliderCapsule* colliderCapsule =
+				dynamic_cast<const ColliderCapsule*>(i);
+			VECTOR diff = VSub(colliderCapsule->GetFollow()->pos, transform_.pos);
+			moveDir_ = VNorm(diff);
 
-		if (VSize(diff) > VIEW_ANGLE_ATTACK
-			&& anim_->IsEnd()) {
-			ChangeState(STATE::CHASE);
+			if (VSize(diff) > VIEW_ANGLE_ATTACK
+				&& anim_->IsEnd()) {
+				ChangeState(STATE::CHASE);
+			}
 		}
 	}
 
@@ -589,29 +598,38 @@ bool EnemyRobot::InSearchConeModel(void)
 
 	if (ownColliders_.count(modelType) == 0)return ret;
 
-	// モデルコライダ情報  
-	ColliderModel* colliderModel =
-		dynamic_cast<ColliderModel*>(ownColliders_.at(modelType));
 
-	if (colliderModel == nullptr)return ret;
-
-	MV1RefreshCollInfo(colliderModel->GetFollow()->modelId);
-
-	for (const auto& hitCol : hitColliders_)
+	const auto& vecs = ownColliders_.at(modelType);
+	for (const auto& vec : vecs)
 	{
-		// プレイヤーのカプセル以外は処理を飛ばす
-		if (hitCol->GetTag() != ColliderBase::TAG::PLAYER) continue;
+		// モデルコライダ情報  
+		ColliderModel* colliderModel =
+			dynamic_cast<ColliderModel*>(vec);
 
-		//派生クラスへキャスト
-		const ColliderCapsule* colliderCapsule =
-			dynamic_cast<const ColliderCapsule*>(hitCol);
+		if (colliderModel == nullptr)return ret;
 
-		if (colliderCapsule == nullptr)continue;
+		MV1RefreshCollInfo(colliderModel->GetFollow()->modelId);
 
-		if (colliderCapsule->IsHit(colliderModel, false, false))
+		for (const auto& hitCol : hitColliders_)
 		{
-			return true;
+			for (const auto& i : hitCol)
+			{
+				// プレイヤーのカプセル以外は処理を飛ばす
+				if (i->GetTag() != ColliderBase::TAG::PLAYER) continue;
+
+				//派生クラスへキャスト
+				const ColliderCapsule* colliderCapsule =
+					dynamic_cast<const ColliderCapsule*>(i);
+
+				if (colliderCapsule == nullptr)continue;
+
+				if (colliderCapsule->IsHit(colliderModel, false, false))
+				{
+					return true;
+				}
+			}
 		}
 	}
+
 	return ret;
 }

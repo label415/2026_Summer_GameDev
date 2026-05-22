@@ -123,70 +123,88 @@ void CharactorBase::CollisionGravity(void)
 	// 線分コライダが無ければ処理を抜ける
 	if (ownColliders_.count(lineType) == 0) return;
 
-	// 線分コライダ情報
-	ColliderLine* colliderLine_ =
-		dynamic_cast<ColliderLine*>(ownColliders_.at(lineType));
 
-	if (colliderLine_ == nullptr) return;
-
-	// 登録されている衝突物を全てチェック
-	for (const auto& hitCol : hitColliders_)
+	const auto& vecs = ownColliders_.at(lineType);
+	for (const auto& vec : vecs)
 	{
-		// ステージ以外は処理を飛ばす
-		if (hitCol->GetTag() != ColliderBase::TAG::STAGE) continue;
+		// 線分コライダ情報
+		ColliderLine* colliderLine_ =
+			dynamic_cast<ColliderLine*>(vec);
 
-		// 派生クラスへキャスト
-		const ColliderModel* colliderModel =
-			dynamic_cast<const ColliderModel*>(hitCol);
+		if (colliderLine_ == nullptr) return;
 
-		if (colliderModel == nullptr) continue;
-
-		bool isHit = colliderLine_->PushBackUp(colliderModel, transform_, 2.0f, true, false);
-
-		if (isHit)
+		// 登録されている衝突物を全てチェック
+		for (const auto& hitCol : hitColliders_)
 		{
-			isJump_ = false;
-		}
-	}
-	if (!isJump_)
-	{
-		// ジャンプリセット
-		jumpPow_ = AsoUtility::VECTOR_ZERO;
+			for (const auto& i : hitCol)
+			{
+				// ステージ以外は処理を飛ばす
+				if (i->GetTag() != ColliderBase::TAG::STAGE) continue;
 
-		// ジャンプの入力受付時間をリセット
-		stepJump_ = 0.0f;
+				// 派生クラスへキャスト
+				const ColliderModel* colliderModel =
+					dynamic_cast<const ColliderModel*>(i);
+
+				if (colliderModel == nullptr) continue;
+
+				bool isHit = colliderLine_->PushBackUp(colliderModel, transform_, 2.0f, true, false);
+
+				if (isHit)
+				{
+					isJump_ = false;
+				}
+			}
+		}
+		if (!isJump_)
+		{
+			// ジャンプリセット
+			jumpPow_ = AsoUtility::VECTOR_ZERO;
+
+			// ジャンプの入力受付時間をリセット
+			stepJump_ = 0.0f;
+		}
 	}
 }
 
-void CharactorBase::CollisionCapsule(void)  
-{  
-   // カプセルコライダ  
-   int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);  
-   // カプセルコライダが無ければ処理を抜ける  
-   if (ownColliders_.count(capsuleType) == 0) return;  
-   // カプセルコライダ情報  
-   ColliderCapsule* colliderCapsule =  
-       dynamic_cast<ColliderCapsule*>(ownColliders_.at(capsuleType));  
+void CharactorBase::CollisionCapsule(void)
+{
+	// カプセルコライダ  
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 
-   if (colliderCapsule == nullptr) return;  
-   // 登録されている衝突物を全てチェック  
-   for (const auto& hitCol : hitColliders_)  
-   {  
-       // モデル以外は処理を飛ばす  
-       if (hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
+	// カプセルコライダが無ければ処理を抜ける  
+	if (ownColliders_.count(capsuleType) == 0) return;
 
-       const ColliderModel* colliderModel =  
-           dynamic_cast<const ColliderModel*>(hitCol);
+	const auto& vecs = ownColliders_.at(capsuleType);
+	for (const auto& vec : vecs)
+	{
+		// カプセルコライダ情報  
+		ColliderCapsule* colliderCapsule =
+			dynamic_cast<ColliderCapsule*>(vec);
 
-       if (colliderModel == nullptr) continue;
+		if (colliderCapsule == nullptr) return;
 
-	   colliderCapsule->PushBackAlongNormal(
-		   colliderModel,
-		   transform_,
-           CNT_TRY_COLLISION,  
-           COLLISION_BACK_DIS,  
-           true,  
-           false  
-       );  
-   }  
+		// 登録されている衝突物を全てチェック  
+		for (const auto& hitCol : hitColliders_)
+		{
+			for (const auto& i : hitCol)
+			{
+				// モデル以外は処理を飛ばす  
+				if (i->GetShape() != ColliderBase::SHAPE::MODEL) continue;
+
+				const ColliderModel* colliderModel =
+					dynamic_cast<const ColliderModel*>(i);
+
+				if (colliderModel == nullptr) continue;
+
+				colliderCapsule->PushBackAlongNormal(
+					colliderModel,
+					transform_,
+					CNT_TRY_COLLISION,
+					COLLISION_BACK_DIS,
+					true,
+					false
+				);
+			}
+		}
+	}
 }

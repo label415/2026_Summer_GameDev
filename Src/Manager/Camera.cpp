@@ -368,84 +368,91 @@ void Camera::Collision(void)
 
 	for (const auto& hitCol : hitColliders_)
 	{
-		// モデル以外は処理を飛ばす
-		if (hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
-
-		// 派生クラスへキャスト
-		const ColliderModel* colliderModel =
-			dynamic_cast<const ColliderModel*>(hitCol);
-
-		if (colliderModel == nullptr) continue;
-
-		// 線分で衝突判定
-		auto hits = MV1CollCheck_LineDim(
-			colliderModel->GetFollow()->modelId,
-			-1,
-			transform_.pos,
-			start
-		);
-
-		// 追従対象に一番近い衝突点を探す
-		bool isCollision_ = false;
-		isCameraLope_ = false;
-		MV1_COLL_RESULT_POLY hitPoly;
-		double minDist = DBL_MAX;
-		for (int i = 0; i < hits.HitNum; i++)
+		for (const auto& i : hitCol)
 		{
-			const auto& hit = hits.Dim[i];
+			// モデル以外は処理を飛ばす
+			if (i->GetShape() != ColliderBase::SHAPE::MODEL) continue;
 
-			//// 除外フレームは無視する
-			//if (colliderModel->IsExcludeFrame(hit.FrameIndex))
-			//{
-			//	continue;
-			//}
+			// 派生クラスへキャスト
+			const ColliderModel* colliderModel =
+				dynamic_cast<const ColliderModel*>(i);
 
-			// 対象フレーム以外は無視する
-			if (!colliderModel->IsTargetFrame(hit.FrameIndex))
+			if (colliderModel == nullptr) continue;
+
+			// 線分で衝突判定
+			auto hits = MV1CollCheck_LineDim(
+				colliderModel->GetFollow()->modelId,
+				-1,
+				transform_.pos,
+				start
+			);
+
+			// 追従対象に一番近い衝突点を探す
+			bool isCollision_ = false;
+			isCameraLope_ = false;
+			MV1_COLL_RESULT_POLY hitPoly;
+			double minDist = DBL_MAX;
+			for (int i = 0; i < hits.HitNum; i++)
 			{
+				const auto& hit = hits.Dim[i];
+
+				//// 除外フレームは無視する
+				//if (colliderModel->IsExcludeFrame(hit.FrameIndex))
+				//{
+				//	continue;
+				//}
+
+				// 対象フレーム以外は無視する
+				if (!colliderModel->IsTargetFrame(hit.FrameIndex))
+				{
+					continue;
+				}
+
+				// 衝突判定
+				isCollision_ = true;
+				isCameraLope_ = true;
+
+				// 距離判定
+				double dist = AsoUtility::Distance(start, hit.HitPosition);
+				if (minDist > dist)
+				{
+					// 追従対象に一番近い衝突点を優先
+					minDist = dist;
+					hitPoly = hit;
+				}
+			}
+
+			// 検出した地面ポリゴン情報の後始末
+			MV1CollResultPolyDimTerminate(hits);
+
+			if (!isCollision_)
+			{
+				// 衝突していなければ次のコライダへ
 				continue;
 			}
 
-			// 衝突判定
-			isCollision_ = true;
-			isCameraLope_ = true;
+			// カメラ位置から注視点への方向
+			VECTOR dirToTarget = VNorm(VSub(targetPos_, transform_.pos));
 
-			// 距離判定
-			double dist = AsoUtility::Distance(start, hit.HitPosition);
-			if (minDist > dist)
+			// 衝突点の少し手前にカメラを置く
+			transform_.pos =
+				VAdd(hitPoly.HitPosition, VScale(dirToTarget, COLLISION_BACK_DIS));
+
+			// カメラ位置の球体コライダ
+			int typeSphere = static_cast<int>(ColliderBase::SHAPE::SPHERE);
+
+			// 球体コライダが無ければ処理を抜ける
+			if (ownColliders_.count(typeSphere) == 0) continue;
+
+			const auto& vecs = ownColliders_.at(typeSphere);
+			for (const auto& vec : vecs)
 			{
-				// 追従対象に一番近い衝突点を優先
-				minDist = dist;
-				hitPoly = hit;
+				// 指定された回数と距離で三角形の法線方向に押し戻す
+				transform_.pos =
+					vec->GetPosPushBackAlongNormal(
+						hitPoly, CNT_TRY_COLLISION_CAMERA, COLLISION_BACK_DIS);
 			}
 		}
-
-		// 検出した地面ポリゴン情報の後始末
-		MV1CollResultPolyDimTerminate(hits);
-
-		if (!isCollision_)
-		{
-			// 衝突していなければ次のコライダへ
-			continue;
-		}
-
-		// カメラ位置から注視点への方向
-		VECTOR dirToTarget = VNorm(VSub(targetPos_, transform_.pos));
-
-		// 衝突点の少し手前にカメラを置く
-		transform_.pos =
-			VAdd(hitPoly.HitPosition, VScale(dirToTarget, COLLISION_BACK_DIS));
-
-		// カメラ位置の球体コライダ
-		int typeSphere = static_cast<int>(ColliderBase::SHAPE::SPHERE);
-
-		// 球体コライダが無ければ処理を抜ける
-		if (ownColliders_.count(typeSphere) == 0) continue;
-
-		// 指定された回数と距離で三角形の法線方向に押し戻す
-		transform_.pos =
-			ownColliders_.at(typeSphere)->GetPosPushBackAlongNormal(
-				hitPoly, CNT_TRY_COLLISION_CAMERA, COLLISION_BACK_DIS);
 	}
 }
 
