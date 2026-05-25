@@ -139,11 +139,11 @@ void GameScene::RegistCollider(void)
 	const std::vector<ColliderBase*> cameraCollider =
 		camera_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
 
-	player_->AddHitCollider(stageCollider);
-	enemys_->AddHitCollider(stageCollider);
-	enemys_->AddHitCollider(PlayerCollider);
-	camera_->AddHitCollider(stageCollider);
-	stage_->AddHitCollider(cameraCollider);
+	player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
+	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
+	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE),PlayerCollider);
+	camera_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
+	stage_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE),cameraCollider);
 }
 
 void GameScene::UpdateAutoLockOn(void)

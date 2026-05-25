@@ -71,7 +71,9 @@ void Stage::InitCollider(void)
 		colModel->AddTargetFrameIds(name);
 	}
 
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::MODEL), colModel);
+	std::vector<ColliderBase*> colModels;
+	colModels.push_back(colModel);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::MODEL), colModels);
 }
 
 void Stage::InitAnimation(void)
@@ -92,7 +94,7 @@ void Stage::Collision(void)
 
 	for (const auto& hitCol : hitColliders_)
 	{
-		for(const auto& i : hitCol)
+		for(const auto& i : hitCol.second)
 		{
 			// ƒ‚ƒfƒ‹ˆÈŠO‚Íˆ—‚ð”ò‚Î‚·
 			if (i->GetShape() != ColliderBase::SHAPE::SPHERE) continue;

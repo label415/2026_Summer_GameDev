@@ -80,17 +80,16 @@ const std::vector<ColliderBase*> ActorBase::GetOwnCollider(int key) const
 	return ownColliders_.at(key);
 }
 
-void ActorBase::AddHitCollider(const std::vector<ColliderBase*> hitCollider)
+void ActorBase::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
 {
 	for (const auto& c : hitColliders_)
 	{
-			if (c == hitCollider)
+			if (c.second == hitCollider)
 			{
 				return;
 			}
 	}
-	hitColliders_.emplace_back(hitCollider);
-
+	hitColliders_.emplace(shape, hitCollider);
 }
 
 void ActorBase::ClearHitCollider(void)

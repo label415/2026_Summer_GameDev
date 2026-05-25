@@ -46,11 +46,11 @@ void EnemyManager::Release(void)
 	}
 }
 
-void EnemyManager::AddHitCollider(const std::vector<ColliderBase*> hitCollider)
+void EnemyManager::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
 {
 	for (auto& enemy : enemys_)
 	{
-		enemy->AddHitCollider(hitCollider);
+		enemy->AddHitCollider(shape, hitCollider);
 	}
 }
 

@@ -65,16 +65,27 @@ void EnemyDragon::InitCollider(void)
 	ColliderLine* colLine = new ColliderLine(
 		ColliderBase::TAG::ENEMY, &transform_,
 		COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
-	ownColliders_.emplace(
-		static_cast<int>(ColliderBase::SHAPE::LINE), colLine);
+
+	std::vector<ColliderBase*> colLines;
+	colLines.push_back(colLine);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::LINE), colLines);
 
 	// 主に壁や木などの衝突で仕様するカプセルコライダ
 	ColliderCapsule* colCapsule1 = new ColliderCapsule(
 		ColliderBase::TAG::ENEMY, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS,
 		COL_CAPSULE_DOWN_LOCAL_POS, COL_CAPSULE_RADIUS);
-	ownColliders_.emplace(
-		static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule1);
+
+	ColliderCapsule* colCapsule2 = new ColliderCapsule(
+		ColliderBase::TAG::ENEMY, &transform_,
+		{50.0f,50.0f,50.0f},
+		{ 0.0f,50.0f,-50.0f }, COL_CAPSULE_RADIUS);
+
+
+	std::vector<ColliderBase*> colCapsules;
+	colCapsules.push_back(colCapsule1);
+	colCapsules.push_back(colCapsule2);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsules);
 }
 
 void EnemyDragon::InitAnimation(void)
@@ -320,7 +331,7 @@ void EnemyDragon::UpdateChase(void)
 
 	for (const auto& hitCol : hitColliders_)
 	{
-		for (const auto& i : hitCol)
+		for (const auto& i : hitCol.second)
 		{
 			// プレイヤーのカプセル以外は処理を飛ばす
 			if (i->GetTag() != ColliderBase::TAG::PLAYER) continue;
@@ -409,7 +420,7 @@ bool EnemyDragon::InSearchConeModel(void)
 
 		for (const auto& hitCol : hitColliders_)
 		{
-			for (const auto& i : hitCol)
+			for (const auto& i : hitCol.second)
 			{
 				// プレイヤーのカプセル以外は処理を飛ばす
 				if (i->GetTag() != ColliderBase::TAG::PLAYER) continue;

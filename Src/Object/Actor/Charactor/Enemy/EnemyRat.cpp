@@ -37,14 +37,20 @@ void EnemyRat::InitCollider(void)
 	ColliderLine* colLine = new ColliderLine(
 		ColliderBase::TAG::ENEMY, &transform_,
 		COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::LINE), colLine);
+
+	std::vector<ColliderBase*> colLines;
+	colLines.push_back(colLine);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::LINE), colLines);
 
 	// 主に壁や木などの衝突で仕様するカプセルコライダ
 	ColliderCapsule* colCapsule = new ColliderCapsule(
 		ColliderBase::TAG::ENEMY, &transform_,
-		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
-		COL_CAPSULE_RADIUS);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule);
+		COL_CAPSULE_TOP_LOCAL_POS,
+		COL_CAPSULE_DOWN_LOCAL_POS, COL_CAPSULE_RADIUS);
+
+	std::vector<ColliderBase*> colCapsules;
+	colCapsules.push_back(colCapsule);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsules);
 }
 
 void EnemyRat::InitAnimation(void)

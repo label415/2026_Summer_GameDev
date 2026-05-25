@@ -51,8 +51,10 @@ void WeponBlade::UpdateCollider(void)
 		ColliderBase::TAG::WEPON, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
 		COL_CAPSULE_RADIUS);
-	ownColliders_.emplace(
-		static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule);
+
+	std::vector<ColliderBase*> colCapsules;
+	colCapsules.push_back(colCapsule);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsules);
 }
 
 void WeponBlade::ClearCollider(void)

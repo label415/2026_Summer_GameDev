@@ -87,16 +87,16 @@ void Camera::SetTargetFollow(const Transform* target)
 	targetTransform_ = target;
 }
 
-void Camera::AddHitCollider(const std::vector<ColliderBase*> hitCollider)
+void Camera::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
 {
 	for (const auto& c : hitColliders_)
 	{
-		if (c == hitCollider)
+		if (c.second == hitCollider)
 		{
 			return;
 		}
 	}
-	hitColliders_.emplace_back(hitCollider);
+	hitColliders_.emplace(shape, hitCollider);
 }
 
 void Camera::InitCollider(void)
@@ -108,9 +108,10 @@ void Camera::InitCollider(void)
 		AsoUtility::VECTOR_ZERO,
 		COL_CAPSULE_SPHERE
 	);
-	ownColliders_.emplace(
-		static_cast<int>(ColliderBase::SHAPE::SPHERE), colliderSphere);
 
+	std::vector<ColliderBase*> colliderSpheres;
+	colliderSpheres.push_back(colliderSphere);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::SPHERE), colliderSpheres);
 }
 
 void Camera::InitPost(void)
@@ -368,7 +369,7 @@ void Camera::Collision(void)
 
 	for (const auto& hitCol : hitColliders_)
 	{
-		for (const auto& i : hitCol)
+		for (const auto& i : hitCol.second)
 		{
 			// ƒ‚ƒfƒ‹ˆÈŠO‚Íˆ—‚ð”ò‚Î‚·
 			if (i->GetShape() != ColliderBase::SHAPE::MODEL) continue;

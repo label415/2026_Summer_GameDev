@@ -1,5 +1,6 @@
 #pragma once
-#include <DxLib.h>
+#include <map>
+#include <vector>
 #include "../Common/Quaternion.h"
 #include "../Object/Actor/ActorBase.h"
 class Transform;
@@ -99,7 +100,7 @@ public:
 	void SetTargetFollow(const Transform* target);
 
 	// 衝突対象となるコライダを登録
-    void AddHitCollider(const std::vector<ColliderBase*> hitCollider);
+    void AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider);
 
 protected:
 	// リソースロード

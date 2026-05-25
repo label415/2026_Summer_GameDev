@@ -136,7 +136,7 @@ void CharactorBase::CollisionGravity(void)
 		// 登録されている衝突物を全てチェック
 		for (const auto& hitCol : hitColliders_)
 		{
-			for (const auto& i : hitCol)
+			for (const auto& i : hitCol.second)
 			{
 				// ステージ以外は処理を飛ばす
 				if (i->GetTag() != ColliderBase::TAG::STAGE) continue;
@@ -186,7 +186,7 @@ void CharactorBase::CollisionCapsule(void)
 		// 登録されている衝突物を全てチェック  
 		for (const auto& hitCol : hitColliders_)
 		{
-			for (const auto& i : hitCol)
+			for (const auto& i : hitCol.second)
 			{
 				// モデル以外は処理を飛ばす  
 				if (i->GetShape() != ColliderBase::SHAPE::MODEL) continue;

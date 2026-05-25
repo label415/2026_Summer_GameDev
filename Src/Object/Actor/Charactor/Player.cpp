@@ -67,18 +67,25 @@ void Player::InitTransform(void)
 
 void Player::InitCollider(void)
 {
-	// 主に地面との衝突で仕様する線分コライダ
+	// 線分コライダ
 	ColliderLine* colLine = new ColliderLine(
 		ColliderBase::TAG::PLAYER, &transform_,
 		COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::LINE), colLine);
 
-	// 主に壁や木などの衝突で仕様するカプセルコライダ
+	std::vector<ColliderBase*> colLines;
+	colLines.push_back(colLine);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::LINE), colLines);
+
+
+	// カプセルコライダ
 	ColliderCapsule* colCapsule = new ColliderCapsule(
 		ColliderBase::TAG::PLAYER, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
 		COL_CAPSULE_RADIUS);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule);
+
+	std::vector<ColliderBase*> colCapsules;
+	colCapsules.push_back(colCapsule);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsules);
 }
 
 void Player::InitAnimation(void)

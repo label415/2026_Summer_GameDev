@@ -89,16 +89,20 @@ void EnemyRobot::InitCollider(void)
 	ColliderLine* colLine = new ColliderLine(
 		ColliderBase::TAG::ENEMY, &transform_,
 		COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
-	ownColliders_.emplace(
-		static_cast<int>(ColliderBase::SHAPE::LINE), colLine);
+
+	std::vector<ColliderBase*> colLines;
+	colLines.push_back(colLine);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::LINE), colLines);
 
 	// 主に壁や木などの衝突で仕様するカプセルコライダ
 	ColliderCapsule* colCapsule = new ColliderCapsule(
 		ColliderBase::TAG::ENEMY, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS,
 		COL_CAPSULE_DOWN_LOCAL_POS, COL_CAPSULE_RADIUS);
-	ownColliders_.emplace(
-		static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsule);
+
+	std::vector<ColliderBase*> colCapsules;
+	colCapsules.push_back(colCapsule);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsules);
 
 
 	MV1SetupCollInfo(viewRangeTransform_.modelId);
@@ -106,8 +110,10 @@ void EnemyRobot::InitCollider(void)
 	//モデルのコライダー
 	ColliderModel* colliderModel =
 		new ColliderModel(ColliderBase::TAG::VIEW_RANGE, &viewRangeTransform_);
-	ownColliders_.emplace(
-		static_cast<int>(ColliderBase::SHAPE::MODEL), colliderModel);
+
+	std::vector<ColliderBase*> colliderModels;
+	colliderModels.push_back(colliderModel);
+	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::MODEL), colliderModels);
 }
 
 void EnemyRobot::InitAnimation(void)
@@ -338,7 +344,7 @@ void EnemyRobot::ChangeStateAttackShoot(void)
 
 	for (const auto& hitCol : hitColliders_)
 	{
-		for (const auto& i : hitCol)
+		for (const auto& i : hitCol.second)
 		{
 			// プレイヤーのカプセル以外は処理を飛ばす
 			if (i->GetTag() != ColliderBase::TAG::PLAYER) continue;
@@ -465,7 +471,7 @@ void EnemyRobot::UpdateChase(void)
 
 	for (const auto& hitCol : hitColliders_)
 	{
-		for (const auto& i : hitCol)
+		for (const auto& i : hitCol.second)
 		{
 			// プレイヤーのカプセル以外は処理を飛ばす
 			if (i->GetTag() != ColliderBase::TAG::PLAYER) continue;
@@ -501,7 +507,7 @@ void EnemyRobot::UpdateAttackKick(void)
 
 	for (const auto& hitCol : hitColliders_)
 	{
-		for (const auto& i : hitCol)
+		for (const auto& i : hitCol.second)
 		{
 			// プレイヤーのカプセル以外は処理を飛ばす
 			if (i->GetTag() != ColliderBase::TAG::PLAYER) continue;
@@ -612,7 +618,7 @@ bool EnemyRobot::InSearchConeModel(void)
 
 		for (const auto& hitCol : hitColliders_)
 		{
-			for (const auto& i : hitCol)
+			for (const auto& i : hitCol.second)
 			{
 				// プレイヤーのカプセル以外は処理を飛ばす
 				if (i->GetTag() != ColliderBase::TAG::PLAYER) continue;

@@ -42,7 +42,7 @@ public:
 	const std::vector<ColliderBase*> GetOwnCollider(int key) const;
 
 	// 衝突対象となるコライダを登録
-	void AddHitCollider(const std::vector<ColliderBase*> hitCollider);
+	void AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider);
 	// 衝突対象となるコライダをクリア
 	void ClearHitCollider(void);
 
@@ -61,7 +61,7 @@ protected:
 	std::map<int, std::vector<ColliderBase*>> ownColliders_;
 
 	// 衝突相手の情報
-	std::vector<const std::vector<ColliderBase*>> hitColliders_;
+	std::map<int, std::vector<ColliderBase*>> hitColliders_;
 
 	// リソースロード
 	virtual void InitLoad(void) = 0;
