@@ -4,6 +4,7 @@
 #include "Manager/ResourceManager.h"
 #include "Manager/SceneManager.h"
 #include "Common/FpsController.h"
+#include "Libs/ImGuiWrapper.h"
 #include "Application.h"
 
 Application* Application::instance_ = nullptr;
@@ -71,12 +72,16 @@ void Application::Init(void)
 	// シーン管理初期化
 	SceneManager::CreateInstance();
 
+	// デバッグ描画初期化
+	ImGuiWrapper::CreateInstance();
+
 }
 
 void Application::Run(void)
 {
 
 	InputManager& inputManager = InputManager::GetInstance();
+	ImGuiWrapper& imGuiWrapper = ImGuiWrapper::GetInstance();
 	SceneManager& sceneManager = SceneManager::GetInstance();
 
 	// ゲームループ
@@ -84,9 +89,14 @@ void Application::Run(void)
 	{
 
 		inputManager.Update();
+		imGuiWrapper.Update();
 		sceneManager.Update();
 
 		sceneManager.Draw();
+
+		RenderVertex();
+
+		imGuiWrapper.Draw();
 
 		ScreenFlip();
 
@@ -104,6 +114,7 @@ void Application::Destroy(void)
 	
 	// シーン管理解放
 	SceneManager::GetInstance().Destroy();
+	ImGuiWrapper::GetInstance().Destroy();
 
 	// Effekseerを終了する。
 	Effkseer_End();
