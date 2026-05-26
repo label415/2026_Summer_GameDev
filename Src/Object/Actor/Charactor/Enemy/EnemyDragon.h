@@ -24,8 +24,8 @@ public:
 	enum class ANIM_TYPE
 	{
 		HIT = 1,
-		IDLE = 15,
-		WALK = 28,
+		IDLE = 9,
+		WALK = 13,
 		RUN = 22,
 		LOWER = 19,
 		FIRE = 8,
@@ -63,10 +63,10 @@ protected:
 	void UpdateProcessPost(void) override;
 private:
 	// モデルの大きさ
-	static constexpr float SCALE = 0.7f;
+	static constexpr float SCALE = 0.4f;
 	// モデルの回転調整
 	static constexpr VECTOR DEFAULT_LOCAL_ROT =
-	{ 0.0f, 90.0f * DX_PI_F / 180.0f, 0.0f };
+	{ 0.0f, 180.0f * DX_PI_F / 180.0f, 0.0f };
 	// 衝突判定用線分開始
 	static constexpr VECTOR COL_LINE_START_LOCAL_POS =
 	{ 0.0f, 80.0f, 0.0f };
