@@ -449,7 +449,7 @@ void EnemyRobot::UpdateAlert(void)
 	if (Cnt <= 2.0f) {}
 	else if (Cnt <= 6.0f) {
 		transform_.quaRot = Quaternion::Slerp(transform_.quaRot, rot1, 0.5f);
-	}
+	} 
 	else if (Cnt <= 10.0f) {
 		transform_.quaRot = Quaternion::Slerp(transform_.quaRot, rot2, 0.5f);
 	}
