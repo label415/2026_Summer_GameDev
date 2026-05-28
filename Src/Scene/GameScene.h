@@ -36,6 +36,9 @@ private:
 	//ロックオン対象範囲
 	static constexpr float MAX_LOCKON_DIFF = 1000.0f;
 
+	//ロックオン角度
+	static constexpr float VIEW_ANGLE = 70.0f;
+
 	//スカイドーム
 	SkyDome* skydome_;
 

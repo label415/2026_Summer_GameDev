@@ -8,6 +8,7 @@
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyManager.h"
 #include "../Object/Common/Collider/ColliderBase.h"
+#include "../Utility/MatrixUtility.h"
 #include "GameScene.h"
 
 GameScene::GameScene(void)
@@ -106,7 +107,36 @@ void GameScene::Draw(void)
 			0xfff000,
 			0xfff000,
 			true);
+
 	}
+
+#ifdef _DEBUG
+
+	MATRIX mat = MGetIdent();
+	mat = MatrixUtility::GetMatrixRotateXYZ(camera_->GetAngles());
+
+	VECTOR forward = camera_->GetForward();
+
+	MATRIX rightMat = MMult(mat, MGetRotY(AsoUtility::Deg2RadF(35.0f)));
+	VECTOR right = VTransform(AsoUtility::DIR_F, rightMat);
+
+	MATRIX leftMat = MMult(mat, MGetRotY(AsoUtility::Deg2RadF(-35.0f)));
+	VECTOR left = VTransform(AsoUtility::DIR_F, leftMat);
+
+	VECTOR pos0 = camera_->GetPos();
+	VECTOR pos1 = VAdd(pos0, VScale(forward, MAX_LOCKON_DIFF));
+	VECTOR pos2 = VAdd(pos0, VScale(right, MAX_LOCKON_DIFF));
+	VECTOR pos3 = VAdd(pos0, VScale(left, MAX_LOCKON_DIFF));
+
+	pos0.y = pos1.y = pos2.y = pos3.y = 0.0f;
+	DrawTriangle3D(pos0, pos1, pos2, 0xdd77dd, true);
+	DrawTriangle3D(pos0, pos3, pos1, 0xdd77dd, true);
+
+	DrawLine3D(pos0, pos1, 0x000000);
+	DrawLine3D(pos0, pos2, 0x000000);
+	DrawLine3D(pos0, pos3, 0x000000); 
+
+#endif
 }
 
 void GameScene::Release(void)
@@ -188,14 +218,10 @@ void GameScene::UpdateAutoLockOn(void)
 				diffMin = VSize(VSub(enemyPos, playerPos));
 				if (lockonDiff <= diffMin)continue;
 
-				float dot = VDot(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+				float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
 				float angle = acosf(dot);
-				float a = AsoUtility::Deg2RadF(30.0f);
+				float a = AsoUtility::Deg2RadF(VIEW_ANGLE);
 				if (angle >= a)continue;
-
-				VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
-
-				if (cross.y < 0.0f)continue;
 
 				diffMin = lockonDiff;
 				targetEnemy_ = enemy;
@@ -215,9 +241,9 @@ void GameScene::UpdateAutoLockOn(void)
 				float lockonDiff = VSize(VSub(enemyPos, playerPos));
 				if (lockonDiff >= diffMin)continue;
 
-				float dot = VDot(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+				float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
 				float angle = acosf(dot);
-				float a = AsoUtility::Deg2RadF(20.0f);
+				float a = AsoUtility::Deg2RadF(VIEW_ANGLE);
 				if (angle >= a)continue;
 
 				diffMin = lockonDiff;
@@ -239,13 +265,12 @@ void GameScene::UpdateAutoLockOn(void)
 				float lockonDiff = VSize(VSub(enemyPos, playerPos));
 				if (lockonDiff >= diffMin)continue;
 
-				float dot = VDot(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+				float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
 				float angle = acosf(dot);
-				float a = AsoUtility::Deg2RadF(30.0f);
+				float a = AsoUtility::Deg2RadF(VIEW_ANGLE);
 				if (angle >= a)continue;
 
 				VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
-
 				if (cross.y > 0.0f)continue;
 
 				diffMin = lockonDiff;
@@ -266,13 +291,12 @@ void GameScene::UpdateAutoLockOn(void)
 				float lockonDiff = VSize(VSub(enemyPos, playerPos));
 				if (lockonDiff >= diffMin)continue;
 
-				float dot = VDot(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+				float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
 				float angle = acosf(dot);
-				float a = AsoUtility::Deg2RadF(30.0f);
+				float a = AsoUtility::Deg2RadF(VIEW_ANGLE);
 				if (angle >= a)continue;
 
 				VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
-
 				if (cross.y < 0.0f)continue;
 
 				diffMin = lockonDiff;
@@ -292,9 +316,15 @@ void GameScene::UpdateAutoLockOn(void)
 
 			//プレイヤーと敵のベクトルの大きさ
 			VECTOR enemyPos = enemy->GetTransform().pos;
-			float lockonDiff = VSize(VSub(enemyPos, playerPos));
 
+			float lockonDiff = VSize(VSub(enemyPos, playerPos));
 			if (lockonDiff >= diffMin)continue;
+
+			float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
+			float angle = acosf(dot);
+			float a = AsoUtility::Deg2RadF(VIEW_ANGLE);
+			if (angle >= a)continue;
+
 			diffMin = lockonDiff;
 			targetEnemy_ = enemy;
 			camera_->ChangeMode(Camera::MODE::TARGET_ROCKE);
