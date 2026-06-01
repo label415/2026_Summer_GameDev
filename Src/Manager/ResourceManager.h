@@ -12,8 +12,6 @@ public:
 	enum class SRC
 	{
 		LOADING,
-		TITLE,
-		PUSHSPACE,
 		PIT_FALL_PLANET,
 		SPHERE_PLANET,
 

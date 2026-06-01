@@ -32,15 +32,10 @@ void ResourceManager::Init(void)
 
 	Resource* res;
 
-	// ローディング画面
+	// ロード画像
 	res = new RES(RES_T::IMG, PATH_IMG + L"Loading.png");
 	resourcesMap_.emplace(SRC::LOADING, res);
 
-	// タイトル画像
-	res = new RES(RES_T::IMG, PATH_IMG + L"Title.png");
-	resourcesMap_.emplace(SRC::TITLE, res);
-	res = new RES(RES_T::IMG, PATH_IMG + L"PushSpace.png");
-	resourcesMap_.emplace(SRC::PUSHSPACE, res);
 	//タイトルモデル
 	res = new RES(RES_T::MODEL, PATH_MDL +
 		L"Stage/PitfallPlanet/PitfallPlanet.mv1");

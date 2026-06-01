@@ -30,7 +30,7 @@ void Loading::Load(void)
 {
 	auto& resMng = ResourceManager::GetInstance();
 
-	handle_ = resMng.Load(ResourceManager::SRC::TITLE).handleId_;
+	handle_ = LoadGraph(L"Data/Image/Loading.png");
 }
 
 // çXêV
@@ -56,8 +56,8 @@ void Loading::Draw(void)
 {
 	DrawRotaGraph(
 		Application::SCREEN_SIZE_X / 2,
-		Application::SCREEN_SIZE_Y / 3,
-		1.0f,
+		Application::SCREEN_SIZE_Y / 2,
+		1.3f,
 		0.0f,
 		handle_,
 		TRUE);

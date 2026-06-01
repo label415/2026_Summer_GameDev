@@ -21,63 +21,11 @@ TitleScene::~TitleScene(void)
 
 void TitleScene::Init(void)
 {
-	auto& resMng_ = ResourceManager::GetInstance();
-
-	// 画像読み込み
-	imgTitle_ = resMng_.Load(ResourceManager::SRC::TITLE).handleId_;
-	imgPushSpace_ = resMng_.Load(ResourceManager::SRC::PUSHSPACE).handleId_;
-
-
-	// 定点カメラ
-	sceMng_.GetCamera()->ChangeMode(Camera::MODE::FIXED_POINT);
-
-	skydome_ = new SkyDome();
-	skydome_->Init();
-
-	// メイン惑星
-	bigPlanet_.SetModel(resMng_.LoadModelDuplicate(
-		ResourceManager::SRC::PIT_FALL_PLANET));
-	bigPlanet_.scl = AsoUtility::VECTOR_ONE;
-	bigPlanet_.quaRot = Quaternion::Identity();
-	bigPlanet_.quaRotLocal = Quaternion::Identity();
-	bigPlanet_.pos = AsoUtility::VECTOR_ZERO;
-	bigPlanet_.Update();
-
-	// 球体惑星
-	spherPlanet_.SetModel(resMng_.LoadModelDuplicate(
-		ResourceManager::SRC::SPHERE_PLANET));
-	spherPlanet_.scl = { 0.7f, 0.7f, 0.7f };
-	spherPlanet_.quaRot = Quaternion::Identity();
-	spherPlanet_.quaRotLocal = Quaternion::Identity();
-	spherPlanet_.quaRotLocal =
-		Quaternion::Mult(spherPlanet_.quaRotLocal,
-			Quaternion::AngleAxis(AsoUtility::Deg2RadF(90.0f), AsoUtility::AXIS_X));
-	spherPlanet_.pos = { -250.0f, -100.0f, -100.0f };
-	spherPlanet_.Update();
-
-	//プレイヤー
-	player_.SetModel(resMng_.LoadModelDuplicate(
-		ResourceManager::SRC::PLAYER));
-	player_.scl = { 0.4f, 0.4f, 0.4f };
-	player_.quaRot = Quaternion::Identity();
-	player_.quaRot =
-		Quaternion::Mult(player_.quaRot,
-			Quaternion::AngleAxis(AsoUtility::Deg2RadF(-90.0f), AsoUtility::AXIS_Y));
-	player_.quaRotLocal = Quaternion::Identity();
-	player_.quaRotLocal =
-		Quaternion::Mult(player_.quaRotLocal,
-			Quaternion::AngleAxis(AsoUtility::Deg2RadF(180.0f), AsoUtility::AXIS_Y));
-	player_.pos = { -250.0f, -32.0f, -105.0f };
-	player_.Update();
-
-	anim_ = new AnimationController(player_.modelId);
-	anim_->Add(static_cast<int>(ANIM_TYPE::RUN),
-		30.0f, Application::PATH_MODEL + L"Player/Run.mv1");
-
 	resMng_.GetInstance().Load(ResourceManager::SRC::FONT);
 
 	// フォントハンドルの作成
 	pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"はなぞめフォント", 56, 20);
+
 }
 
 void TitleScene::Update(void)
@@ -90,50 +38,23 @@ void TitleScene::Update(void)
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAME);
 	}
 
-	skydome_->Update();
-
-	spherPlanet_.quaRot = Quaternion::Mult(spherPlanet_.quaRot,
-		Quaternion::AngleAxis(AsoUtility::Deg2RadF(-1.0f), AsoUtility::AXIS_Z));
-
-	anim_->Play(static_cast<int>(ANIM_TYPE::RUN));
-
-	spherPlanet_.Update();
-	anim_->Update();
 }
 
 void TitleScene::Draw(void)
 {
-	skydome_->Draw();
 
-	// モデル描画
-	MV1DrawModel(bigPlanet_.modelId);
-	MV1DrawModel(spherPlanet_.modelId);
-	MV1DrawModel(player_.modelId);
+	DrawFormatStringToHandle(
+		Application::SCREEN_SIZE_X / 2 - 150.0f,
+		Application::SCREEN_SIZE_Y / 6,
+		0x000000,
+		pauseFont_,
+		pasueList_[static_cast<int>(LIST::ASOSOLES)].c_str());
 
-
-	//UI描画
-	DrawRotaGraph(
-		Application::SCREEN_SIZE_X / 2,
-		Application::SCREEN_SIZE_Y / 3,
-		1.0f,
-		0.0f,
-		imgTitle_,
-		TRUE);
-
-	DrawRotaGraph(
-		Application::SCREEN_SIZE_X / 2,
-		(Application::SCREEN_SIZE_Y -
-			(Application::SCREEN_SIZE_Y / 3)),
-		1.0f,
-		0.0f,
-		imgPushSpace_,
-		TRUE);
-
-	for (int i = 0; i < LIST_MAX; ++i)
+	for (int i = 1; i < LIST_MAX; ++i)
 	{
 		//座標位置を設定
-		int posX = static_cast<int>(Application::SCREEN_SIZE_X/1.5f - pasueList_[i].length() * 56 / 2);
-		int posY = Application::SCREEN_SIZE_Y/1.5 - 200 + 150.0f * i;
+		int posX = Application::SCREEN_SIZE_X / 2 - 150.0f;
+		int posY = (Application::SCREEN_SIZE_Y / 2 + (100.0f * i)) - 100.0f;
 
 		//文字列を描画
 		DrawFormatStringToHandle(
@@ -143,25 +64,13 @@ void TitleScene::Draw(void)
 			pauseFont_,
 			pasueList_[i].c_str());
 	}
+
 }
 
 void TitleScene::Release(void)
 {
-	skydome_->Release();
-	delete skydome_;
-
-	//モデル解放
-	MV1DeleteModel(bigPlanet_.modelId);
-	MV1DeleteModel(spherPlanet_.modelId);
-	MV1DeleteModel(player_.modelId);
-
-	//UI解放
-	DeleteGraph(imgTitle_);
-	DeleteGraph(imgPushSpace_);
-
-	anim_->Release();
-	delete anim_;
-
+	
 	// フォントハンドルを削除
 	DeleteFontToHandle(pauseFont_);
+
 }

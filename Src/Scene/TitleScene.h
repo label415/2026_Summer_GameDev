@@ -12,19 +12,15 @@ public:
 
 	enum class LIST
 	{
-		RESUME,		// 続ける
-		TITLE,		// タイトルに戻る
-		GAME_END,   // ゲームの終了
+		ASOSOLES,
+		始める,		// 続ける
+		設定,		// タイトルに戻る
+		ゲーム終了,   // ゲームの終了
 		MAX
 	};
 
 	//リスト
 	static constexpr int LIST_MAX = static_cast<int>(LIST::MAX);
-
-	enum class ANIM_TYPE
-	{
-		RUN,
-	};
 
 	// コンストラクタ
 	TitleScene(void);
@@ -46,19 +42,6 @@ public:
 
 private:
 
-	//スカイドーム
-	SkyDome* skydome_;
-
-	//アニメーションコントローラ
-	AnimationController* anim_;
-
-	// 惑星
-	Transform bigPlanet_;
-	Transform spherPlanet_;
-
-	//プレイヤー
-	Transform player_;
-
 	//ポーズフォント
 	int pauseFont_;
 
@@ -68,13 +51,10 @@ private:
 	//選択リスト
 	std::wstring pasueList_[LIST_MAX] =
 	{
-		L"つづける",
-		L"タイトルへ戻る",
-		L"ゲーム終了"
+		L" ASO SOLES",
+		L"  始める",		// 続ける
+		L"   設定",		// タイトルに戻る
+		L"ゲーム終了",   // ゲームの終了
 	};
-
-	// 画像読み込み
-	int imgTitle_;
-	int imgPushSpace_;
 
 };

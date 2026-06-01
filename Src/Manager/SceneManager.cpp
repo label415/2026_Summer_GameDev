@@ -38,10 +38,6 @@ void SceneManager::Init(void)
 	load_->Init();
 	load_->Load();
 
-	// フェード機能の初期化
-	fader_ = new Fader();
-	fader_->Init();
-
 	// カメラ
 	camera_ = new Camera();
 	camera_->Init();
@@ -49,17 +45,16 @@ void SceneManager::Init(void)
 	// フォント管理クラス生成
 	FontManager::CreateInstance();
 
-	// 画面遷移中判定
-	isSceneChanging_ = false;
-
 	// デルタタイム
 	preTime_ = std::chrono::system_clock::now();
 
 	// 3D用の設定
 	Init3D();
 
+	isSceneChanging_ = false;
+
 	// 初期シーンの設定
-	DoChangeScene(SCENE_ID::GAME);
+	DoChangeScene(SCENE_ID::TITLE);
 }
 
 void SceneManager::Init3D(void)
@@ -103,40 +98,23 @@ void SceneManager::Update(void)
 		std::chrono::duration_cast<std::chrono::nanoseconds>(nowTime - preTime_).count() / 1000000000.0);
 	preTime_ = nowTime;
 
-	//// フェード機能の更新
-	//fader_->Update();
-	//if (isSceneChanging_)
-	//{
-	//	// フェード状態の切替処理
-	//	Fade();
-	//}
-	//else
-	//{
-	//	// 各シーンの更新処理
-	//	scene_->Update();
-	//}
-
 	// ロード中
-	if (load_->IsLoading())
-	{
-		// ロード更新
+	if (isSceneChanging_){
 		load_->Update();
-
-		// ロードの更新が終了していたら
-		if (load_->IsLoading() == false)
+		DoChangeScene(waitSceneId_);
+		if (load_->IsLoading())
 		{
-			// ロード後の初期化
-			/*scene_->LoadEnd();*/
+			isSceneChanging_ = false;
 		}
 	}
 	// 通常の更新処理
-	else
-	{
+	else{
 		// 現在のシーンの更新
 		scene_->Update();
-		// カメラ更新
-		camera_->Update();
 	}
+
+	// カメラ更新
+	camera_->Update();
 }
 
 void SceneManager::Draw(void)
@@ -156,7 +134,7 @@ void SceneManager::Draw(void)
 	UpdateEffekseer3D();
 
 	// ロード中ならロード画面を描画
-	if (load_->IsLoading())
+	if (isSceneChanging_)
 	{
 		// ロードの描画
 		load_->Draw();
@@ -166,17 +144,13 @@ void SceneManager::Draw(void)
 	{
 		// 各シーンの描画処理
 		scene_->Draw();
-
-		// カメラ描画
-		camera_->DrawDebug();
 	}
+
+	// カメラ描画
+	camera_->DrawDebug();
 
 	// Effekseerにより再生中のエフェクトを描画する。
 	DrawEffekseer3D();
-	
-	//// 暗転・明転
-	//fader_->Draw();
-
 }
 
 void SceneManager::Destroy(void)
@@ -188,9 +162,6 @@ void SceneManager::Destroy(void)
 		delete scene_;
 	}
 
-	// フェード機能の解放
-	delete fader_;
-
 	camera_->Release();
 	delete camera_;
 
@@ -199,7 +170,6 @@ void SceneManager::Destroy(void)
 	delete load_;
 
 	FontManager::GetInstance().Destroy();
-
 
 	// インスタンスのメモリ解放
 	delete instance_;
@@ -213,8 +183,6 @@ void SceneManager::ChangeScene(SCENE_ID nextId)
 	// 遷移先シーンをメンバ変数に保持
 	waitSceneId_ = nextId;
 
-	// フェードアウト(暗転)を開始する
-	fader_->SetFade(Fader::STATE::FADE_OUT);
 	isSceneChanging_ = true;
 
 }
@@ -241,7 +209,6 @@ SceneManager::SceneManager(void)
 	waitSceneId_ = SCENE_ID::NONE;
 
 	scene_ = nullptr;
-	fader_ = nullptr;
 
 	isSceneChanging_ = false;
 
@@ -291,40 +258,12 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 	load_->StartAsyncLoad();
 	scene_->Init();
 	load_->EndAsyncLoad();
-
+	
 	ResetDeltaTime();
 
 	waitSceneId_ = SCENE_ID::NONE;
 
 }
 
-void SceneManager::Fade(void)
-{
-
-	Fader::STATE fState = fader_->GetState();
-	switch (fState)
-	{
-	case Fader::STATE::FADE_IN:
-		// 明転中
-		if (fader_->IsEnd())
-		{
-			// 明転が終了したら、フェード処理終了
-			fader_->SetFade(Fader::STATE::NONE);
-			isSceneChanging_ = false;
-		}
-		break;
-	case Fader::STATE::FADE_OUT:
-		// 暗転中
-		if (fader_->IsEnd())
-		{
-			// 完全に暗転してからシーン遷移
-			DoChangeScene(waitSceneId_);
-			// 暗転から明転へ
-			fader_->SetFade(Fader::STATE::FADE_IN);
-		}
-		break;
-	}
-
-}
 
 

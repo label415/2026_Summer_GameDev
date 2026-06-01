@@ -69,9 +69,6 @@ private:
 	SCENE_ID sceneId_;
 	SCENE_ID waitSceneId_;
 
-	// フェード
-	Fader* fader_;
-
 	// 各種シーン
 	SceneBase* scene_;
 
@@ -103,8 +100,4 @@ private:
 
 	// シーン遷移
 	void DoChangeScene(SCENE_ID sceneId);
-
-	// フェード
-	void Fade(void);
-
 };
