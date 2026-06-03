@@ -24,11 +24,18 @@ public:
 		END				//終了
 	};
 
+	enum class ATTRIBUTE
+	{
+		NONE,
+		ABOVE_GROUND,
+		AIR
+	};
+
 	// アニメーション種別
 	enum class ANIM_TYPE
 	{
 		ROAR = 1,
-		IDLE = 9,
+		IDLE = 8,
 		WALK = 13,
 		FLYING = 5,
 		FLYING_ATTACK = 6,
@@ -96,8 +103,23 @@ private:
 	// 衝突判定用カプセル球体半径
 	static constexpr float COL_CAPSULE_RADIUS = 30.0f;
 
+	// 最高高度
+	static constexpr float MAX_TAKE = 500.0f;
+
+	//アニメーションを固定化する座標
+	static constexpr VECTOR LOCK_POS = { 0.0f, 1.8f, 0.0f };
+
+	// 移動速度(通常)
+	static constexpr float SPEED_MOVE = 5.0f;
+	// 移動速度(ダッシュ)
+	static constexpr float SPEED_DASH = 10.0f;
+
 	// 状態
 	STATE state_;
+
+	//属性
+	ATTRIBUTE attribute_;
+
 	// 更新ステップ
 	float step_;
 

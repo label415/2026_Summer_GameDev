@@ -130,6 +130,9 @@ private:
 	static constexpr VECTOR COL_LINE_AVOIDANCE_END_LOCAL_POS =
 	{ 0.0f, -10.0f, 0.0f };
 
+	//アニメーションを固定化する座標
+	static constexpr VECTOR LOCK_POS = { 0.0f, 79.0f, 0.0f };
+
 	// 衝突判定用線分開始(ジャンプ時)
 	static constexpr VECTOR COL_LINE_JUMP_START_LOCAL_POS = { 0.0f, 130.0f, 0.0f };
 	// 衝突判定用線分終了(ジャンプ時)

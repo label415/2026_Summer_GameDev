@@ -61,7 +61,7 @@ void Player::InitTransform(void)
 	transform_.quaRotLocal =
 		Quaternion::Mult(transform_.quaRotLocal,   
 			Quaternion::AngleAxis(AsoUtility::Deg2RadF(180.0f), AsoUtility::AXIS_Y));
-	transform_.pos = { 0.0f, 0.0f, 0.0f };
+	transform_.pos = { 0.0f, 0.0f, -500.0f };
 	transform_.Update();
 }
 
@@ -301,7 +301,7 @@ void Player::ProcessAvoidance(void)
 
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::AVOIDANCE), false);
-	anim_->SetRoot(L"mixamorig:Hips");
+	anim_->SetRoot(L"mixamorig:Hips", LOCK_POS);
 
 	moveSpeed_ = 10.0f;
 

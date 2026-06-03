@@ -57,11 +57,11 @@ void GameScene::Init(void)
 void GameScene::Update(void)
 {
 	// ƒV[ƒ“‘JˆÚ
-	auto const& ins = InputManager::GetInstance();
+	/*auto const& ins = InputManager::GetInstance();
 	if (ins.IsTrgDown(KEY_INPUT_SPACE))
 	{
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
-	}
+	}*/
 
 	skydome_->Update();
 
@@ -112,7 +112,7 @@ void GameScene::Draw(void)
 
 #ifdef _DEBUG
 
-	MATRIX mat = MGetIdent();
+	/*MATRIX mat = MGetIdent();
 	mat = MatrixUtility::GetMatrixRotateXYZ(camera_->GetAngles());
 
 	VECTOR forward = camera_->GetForward();
@@ -134,8 +134,7 @@ void GameScene::Draw(void)
 
 	DrawLine3D(pos0, pos1, 0x000000);
 	DrawLine3D(pos0, pos2, 0x000000);
-	DrawLine3D(pos0, pos3, 0x000000); 
-
+	DrawLine3D(pos0, pos3, 0x000000); */
 #endif
 }
 

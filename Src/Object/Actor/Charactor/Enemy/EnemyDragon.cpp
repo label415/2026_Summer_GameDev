@@ -13,7 +13,8 @@ EnemyDragon::EnemyDragon(const EnemyBase::EnemyData& data)
 	:
 	EnemyBase(data),
 	state_(STATE::NONE),
-	step_(0.0f)
+	step_(0.0f),
+	attribute_(ATTRIBUTE::NONE)
 {
 }
 
@@ -27,6 +28,20 @@ void EnemyDragon::Draw(void)
 	CharactorBase::Draw();
 
 #ifdef _DEBUG
+
+	VECTOR pos = MV1GetFramePosition(transform_.modelId, 1);
+
+	DrawFormatString(0, 20, 0x000000, L"モデルフレーム座標 %.1f, %.1f, %.1f", pos.x, pos.y, pos.z);
+
+	std::wstring stateName[] = {
+		L"NONE",L"THINK",L"IDLE",L"ROAR",L"PATROL",
+		L"CHASE",L"FLYING",L"FLYING_ATTACK",L"BRACELET_ATTACK",
+		L"MELEE_ATTACK",L"HOVER",L"TAKEOFF",L"LANDS",L"DEAD",L"END" };
+
+	std::wstring attributeName[] = { L"NONE",L"ABOVE_GROUND",L"AIR" };
+
+	DrawFormatString(0, 40, 0x000000, L"Enemy State: %s", stateName[static_cast<int>(state_)].c_str());
+	DrawFormatString(0, 60, 0x000000, L"Enemy Attribute: %s", attributeName[static_cast<int>(attribute_)].c_str());
 
 #endif
 }
@@ -44,9 +59,10 @@ void EnemyDragon::InitTransform(void)
 {
 	// ロボット自身
 	transform_.scl = VScale(AsoUtility::VECTOR_ONE, SCALE);
-	transform_.quaRot = Quaternion();
+	transform_.quaRot = Quaternion::Identity();
 	transform_.quaRotLocal = Quaternion::Euler(DEFAULT_LOCAL_ROT);
 	transform_.Update();
+
 }
 
 void EnemyDragon::InitCollider(void)
@@ -66,15 +82,15 @@ void EnemyDragon::InitCollider(void)
 		COL_CAPSULE_TOP_LOCAL_POS,
 		COL_CAPSULE_DOWN_LOCAL_POS, COL_CAPSULE_RADIUS);
 
-	ColliderCapsule* colCapsule2 = new ColliderCapsule(
+	/*ColliderCapsule* colCapsule2 = new ColliderCapsule(
 		ColliderBase::TAG::ENEMY, &transform_,
 		{50.0f,50.0f,50.0f},
-		{ 0.0f,50.0f,-50.0f }, COL_CAPSULE_RADIUS);
+		{ 0.0f,50.0f,-50.0f }, COL_CAPSULE_RADIUS);*/
 
 
 	std::vector<ColliderBase*> colCapsules;
 	colCapsules.push_back(colCapsule1);
-	colCapsules.push_back(colCapsule2);
+	/*colCapsules.push_back(colCapsule2);*/
 	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsules);
 }
 
@@ -155,14 +171,32 @@ void EnemyDragon::InitPost(void)
 	stateChanges_.emplace(static_cast<int>(STATE::END),
 		std::bind(&EnemyDragon::ChangeStateEnd, this));
 
-	
-
 	// 初期状態設定
-	ChangeState(STATE::THINK);
+	ChangeState(STATE::ROAR);
 }
 
 void EnemyDragon::UpdateProcess(void)
 {
+	for (const auto& hitCol : hitColliders_)
+	{
+		for (const auto& i : hitCol.second)
+		{
+			// モデル以外は処理を飛ばす  
+			if (i->GetShape() != ColliderBase::SHAPE::MODEL
+				&& i->GetTag() != ColliderBase::TAG::PLAYER) continue;
+
+			const ColliderCapsule* colliderCapsule =
+				dynamic_cast<ColliderCapsule*>(i);
+
+			if (colliderCapsule == nullptr) continue;
+
+			VECTOR nom = VNorm(VSub(colliderCapsule->GetFollow()->pos, transform_.pos));
+
+			moveDir_ = nom;
+		}
+	}
+
+	anim_->SetRoot(L"Bone", LOCK_POS);
 	// 状態別更新
 	stateUpdate_();
 }
@@ -186,19 +220,38 @@ void EnemyDragon::ChangeStateNone(void)
 void EnemyDragon::ChangeStateThink(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateThink, this);
+
 	// 思考
-	// ランダムに次の行動を決定
-	// 30%で待機、70%で徘徊
 	int rand = GetRand(100);
-	if (rand < 20)
+
+	if(attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
-		ChangeState(STATE::IDLE);
+		if (rand < 20)
+		{
+			ChangeState(STATE::PATROL);
+		}
+		else if (rand > 20
+			&& rand < 60) {
+			ChangeState(STATE::TAKEOFF);
+		}
+		else {
+			ChangeState(STATE::MELEE_ATTACK);
+		}
 	}
-	else if (rand < 10) {
-		ChangeState(STATE::ROAR);
-	}
-	else{
-		ChangeState(STATE::PATROL);
+	if (attribute_ == ATTRIBUTE::AIR) 
+	{
+		// 思考
+		int rand = GetRand(100);
+		if (rand < 35) {
+			ChangeState(STATE::FLYING_ATTACK);
+		}
+		else if (rand > 35
+			&& rand < 70) {
+			ChangeState(STATE::FLYING);
+		}
+		else {
+			ChangeState(STATE::LANDS);
+		}
 	}
 }
 
@@ -206,7 +259,7 @@ void EnemyDragon::ChangeStateIdle(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateIdle, this);
 	// ランダムな待機時間
-	step_ = 1.0f + static_cast<float>(GetRand(3));
+	step_ = 1.0f + static_cast<float>(GetRand(2));
 	// 移動量ゼロ
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
@@ -236,7 +289,7 @@ void EnemyDragon::ChangeStatePatrol(void)
 
 	// 歩きアニメーション再生
 	anim_->Play(
-		static_cast<int>(ANIM_TYPE::WALK), true);
+		static_cast<int>(ANIM_TYPE::WALK), false);
 }
 
 void EnemyDragon::ChangeStateChase(void)
@@ -245,35 +298,78 @@ void EnemyDragon::ChangeStateChase(void)
 
 void EnemyDragon::ChangeStateFlying(void)
 {
+	stateUpdate_ = std::bind(&EnemyDragon::UpdateFlying, this);
+
+	// 歩きアニメーション再生
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::FLYING), false);
 }
 
 void EnemyDragon::ChangeStateFlyingAttack(void)
 {
+	stateUpdate_ = std::bind(&EnemyDragon::UpdateFlyingAttack, this);
+
+	// 歩きアニメーション再生
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::FLYING_ATTACK), false);
 }
 
 void EnemyDragon::ChangeStateBreathAttack(void)
 {
+	stateUpdate_ = std::bind(&EnemyDragon::UpdateBreathAttack, this);
+
+	// 歩きアニメーション再生
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::BRACELET_ATTACK), false);
 }
 
 void EnemyDragon::ChangeStateMeleeAttack(void)
 {
+	stateUpdate_ = std::bind(&EnemyDragon::UpdateMeleeAttack, this);
+
+	// 歩きアニメーション再生
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::MELEE_ATTACK), false);
 }
 
 void EnemyDragon::ChangeStateHover(void)
 {
+	stateUpdate_ = std::bind(&EnemyDragon::UpdateHover, this);
+
+	// ランダムな待機時間
+	step_ = 1.0f + static_cast<float>(GetRand(2));
+
+	// 移動量ゼロ
+	movePow_ = AsoUtility::VECTOR_ZERO;
+
+	// 歩きアニメーション再生
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::HOVER), true);
 }
 
 void EnemyDragon::ChangeStateTakeOff(void)
 {
+	stateUpdate_ = std::bind(&EnemyDragon::UpdateTakeOff, this);
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::TAKEOFF), false);
 }
 
 void EnemyDragon::ChangeStateLands(void)
 {
+	stateUpdate_ = std::bind(&EnemyDragon::UpdateLands, this);
+
+	// 歩きアニメーション再生
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::LANDS), false);
 }
 
 void EnemyDragon::ChangeStateDead(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateDead, this);
+
+	// 歩きアニメーション再生
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::DIE), false);
 }
 
 void EnemyDragon::ChangeStateEnd(void)
@@ -304,6 +400,7 @@ void EnemyDragon::UpdateRoar(void)
 {
 	if (anim_->IsEnd()) {
 		// 待機終了
+		attribute_ = ATTRIBUTE::ABOVE_GROUND;
 		ChangeState(STATE::THINK);
 		return;
 	}
@@ -311,12 +408,11 @@ void EnemyDragon::UpdateRoar(void)
 
 void EnemyDragon::UpdatePatrol(void)
 {
-	SetTargetCollider();
-	float dot = VDot(VNorm(transform_.GetForward()), targetCollider_->GetFollow()->pos);
-	float angle = acosf(dot);
-	float a = AsoUtility::Deg2RadF(30.0f);
-	if (angle <= a){
-		ChangeState(STATE::CHASE);
+	moveSpeed_ = SPEED_MOVE;
+	movePow_ = VScale(moveDir_, moveSpeed_);
+
+	if (anim_->IsEnd()){
+		ChangeState(STATE::IDLE);
 		return;
 	};
 }
@@ -327,34 +423,93 @@ void EnemyDragon::UpdateChase(void)
 
 void EnemyDragon::UpdateFlying(void)
 {
+	transform_.pos.y = MAX_TAKE;
+
+	moveSpeed_ = SPEED_MOVE;
+	movePow_ = VScale(moveDir_, moveSpeed_);
+
+	if (anim_->IsEnd())
+	{
+		ChangeState(STATE::HOVER);
+	}
 }
 
 void EnemyDragon::UpdateFlyingAttack(void)
 {
+	transform_.pos.y = MAX_TAKE;
+
+	moveSpeed_ = SPEED_MOVE;
+	movePow_ = VScale(moveDir_, moveSpeed_);
+
+	if (anim_->IsEnd())
+	{
+		ChangeState(STATE::HOVER);
+	}
 }
 
 void EnemyDragon::UpdateBreathAttack(void)
 {
+	if (anim_->IsEnd())
+	{
+		ChangeState(STATE::IDLE);
+	}
 }
 
 void EnemyDragon::UpdateMeleeAttack(void)
 {
+	if (anim_->IsEnd())
+	{
+		ChangeState(STATE::IDLE);
+	}
 }
 
 void EnemyDragon::UpdateHover(void)
 {
+	transform_.pos.y = MAX_TAKE;
+
+	step_ -= scnMng_.GetDeltaTime();
+	if (step_ < 0.0f)
+	{
+		// 待機終了
+		ChangeState(STATE::THINK);
+		return;
+	}
 }
 
 void EnemyDragon::UpdateTakeOff(void)
 {
+	if(transform_.pos.y <= MAX_TAKE)
+	{
+		float jumpSpeed = 690.0f * scnMng_.GetDeltaTime();
+		jumpPow_ = VAdd(jumpPow_, VScale(AsoUtility::DIR_U, jumpSpeed));
+	}
+	else {
+		transform_.pos.y = MAX_TAKE;
+	}
+	
+	// 歩きアニメーション再生
+	if (anim_->IsEnd())
+	{
+		attribute_ = ATTRIBUTE::AIR;
+		ChangeState(STATE::HOVER);
+	}
 }
 
 void EnemyDragon::UpdateLands(void)
 {
+	if (anim_->IsEnd())
+	{
+		attribute_ = ATTRIBUTE::ABOVE_GROUND;
+		ChangeState(STATE::IDLE);
+	}
 }
 
 void EnemyDragon::UpdateDead(void)
 {
+	if (anim_->IsEnd())
+	{
+		ChangeState(STATE::END);
+	}
 }
 
 void EnemyDragon::UpdateEnd(void)

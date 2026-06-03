@@ -49,14 +49,18 @@ public:
 	// 再生中のアニメーション情報を取得
 	const Animation& GetPlayAnim(void) const;
 
-	void SetRoot(std::wstring root);
+	void SetRoot(std::wstring root, VECTOR lockPos);
 
 private:
 
 	// アニメーションするモデルのハンドルID
 	int modelId_;
 
+	//無効化するフレーム
 	int frnNo;
+
+	//固定化する座標
+	VECTOR lockPos_;
 
 	// 種類別のアニメーションデータ
 	std::map<int, Animation> animations_;
