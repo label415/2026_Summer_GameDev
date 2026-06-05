@@ -8,6 +8,7 @@ ActorBase::ActorBase(void)
 	scnMng_(SceneManager::GetInstance()),
 	transform_()
 {
+	isAlive_ = true;
 }
 
 ActorBase::~ActorBase(void)
@@ -95,4 +96,17 @@ void ActorBase::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCo
 void ActorBase::ClearHitCollider(void)
 {
 	hitColliders_.clear();
+}
+
+void ActorBase::RemoveHitColliderByShapeAndTag(ColliderBase::SHAPE shape, ColliderBase::TAG tag)
+{
+	for (auto& pair : hitColliders_) {
+		auto& vec = pair.second;
+		vec.erase(
+			std::remove_if(vec.begin(), vec.end(),
+				[shape, tag](const ColliderBase* col) {
+					return col && col->GetShape() == shape && col->GetTag() == tag;
+				}),
+			vec.end());
+	}
 }

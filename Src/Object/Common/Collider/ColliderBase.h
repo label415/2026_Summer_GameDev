@@ -25,6 +25,7 @@ public:
 		ENEMY,
 		VIEW_RANGE,
 		WEPON,
+		GROUND
 	};
 	// コンストラクタ
 	ColliderBase(SHAPE shape, TAG tag, const Transform* follow);

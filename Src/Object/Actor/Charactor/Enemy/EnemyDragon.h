@@ -82,26 +82,42 @@ private:
 	// モデルの回転調整
 	static constexpr VECTOR DEFAULT_LOCAL_ROT =
 	{ 0.0f, 180.0f * DX_PI_F / 180.0f, 0.0f };
-	// 衝突判定用線分開始
-	static constexpr VECTOR COL_LINE_START_LOCAL_POS =
-	{ 0.0f, 80.0f, 0.0f };
-	// 衝突判定用線分終了
-	static constexpr VECTOR COL_LINE_END_LOCAL_POS =
-	{ 0.0f, -10.0f, 0.0f };
-	// 衝突判定(移動範囲)用線分開始
-	static constexpr VECTOR COL_LINE_START_LOCAL_MOVE_POS =
-	{ 0.0f, 80.0f, 400.0f };
-	// 衝突判定(移動範囲)用線分終了
-	static constexpr VECTOR COL_LINE_END_LOCAL_MOVE_POS =
-	{ 0.0f, -10.0f, 400.0f };
-	// 衝突判定用カプセル上部球体
-	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS =
-	{ 0.0f, 40.0f, 80.0f };
-	// 衝突判定用カプセル下部球体
-	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS =
-	{ 0.0f, 40.0f, -40.0f };
-	// 衝突判定用カプセル球体半径
+
+	// 地面衝突判定用線分開始
+	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
+	// 地面衝突判定用線分終了
+	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -10.0f, 0.0f };
+
+	// 地面衝突判定用カプセル上部球体
+	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 110.0f, 0.0f };
+	// 地面衝突判定用カプセル下部球体
+	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 30.0f, 0.0f };
+	// 地面衝突判定用カプセル球体半径
 	static constexpr float COL_CAPSULE_RADIUS = 30.0f;
+
+
+	// 左足衝突判定用カプセル上部球体
+	static constexpr VECTOR L_LEG_TOP_LOCAL_POS = { -100.0f, 110.0f, 30.0f };
+	// 左足突判定用カプセル下部球体
+	static constexpr VECTOR L_LEG_DOWN_LOCAL_POS = { -100.0f, 30.0f, 30.0f };
+
+	// 左足衝突判定用カプセル上部球体
+	static constexpr VECTOR R_LEG_TOP_LOCAL_POS = { 100.0f, 110.0f, 30.0f };
+	// 左足衝突判定用カプセル下部球体
+	static constexpr VECTOR R_LEG_DOWN_LOCAL_POS = { 100.0f, 30.0f, 30.0f };
+
+	// 各足衝突判定用カプセル球体半径
+	static constexpr float LEG_RADIUS = 35.0f;
+
+	// 左手衝突判定用カプセル上部球体
+	static constexpr VECTOR L_HAND_TOP_LOCAL_POS = { 320.0f, 130.0f, 340.0f };
+	// 左手足衝突判定用カプセル下部球体
+	static constexpr VECTOR L_HAND_DOWN_LOCAL_POS = { 320.0f, 20.0f, 380.0f };
+
+	// 右手衝突判定用カプセル上部球体
+	static constexpr VECTOR R_HAND_TOP_LOCAL_POS = { -320.0f, 130.0f, 340.0f };
+	// 右手衝突判定用カプセル下部球体
+	static constexpr VECTOR R_HAND_DOWN_LOCAL_POS = { -320.0f, 20.0f, 380.0f };
 
 	// 最高高度
 	static constexpr float MAX_TAKE = 500.0f;
@@ -178,5 +194,9 @@ private:
 
 	//対象コライダーの設定
 	void SetTargetCollider(void);
+
+	bool IsDamage_;
+
+	void HitDamage(void);
 };
 

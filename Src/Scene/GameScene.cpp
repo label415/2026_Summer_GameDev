@@ -3,6 +3,7 @@
 #include "../Manager/SceneManager.h"
 #include "../Manager/InputManager.h"
 #include "../Manager/FontManager.h"
+#include "../Object/Actor/Wepon/WeponBase.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/Stage/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
@@ -73,6 +74,16 @@ void GameScene::Update(void)
 	enemys_->Update();
 
 	UpdateAutoLockOn();
+
+	const WeponBase* wepon = player_->GetWepon();
+
+	if (wepon && wepon->GetIsAlive()) {
+		const std::vector<ColliderBase*> weponColliders = wepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+		enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColliders);
+	}
+	else{
+		enemys_->RemoveCollider(ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::WEPON);
+	}
 }
 
 void GameScene::Draw(void)
@@ -160,19 +171,19 @@ void GameScene::Release(void)
 
 void GameScene::RegistCollider(void)
 {
+
 	// ステージモデルのコライダーをプレイヤーに登録
 	const std::vector<ColliderBase*> stageCollider =
 		stage_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::MODEL));
-	const std::vector<ColliderBase*> PlayerCollider =
-		player_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+
 	const std::vector<ColliderBase*> cameraCollider =
 		camera_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
 
 	player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
 	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
-	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE),PlayerCollider);
 	camera_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
 	stage_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE),cameraCollider);
+
 }
 
 void GameScene::UpdateAutoLockOn(void)

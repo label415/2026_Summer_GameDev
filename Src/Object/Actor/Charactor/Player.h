@@ -2,7 +2,7 @@
 #include "CharactorBase.h"
 
 class Camara;
-class WeponBlade;
+class WeponBase;
 
 class Player :
     public CharactorBase
@@ -49,11 +49,6 @@ public:
 	//ダッシュ時スタミナ消費量
 	static constexpr float CONSUMPTION_ST_FAST_RUN = 25.0f;
 
-	// 衝突判定用線分開始
-	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
-	// 衝突判定用線分終了
-	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -10.0f, 0.0f };
-
 
 	// コンストラクタ
 	Player(void);
@@ -69,6 +64,7 @@ public:
 	//ロックオン対象の設定
 	void SetTargetTransform(const Transform* transform);
 
+	const WeponBase* GetWepon(void)const { return weponBlade_; }
 
 protected:
 
@@ -96,7 +92,7 @@ protected:
 
 private:
 
-	WeponBlade* weponBlade_;	
+	WeponBase* weponBlade_;
 
 	//ロックオン対象Transform
 	const Transform* targetTrans_;
@@ -110,6 +106,10 @@ private:
 	//初期角度を保存
 	Quaternion lastQrot_;
 
+	// 衝突判定用線分開始
+	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
+	// 衝突判定用線分終了
+	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -10.0f, 0.0f };
 	// 衝突判定用カプセル上部球体(ジャンプ時)
 	static constexpr VECTOR COL_CAPSULE_TOP_JUMP_LOCAL_POS =
 	{ 0.0f, 160.0f, 0.0f };

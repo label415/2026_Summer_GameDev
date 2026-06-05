@@ -46,9 +46,14 @@ public:
 	// 衝突対象となるコライダをクリア
 	void ClearHitCollider(void);
 
+	void RemoveHitColliderByShapeAndTag(ColliderBase::SHAPE shape, ColliderBase::TAG tag);
 
+	//生存フラグ取得
+	const bool GetIsAlive(void)const { return isAlive_; }
 
 protected:
+
+	bool isAlive_;
 
 	// シングルトン参照
 	ResourceManager& resMng_;

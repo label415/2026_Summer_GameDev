@@ -12,6 +12,7 @@ CharactorBase::CharactorBase(void)
 	:
 	ActorBase()
 {
+	isGround_ = false;
 }
 
 CharactorBase::~CharactorBase(void)
@@ -177,6 +178,10 @@ void CharactorBase::CollisionCapsule(void)
 	const auto& vecs = ownColliders_.at(capsuleType);
 	for (const auto& vec : vecs)
 	{
+		if (isGround_) {
+			if (vec->GetTag() != ColliderBase::TAG::GROUND)continue;
+		}
+
 		// カプセルコライダ情報  
 		ColliderCapsule* colliderCapsule =
 			dynamic_cast<ColliderCapsule*>(vec);
