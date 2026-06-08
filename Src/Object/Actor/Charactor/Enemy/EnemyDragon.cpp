@@ -7,6 +7,8 @@
 #include "../../../Common/Collider/ColliderModel.h"
 #include "../../../Common/Collider/ColliderSphere.h"
 #include "../../../Common/Collider/ColliderBase.h"
+#include "../../../../Libs/ImGui/imgui.h"
+#include "../../../../Utility/ModelFrameUtility.h"
 #include "EnemyDragon.h"
 
 EnemyDragon::EnemyDragon(const EnemyBase::EnemyData& data)
@@ -91,6 +93,14 @@ void EnemyDragon::InitCollider(void)
 	colLines.push_back(groundLine);
 	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::LINE), colLines);
 
+
+	lh.pos = MV1GetFramePosition(transform_.modelId, 66);
+	rh.pos = MV1GetFramePosition(transform_.modelId, 104);
+
+	ll.pos = MV1GetFramePosition(transform_.modelId, 112);
+	rl.pos = MV1GetFramePosition(transform_.modelId, 3);
+
+
 	//カプセル
 	std::vector<ColliderBase*> colCapsules;
 
@@ -102,25 +112,25 @@ void EnemyDragon::InitCollider(void)
 	colCapsules.push_back(groundCapsule);
 
 	ColliderCapsule* lLegCapsule = new ColliderCapsule(
-		ColliderBase::TAG::ENEMY, &transform_,
+		ColliderBase::TAG::ENEMY, &ll,
 		L_LEG_TOP_LOCAL_POS,
 		L_LEG_DOWN_LOCAL_POS, LEG_RADIUS);
 	colCapsules.push_back(lLegCapsule);
 
 	ColliderCapsule* rLegCapsule = new ColliderCapsule(
-		ColliderBase::TAG::ENEMY, &transform_,
+		ColliderBase::TAG::ENEMY, &rl,
 		R_LEG_TOP_LOCAL_POS,
 		R_LEG_DOWN_LOCAL_POS, LEG_RADIUS);
 	colCapsules.push_back(rLegCapsule);
 
 	ColliderCapsule* lHandCapsule = new ColliderCapsule(
-		ColliderBase::TAG::ENEMY, &transform_,
+		ColliderBase::TAG::ENEMY, &lh,
 		L_HAND_TOP_LOCAL_POS,
 		L_HAND_DOWN_LOCAL_POS, LEG_RADIUS);
 	colCapsules.push_back(lHandCapsule);
 
 	ColliderCapsule* rHandCapsule = new ColliderCapsule(
-		ColliderBase::TAG::ENEMY, &transform_,
+		ColliderBase::TAG::ENEMY, &rh,
 		R_HAND_TOP_LOCAL_POS,
 		R_HAND_DOWN_LOCAL_POS, LEG_RADIUS);
 	colCapsules.push_back(rHandCapsule);
@@ -216,34 +226,98 @@ void EnemyDragon::InitPost(void)
 
 	// 初期状態設定
 	ChangeState(STATE::IDLE);
+
+	a = COL_LINE_START_LOCAL_POS;
+	b = COL_LINE_END_LOCAL_POS;
+	c = COL_CAPSULE_TOP_LOCAL_POS;
+	d = COL_CAPSULE_DOWN_LOCAL_POS;
 }
 
 void EnemyDragon::UpdateProcess(void)
 {
-	HitDamage();
 
-	for (const auto& hitCol : hitColliders_)
-	{
-		for (const auto& i : hitCol.second)
-		{
-			// モデル以外は処理を飛ばす  
-			if (i->GetShape() != ColliderBase::SHAPE::MODEL
-				&& i->GetTag() != ColliderBase::TAG::PLAYER) continue;
+	//for (const auto& hitCol : hitColliders_)
+	//{
+	//	for (const auto& i : hitCol.second)
+	//	{
+	//		// モデル以外は処理を飛ばす  
+	//		if (i->GetShape() != ColliderBase::SHAPE::MODEL
+	//			&& i->GetTag() != ColliderBase::TAG::WEPON) continue;
 
-			const ColliderCapsule* colliderCapsule =
-				dynamic_cast<ColliderCapsule*>(i);
+	//		const ColliderCapsule* colliderCapsule =
+	//			dynamic_cast<ColliderCapsule*>(i);
 
-			if (colliderCapsule == nullptr) continue;
+	//		if (colliderCapsule == nullptr) continue;
 
-			VECTOR nom = VNorm(VSub(colliderCapsule->GetFollow()->pos, transform_.pos));
+	//		VECTOR nom = VNorm(VSub(colliderCapsule->GetFollow()->pos, transform_.pos));
 
-			moveDir_ = nom;
-		}
-	}
+	//		nom.y = 0.0f;
+	//		moveDir_ = nom;
+	//	}
+	//}
 
 	anim_->SetRoot(L"Bone", LOCK_POS);
 	// 状態別更新
-	//stateUpdate_();
+	stateUpdate_();
+
+	lh.pos = MV1GetFramePosition(transform_.modelId, 66);
+	rh.pos = MV1GetFramePosition(transform_.modelId, 104);
+
+	ll.pos = MV1GetFramePosition(transform_.modelId, 112);
+	rl.pos = MV1GetFramePosition(transform_.modelId, 3);
+
+	UpdateDebugImGui();
+
+	const auto& vec1 = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE));
+	if (!vec1.empty())
+	{
+		ColliderLine* colliderLine = dynamic_cast<ColliderLine*>(vec1.front());
+		if (colliderLine)
+		{
+			colliderLine->SetLocalPosStart(a);
+			colliderLine->SetLocalPosEnd(b);
+		}
+	}
+
+	const auto& vec2 = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+	if (!vec2.empty())
+	{
+		ColliderCapsule* colliderCapsule = dynamic_cast<ColliderCapsule*>(vec2.front());
+		if (colliderCapsule)
+		{
+			colliderCapsule->SetLocalPosTop(c);
+			colliderCapsule->SetLocalPosDown(d);
+		}
+	}
+}
+
+void EnemyDragon::UpdateDebugImGui(void)
+{
+	// ウィンドウタイトル&開始処理
+	ImGui::Begin("EnemyDragon");
+	// 位置
+	ImGui::Text("LS");
+	ImGui::InputFloat("aX", &a.x);
+	ImGui::InputFloat("aY", &a.y);
+	ImGui::InputFloat("aZ", &a.z);
+
+	ImGui::Text("LE");
+	ImGui::InputFloat("bX", &b.x);
+	ImGui::InputFloat("bY", &b.y);
+	ImGui::InputFloat("bZ", &b.z);
+
+	ImGui::Text("CU");
+	ImGui::InputFloat("cX", &c.x);
+	ImGui::InputFloat("cY", &c.y);
+	ImGui::InputFloat("cZ", &c.z);
+
+	ImGui::Text("CD");
+	ImGui::InputFloat("dX", &d.x);
+	ImGui::InputFloat("dY", &d.y);
+	ImGui::InputFloat("dZ", &d.z);
+
+	// 終了処理
+	ImGui::End();
 }
 
 void EnemyDragon::UpdateProcessPost(void)
@@ -302,6 +376,7 @@ void EnemyDragon::ChangeStateThink(void)
 
 void EnemyDragon::ChangeStateIdle(void)
 {
+
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateIdle, this);
 	// ランダムな待機時間
 	step_ = 1.0f + static_cast<float>(GetRand(2));
@@ -433,12 +508,12 @@ void EnemyDragon::UpdateThink(void)
 void EnemyDragon::UpdateIdle(void)
 {
 	step_ -= scnMng_.GetDeltaTime();
-	if (step_ < 0.0f)
-	{
-		// 待機終了
-		ChangeState(STATE::THINK);
-		return;
-	}
+	//if (step_ < 0.0f)
+	//{
+	//	// 待機終了
+	//	ChangeState(STATE::THINK);
+	//	return;
+	//}
 }
 
 void EnemyDragon::UpdateRoar(void)
@@ -575,9 +650,11 @@ void EnemyDragon::SetTargetCollider(void)
 	}
 }
 
-void EnemyDragon::HitDamage(void)
+void EnemyDragon::HitDamage(bool isHit)
 {
 	IsDamage_ = false;
+
+	if (!isHit)return;
 
 	// カプセルコライダ  
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::MODEL);

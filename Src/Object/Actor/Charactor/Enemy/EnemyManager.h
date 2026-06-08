@@ -27,6 +27,9 @@ public:
 	// 解放
 	void Release(void);
 
+	// 衝突判定
+	void HitDamegr(bool isHit);
+
 	// エネミー
 	const std::vector<EnemyBase*>& GetEemies(void) const { return enemys_; }
 

@@ -49,6 +49,8 @@ public:
 	//ダッシュ時スタミナ消費量
 	static constexpr float CONSUMPTION_ST_FAST_RUN = 25.0f;
 
+	//攻撃判定発生時間
+	static constexpr float STATE_ATTACK_CILLIDER = 18.0f;
 
 	// コンストラクタ
 	Player(void);
@@ -65,6 +67,8 @@ public:
 	void SetTargetTransform(const Transform* transform);
 
 	const WeponBase* GetWepon(void)const { return weponBlade_; }
+
+	const bool GetIsAttack(void)const { return isAttack_; }
 
 protected:
 

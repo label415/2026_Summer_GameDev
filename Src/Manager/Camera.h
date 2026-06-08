@@ -143,6 +143,8 @@ private:
 	// ƒJƒƒ‰Šp“x(Y²‚Ì‚İ)
 	Quaternion rotY_;
 
+	float angleY;
+
 	// ’‹“_
 	VECTOR targetPos_;
 	

@@ -123,6 +123,9 @@ void Player::InitPost(void)
 
 	//スタミナ
 	st_ = MAX_ST;
+
+	//攻撃フラグ
+	isAttack_ = false;
 }
 
 void Player::ProcessMove(void)
@@ -267,17 +270,19 @@ void Player::ProcessAttack(void)
 
 	if (isHitAttack && !isJump_ && state_ == STATE::IDLE){
 		state_ = STATE::ATTACK;
-		weponBlade_->UpdateCollider();
 	}
-
 	if (state_ != STATE::ATTACK) return;
-
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::ATTACK), false);
 
+	if (anim_->GetPlayAnim().step >= STATE_ATTACK_CILLIDER)
+	{ 
+		isAttack_ = true;
+	}
+
 	if (anim_->IsEnd()) {
-		weponBlade_->ClearCollider();
 		state_ = STATE::IDLE;
+		isAttack_ = false;
 	}
 }
 

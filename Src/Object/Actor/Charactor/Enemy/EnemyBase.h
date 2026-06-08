@@ -34,6 +34,8 @@ public:
     // •`‰æ
     virtual void Draw(void) override;
 
+    virtual void HitDamage(bool isHit){}
+
 protected:
 
     // ó‘ÔŠÇ—

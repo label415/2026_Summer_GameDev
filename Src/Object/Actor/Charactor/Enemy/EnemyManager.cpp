@@ -46,6 +46,14 @@ void EnemyManager::Release(void)
 	}
 }
 
+void EnemyManager::HitDamegr(bool isHit)
+{
+	for (auto& enemy : enemys_)
+	{
+		enemy->HitDamage(isHit);
+	}
+}
+
 void EnemyManager::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
 {
 	for (auto& enemy : enemys_)

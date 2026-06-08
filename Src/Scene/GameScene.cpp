@@ -72,18 +72,10 @@ void GameScene::Update(void)
 	player_->Update();
 
 	enemys_->Update();
+	enemys_->HitDamegr(player_->GetIsAttack());
 
 	UpdateAutoLockOn();
 
-	const WeponBase* wepon = player_->GetWepon();
-
-	if (wepon && wepon->GetIsAlive()) {
-		const std::vector<ColliderBase*> weponColliders = wepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-		enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColliders);
-	}
-	else{
-		enemys_->RemoveCollider(ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::WEPON);
-	}
 }
 
 void GameScene::Draw(void)
@@ -93,18 +85,18 @@ void GameScene::Draw(void)
 	// シャドウマップへの描画の準備
 	ShadowMap_DrawSetup(ShadowMapHandle);
 	//ステージ描画
+	stage_->Draw();
 	player_->Draw();
 	enemys_->Draw();
-	stage_->Draw();
 	// シャドウマップへの描画を終了
 	ShadowMap_DrawEnd();
 
 	// 描画に使用するシャドウマップを設定
 	SetUseShadowMap(0, ShadowMapHandle);
 	//ステージ描画
+	stage_->Draw();
 	player_->Draw();
 	enemys_->Draw();
-	stage_->Draw();
 	// 描画に使用するシャドウマップの設定を解除
 	SetUseShadowMap(0, -1);
 
@@ -120,33 +112,6 @@ void GameScene::Draw(void)
 			true);
 
 	}
-
-#ifdef _DEBUG
-
-	/*MATRIX mat = MGetIdent();
-	mat = MatrixUtility::GetMatrixRotateXYZ(camera_->GetAngles());
-
-	VECTOR forward = camera_->GetForward();
-
-	MATRIX rightMat = MMult(mat, MGetRotY(AsoUtility::Deg2RadF(35.0f)));
-	VECTOR right = VTransform(AsoUtility::DIR_F, rightMat);
-
-	MATRIX leftMat = MMult(mat, MGetRotY(AsoUtility::Deg2RadF(-35.0f)));
-	VECTOR left = VTransform(AsoUtility::DIR_F, leftMat);
-
-	VECTOR pos0 = camera_->GetPos();
-	VECTOR pos1 = VAdd(pos0, VScale(forward, MAX_LOCKON_DIFF));
-	VECTOR pos2 = VAdd(pos0, VScale(right, MAX_LOCKON_DIFF));
-	VECTOR pos3 = VAdd(pos0, VScale(left, MAX_LOCKON_DIFF));
-
-	pos0.y = pos1.y = pos2.y = pos3.y = 0.0f;
-	DrawTriangle3D(pos0, pos1, pos2, 0xdd77dd, true);
-	DrawTriangle3D(pos0, pos3, pos1, 0xdd77dd, true);
-
-	DrawLine3D(pos0, pos1, 0x000000);
-	DrawLine3D(pos0, pos2, 0x000000);
-	DrawLine3D(pos0, pos3, 0x000000); */
-#endif
 }
 
 void GameScene::Release(void)
@@ -175,12 +140,15 @@ void GameScene::RegistCollider(void)
 	// ステージモデルのコライダーをプレイヤーに登録
 	const std::vector<ColliderBase*> stageCollider =
 		stage_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::MODEL));
-
+	const WeponBase* wepon = player_->GetWepon();
+	const std::vector<ColliderBase*> weponColliders =
+		wepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 	const std::vector<ColliderBase*> cameraCollider =
 		camera_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
 
 	player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
 	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
+	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColliders);
 	camera_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
 	stage_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE),cameraCollider);
 

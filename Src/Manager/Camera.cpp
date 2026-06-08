@@ -21,6 +21,7 @@ Camera::Camera(void)
 	// 注視点の位置は x = 320.0f, y = 240.0f, z = 1.0f
 	// カメラの上方向は x = 0.0f, y = 1.0f, z = 0.0f
 	// 右上位置からZ軸のプラス方向を見るようなカメラ
+	angleY = 0.0f;
 }
 
 Camera::~Camera(void)
@@ -199,6 +200,10 @@ void Camera::SyncFollow(void)
 	VECTOR pos = followTransform_->pos;
 
 	// Y軸
+	if(angleY != 0.0f){
+		angles_.y = angleY;
+		angleY = 0.0f;
+	}
 	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
 
 	// Y軸 + X軸
@@ -223,7 +228,7 @@ void Camera::SynLockOn(void)
 	VECTOR TargetPos = targetTransform_->pos;
 
 	VECTOR toTarget = VSub(TargetPos, followPos);
-	float angleY = atan2f(toTarget.x, toTarget.z);
+	angleY = atan2f(toTarget.x, toTarget.z);
 	angles_.y = angleY;
 
 	// Y軸

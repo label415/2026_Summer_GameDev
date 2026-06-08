@@ -12,12 +12,6 @@ public:
 	// 更新
 	virtual void Update(void) override;
 
-	//更新時当たり判定登録
-	virtual void UpdateCollider(void){}
-
-	//当たり判定解除
-	virtual void ClearCollider(void) {}
-
 protected:
 	// 追従先Transform
 	const Transform& followTransform_;

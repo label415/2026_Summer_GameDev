@@ -6,7 +6,6 @@ WeponBlade::WeponBlade(const Transform& followTransform, int followFrameId)
 	:
 	WeponBase(followTransform, followFrameId)
 {
-	isAlive_ = false;
 }
 WeponBlade::~WeponBlade(void)
 {
@@ -36,19 +35,6 @@ void WeponBlade::InitTransform(void)
 }
 void WeponBlade::InitCollider(void)
 {
-}
-
-void WeponBlade::InitAnimation(void)
-{
-}
-
-void WeponBlade::InitPost(void)
-{
-}
-
-void WeponBlade::UpdateCollider(void)
-{
-	isAlive_ = true;
 	ColliderCapsule* colCapsule = new ColliderCapsule(
 		ColliderBase::TAG::WEPON, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
@@ -59,8 +45,10 @@ void WeponBlade::UpdateCollider(void)
 	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsules);
 }
 
-void WeponBlade::ClearCollider(void)
+void WeponBlade::InitAnimation(void)
 {
-	isAlive_ = false;
-	ownColliders_.erase(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+}
+
+void WeponBlade::InitPost(void)
+{
 }

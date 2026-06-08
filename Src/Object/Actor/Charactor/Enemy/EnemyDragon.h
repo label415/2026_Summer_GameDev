@@ -62,6 +62,8 @@ public:
 	~EnemyDragon(void) override;
 	// 描画
 	void Draw(void) override;
+
+	void HitDamage(bool isHit)override;
 protected:
 	// リソースロード
 	void InitLoad(void) override;
@@ -97,27 +99,27 @@ private:
 
 
 	// 左足衝突判定用カプセル上部球体
-	static constexpr VECTOR L_LEG_TOP_LOCAL_POS = { -100.0f, 110.0f, 30.0f };
+	static constexpr VECTOR L_LEG_TOP_LOCAL_POS = { 10.0f, 90.0f, -50.0f };
 	// 左足突判定用カプセル下部球体
-	static constexpr VECTOR L_LEG_DOWN_LOCAL_POS = { -100.0f, 30.0f, 30.0f };
+	static constexpr VECTOR L_LEG_DOWN_LOCAL_POS = { 0.0f, -30.0f, -30.0f };
 
 	// 左足衝突判定用カプセル上部球体
-	static constexpr VECTOR R_LEG_TOP_LOCAL_POS = { 100.0f, 110.0f, 30.0f };
+	static constexpr VECTOR R_LEG_TOP_LOCAL_POS = { -10.0f, 90.0f, -50.0f };
 	// 左足衝突判定用カプセル下部球体
-	static constexpr VECTOR R_LEG_DOWN_LOCAL_POS = { 100.0f, 30.0f, 30.0f };
+	static constexpr VECTOR R_LEG_DOWN_LOCAL_POS = { 0.0f, -30.0f, -30.0f };
 
 	// 各足衝突判定用カプセル球体半径
-	static constexpr float LEG_RADIUS = 35.0f;
+	static constexpr float LEG_RADIUS = 40.0f;
 
 	// 左手衝突判定用カプセル上部球体
-	static constexpr VECTOR L_HAND_TOP_LOCAL_POS = { 320.0f, 130.0f, 340.0f };
+	static constexpr VECTOR L_HAND_TOP_LOCAL_POS = { -30.0f, 90.0f, 0.0f };
 	// 左手足衝突判定用カプセル下部球体
-	static constexpr VECTOR L_HAND_DOWN_LOCAL_POS = { 320.0f, 20.0f, 380.0f };
+	static constexpr VECTOR L_HAND_DOWN_LOCAL_POS = { 0.0f, -60.0f, -20.0f };
 
 	// 右手衝突判定用カプセル上部球体
-	static constexpr VECTOR R_HAND_TOP_LOCAL_POS = { -320.0f, 130.0f, 340.0f };
+	static constexpr VECTOR R_HAND_TOP_LOCAL_POS = { 30.0f, 90.0f, 0.0f };
 	// 右手衝突判定用カプセル下部球体
-	static constexpr VECTOR R_HAND_DOWN_LOCAL_POS = { -320.0f, 20.0f, 380.0f };
+	static constexpr VECTOR R_HAND_DOWN_LOCAL_POS = { 0.0f, -60.0f, -20.0f };
 
 	// 最高高度
 	static constexpr float MAX_TAKE = 500.0f;
@@ -197,6 +199,17 @@ private:
 
 	bool IsDamage_;
 
-	void HitDamage(void);
+	Transform lh;
+	Transform rh;
+
+	Transform ll;
+	Transform rl;
+
+	VECTOR a;
+	VECTOR b;
+	VECTOR c;
+	VECTOR d;
+
+	void UpdateDebugImGui(void);
 };
 

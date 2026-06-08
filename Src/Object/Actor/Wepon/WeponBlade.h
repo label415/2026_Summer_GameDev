@@ -12,11 +12,6 @@ public:
 	// 更新
 	void Update(void) override;
 
-	//更新時当たり判定登録
-	void UpdateCollider(void) override;
-
-	void ClearCollider(void) override;
-
 protected:
 	// リソースロード
 	void InitLoad(void) override;
