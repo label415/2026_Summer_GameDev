@@ -56,6 +56,12 @@ public:
 		float moveSpeed_;
 	};
 
+	//部位のカプセルフレーム
+	struct FramePair {
+		int top;
+		int down;
+	};
+
 	// コンストラクタ
 	EnemyDragon(const EnemyBase::EnemyData& data);
 	// デストラクタ
@@ -97,29 +103,11 @@ private:
 	// 地面衝突判定用カプセル球体半径
 	static constexpr float COL_CAPSULE_RADIUS = 30.0f;
 
+	// 攻撃判定用カプセル球体半径
+	static constexpr float HIT_RADIUS = 50.0f;
 
-	// 左足衝突判定用カプセル上部球体
-	static constexpr VECTOR L_LEG_TOP_LOCAL_POS = { 10.0f, 90.0f, -50.0f };
-	// 左足突判定用カプセル下部球体
-	static constexpr VECTOR L_LEG_DOWN_LOCAL_POS = { 0.0f, -30.0f, -30.0f };
-
-	// 左足衝突判定用カプセル上部球体
-	static constexpr VECTOR R_LEG_TOP_LOCAL_POS = { -10.0f, 90.0f, -50.0f };
-	// 左足衝突判定用カプセル下部球体
-	static constexpr VECTOR R_LEG_DOWN_LOCAL_POS = { 0.0f, -30.0f, -30.0f };
-
-	// 各足衝突判定用カプセル球体半径
-	static constexpr float LEG_RADIUS = 40.0f;
-
-	// 左手衝突判定用カプセル上部球体
-	static constexpr VECTOR L_HAND_TOP_LOCAL_POS = { -30.0f, 90.0f, 0.0f };
-	// 左手足衝突判定用カプセル下部球体
-	static constexpr VECTOR L_HAND_DOWN_LOCAL_POS = { 0.0f, -60.0f, -20.0f };
-
-	// 右手衝突判定用カプセル上部球体
-	static constexpr VECTOR R_HAND_TOP_LOCAL_POS = { 30.0f, 90.0f, 0.0f };
-	// 右手衝突判定用カプセル下部球体
-	static constexpr VECTOR R_HAND_DOWN_LOCAL_POS = { 0.0f, -60.0f, -20.0f };
+	// 胴体衝突判定用カプセル球体半径
+	static constexpr float TORSO_RADIUS = 100.0f;
 
 	// 最高高度
 	static constexpr float MAX_TAKE = 500.0f;
@@ -131,6 +119,23 @@ private:
 	static constexpr float SPEED_MOVE = 5.0f;
 	// 移動速度(ダッシュ)
 	static constexpr float SPEED_DASH = 10.0f;
+
+	//各部位のフレーム
+	static constexpr FramePair ENEMY_CAPSULE_FRAMES[] =
+	{
+		// 胴体
+		{ 1, 8 },
+		// 首上
+		{ 10, 12 }, { 12, 15 },
+		// 頭
+		{ 15, 30 },
+		// 尻尾
+		{ 10, 116 }, { 116, 119 }, { 119, 123 }, { 123, 129 },
+		// 手
+		{ 75, 76 }, { 37, 38 },
+		// 足
+		{ 2, 4 }, { 111, 113 }
+	};
 
 	// 状態
 	STATE state_;
@@ -197,18 +202,7 @@ private:
 	//対象コライダーの設定
 	void SetTargetCollider(void);
 
-	bool IsDamage_;
-
-	Transform lh;
-	Transform rh;
-
-	Transform ll;
-	Transform rl;
-
-	VECTOR a;
-	VECTOR b;
-	VECTOR c;
-	VECTOR d;
+	Transform colTransform_;
 
 	void UpdateDebugImGui(void);
 };

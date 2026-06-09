@@ -24,35 +24,43 @@ void ModelFrameUtility::SetFrameWorldMatrix(
 	const Transform & follow, int followFrameIdx,
 	Transform & target, VECTOR localPos, VECTOR localRot)
 {
-	// 親フレームのワールド合成行列を取得
+	// 1. 親フレームのワールド合成行列を取得
 	MATRIX parentWorldMat = MV1GetFrameLocalWorldMatrix(follow.modelId, followFrameIdx);
 
-	// 子ローカル行列を作成
-	MATRIX matLocal = MGetIdent();
-	matLocal = MMult(matLocal, MGetScale(target.scl));
-	matLocal = MMult(matLocal, MatrixUtility::GetMatrixRotateXYZ(localRot));
-	matLocal = MMult(matLocal, MGetTranslate(localPos));
+	// 2. 親の行列から「ワールド座標」だけを純粋に抽出
+	VECTOR parentWorldPos = MGetTranslateElem(parentWorldMat);
 
-	// ワールド行列を合成
-	MATRIX worldMat = MMult(matLocal, parentWorldMat);
+	// 3. 親の行列から「回転成分」のみを抽出（スケールを排除）
+	VECTOR parentScl = MGetSize(parentWorldMat);
+	if (parentScl.x == 0.0f || parentScl.y == 0.0f || parentScl.z == 0.0f) { parentScl = AsoUtility::VECTOR_ONE; }
+	MATRIX parentRotMat = MGetRotElem(parentWorldMat);
+	auto revParentScl = VGet(1.0f / parentScl.x, 1.0f / parentScl.y, 1.0f / parentScl.z);
+	parentRotMat = MMult(parentRotMat, MGetScale(revParentScl));
 
-	// ワールド行列から大きさ・回転・位置を抽出
-	VECTOR scl = MGetSize(worldMat);
+	// 4. 指定された回転（Z軸-90度など）の行列を作成
+	MATRIX matRotLocal = MatrixUtility::GetMatrixRotateXYZ(localRot);
 
-	// ゼロ防止
-	if (scl.x == 0.0f || scl.y == 0.0f || scl.z == 0.0f) { scl = AsoUtility::VECTOR_ONE; }
-	target.scl = scl;
+	// 5. 【ここを修正】世界（ワールド）基準の回転に対して、親の回転を乗せる
+	// 順番を「子 × 親」にすることで、親のローカル軸ではなく、世界の軸を基準に回ります
+	MATRIX finalRotMat = MMult(matRotLocal, parentRotMat);
 
-	// 回転成分（まずは回転＋スケール成分を抜く）
-	target.matRot = MGetRotElem(worldMat);
+	// 6. 最終的なワールド行列を組み立てる
+	MATRIX worldMat = MGetIdent();
+	worldMat = MMult(worldMat, MGetScale(target.scl)); // 子のスケール
+	worldMat = MMult(worldMat, finalRotMat);           // 合成した回転
+	worldMat = MMult(worldMat, MGetTranslate(parentWorldPos)); // 親のワールド位置
 
-	// 回転のみを残す（スケールを除去）
-	auto revScl = VGet(1.0f / scl.x, 1.0f / scl.y, 1.0f / scl.z);
-	target.matRot = MMult(target.matRot, MGetScale(revScl));
+	// もし localPos が指定されている場合は、親の向きに合わせて位置をオフセット
+	if (VSize(localPos) > 0.0f) {
+		VECTOR offsetPos = VTransform(localPos, parentRotMat);
+		worldMat = MMult(worldMat, MGetTranslate(offsetPos));
+	}
 
-	// 位置
-	target.pos = MGetTranslateElem(worldMat);
+	// 7. target にデータを格納
+	target.scl = target.scl;
+	target.matRot = finalRotMat;              // 呼び出し側の GetRotation に渡る行列
+	target.pos = MGetTranslateElem(worldMat); // 正しいワールド座標
 
-	// ローカル情報は保持しておく（必要なら）
+	// ローカル情報は保持しておく
 	target.localPos = localPos;
 }

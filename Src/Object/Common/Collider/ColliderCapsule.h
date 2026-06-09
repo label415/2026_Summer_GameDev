@@ -12,6 +12,9 @@ public:
 	ColliderCapsule(
 		TAG tag, const Transform* follow,
 		const VECTOR& localPosTop, const VECTOR& localPosDown, float radius);
+	ColliderCapsule(
+		TAG tag, const Transform* follow, float radius,
+		const VECTOR& localPosTop = { 0.0f, 0.0f, 0.0f }, const VECTOR& localPosDown = { 0.0f, 0.0f, 0.0f });
 	// デストラクタ
 	~ColliderCapsule(void);
 	// 親Transformからの相対位置を取得
@@ -40,6 +43,11 @@ public:
 	// 指定された回数と距離で三角形の法線方向に押し戻す
 	void PushBackAlongNormal(
 		const ColliderModel* colliderModel, Transform& transform,
+		int maxTryCnt, float pushDistance,
+		bool isExclude = false, bool isTarget = false) const;
+
+	void PushBackAlongNormal(
+		const ColliderCapsule* colliderCapsule, Transform& transform,
 		int maxTryCnt, float pushDistance,
 		bool isExclude = false, bool isTarget = false) const;
 

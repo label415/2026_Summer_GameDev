@@ -140,11 +140,6 @@ EnemyBase* EnemyManager::Create(const EnemyBase::EnemyData& data)
 	return enemy;
 }
 
-const std::vector<EnemyBase*>& EnemyManager::GetEnemys(void) const
-{
-	return enemys_;
-}
-
 void EnemyManager::RemoveCollider(ColliderBase::SHAPE shape, ColliderBase::TAG tag)
 {
 	for (auto& enemy : enemys_)

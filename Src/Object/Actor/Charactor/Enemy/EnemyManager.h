@@ -31,7 +31,7 @@ public:
 	void HitDamegr(bool isHit);
 
 	// エネミー
-	const std::vector<EnemyBase*>& GetEemies(void) const { return enemys_; }
+	const std::vector<EnemyBase*>& GetEnemys(void) const { return enemys_; }
 
 	// 衝突対象となるコライダを登録
 	void AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider);
@@ -41,8 +41,6 @@ public:
 
 	// エネミー生成
 	EnemyBase* Create(const EnemyBase::EnemyData& data);
-
-	const std::vector<EnemyBase*>& GetEnemys(void) const;
 
 	void RemoveCollider(ColliderBase::SHAPE shape, ColliderBase::TAG tag);
 

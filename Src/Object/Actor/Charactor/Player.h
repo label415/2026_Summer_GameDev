@@ -63,6 +63,8 @@ public:
 	// ‰ğ•ú
 	void Release(void)override;
 
+	void HitDamage(bool isHit)override;
+
 	//ƒƒbƒNƒIƒ“‘ÎÛ‚Ìİ’è
 	void SetTargetTransform(const Transform* transform);
 

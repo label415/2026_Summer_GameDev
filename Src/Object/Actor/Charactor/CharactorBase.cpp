@@ -13,6 +13,7 @@ CharactorBase::CharactorBase(void)
 	ActorBase()
 {
 	isGround_ = false;
+	IsDamage_ = false;
 }
 
 CharactorBase::~CharactorBase(void)

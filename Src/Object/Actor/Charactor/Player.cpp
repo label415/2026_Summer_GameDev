@@ -1,3 +1,4 @@
+#include <DxLib.h>
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/SceneManager.h"
 #include "../../../Manager/Camera.h"
@@ -36,6 +37,52 @@ void Player::Release(void)
 	weponBlade_->Release();
 	delete weponBlade_;
 	weponBlade_ = nullptr;
+}
+
+void Player::HitDamage(bool isHit)
+{
+	IsDamage_ = false;
+
+	// カプセルコライダ  
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
+
+	// カプセルコライダが無ければ処理を抜ける  
+	if (ownColliders_.count(capsuleType) == 0) return;
+
+	const auto& vecs = ownColliders_.at(capsuleType);
+	for (const auto& vec : vecs)
+	{
+		// カプセルコライダ情報  
+		const ColliderCapsule* colliderCapsule1 =
+			dynamic_cast<const ColliderCapsule*>(vec);
+
+		if (colliderCapsule1 == nullptr) return;
+
+		// 登録されている衝突物を全てチェック  
+		for (const auto& hitCol : hitColliders_)
+		{
+			for (const auto& i : hitCol.second)
+			{
+				// モデル以外は処理を飛ばす  
+				if (i->GetShape() != ColliderBase::SHAPE::CAPSULE) continue;
+
+				if (i->GetTag() != ColliderBase::TAG::ENEMY) continue;
+
+				ColliderCapsule* colliderCapsule2 =
+					dynamic_cast<ColliderCapsule*>(i);
+
+				if (colliderCapsule2 == nullptr) continue;
+
+				if (HitCheck_Capsule_Capsule(
+					colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
+					colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius()))
+				{
+					IsDamage_ = true;
+					transform_.pos = prevPos_;
+				}
+			}
+		}
+	}
 }
 
 void Player::SetTargetTransform(const Transform* transform)

@@ -18,6 +18,9 @@ public:
     // 解放
     virtual void Release(void) override;
 
+    //当たり判定
+    virtual void HitDamage(bool isHit) {}
+
 protected:
 
     //地面との当たり判定フラグ
@@ -61,5 +64,8 @@ protected:
     void Collision(void);
     void CollisionGravity(void);
     void CollisionCapsule(void);
+
+    //ダメージフラグ
+    bool IsDamage_;
 };
 

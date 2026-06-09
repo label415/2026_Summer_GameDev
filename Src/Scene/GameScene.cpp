@@ -70,9 +70,11 @@ void GameScene::Update(void)
 	stage_->Update();
 
 	player_->Update();
+	player_->HitDamage(false);
 
 	enemys_->Update();
 	enemys_->HitDamegr(player_->GetIsAttack());
+
 
 	UpdateAutoLockOn();
 
@@ -140,18 +142,35 @@ void GameScene::RegistCollider(void)
 	// ステージモデルのコライダーをプレイヤーに登録
 	const std::vector<ColliderBase*> stageCollider =
 		stage_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::MODEL));
+
 	const WeponBase* wepon = player_->GetWepon();
 	const std::vector<ColliderBase*> weponColliders =
 		wepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+
+	
+
 	const std::vector<ColliderBase*> cameraCollider =
 		camera_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
 
-	player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
-	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
-	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColliders);
-	camera_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL),stageCollider);
-	stage_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE),cameraCollider);
+	player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
 
+	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
+	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColliders);
+
+	camera_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
+
+	stage_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE), cameraCollider);
+
+	const auto& enemys = enemys_->GetEnemys();
+	for (auto& enemy : enemys)
+	{
+		if (enemy == nullptr)continue;
+
+		const std::vector<ColliderBase*> enemyColliders =
+			enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+
+		player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), enemyColliders);
+	}
 }
 
 void GameScene::UpdateAutoLockOn(void)

@@ -17,7 +17,7 @@ public:
 	static constexpr int BACKGROUND_COLOR_B = 139;
 
 	// ディレクショナルライトの方向
-	static constexpr VECTOR LIGHT_DIRECTION = { 0.3f, -0.7f, 0.8f };
+	static constexpr VECTOR LIGHT_DIRECTION = { 1.0f, -1.0f, 1.0f };
 
 	// シーン管理用
 	enum class SCENE_ID

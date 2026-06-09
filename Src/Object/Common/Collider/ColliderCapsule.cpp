@@ -14,6 +14,16 @@ ColliderCapsule::ColliderCapsule(
 	radius_(radius)
 {
 }
+ColliderCapsule::ColliderCapsule(
+	TAG tag, const Transform* follow, float radius,
+	const VECTOR& localPosTop, const VECTOR& localPosDown)
+	:
+	ColliderBase(SHAPE::CAPSULE, tag, follow),
+	localPosTop_(localPosTop),
+	localPosDown_(localPosDown),
+	radius_(radius)
+{
+}
 ColliderCapsule::~ColliderCapsule(void)
 {
 }
@@ -115,6 +125,23 @@ void ColliderCapsule::PushBackAlongNormal(const ColliderModel* colliderModel, Tr
 	}
 	// 検出した地面ポリゴン情報の後始末
 	MV1CollResultPolyDimTerminate(hits);
+}
+
+void ColliderCapsule::PushBackAlongNormal(const ColliderCapsule* colliderCapsule, Transform& transform, int maxTryCnt, float pushDistance, bool isExclude, bool isTarget) const
+{
+	auto hits = HitCheck_Capsule_Capsule(
+		colliderCapsule->GetPosTop(), colliderCapsule->GetPosDown(), colliderCapsule->GetRadius(),
+		GetPosTop(), GetPosDown(), GetRadius());
+
+	if (hits)return;
+
+	int tryCnt = 0;
+	if (tryCnt < maxTryCnt) {
+
+		VECTOR dir = VSub(transform.pos, colliderCapsule->GetFollow()->pos);
+		transform.pos = VAdd(transform.pos, VScale(, pushDistance));
+	}
+
 }
 
 bool ColliderCapsule::IsHit(const ColliderModel* colliderModel, bool isExclude, bool isTarget) const
