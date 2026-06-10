@@ -567,4 +567,25 @@ std::vector<std::string> AsoUtility::Split(std::string& line, char delimiter)
     return result;
 }
 
+VECTOR AsoUtility::GetMinHitPos(const VECTOR& statePos, const VECTOR& endPos, const VECTOR& targetPos)
+{
+    VECTOR segmentVec = VSub(endPos, statePos);
+    VECTOR toTargetVec = VSub(endPos, statePos);
+
+    float lenSquare = static_cast<float>(VSquareSize(segmentVec));
+
+    if (lenSquare < 1e-6)
+    {
+        return statePos;
+    }
+
+    float segmentRatio = VDot(toTargetVec, segmentVec) / lenSquare;
+
+    if (segmentRatio < 0.0f) { segmentRatio = 0.0f; }
+    if (segmentRatio > 1.0f) { segmentRatio = 1.0f; }
+
+    VECTOR nearestPos = VAdd(statePos, VScale(segmentVec, segmentRatio));
+
+    return nearestPos;
+}
 

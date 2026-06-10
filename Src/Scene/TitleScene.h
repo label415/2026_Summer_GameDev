@@ -12,7 +12,7 @@ public:
 
 	enum class LIST
 	{
-		ASOSOLES,
+		ASOSEOUL,
 		始める,		// 続ける
 		設定,		// タイトルに戻る
 		ゲーム終了,   // ゲームの終了

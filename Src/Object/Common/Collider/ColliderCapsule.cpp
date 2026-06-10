@@ -1,5 +1,6 @@
 #include <DxLib.h>
 #include "../../Common/Transform.h"
+#include "../../../Utility/AsoUtility.h"
 #include "ColliderCapsule.h"
 #include "ColliderModel.h"
 
@@ -133,13 +134,32 @@ void ColliderCapsule::PushBackAlongNormal(const ColliderCapsule* colliderCapsule
 		colliderCapsule->GetPosTop(), colliderCapsule->GetPosDown(), colliderCapsule->GetRadius(),
 		GetPosTop(), GetPosDown(), GetRadius());
 
-	if (hits)return;
+	if (!hits)return;
 
 	int tryCnt = 0;
 	if (tryCnt < maxTryCnt) {
 
-		VECTOR dir = VSub(transform.pos, colliderCapsule->GetFollow()->pos);
-		transform.pos = VAdd(transform.pos, VScale(, pushDistance));
+		VECTOR p1 = AsoUtility::GetMinHitPos(GetPosTop(), GetPosDown(), colliderCapsule->GetFollow()->pos);
+		VECTOR p2 = AsoUtility::GetMinHitPos(colliderCapsule->GetPosTop(), colliderCapsule->GetPosDown(), GetFollow()->pos);
+		VECTOR vAB = VSub(p2, p1);
+		float distance = VSize(vAB);
+
+		float totalRadius = GetRadius() + colliderCapsule->GetRadius();
+
+		if (distance < 0.0001f) {
+			vAB = VGet(1.0f, 0.0f, 0.0f); // 適当な方向に逃げる
+			distance = 0.0001f;
+		}
+
+		// めり込んでいる距離（侵入深さ）
+		float overlap = totalRadius - distance;
+
+		// 押し出す方向（正規化ベクトル）
+		VECTOR pushDir = VNorm(vAB);
+		pushDir.y = 0.0f;
+		float pushAmount = overlap * 0.5f;
+
+		transform.pos = VAdd(transform.pos, VScale(pushDir, 10.0f));
 	}
 
 }
@@ -176,6 +196,8 @@ bool ColliderCapsule::IsHit(const ColliderModel* colliderModel, bool isExclude, 
 
 	return ret;
 }
+
+
 
 void ColliderCapsule::DrawDebug(int color)
 {

@@ -99,9 +99,19 @@ void EnemyDragon::InitCollider(void)
 
 	for (int i = 0; i < std::size(ENEMY_CAPSULE_FRAMES); i++) {
 		ColliderCapsule* hitCapsule = new ColliderCapsule(
-			ColliderBase::TAG::ENEMY, &colTransform_, HIT_RADIUS);
+			ColliderBase::TAG::ENEMY, &colTransform_,
+			AsoUtility::VECTOR_ZERO,
+			AsoUtility::VECTOR_ZERO,
+			HIT_RADIUS);
 		colCapsules.push_back(hitCapsule);
 	}
+
+	ColliderCapsule* i = new ColliderCapsule(
+		ColliderBase::TAG::ENEMY, &transform_,
+		{1000.0f, 50.0f, 1000.0f},
+		{ 500.0f, 50.0f, 500.0f },
+		100.0f);
+	colCapsules.push_back(i);
 
 	// 地面との衝突判定で使用するカプセルコライダー
 	ColliderCapsule* groundCapsule = new ColliderCapsule(

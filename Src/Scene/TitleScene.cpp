@@ -48,7 +48,7 @@ void TitleScene::Draw(void)
 		Application::SCREEN_SIZE_Y / 6,
 		0x000000,
 		pauseFont_,
-		pasueList_[static_cast<int>(LIST::ASOSOLES)].c_str());
+		pasueList_[static_cast<int>(LIST::ASOSEOUL)].c_str());
 
 	for (int i = 1; i < LIST_MAX; ++i)
 	{

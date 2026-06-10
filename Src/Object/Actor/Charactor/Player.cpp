@@ -73,13 +73,11 @@ void Player::HitDamage(bool isHit)
 
 				if (colliderCapsule2 == nullptr) continue;
 
-				if (HitCheck_Capsule_Capsule(
-					colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
-					colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius()))
-				{
-					IsDamage_ = true;
-					transform_.pos = prevPos_;
-				}
+				colliderCapsule1->PushBackAlongNormal(
+					colliderCapsule2,
+					transform_,
+					20, 10.0f,
+					false,false);
 			}
 		}
 	}

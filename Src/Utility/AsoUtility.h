@@ -118,5 +118,8 @@ public:
 	// •¶Žš—ñ‚Ì•ªŠ„
 	static std::vector<std::string> Split(std::string& line, char delimiter);
 
+	static VECTOR GetMinHitPos(const VECTOR& statePos,
+		const VECTOR& endPos, const VECTOR& targetPos);
+
 };
 
