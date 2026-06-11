@@ -77,9 +77,9 @@ void SceneManager::Init3D(void)
 
 	// ライトの設定
 	SetUseLighting(true);
-	
-	// ライトの設定
-	ChangeLightTypeDir(LIGHT_DIRECTION);
+	ChangeLightTypeDir(VGet(-0.5f, -1.0f, -0.5f));
+	SetLightDifColor(GetColorF(1.0f, 1.0f, 0.95f, 1.0f));
+	SetLightAmbColor(GetColorF(0.4f, 0.4f, 0.45f, 1.0f)); 
 
 	// フォグ設定
 	SetFogEnable(true);

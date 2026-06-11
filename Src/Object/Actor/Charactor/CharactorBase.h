@@ -21,6 +21,15 @@ public:
     //当たり判定
     virtual void HitDamage(bool isHit) {}
 
+    //攻撃フラグの取得
+    const bool GetIsAttack(void) const { return isAttack_; }
+
+    //ロックオン対象の設定
+    void SetTargetTransform(const Transform* transform) { targetTrans_ = transform; }
+
+    //ターゲットの方向を取得
+    VECTOR GetTargetDir(void);
+
 protected:
 
     //地面との当たり判定フラグ
@@ -33,6 +42,9 @@ protected:
     static constexpr int CNT_TRY_COLLISION = 20;
     // 衝突時の押し戻し量
     static constexpr float COLLISION_BACK_DIS = 1.0f;
+
+    //ロックオン対象Transform
+    const Transform* targetTrans_;
 
     //アニメーションコントローラ
     AnimationController* anim_;
@@ -65,7 +77,13 @@ protected:
     void CollisionGravity(void);
     void CollisionCapsule(void);
 
+    //キャラクター移動量の無効
+    void SetFrameUserLocalPos(VECTOR locakPos, int frameNo);
+
     //ダメージフラグ
-    bool IsDamage_;
+    bool isDamage_;
+
+    //攻撃フラグ
+    bool isAttack_;
 };
 

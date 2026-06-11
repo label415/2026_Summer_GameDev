@@ -41,7 +41,6 @@ void Player::Release(void)
 
 void Player::HitDamage(bool isHit)
 {
-	IsDamage_ = false;
 
 	// カプセルコライダ  
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
@@ -76,16 +75,11 @@ void Player::HitDamage(bool isHit)
 				colliderCapsule1->PushBackAlongNormal(
 					colliderCapsule2,
 					transform_,
-					20, 10.0f,
+					20,
 					false,false);
 			}
 		}
 	}
-}
-
-void Player::SetTargetTransform(const Transform* transform)
-{
-	targetTrans_ = transform;
 }
 
 void Player::InitLoad(void)
@@ -140,9 +134,9 @@ void Player::InitAnimation(void)
 	anim_->Add(static_cast<int>(ANIM_TYPE::IDLE),
 		30.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_IDLE));
 	anim_->Add(static_cast<int>(ANIM_TYPE::RUN),
-		30.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
+		25.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
 	anim_->Add(static_cast<int>(ANIM_TYPE::FAST_RUN),
-		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
+		30.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
 	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK),
 		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK));
 	anim_->Add(static_cast<int>(ANIM_TYPE::AVOIDANCE),
@@ -168,9 +162,6 @@ void Player::InitPost(void)
 
 	//スタミナ
 	st_ = MAX_ST;
-
-	//攻撃フラグ
-	isAttack_ = false;
 }
 
 void Player::ProcessMove(void)
@@ -229,9 +220,7 @@ void Player::ProcessMove(void)
 		}
 		if (targetTrans_ != nullptr)
 		{
-			VECTOR toTarget = VSub(targetTrans_->pos, transform_.pos);
-			toTarget.y = 0.0f;
-			VECTOR targetDir = VNorm(toTarget);
+			VECTOR targetDir = GetTargetDir();
 			float targetAngleY = atan2f(targetDir.x, targetDir.z);
 			Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
 			transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetRot, 0.8f);
@@ -258,53 +247,6 @@ void Player::ProcessMove(void)
 	}
 }
 
-void Player::ProcessJump(void)
-{
-	if (state_ != STATE::IDLE) {
-		return;
-	}
-
-	auto& ins = InputManager::GetInstance();
-	// 持続ジャンプ処理
-	bool isHitKeyNew = ins.IsNew(KEY_INPUT_BACKSLASH)
-		|| ins.IsPadBtnNew(
-			InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
-
-	if (isHitKeyNew)
-	{
-		// ジャンプの入力受付時間を減少
-		stepJump_ += scnMng_.GetDeltaTime();
-		if (stepJump_ < TIME_JUMP_INPUT)
-		{
-			// ジャンプ量の計算
-			float jumpSpeed = POW_JUMP_KEEP * scnMng_.GetDeltaTime();
-			jumpPow_ = VAdd(jumpPow_, VScale(AsoUtility::DIR_U, jumpSpeed));
-		}
-	}
-	else
-	{
-		// ボタンを離したらジャンプ力に加算しない
-		stepJump_ = 0.0f;
-	}
-
-	// 初期ジャンプ処理
-	bool isHitKey = ins.IsTrgDown(KEY_INPUT_BACKSLASH)
-		|| ins.IsPadBtnTrgDown(
-			InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
-
-	// ジャンプ
-	if (isHitKey && !isJump_)
-	{
-		// ジャンプ量の計算
-		float jumpSpeed = POW_JUMP_INIT * scnMng_.GetDeltaTime();
-		jumpPow_ = VScale(AsoUtility::DIR_U, jumpSpeed);
-		isJump_ = true;
-		// アニメーション再生
-		anim_->Play(
-			static_cast<int>(ANIM_TYPE::JUMP), false);
-	}
-}
-
 void Player::ProcessAttack(void)
 {
 	auto& ins = InputManager::GetInstance();
@@ -327,7 +269,6 @@ void Player::ProcessAttack(void)
 
 	if (anim_->IsEnd()) {
 		state_ = STATE::IDLE;
-		isAttack_ = false;
 	}
 }
 
@@ -351,7 +292,6 @@ void Player::ProcessAvoidance(void)
 
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::AVOIDANCE), false);
-	anim_->SetRoot(L"mixamorig:Hips", LOCK_POS);
 
 	moveSpeed_ = 10.0f;
 
@@ -366,39 +306,8 @@ void Player::ProcessAvoidance(void)
 
 void Player::CollisionReserve(void)
 {
-	// アニメーションごとの線分調整
-	if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::JUMP))
-	{
-		// ジャンプ中は線分を伸ばす
-		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)
-		{
-			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE));
-			if (!vec.empty())
-			{
-				ColliderLine* colLine = dynamic_cast<ColliderLine*>(vec.front());
-				if (colLine)
-				{
-					colLine->SetLocalPosStart(COL_LINE_JUMP_START_LOCAL_POS);
-					colLine->SetLocalPosEnd(COL_LINE_JUMP_END_LOCAL_POS);
-				}
-			}
-		}
-		// ジャンプ中はカプセルを伸ばす
-		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE)) != 0)
-		{
-			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-			if (!vec.empty())
-			{
-				ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(vec.front());
-				if (colCapsule)
-				{
-					colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_JUMP_LOCAL_POS);
-					colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_JUMP_LOCAL_POS);
-				}
-			}
-		}
-	}
-	else if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::AVOIDANCE))
+	
+	if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::AVOIDANCE))
 	{
 		// ジャンプ中は線分を伸ばす
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)
@@ -474,9 +383,6 @@ void Player::UpdateProcess(void)
 	// 移動操作
 	ProcessMove();
 
-	// ジャンプ処理
-	ProcessJump();
-
 	//回避処理
 	ProcessAvoidance();
 
@@ -484,6 +390,10 @@ void Player::UpdateProcess(void)
 	if (weponBlade_){
 		weponBlade_->Update();
 	}
+
+	//アニメーションの移動量を無効
+	SetFrameUserLocalPos(LOCK_POS, LOCK_FRAME_NO);
+
 }
 
 void Player::UpdateProcessPost(void)

@@ -11,7 +11,7 @@ public:
 	// コンストラクタ
 	ColliderLine(
 		TAG tag, const Transform* follow,
-		const VECTOR& localPosStart, const VECTOR& localPosEnd);
+		const VECTOR& localPosStart, const VECTOR& localPosEnd, int patrTag = 0);
 	// デストラクタ
 	~ColliderLine(void) override;
 	// ローカル座標での設定

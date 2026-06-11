@@ -1,8 +1,8 @@
 #include "../../Common/Transform.h"
 #include "ColliderModel.h"
-ColliderModel::ColliderModel(TAG tag, const Transform* follow)
+ColliderModel::ColliderModel(TAG tag, const Transform* follow, int patrTag)
 	:
-	ColliderBase(SHAPE::MODEL, tag, follow)
+	ColliderBase(SHAPE::MODEL, tag, follow, patrTag)
 {
 }
 

@@ -7,24 +7,15 @@
 
 ColliderCapsule::ColliderCapsule(
 	TAG tag, const Transform * follow,
-	const VECTOR & localPosTop, const VECTOR & localPosDown, float radius)
+	const VECTOR & localPosTop, const VECTOR & localPosDown, float radius, int patrTag)
 	:
-	ColliderBase(SHAPE::CAPSULE, tag, follow),
+	ColliderBase(SHAPE::CAPSULE, tag, follow, patrTag),
 	localPosTop_(localPosTop),
 	localPosDown_(localPosDown),
 	radius_(radius)
 {
 }
-ColliderCapsule::ColliderCapsule(
-	TAG tag, const Transform* follow, float radius,
-	const VECTOR& localPosTop, const VECTOR& localPosDown)
-	:
-	ColliderBase(SHAPE::CAPSULE, tag, follow),
-	localPosTop_(localPosTop),
-	localPosDown_(localPosDown),
-	radius_(radius)
-{
-}
+
 ColliderCapsule::~ColliderCapsule(void)
 {
 }
@@ -128,7 +119,7 @@ void ColliderCapsule::PushBackAlongNormal(const ColliderModel* colliderModel, Tr
 	MV1CollResultPolyDimTerminate(hits);
 }
 
-void ColliderCapsule::PushBackAlongNormal(const ColliderCapsule* colliderCapsule, Transform& transform, int maxTryCnt, float pushDistance, bool isExclude, bool isTarget) const
+void ColliderCapsule::PushBackAlongNormal(const ColliderCapsule* colliderCapsule, Transform& transform, int maxTryCnt, bool isExclude, bool isTarget) const
 {
 	auto hits = HitCheck_Capsule_Capsule(
 		colliderCapsule->GetPosTop(), colliderCapsule->GetPosDown(), colliderCapsule->GetRadius(),
@@ -139,27 +130,33 @@ void ColliderCapsule::PushBackAlongNormal(const ColliderCapsule* colliderCapsule
 	int tryCnt = 0;
 	if (tryCnt < maxTryCnt) {
 
+		// プレイヤーの軸上で、敵の中心に一番近い点(p1)を求める
 		VECTOR p1 = AsoUtility::GetMinHitPos(GetPosTop(), GetPosDown(), colliderCapsule->GetFollow()->pos);
-		VECTOR p2 = AsoUtility::GetMinHitPos(colliderCapsule->GetPosTop(), colliderCapsule->GetPosDown(), GetFollow()->pos);
-		VECTOR vAB = VSub(p2, p1);
-		float distance = VSize(vAB);
 
+		// 敵の軸上で、上記で求めたp1に一番近い点(p2)を求める（※ここをp1基準にすると精度が上がります）
+		VECTOR p2 = AsoUtility::GetMinHitPos(colliderCapsule->GetPosTop(), colliderCapsule->GetPosDown(), p1);
+
+		// 敵(p2)からプレイヤー(p1)へ向かうベクトルにする
+		VECTOR vBA = VSub(p1, p2);
+		float distance = VSize(vBA);
 		float totalRadius = GetRadius() + colliderCapsule->GetRadius();
 
-		if (distance < 0.0001f) {
-			vAB = VGet(1.0f, 0.0f, 0.0f); // 適当な方向に逃げる
-			distance = 0.0001f;
+		// めり込み判定
+		if (distance < totalRadius) {
+			if (distance < 1e-6) {
+				vBA = AsoUtility::DIR_R; // 重なりすぎている場合は前方に逃げる
+				distance = 1e-6;
+			}
+
+			// めり込んでいる距離（侵入深さ）
+			float overlap = totalRadius - distance;
+
+			// 押し出す方向（敵からプレイヤーへの正規化ベクトル）
+			VECTOR pushDir = VNorm(vBA);
+
+			// プレイヤーだけを動かす場合は overlap をそのまま使います
+			transform.pos = VAdd(transform.pos, VScale(pushDir, overlap));
 		}
-
-		// めり込んでいる距離（侵入深さ）
-		float overlap = totalRadius - distance;
-
-		// 押し出す方向（正規化ベクトル）
-		VECTOR pushDir = VNorm(vAB);
-		pushDir.y = 0.0f;
-		float pushAmount = overlap * 0.5f;
-
-		transform.pos = VAdd(transform.pos, VScale(pushDir, 10.0f));
 	}
 
 }

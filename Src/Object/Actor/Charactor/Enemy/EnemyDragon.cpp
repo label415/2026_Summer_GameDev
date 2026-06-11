@@ -48,7 +48,7 @@ void EnemyDragon::Draw(void)
 
 
 	std::wstring hit;
-	if (IsDamage_) {
+	if (isDamage_) {
 		hit = L"当たっている";
 	}
 	else {
@@ -102,16 +102,10 @@ void EnemyDragon::InitCollider(void)
 			ColliderBase::TAG::ENEMY, &colTransform_,
 			AsoUtility::VECTOR_ZERO,
 			AsoUtility::VECTOR_ZERO,
-			HIT_RADIUS);
+			HIT_RADIUS,
+			static_cast<int>(ENEMY_CAPSULE_FRAMES[i].patrTag));
 		colCapsules.push_back(hitCapsule);
 	}
-
-	ColliderCapsule* i = new ColliderCapsule(
-		ColliderBase::TAG::ENEMY, &transform_,
-		{1000.0f, 50.0f, 1000.0f},
-		{ 500.0f, 50.0f, 500.0f },
-		100.0f);
-	colCapsules.push_back(i);
 
 	// 地面との衝突判定で使用するカプセルコライダー
 	ColliderCapsule* groundCapsule = new ColliderCapsule(
@@ -208,29 +202,9 @@ void EnemyDragon::InitPost(void)
 
 void EnemyDragon::UpdateProcess(void)
 {
-
-	//for (const auto& hitCol : hitColliders_)
-	//{
-	//	for (const auto& i : hitCol.second)
-	//	{
-	//		// モデル以外は処理を飛ばす  
-	//		if (i->GetShape() != ColliderBase::SHAPE::CAPSULE
-	//			&& i->GetTag() != ColliderBase::TAG::WEPON) continue;
-
-	//		const ColliderCapsule* colliderCapsule =
-	//			dynamic_cast<ColliderCapsule*>(i);
-
-	//		if (colliderCapsule == nullptr) continue;
-
-	//		VECTOR nom = VNorm(VSub(colliderCapsule->GetFollow()->pos, transform_.pos));
-
-	//		nom.y = 0.0f;
-	//		moveDir_ = nom;
-	//	}
-	//}
-
-	anim_->SetRoot(L"Bone", LOCK_POS);
-
+	//ターゲットの方向更新
+	moveDir_ = GetTargetDir();
+	
 	// 状態別更新
 	stateUpdate_();
 
@@ -251,15 +225,29 @@ void EnemyDragon::UpdateProcess(void)
 				int topFrame = ENEMY_CAPSULE_FRAMES[cnt].top;
 				int downFrame = ENEMY_CAPSULE_FRAMES[cnt].down;
 
-				colliderCapsule->SetLocalPosTop(MV1GetFramePosition(transform_.modelId, topFrame));
-				colliderCapsule->SetLocalPosDown(MV1GetFramePosition(transform_.modelId, downFrame));
-			}
-			if (cnt == 0) {
-				colliderCapsule->SetRadius(TORSO_RADIUS);
+				VECTOR tFramePos = MV1GetFramePosition(transform_.modelId, topFrame);
+				VECTOR dFramePos = MV1GetFramePosition(transform_.modelId, downFrame);
+
+				if (cnt == 0) {
+					colliderCapsule->SetRadius(BODY_RADIUS);
+					tFramePos.y -= 50.0f;
+					dFramePos.y -= 50.0f;
+				}
+
+				if (cnt == 1 || cnt == 3 || cnt == 4) {
+					colliderCapsule->SetRadius(80.0f);
+					tFramePos.y -= 50.0f;
+					dFramePos.y -= 50.0f;
+				}
+
+				colliderCapsule->SetLocalPosTop(tFramePos);
+				colliderCapsule->SetLocalPosDown(dFramePos);
 			}
 			cnt++;
 		}
 	}
+
+	SetFrameUserLocalPos(LOCK_POS, LOCK_FRAME_NO);
 }
 
 void EnemyDragon::UpdateDebugImGui(void)
@@ -602,8 +590,6 @@ void EnemyDragon::SetTargetCollider(void)
 
 void EnemyDragon::HitDamage(bool isHit)
 {
-	IsDamage_ = false;
-
 	if (!isHit)return;
 
 	// カプセルコライダ  
@@ -640,7 +626,7 @@ void EnemyDragon::HitDamage(bool isHit)
 					colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
 					colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius()))
 				{
-					IsDamage_ = true;
+					isDamage_ = true;
 				}
 			}
 		}

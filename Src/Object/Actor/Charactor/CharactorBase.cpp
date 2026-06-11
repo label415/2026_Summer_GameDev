@@ -13,7 +13,6 @@ CharactorBase::CharactorBase(void)
 	ActorBase()
 {
 	isGround_ = false;
-	IsDamage_ = false;
 }
 
 CharactorBase::~CharactorBase(void)
@@ -24,6 +23,8 @@ void CharactorBase::Update(void)
 {
 	// 移動前座標を更新
 	prevPos_ = transform_.pos;
+	isAttack_ = false;
+	isDamage_ = false;
 
 	// 各キャラクターごとの更新処理
 	UpdateProcess();
@@ -62,6 +63,18 @@ void CharactorBase::Release(void)
 
 	anim_->Release();
 	delete anim_;
+}
+
+VECTOR CharactorBase::GetTargetDir(void)
+{
+	//自分と相手のベクトルを計算
+	VECTOR targetVec = VSub(targetTrans_->pos, transform_.pos);
+	//ベクトルを正規化
+	VECTOR targetdir = VNorm(targetVec);
+	//Y座標を無効
+	targetdir.y = 0.0f;
+
+	return targetdir;
 }
 
 void CharactorBase::InitLoad(void)
@@ -214,3 +227,28 @@ void CharactorBase::CollisionCapsule(void)
 		}
 	}
 }
+
+void CharactorBase::SetFrameUserLocalPos(VECTOR locakPos, int frameNo)
+{
+	// 対象フレームのローカル行列を初期値にリセットする
+	MV1ResetFrameUserLocalMatrix(transform_.modelId, frameNo);
+	// 対象フレームのローカル行列(大きさ、回転、位置)を取得する
+	auto mat = MV1GetFrameLocalMatrix(transform_.modelId, frameNo);
+	auto scl = MGetSize(mat);
+	// 行列から大きさを取り出す
+	auto rot = MGetRotElem(mat);
+	auto pos = MGetTranslateElem(mat);
+	// 行列から回転を取り出す
+	// 行列から移動値を取り出す
+	// 大きさ、回転、位置をローカル行列に戻す
+	MATRIX mix = MGetIdent();
+	mix = MMult(mix, MGetScale(scl)); // 大きさ
+	mix = MMult(mix, rot); // 回転
+	// ここでローカル座標を行列に、そのまま戻さず、
+	// 調整したローカル座標を設定する
+	mix = MMult(mix, MGetTranslate(locakPos));
+	// 合成した行列を対象フレームにセットし直して、
+	// アニメーションの移動値を無効化
+	MV1SetFrameUserLocalMatrix(transform_.modelId, frameNo, mix);
+}
+

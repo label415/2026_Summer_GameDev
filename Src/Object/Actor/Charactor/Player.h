@@ -14,7 +14,6 @@ public:
 		IDLE,
 		RUN,
 		FAST_RUN,
-		JUMP,
 		ROLLING,
 		ATTACK,
 		AVOIDANCE
@@ -36,9 +35,9 @@ public:
 	static constexpr float AVOIDANCE_ANGLE_AXIS_Y = 100.0f;
 
 	// 移動速度(通常)
-	static constexpr float SPEED_MOVE = 5.0f;
+	static constexpr float SPEED_MOVE = 4.0f;
 	// 移動速度(ダッシュ)
-	static constexpr float SPEED_DASH = 10.0f;
+	static constexpr float SPEED_DASH = 8.0f;
 
 	//スタミナ最大値
 	static constexpr float MAX_ST = 100.0f;
@@ -63,14 +62,11 @@ public:
 	// 解放
 	void Release(void)override;
 
+	//ダメージ判定
 	void HitDamage(bool isHit)override;
 
-	//ロックオン対象の設定
-	void SetTargetTransform(const Transform* transform);
-
+	//武器情報取得
 	const WeponBase* GetWepon(void)const { return weponBlade_; }
-
-	const bool GetIsAttack(void)const { return isAttack_; }
 
 protected:
 
@@ -98,30 +94,14 @@ protected:
 
 private:
 
+	//武器
 	WeponBase* weponBlade_;
-
-	//ロックオン対象Transform
-	const Transform* targetTrans_;
 
 	//スタミナ
 	float st_;
 
-	//攻撃フラグ
-	bool isAttack_;
-
 	//初期角度を保存
 	Quaternion lastQrot_;
-
-	// 衝突判定用線分開始
-	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
-	// 衝突判定用線分終了
-	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -10.0f, 0.0f };
-	// 衝突判定用カプセル上部球体(ジャンプ時)
-	static constexpr VECTOR COL_CAPSULE_TOP_JUMP_LOCAL_POS =
-	{ 0.0f, 160.0f, 0.0f };
-	// 衝突判定用カプセル下部球体(ジャンプ時)
-	static constexpr VECTOR COL_CAPSULE_DOWN_JUMP_LOCAL_POS =
-	{ 0.0f, 80.0f, 0.0f };
 
 	// 衝突判定用カプセル上部球体(回避時)
 	static constexpr VECTOR COL_CAPSULE_TOP_AVOIDANCE_LOCAL_POS =
@@ -137,28 +117,25 @@ private:
 	{ 0.0f, -10.0f, 0.0f };
 
 	//アニメーションを固定化する座標
-	static constexpr VECTOR LOCK_POS = { 0.0f, 79.0f, 0.0f };
+	static constexpr VECTOR LOCK_POS = { 0.0f, 78.0f, 0.0f };
 
-	// 衝突判定用線分開始(ジャンプ時)
-	static constexpr VECTOR COL_LINE_JUMP_START_LOCAL_POS = { 0.0f, 130.0f, 0.0f };
-	// 衝突判定用線分終了(ジャンプ時)
-	static constexpr VECTOR COL_LINE_JUMP_END_LOCAL_POS = { 0.0f, 50.0f, 0.0f };
+	//アニメーションを固定化するフレーム
+	static constexpr int LOCK_FRAME_NO = 0;
+
+	// 衝突判定用線分開始
+	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
+	// 衝突判定用線分終了
+	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -10.0f, 0.0f };
+
 	// 衝突判定用カプセル上部球体
 	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 110.0f, 0.0f };
 	// 衝突判定用カプセル下部球体
 	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 30.0f, 0.0f };
 	// 衝突判定用カプセル球体半径
 	static constexpr float COL_CAPSULE_RADIUS = 20.0f;
-	// ジャンプ力
-	static constexpr float POW_JUMP_INIT = 3500.0f;
-	// 持続ジャンプ力
-	static constexpr float POW_JUMP_KEEP = 400.0f;
-	// ジャンプ受付時間
-	static constexpr float TIME_JUMP_INPUT = 0.5f;
 
 	// 操作
 	void ProcessMove(void);
-	void ProcessJump(void);
 	void ProcessAttack(void);
 	void ProcessAvoidance(void);
 

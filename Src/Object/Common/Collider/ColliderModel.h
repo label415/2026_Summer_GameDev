@@ -6,7 +6,7 @@ class ColliderModel : public ColliderBase
 {
 public:
 	// コンストラクタ
-	ColliderModel(TAG tag, const Transform* follow);
+	ColliderModel(TAG tag, const Transform* follow, int patrTag = 0);
 	// デストラクタ
 	~ColliderModel(void) override;
 

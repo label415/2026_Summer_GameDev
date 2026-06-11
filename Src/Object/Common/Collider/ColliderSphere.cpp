@@ -1,9 +1,9 @@
 #include "../../Common/Transform.h"
 #include "ColliderSphere.h"
 
-ColliderSphere::ColliderSphere(TAG tag, const Transform* follow, const VECTOR& localPos, float radius)
+ColliderSphere::ColliderSphere(TAG tag, const Transform* follow, const VECTOR& localPos, float radius, int patrTag)
 	:
-	ColliderBase(SHAPE::SPHERE, tag, follow),
+	ColliderBase(SHAPE::SPHERE, tag, follow, patrTag),
 	localPos_(localPos),
 	radius_(radius)
 {

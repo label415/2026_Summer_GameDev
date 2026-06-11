@@ -46,7 +46,7 @@ void TitleScene::Draw(void)
 	DrawFormatStringToHandle(
 		Application::SCREEN_SIZE_X / 2 - 150.0f,
 		Application::SCREEN_SIZE_Y / 6,
-		0x000000,
+		0xffffff,
 		pauseFont_,
 		pasueList_[static_cast<int>(LIST::ASOSEOUL)].c_str());
 
@@ -60,7 +60,7 @@ void TitleScene::Draw(void)
 		DrawFormatStringToHandle(
 			posX,
 			posY,
-			0x000000,
+			0xffffff,
 			pauseFont_,
 			pasueList_[i].c_str());
 	}

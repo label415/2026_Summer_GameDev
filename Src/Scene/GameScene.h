@@ -34,7 +34,7 @@ public:
 private:
 
 	//ロックオン対象範囲
-	static constexpr float MAX_LOCKON_DIFF = 1000.0f;
+	static constexpr float MAX_LOCKON_DIFF = 1500.0f;
 
 	//ロックオン角度
 	static constexpr float VIEW_ANGLE = 80.0f;

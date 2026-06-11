@@ -8,6 +8,7 @@
 #include "../Object/Actor/Stage/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyManager.h"
+#include "../Object/Actor/Charactor/Enemy/EnemyDragon.h"
 #include "../Object/Common/Collider/ColliderBase.h"
 #include "../Utility/MatrixUtility.h"
 #include "GameScene.h"
@@ -70,7 +71,9 @@ void GameScene::Update(void)
 	stage_->Update();
 
 	player_->Update();
-	player_->HitDamage(false);
+	for(const auto& enemy : enemys_->GetEnemys()){
+		player_->HitDamage(enemy->GetIsAttack());
+	}
 
 	enemys_->Update();
 	enemys_->HitDamegr(player_->GetIsAttack());
@@ -147,8 +150,6 @@ void GameScene::RegistCollider(void)
 	const std::vector<ColliderBase*> weponColliders =
 		wepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 
-	
-
 	const std::vector<ColliderBase*> cameraCollider =
 		camera_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
 
@@ -181,6 +182,10 @@ void GameScene::UpdateAutoLockOn(void)
 	VECTOR playerPos = player_->GetTransform().pos;
 	float diffMin = MAX_LOCKON_DIFF;
 	bool isChanger = false;
+
+	for (const auto& enemy : enemys) {
+		enemy->SetTargetTransform(&player_->GetTransform());
+	}
 
 	bool isLockOn = inp.IsTrgDown(KEY_INPUT_L);
 	bool isNextUp = inp.IsTrgDown(KEY_INPUT_UP);

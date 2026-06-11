@@ -27,8 +27,9 @@ public:
 		WEPON,
 		GROUND
 	};
+
 	// コンストラクタ
-	ColliderBase(SHAPE shape, TAG tag, const Transform* follow);
+	ColliderBase(SHAPE shape, TAG tag, const Transform* follow, int patrTag);
 	// デストラクタ
 	virtual ~ColliderBase(void);
 	// 描画
@@ -41,6 +42,8 @@ public:
 	SHAPE GetShape(void) const { return shape_; }
 	// 衝突種別
 	TAG GetTag(void) const { return tag_; }
+	//各部位衝突種別
+	int GetPatrTag(void)const  { return patrTag_; }
 
 	// 指定された回数と距離で三角形の法線方向に押し戻した座標を取得
 	virtual VECTOR GetPosPushBackAlongNormal(
@@ -56,6 +59,8 @@ protected:
 	SHAPE shape_;
 	// 衝突種別
 	TAG tag_;
+	//各部位のタグ番号
+	int patrTag_;
 	// 追従先
 	const Transform* follow_;
 	// 有効フラグ

@@ -1,10 +1,11 @@
 #include "../../Common/Transform.h"
 #include "ColliderBase.h"
-ColliderBase::ColliderBase(SHAPE shape, TAG tag, const Transform* follow)
+ColliderBase::ColliderBase(SHAPE shape, TAG tag, const Transform* follow, int patrTag)
 	:
 	shape_(shape),
 	tag_(tag),
 	follow_(follow),
+	patrTag_(patrTag),
 	isValid_(true)
 {
 }

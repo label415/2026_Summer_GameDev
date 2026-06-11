@@ -56,11 +56,23 @@ public:
 		float moveSpeed_;
 	};
 
+	//各部位のタグ
+	enum class PATR_TAG {
+		HEAD,
+		TAIL,
+		BODY,
+		HAND,
+		LEG,
+		NECK,
+	};
+
 	//部位のカプセルフレーム
 	struct FramePair {
+		PATR_TAG patrTag;
 		int top;
 		int down;
 	};
+
 
 	// コンストラクタ
 	EnemyDragon(const EnemyBase::EnemyData& data);
@@ -84,6 +96,7 @@ protected:
 	// 更新系
 	void UpdateProcess(void) override;
 	void UpdateProcessPost(void) override;
+
 private:
 	// モデルの大きさ
 	static constexpr float SCALE = 0.4f;
@@ -107,13 +120,15 @@ private:
 	static constexpr float HIT_RADIUS = 50.0f;
 
 	// 胴体衝突判定用カプセル球体半径
-	static constexpr float TORSO_RADIUS = 100.0f;
+	static constexpr float BODY_RADIUS = 100.0f;
 
 	// 最高高度
 	static constexpr float MAX_TAKE = 500.0f;
 
 	//アニメーションを固定化する座標
-	static constexpr VECTOR LOCK_POS = { 0.0f, 1.8f, 0.0f };
+	static constexpr VECTOR LOCK_POS = { 0.0f, 2.0f, 0.0f };
+	//アニメーションを固定化するフレーム
+	static constexpr int LOCK_FRAME_NO = 1;
 
 	// 移動速度(通常)
 	static constexpr float SPEED_MOVE = 5.0f;
@@ -124,17 +139,17 @@ private:
 	static constexpr FramePair ENEMY_CAPSULE_FRAMES[] =
 	{
 		// 胴体
-		{ 1, 8 },
+		{ PATR_TAG::BODY, 1, 8 },
 		// 首上
-		{ 10, 12 }, { 12, 15 },
+		{ PATR_TAG::NECK, 10, 14 },
 		// 頭
-		{ 15, 30 },
+		{ PATR_TAG::HEAD, 15, 30 },
 		// 尻尾
-		{ 10, 116 }, { 116, 119 }, { 119, 123 }, { 123, 129 },
+		{ PATR_TAG::TAIL, 117, 125 },{ PATR_TAG::TAIL, 125, 132 },
 		// 手
-		{ 75, 76 }, { 37, 38 },
+		{ PATR_TAG::HAND, 75, 76 }, { PATR_TAG::HAND, 37, 38 },
 		// 足
-		{ 2, 4 }, { 111, 113 }
+		{ PATR_TAG::LEG, 2, 4 }, { PATR_TAG::LEG, 111, 113 }
 	};
 
 	// 状態

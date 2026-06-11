@@ -4,9 +4,9 @@
 #include "ColliderLine.h"
 ColliderLine::ColliderLine(
 	TAG tag, const Transform* follow,
-	const VECTOR& localPosStart, const VECTOR& localPosEnd)
+	const VECTOR& localPosStart, const VECTOR& localPosEnd, int patrTag)
 	:
-	ColliderBase(SHAPE::LINE, tag, follow),
+	ColliderBase(SHAPE::LINE, tag, follow, patrTag),
 	localPosStart_(localPosStart),
 	localPosEnd_(localPosEnd)
 {

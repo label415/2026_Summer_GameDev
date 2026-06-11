@@ -13,8 +13,8 @@ public:
 
 	// 背景色
 	static constexpr int BACKGROUND_COLOR_R = 0;
-	static constexpr int BACKGROUND_COLOR_G = 139;
-	static constexpr int BACKGROUND_COLOR_B = 139;
+	static constexpr int BACKGROUND_COLOR_G = 0;
+	static constexpr int BACKGROUND_COLOR_B = 0;
 
 	// ディレクショナルライトの方向
 	static constexpr VECTOR LIGHT_DIRECTION = { 1.0f, -1.0f, 1.0f };

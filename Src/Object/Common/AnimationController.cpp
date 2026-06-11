@@ -7,8 +7,7 @@ AnimationController::AnimationController(int modelId)
 	modelId_(modelId),
 	playType_(-1),
 	playAnim_(),
-	isLoop_(true),
-	frnNo(-1)
+	isLoop_(true)
 {
 }
 
@@ -114,27 +113,6 @@ void AnimationController::Update(void)
 	// アニメーション設定
 	MV1SetAttachAnimTime(modelId_, playAnim_.attachNo, playAnim_.step);
 
-	// 対象フレームのローカル行列を初期値にリセットする
-	MV1ResetFrameUserLocalMatrix(modelId_, frnNo);
-	// 対象フレームのローカル行列(大きさ、回転、位置)を取得する
-	auto mat = MV1GetFrameLocalMatrix(modelId_, frnNo);
-	auto scl = MGetSize(mat);
-	// 行列から大きさを取り出す
-	auto rot = MGetRotElem(mat);
-	auto pos = MGetTranslateElem(mat);
-	// 行列から回転を取り出す
-	// 行列から移動値を取り出す
-	// 大きさ、回転、位置をローカル行列に戻す
-	MATRIX mix = MGetIdent();
-	mix = MMult(mix, MGetScale(scl)); // 大きさ
-	mix = MMult(mix, rot); // 回転
-	// ここでローカル座標を行列に、そのまま戻さず、
-	// 調整したローカル座標を設定する
-	mix = MMult(mix, MGetTranslate(lockPos_));
-	// 合成した行列を対象フレームにセットし直して、
-	// アニメーションの移動値を無効化
-	MV1SetFrameUserLocalMatrix(modelId_, frnNo, mix);
-
 }
 
 void AnimationController::Release(void)
@@ -184,12 +162,6 @@ bool AnimationController::IsEnd(void) const
 const AnimationController::Animation& AnimationController::GetPlayAnim(void) const
 {
 	return playAnim_;
-}
-
-void AnimationController::SetRoot(std::wstring root, VECTOR lockPos)
-{
-	lockPos_ = lockPos;
-	frnNo = MV1SearchFrame(modelId_, root.c_str());
 }
 
 void AnimationController::Add(int type, float speed, Animation& animation)

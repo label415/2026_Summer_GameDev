@@ -570,7 +570,7 @@ std::vector<std::string> AsoUtility::Split(std::string& line, char delimiter)
 VECTOR AsoUtility::GetMinHitPos(const VECTOR& statePos, const VECTOR& endPos, const VECTOR& targetPos)
 {
     VECTOR segmentVec = VSub(endPos, statePos);
-    VECTOR toTargetVec = VSub(endPos, statePos);
+    VECTOR toTargetVec = VSub(targetPos, statePos);
 
     float lenSquare = static_cast<float>(VSquareSize(segmentVec));
 

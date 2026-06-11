@@ -7,7 +7,7 @@ class ColliderSphere :
 public:
     // コンストラクタ
     ColliderSphere(
-        TAG tag, const Transform* follow, const VECTOR& localPos, float radius);
+        TAG tag, const Transform* follow, const VECTOR& localPos, float radius, int patrTag = 0);
     // デストラクタ
     ~ColliderSphere(void);
 

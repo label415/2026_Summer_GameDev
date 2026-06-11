@@ -11,10 +11,7 @@ public:
 	// コンストラクタ
 	ColliderCapsule(
 		TAG tag, const Transform* follow,
-		const VECTOR& localPosTop, const VECTOR& localPosDown, float radius);
-	ColliderCapsule(
-		TAG tag, const Transform* follow, float radius,
-		const VECTOR& localPosTop = { 0.0f, 0.0f, 0.0f }, const VECTOR& localPosDown = { 0.0f, 0.0f, 0.0f });
+		const VECTOR& localPosTop, const VECTOR& localPosDown, float radius, int patrTag = 0);
 	// デストラクタ
 	~ColliderCapsule(void);
 	// 親Transformからの相対位置を取得
@@ -48,7 +45,7 @@ public:
 
 	void PushBackAlongNormal(
 		const ColliderCapsule* colliderCapsule, Transform& transform,
-		int maxTryCnt, float pushDistance,
+		int maxTryCnt,
 		bool isExclude = false, bool isTarget = false) const;
 
 	bool IsHit(const ColliderModel* colliderModel,
