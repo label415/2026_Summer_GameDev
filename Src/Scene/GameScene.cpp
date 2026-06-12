@@ -65,6 +65,8 @@ void GameScene::Update(void)
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
 	}*/
 
+	UpdateAutoLockOn();
+
 	skydome_->Update();
 
 	//ステージ更新
@@ -77,9 +79,6 @@ void GameScene::Update(void)
 
 	enemys_->Update();
 	enemys_->HitDamegr(player_->GetIsAttack());
-
-
-	UpdateAutoLockOn();
 
 }
 
@@ -187,7 +186,7 @@ void GameScene::UpdateAutoLockOn(void)
 		enemy->SetTargetTransform(&player_->GetTransform());
 	}
 
-	bool isLockOn = inp.IsTrgDown(KEY_INPUT_L);
+	bool isLockOn = inp.IsTrgMouseMiddle();
 	bool isNextUp = inp.IsTrgDown(KEY_INPUT_UP);
 	bool isNextDown = inp.IsTrgDown(KEY_INPUT_DOWN);
 	bool isNextLeft = inp.IsTrgDown(KEY_INPUT_LEFT);

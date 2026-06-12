@@ -68,6 +68,16 @@ void InputManager::Init(void)
 	info.keyTrgUp = false;
 	mouseInfos_.emplace(info.key, info);
 
+	// 中央クリック
+	info = InputManager::MouseInfo();
+	info.key = MOUSE_INPUT_MIDDLE;
+	info.keyOld = false;
+	info.keyNew = false;
+	info.keyTrgDown = false;
+	info.keyTrgUp = false;
+	mouseInfos_.emplace(info.key, info);
+	SetMousePoint(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
+	SetMouseDispFlag(false);
 }
 
 void InputManager::Update(void)
@@ -84,6 +94,7 @@ void InputManager::Update(void)
 
 	// マウス検知
 	mouseInput_ = GetMouseInput();
+	mousePrePos_ = mousePos_;
 	GetMousePoint(&mousePos_.x, &mousePos_.y);
 
 	for (auto& p : mouseInfos_)
@@ -176,6 +187,11 @@ bool InputManager::IsTrgMouseRight(void) const
 	return FindMouse(MOUSE_INPUT_RIGHT).keyTrgDown;
 }
 
+bool InputManager::IsTrgMouseMiddle(void) const
+{
+	return FindMouse(MOUSE_INPUT_MIDDLE).keyTrgDown;
+}
+
 InputManager::InputManager(void)
 	:
 	keyInfos_(),
@@ -261,6 +277,18 @@ void InputManager::SetJPadInState(JOYPAD_NO jpNo)
 	stateNow.AKeyRX = stateNew.AKeyRX;
 	stateNow.AKeyRY = stateNew.AKeyRY;
 
+}
+
+void InputManager::SetMousePos(int posX, int posY)
+{
+	mousePos_ = { posX, posY };
+	mousePrePos_ = { posX, posY };
+	SetMousePoint(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
+}
+
+Vector2 InputManager::GetMousePosDistance(void) const
+{
+	return { mousePos_.x - mousePrePos_.x ,mousePos_.y - mousePrePos_.y };
 }
 
 InputManager::JOYPAD_IN_STATE InputManager::GetJPadInputState(JOYPAD_NO no)

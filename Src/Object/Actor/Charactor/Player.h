@@ -23,7 +23,6 @@ public:
 	{
 		IDLE,
 		RUN,
-		FAST_RUN,
 		ATTACK,
 		AVOIDANCE
 	};

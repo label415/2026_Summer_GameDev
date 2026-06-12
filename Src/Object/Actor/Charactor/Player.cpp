@@ -170,12 +170,13 @@ void Player::ProcessMove(void)
 	movePow_ = AsoUtility::VECTOR_ZERO;
 	VECTOR dir = AsoUtility::VECTOR_ZERO;
 
-	if (state_ != STATE::IDLE) {
+	if (state_ != STATE::IDLE
+		&& state_ != STATE::RUN) {
 		return;
 	}
 
 	auto& ins = InputManager::GetInstance();
-	if (GetJoypadNum() == 0){
+	if (GetJoypadNum() == 0) {
 
 		if (ins.IsNew(KEY_INPUT_W)) { dir = AsoUtility::DIR_F; }
 		if (ins.IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_L; }
@@ -192,32 +193,29 @@ void Player::ProcessMove(void)
 
 	if (!AsoUtility::EqualsVZero(dir))
 	{
-		if (state_ == STATE::IDLE) {
-			bool isD;
-			auto& ins = InputManager::GetInstance();
-			if (GetJoypadNum() == 0)
-			{
-				isD = ins.IsNew(KEY_INPUT_RSHIFT);
-			}
-			else {
-				isD = ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
-					InputManager::JOYPAD_BTN::R_TRIGGER);
-			}
+		state_ = STATE::RUN;
 
-			//ジャンプ中はアニメーションを変えない
-			if(!isJump_)
-			{
-				if (isD && st_ >= 0.0f) {
-					moveSpeed_ = SPEED_DASH;
-					st_ -= (CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
-					anim_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
-				}
-				else {
-					moveSpeed_ = SPEED_MOVE;
-					anim_->Play(static_cast<int>(ANIM_TYPE::RUN));
-				}
-			}
+		bool isR = false;
+		auto& ins = InputManager::GetInstance();
+		if (GetJoypadNum() == 0)
+		{
+			isR = ins.IsNew(KEY_INPUT_SPACE);
 		}
+		else {
+			isR = ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
+				InputManager::JOYPAD_BTN::R_TRIGGER);
+		}
+
+		if (isR && st_ >= 0.0f && state_ == STATE::RUN) {
+			moveSpeed_ = SPEED_DASH;
+			st_ -= (CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
+			anim_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
+		}
+		else {
+			moveSpeed_ = SPEED_MOVE;
+			anim_->Play(static_cast<int>(ANIM_TYPE::RUN));
+		}
+
 		if (targetTrans_ != nullptr)
 		{
 			VECTOR targetDir = GetTargetDir();
@@ -232,38 +230,35 @@ void Player::ProcessMove(void)
 			Quaternion cameraRot = scnMng_.GetCamera()->GetQuaRotY();
 			moveDir_ = Quaternion::PosAxis(cameraRot, dir);
 		}
-		movePow_ = VScale(moveDir_, moveSpeed_);
+		movePow_ = VScale
+		(moveDir_, moveSpeed_);
 	}
-	else {
-		// ジャンプ中はアニメーションを変えない
-		if (!isJump_)
-		{
-			if (state_ == STATE::IDLE) {
-				// 歩くアニメーションを再生すること！(ループ再生有り)
-				// アニメーションの再生
-				anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
-			}
-		}
+	else{
+		state_ = STATE::IDLE;
+		anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 	}
+
 }
 
 void Player::ProcessAttack(void)
 {
 	auto& ins = InputManager::GetInstance();
 
-	bool isHitAttack = ins.IsTrgDown(KEY_INPUT_SPACE)
+	bool isHitAttack = ins.IsClickMouseLeft()
 	|| ins.IsPadBtnTrgDown(
 		InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
 
-	if (isHitAttack && !isJump_ && state_ == STATE::IDLE){
+	if (isHitAttack && !isJump_ && state_ != STATE::ATTACK
+		&& state_ != STATE::AVOIDANCE){
 		state_ = STATE::ATTACK;
 	}
+
 	if (state_ != STATE::ATTACK) return;
+
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::ATTACK), false);
 
-	if (anim_->GetPlayAnim().step >= STATE_ATTACK_CILLIDER)
-	{ 
+	if (anim_->GetPlayAnim().step >= STATE_ATTACK_CILLIDER){ 
 		isAttack_ = true;
 	}
 
@@ -274,14 +269,20 @@ void Player::ProcessAttack(void)
 
 void Player::ProcessAvoidance(void)
 {
+
+	bool isP = false;
 	auto& ins = InputManager::GetInstance();
+	if (GetJoypadNum() == 0)
+	{
+		isP = ins.IsTrgDown(KEY_INPUT_LSHIFT);
+	}
+	else {
+		isP = ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
+			InputManager::JOYPAD_BTN::DOWN);
+	}
 
-	bool isHitAvoidance = ins.IsTrgDown(KEY_INPUT_LSHIFT)
-		|| ins.IsPadBtnTrgDown(
-			InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::TOP);
-
-	if (isHitAvoidance && !isJump_ && state_ == STATE::IDLE) {
-		state_ = STATE::AVOIDANCE; 
+	if (isP && !isJump_ && state_ != STATE::ATTACK) {
+		state_ = STATE::AVOIDANCE;
 		lastQrot_ = transform_.quaRotLocal;
 		transform_.quaRotLocal =
 			Quaternion::Mult(transform_.quaRotLocal,
@@ -294,7 +295,6 @@ void Player::ProcessAvoidance(void)
 		static_cast<int>(ANIM_TYPE::AVOIDANCE), false);
 
 	moveSpeed_ = 10.0f;
-
 	movePow_ = VScale(moveDir_, moveSpeed_);
 
 	if (anim_->IsEnd()) {
@@ -309,7 +309,6 @@ void Player::CollisionReserve(void)
 	
 	if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::AVOIDANCE))
 	{
-		// ジャンプ中は線分を伸ばす
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)
 		{
 			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE));
@@ -323,7 +322,6 @@ void Player::CollisionReserve(void)
 				}
 			}
 		}
-		// ジャンプ中はカプセルを伸ばす
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE)) != 0)
 		{
 			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
@@ -340,7 +338,6 @@ void Player::CollisionReserve(void)
 	}
 	else
 	{
-		// 通常時の線分に戻す
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)
 		{
 			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE));
@@ -354,7 +351,6 @@ void Player::CollisionReserve(void)
 				}
 			}
 		}
-		// 通常時のカプセルに戻す
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE)) != 0)
 		{
 			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
@@ -373,7 +369,7 @@ void Player::CollisionReserve(void)
 
 void Player::UpdateProcess(void)
 {
-	if (st_ <= MAX_ST) {
+	if (st_ <= MAX_ST && !isAttack_) {
 		st_ += (RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
 	}
 

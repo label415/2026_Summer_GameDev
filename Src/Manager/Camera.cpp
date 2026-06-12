@@ -1,6 +1,7 @@
 #include <DxLib.h>
 #include <EffekseerForDXLib.h>
 #include "../Utility/AsoUtility.h"
+#include "../Application.h"
 #include "../Manager/InputManager.h"
 #include "../Object/Common/Transform.h"
 #include "../Object/Common/Collider/ColliderModel.h"
@@ -118,6 +119,11 @@ void Camera::InitCollider(void)
 void Camera::InitPost(void)
 {
 	ChangeMode(MODE::FIXED_POINT);
+	auto& ins = InputManager::GetInstance();
+	mouseX = ins.GetMousePos().x;
+	mouseY = ins.GetMousePos().y;
+	preMouseX = ins.GetMousePos().x;
+	preMouseY = ins.GetMousePos().y;
 }
 
 const VECTOR& Camera::GetPos(void) const
@@ -465,38 +471,25 @@ void Camera::Collision(void)
 void Camera::RotKeyboard(bool isLimit)
 {
 
-	const auto& ins = InputManager::GetInstance();
+	auto& ins = InputManager::GetInstance();
 
-	// ÉJÉÅÉââÒì]
-	if (ins.IsNew(KEY_INPUT_RIGHT))
+	auto mouseMove = ins.GetMousePosDistance();
+	if (mouseMove.x != 0.0f || mouseMove.y != 0.0f) // ÇÊÇËñæé¶ìIÇ…É`ÉFÉbÉN
 	{
-		// âEâÒì]
-		angles_.y += ROT_POW_RAD;
-	}
-	if (ins.IsNew(KEY_INPUT_LEFT))
-	{
-		// ç∂âÒì]
-		angles_.y -= ROT_POW_RAD;
+		angles_.x += mouseMove.y * MROT_POW_RAD;
+		angles_.y += mouseMove.x * MROT_POW_RAD;
 	}
 
-	// è„âÒì]
-	if (ins.IsNew(KEY_INPUT_UP))
-	{
-		angles_.x += ROT_POW_RAD;
-		if (isLimit && angles_.x > LIMIT_X_UP_RAD)
-		{
-			angles_.x = LIMIT_X_UP_RAD;
-		}
-	}
+	ins.SetMousePos(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
 
-	// â∫âÒì]
-	if (ins.IsNew(KEY_INPUT_DOWN))
+	// äpìxêßå¿
+	if (isLimit && angles_.x < -LIMIT_X_DW_RAD)
 	{
-		angles_.x -= ROT_POW_RAD;
-		if (isLimit && angles_.x < -LIMIT_X_DW_RAD)
-		{
-			angles_.x = -LIMIT_X_DW_RAD;
-		}
+		angles_.x = -LIMIT_X_DW_RAD;
+	}
+	if (isLimit && angles_.x > LIMIT_X_UP_RAD)
+	{
+		angles_.x = LIMIT_X_UP_RAD;
 	}
 
 }

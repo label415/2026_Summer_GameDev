@@ -117,6 +117,9 @@ public:
 	// マウスが右クリックされたか(押しっぱなしはNG)
 	bool IsTrgMouseRight(void) const;
 
+	// マウスが中央クリックされたか(押しっぱなしはNG)
+	bool IsTrgMouseMiddle(void) const;
+
 	// コントローラの入力情報を取得する
 	JOYPAD_IN_STATE GetJPadInputState(JOYPAD_NO no);
 
@@ -127,6 +130,10 @@ public:
 
 	// アナログキーの入力値から方向(正規化済み)を取得
 	VECTOR GetDirectionXZAKey(int aKeyX, int aKeyY) const;
+
+	void SetMousePos(int posX, int posY);
+
+	Vector2 GetMousePosDistance(void) const;
 
 private:
 
@@ -169,6 +176,9 @@ private:
 
 	// マウスカーソルの位置
 	Vector2 mousePos_;
+
+	// 前マウスカーソルの位置
+	Vector2 mousePrePos_;
 	
 	// マウスボタンの入力状態
 	int mouseInput_;
@@ -203,5 +213,4 @@ private:
 
 	// コントローラの入力情報を更新する
 	void SetJPadInState(JOYPAD_NO jpNo);
-
 };

@@ -22,6 +22,9 @@ public:
 	const float ROT_POW_DEG = 2.0f;
 	const float ROT_POW_RAD = ROT_POW_DEG * DX_PI_F / 180.0f;
 
+	const float MROT_POW_DEG = 0.1f;
+	const float MROT_POW_RAD = MROT_POW_DEG * DX_PI_F / 180.0f;
+
 	// カメラの移動スピード
 	static constexpr float SPEED = 20.0f;
 
@@ -40,8 +43,8 @@ public:
 	static constexpr VECTOR LOCKON_TARGET_LOCAL_POS = { 0.0f, 0.0f, 500.0f };
 
 	// カメラのX回転上限度角
-	static constexpr float LIMIT_X_UP_RAD = 40.0f * (DX_PI_F / 180.0f);
-	static constexpr float LIMIT_X_DW_RAD = 10.0f * (DX_PI_F / 180.0f);
+	static constexpr float LIMIT_X_UP_RAD = 60.0f * (DX_PI_F / 180.0f);
+	static constexpr float LIMIT_X_DW_RAD = 20.0f * (DX_PI_F / 180.0f);
 	
 	// カメラモード
 	enum class MODE
@@ -182,5 +185,9 @@ private:
 	// カメラの更新前位置
 	VECTOR prePos_;
 
+	float mouseX;
+	float mouseY;
+	float preMouseX;
+	float preMouseY;
 
 };
