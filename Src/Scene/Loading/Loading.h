@@ -27,9 +27,6 @@ public:
 
 private:
 
-	// 画像ハンドル
-	int handle_;
-
 	// 座標
 	Vector2 pos_;
 
@@ -38,5 +35,8 @@ private:
 
 	// 最低でもロード画面を表示する時間の範囲
 	int loadTimer_;
+
+	//ポーズフォント
+	int pauseFont_;
 };
 

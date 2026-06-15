@@ -147,7 +147,7 @@ void Player::InitAnimation(void)
 void Player::InitPost(void)
 {
 	// 移動方向
-	moveDir_ = AsoUtility::VECTOR_ZERO;
+	moveDir_ = AsoUtility::DIR_F;
 	// 移動スピード
 	moveSpeed_ = 0.0f;
 	// 移動量
@@ -170,8 +170,8 @@ void Player::ProcessMove(void)
 	movePow_ = AsoUtility::VECTOR_ZERO;
 	VECTOR dir = AsoUtility::VECTOR_ZERO;
 
-	if (state_ != STATE::IDLE
-		&& state_ != STATE::RUN) {
+	if (state_ == STATE::ATTACK
+		|| state_ == STATE::AVOIDANCE) {
 		return;
 	}
 
@@ -206,8 +206,9 @@ void Player::ProcessMove(void)
 				InputManager::JOYPAD_BTN::R_TRIGGER);
 		}
 
-		if (isR && st_ >= 0.0f && state_ == STATE::RUN) {
+		if (isR) {
 			moveSpeed_ = SPEED_DASH;
+			state_ = STATE::FAST_RUN;
 			st_ -= (CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
 			anim_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
 		}
@@ -230,8 +231,7 @@ void Player::ProcessMove(void)
 			Quaternion cameraRot = scnMng_.GetCamera()->GetQuaRotY();
 			moveDir_ = Quaternion::PosAxis(cameraRot, dir);
 		}
-		movePow_ = VScale
-		(moveDir_, moveSpeed_);
+		movePow_ = VScale(moveDir_, moveSpeed_);
 	}
 	else{
 		state_ = STATE::IDLE;
@@ -244,13 +244,18 @@ void Player::ProcessAttack(void)
 {
 	auto& ins = InputManager::GetInstance();
 
-	bool isHitAttack = ins.IsClickMouseLeft()
-	|| ins.IsPadBtnTrgDown(
-		InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
+	bool isHitAttack = false;
+
+	if(st_ >= 0){
+		isHitAttack = ins.IsClickMouseLeft()
+			|| ins.IsPadBtnTrgDown(
+				InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
+	}
 
 	if (isHitAttack && !isJump_ && state_ != STATE::ATTACK
 		&& state_ != STATE::AVOIDANCE){
 		state_ = STATE::ATTACK;
+		st_ -= CONSUMPTION_ST_ATTACK;
 	}
 
 	if (state_ != STATE::ATTACK) return;
@@ -274,19 +279,27 @@ void Player::ProcessAvoidance(void)
 	auto& ins = InputManager::GetInstance();
 	if (GetJoypadNum() == 0)
 	{
-		isP = ins.IsTrgDown(KEY_INPUT_LSHIFT);
+		if (st_ >= 0) {
+			isP = ins.IsTrgDown(KEY_INPUT_LSHIFT);
+		}
 	}
 	else {
-		isP = ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
-			InputManager::JOYPAD_BTN::DOWN);
+		if (st_ >= 0) {
+			isP = ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
+				InputManager::JOYPAD_BTN::DOWN);
+		}
 	}
 
-	if (isP && !isJump_ && state_ != STATE::ATTACK) {
+	if (isP && !isJump_ 
+		&& state_ != STATE::ATTACK
+		&& state_ != STATE::AVOIDANCE)
+	{
 		state_ = STATE::AVOIDANCE;
 		lastQrot_ = transform_.quaRotLocal;
 		transform_.quaRotLocal =
 			Quaternion::Mult(transform_.quaRotLocal,
 				Quaternion::AngleAxis(AsoUtility::Deg2RadF(100.0f), AsoUtility::AXIS_Y));
+		st_ -= CONSUMPTION_ST_AVOIDANCE;
 	}
 
 	if (state_ != STATE::AVOIDANCE) return;
@@ -369,7 +382,11 @@ void Player::CollisionReserve(void)
 
 void Player::UpdateProcess(void)
 {
-	if (st_ <= MAX_ST && !isAttack_) {
+	if (st_ < MIN_ST) {
+		st_ = MIN_ST;
+	}
+	else if (st_ >= MIN_ST && st_ <= MAX_ST
+		&& (state_ == STATE::IDLE || state_ == STATE::RUN)) {
 		st_ += (RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
 	}
 

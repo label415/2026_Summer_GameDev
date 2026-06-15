@@ -56,6 +56,28 @@ void EnemyDragon::Draw(void)
 	}
 	DrawString(0, 100, hit.c_str(), 0x000000);
 
+	const auto& cols = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+	int cnt = 0; // 対象となるカプセルの個数を数えるカウンタ
+	for (const auto& col : cols) {
+		if (col->GetTag() != ColliderBase::TAG::ENEMY) continue;
+
+		ColliderCapsule* colliderCapsule = dynamic_cast<ColliderCapsule*>(col);
+		if (colliderCapsule)
+		{
+			// 配列の範囲外アクセス防止
+			if (cnt < std::size(ENEMY_CAPSULE_FRAMES))
+			{
+				if(isAttack_){
+					colliderCapsule->SetValid(true);
+				}
+				else {
+					colliderCapsule->SetValid(false);
+				}
+			}
+			cnt++;
+		}
+	}
+
 
 #endif
 }
@@ -196,7 +218,7 @@ void EnemyDragon::InitPost(void)
 		std::bind(&EnemyDragon::ChangeStateEnd, this));
 
 	// 初期状態設定
-	ChangeState(STATE::IDLE);
+	ChangeState(STATE::BRACELET_ATTACK);
 
 }
 
@@ -515,6 +537,10 @@ void EnemyDragon::UpdateBreathAttack(void)
 
 void EnemyDragon::UpdateMeleeAttack(void)
 {
+	if (anim_->GetPlayAnim().step >= MELEE_ATTACK_CILLIDER) {
+		isAttack_ = true;
+	}
+
 	if (anim_->IsEnd())
 	{
 		ChangeState(STATE::IDLE);

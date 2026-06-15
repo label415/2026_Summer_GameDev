@@ -125,6 +125,10 @@ private:
 	// 最高高度
 	static constexpr float MAX_TAKE = 500.0f;
 
+
+	//噛みつき攻撃判定発生時間
+	static constexpr float MELEE_ATTACK_CILLIDER = 22.0f;
+
 	//アニメーションを固定化する座標
 	static constexpr VECTOR LOCK_POS = { 0.0f, 2.0f, 0.0f };
 	//アニメーションを固定化するフレーム

@@ -23,6 +23,7 @@ public:
 	{
 		IDLE,
 		RUN,
+		FAST_RUN,
 		ATTACK,
 		AVOIDANCE
 	};
@@ -41,11 +42,22 @@ public:
 	//スタミナ最大値
 	static constexpr float MAX_ST = 100.0f;
 
+	//スタミナ最小値
+	static constexpr float MIN_ST = -15.0f;
+	//スタミナ最小値
+	static constexpr float MIN_ST_FAST_RUN = 10.0f;
+
 	//スタミナ回復速度
 	static constexpr float RECOVERY_ST_SPEED = 10.0f;
 
 	//ダッシュ時スタミナ消費量
 	static constexpr float CONSUMPTION_ST_FAST_RUN = 25.0f;
+
+	//回避時スタミナ消費量
+	static constexpr float CONSUMPTION_ST_AVOIDANCE = 40.0f;
+
+	//回避時スタミナ消費量
+	static constexpr float CONSUMPTION_ST_ATTACK = 30.0f;
 
 	//攻撃判定発生時間
 	static constexpr float STATE_ATTACK_CILLIDER = 18.0f;

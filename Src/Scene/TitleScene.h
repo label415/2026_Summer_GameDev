@@ -42,19 +42,24 @@ public:
 
 private:
 
+	//タイトルフォント
+	int titleFont_;
+
 	//ポーズフォント
 	int pauseFont_;
 
 	//ポーズリストの選択
 	int selectIndex_;
 
+	int i;
+
 	//選択リスト
 	std::wstring pasueList_[LIST_MAX] =
 	{
-		L" ASO SOLES",
-		L"  始める",		// 続ける
-		L"   設定",		// タイトルに戻る
-		L"ゲーム終了",   // ゲームの終了
+		L"ASO SOLES",
+		L"GAME STATE",		// 続ける
+		L"    SYSTEM",		// タイトルに戻る
+		L"      QUIT",   // ゲームの終了
 	};
 
 };

@@ -1,11 +1,12 @@
 #include <DxLib.h>
 #include "../../Manager/ResourceManager.h"
+#include "../../Manager/FontManager.h"
 #include "../../Application.h"
 #include "Loading.h"
 
 // コンストラクタ
 Loading::Loading()
-	: handle_(-1)
+	: pauseFont_(-1)
 	, pos_(0, 0)
 	, isLoading_(false)
 	, loadTimer_(0)
@@ -28,9 +29,12 @@ void Loading::Init(void)
 // 読み込み
 void Loading::Load(void)
 {
-	auto& resMng = ResourceManager::GetInstance();
+	auto& res = ResourceManager::GetInstance();
+	res.Load(ResourceManager::SRC::L_FONT);
 
-	handle_ = LoadGraph(L"Data/Image/Loading.png");
+	// フォントハンドルの作成
+	auto& font = FontManager::GetInstance();
+	pauseFont_ = font.CreateMyFont(L"KazukiReiwa", 56, 20);
 }
 
 // 更新
@@ -54,19 +58,18 @@ void Loading::Update(void)
 // 描画
 void Loading::Draw(void)
 {
-	DrawRotaGraph(
-		Application::SCREEN_SIZE_X / 2,
-		Application::SCREEN_SIZE_Y / 2,
-		1.3f,
-		0.0f,
-		handle_,
-		TRUE);
+	DrawFormatStringToHandle(
+		Application::SCREEN_SIZE_X - 200,
+		Application::SCREEN_SIZE_Y - 70,
+		0xffffff,
+		pauseFont_,
+		L"Loading...");
 }
 
 // 解放
 void Loading::Release(void)
 {
-	DeleteGraph(handle_);
+	DeleteFontToHandle(pauseFont_);
 }
 
 // 非同期読み込みに切り替える

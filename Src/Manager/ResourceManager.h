@@ -35,6 +35,9 @@ public:
 		UI_SURPRISE,
 		WEAPON_BLADE,
 		FONT,
+		L_FONT,
+
+		TITLE_SELECT,
 
 	};
 

@@ -21,10 +21,13 @@ TitleScene::~TitleScene(void)
 
 void TitleScene::Init(void)
 {
-	resMng_.GetInstance().Load(ResourceManager::SRC::FONT);
+	
+	i = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
 
 	// フォントハンドルの作成
-	pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"はなぞめフォント", 56, 20);
+	resMng_.Load(ResourceManager::SRC::FONT);
+	titleFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 140, 140);
+	pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 25, 25);
 
 }
 
@@ -42,19 +45,23 @@ void TitleScene::Update(void)
 
 void TitleScene::Draw(void)
 {
+	int posX = Application::SCREEN_SIZE_X / 2 - 140;
+	int posY = Application::SCREEN_SIZE_Y / 2 + 95.0f;
+	DrawRotaGraph3(posX, posY, 0.0f, 0.0f, 0.2f, 0.05f, 0.0f, i, true);
 
 	DrawFormatStringToHandle(
-		Application::SCREEN_SIZE_X / 2 - 150.0f,
-		Application::SCREEN_SIZE_Y / 6,
+		Application::SCREEN_SIZE_X / 6,
+		Application::SCREEN_SIZE_Y / 3,
 		0xffffff,
-		pauseFont_,
+		titleFont_,
 		pasueList_[static_cast<int>(LIST::ASOSEOUL)].c_str());
+
 
 	for (int i = 1; i < LIST_MAX; ++i)
 	{
 		//座標位置を設定
-		int posX = Application::SCREEN_SIZE_X / 2 - 150.0f;
-		int posY = (Application::SCREEN_SIZE_Y / 2 + (100.0f * i)) - 100.0f;
+		int posX = Application::SCREEN_SIZE_X / 2 - 110;
+		int posY = (Application::SCREEN_SIZE_Y / 2 +50+ (50.0f * i));
 
 		//文字列を描画
 		DrawFormatStringToHandle(
@@ -64,13 +71,10 @@ void TitleScene::Draw(void)
 			pauseFont_,
 			pasueList_[i].c_str());
 	}
-
 }
 
 void TitleScene::Release(void)
 {
-	
-	// フォントハンドルを削除
+	DeleteFontToHandle(titleFont_);
 	DeleteFontToHandle(pauseFont_);
-
 }

@@ -25,6 +25,10 @@ void ColliderBase::SetFollow(Transform* follow)
 {
 	follow_ = follow;
 }
+void ColliderBase::SetValid(bool isValid)
+{
+	isValid_ = isValid;
+}
 VECTOR ColliderBase::GetRotPos(const VECTOR& localPos) const
 {
 	// 追従相手の回転に合わせて指定ローカル座標を回転し、

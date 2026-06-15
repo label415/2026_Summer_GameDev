@@ -96,9 +96,11 @@ void ResourceManager::Init(void)
 
 
 	//フォント
-	res = new RES(RES_T::FONT, PATH_FONT + L"Hanazome.ttf");
+	res = new RES(RES_T::FONT, PATH_FONT + L"KazukiReiwa.ttf");
 	resourcesMap_.emplace(SRC::FONT, res);
 
+	res = new RES(RES_T::IMG, PATH_IMG + L"Title選択カーソル.png");
+	resourcesMap_.emplace(SRC::TITLE_SELECT, res);
 }
 
 void ResourceManager::Release(void)

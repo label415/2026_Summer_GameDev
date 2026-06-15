@@ -33,6 +33,9 @@ void SceneManager::Init(void)
 	sceneId_ = SCENE_ID::TITLE;
 	waitSceneId_ = SCENE_ID::NONE;
 
+	// フォント管理クラス生成
+	FontManager::CreateInstance();
+
 	// ロード画面生成
 	load_ = new Loading();
 	load_->Init();
@@ -41,9 +44,6 @@ void SceneManager::Init(void)
 	// カメラ
 	camera_ = new Camera();
 	camera_->Init();
-
-	// フォント管理クラス生成
-	FontManager::CreateInstance();
 
 	// デルタタイム
 	preTime_ = std::chrono::system_clock::now();
