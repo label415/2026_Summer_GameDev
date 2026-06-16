@@ -60,7 +60,8 @@ private:
 	int ShadowMapHandle;
 
 	//コライダー登録
-	void RegistCollider(void);
+	void AddCollider(void);
+	void UpdateCollider(void);
 
 	//自動ロックオン対象選別
 	void UpdateAutoLockOn(void);

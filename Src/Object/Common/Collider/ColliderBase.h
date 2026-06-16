@@ -24,7 +24,8 @@ public:
 		CAMERA,
 		ENEMY,
 		VIEW_RANGE,
-		WEPON,
+		PLAYER_WEPON,
+	    ENEMY_WEPON,
 		GROUND
 	};
 

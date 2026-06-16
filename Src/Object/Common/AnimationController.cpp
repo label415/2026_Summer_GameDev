@@ -92,21 +92,48 @@ void AnimationController::Update(void)
 	// 経過時間の取得
 	float deltaTime = SceneManager::GetInstance().GetDeltaTime();
 
-	// 再生
-	playAnim_.step += (deltaTime * playAnim_.speed);
-
-	// アニメーションが終了したら
-	if (playAnim_.step > playAnim_.totalTime)
+	if (SpecificLoop_)
 	{
-		if (isLoop_)
+		// 1. 反転の判定（境界チェック）
+		if (playAnim_.step >= SpEnd_)
 		{
-			// ループ再生
-			playAnim_.step = 0.0f;
+			playAnim_.step = SpEnd_;
+			isReversing_ = true;  // 端に達したので「逆再生」にする
+		}
+		else if (playAnim_.step <= SpState_)
+		{
+			playAnim_.step = SpState_;
+			isReversing_ = false; // 開始点に戻ったので「通常再生」にする
+		}
+
+		// 2. 現在の方向に基づいてステップを進める/戻す
+		if (isReversing_)
+		{
+			playAnim_.step -= (deltaTime * playAnim_.speed);
 		}
 		else
 		{
-			// ループしない
-			playAnim_.step = playAnim_.totalTime;
+			playAnim_.step += (deltaTime * playAnim_.speed);
+		}
+	}
+	else {
+
+		// 再生
+		playAnim_.step += (deltaTime * playAnim_.speed);
+
+		// アニメーションが終了したら
+		if (playAnim_.step > playAnim_.totalTime)
+		{
+			if (isLoop_)
+			{
+				// ループ再生
+				playAnim_.step = 0.0f;
+			}
+			else
+			{
+				// ループしない
+				playAnim_.step = playAnim_.totalTime;
+			}
 		}
 	}
 
@@ -162,6 +189,13 @@ bool AnimationController::IsEnd(void) const
 const AnimationController::Animation& AnimationController::GetPlayAnim(void) const
 {
 	return playAnim_;
+}
+
+void AnimationController::SetSpecificTime(float state, float end, bool SpecificLoop)
+{
+	SpState_ = state;
+	SpEnd_ = end;
+	SpecificLoop_ = SpecificLoop;
 }
 
 void AnimationController::Add(int type, float speed, Animation& animation)

@@ -149,7 +149,7 @@ private:
 		// 頭
 		{ PATR_TAG::HEAD, 15, 30 },
 		// 尻尾
-		{ PATR_TAG::TAIL, 117, 125 },{ PATR_TAG::TAIL, 125, 132 },
+		{ PATR_TAG::TAIL, 117, 125 }, { PATR_TAG::TAIL, 125, 132 },
 		// 手
 		{ PATR_TAG::HAND, 75, 76 }, { PATR_TAG::HAND, 37, 38 },
 		// 足
@@ -161,6 +161,9 @@ private:
 
 	//属性
 	ATTRIBUTE attribute_;
+
+	//攻撃時間
+	float attackCnt_;
 
 	// 更新ステップ
 	float step_;

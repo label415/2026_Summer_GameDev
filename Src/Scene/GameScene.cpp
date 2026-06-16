@@ -45,7 +45,7 @@ void GameScene::Init(void)
 	camera_->ChangeMode(Camera::MODE::FOLLOW);
 
 	// コライダ登録
-	RegistCollider();
+	AddCollider();
 
 	ShadowMapHandle = MakeShadowMap(1024, 1024);
 
@@ -80,6 +80,7 @@ void GameScene::Update(void)
 	enemys_->Update();
 	enemys_->HitDamegr(player_->GetIsAttack());
 
+	UpdateCollider();
 }
 
 void GameScene::Draw(void)
@@ -138,29 +139,27 @@ void GameScene::Release(void)
 	DeleteShadowMap(ShadowMapHandle);
 }
 
-void GameScene::RegistCollider(void)
+void GameScene::AddCollider(void)
 {
 
-	// ステージモデルのコライダーをプレイヤーに登録
+	// 各クラスにステージコライダーを初期化時に登録
 	const std::vector<ColliderBase*> stageCollider =
 		stage_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::MODEL));
-
-	const WeponBase* wepon = player_->GetWepon();
-	const std::vector<ColliderBase*> weponColliders =
-		wepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-
-	const std::vector<ColliderBase*> cameraCollider =
-		camera_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
-
 	player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
-
 	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
-	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColliders);
-
 	camera_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
 
+	// 各クラスにプレイヤーコライダーを初期化時に登録
+	const std::vector<ColliderBase*> pColliders =
+		player_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), pColliders);
+
+	// 各クラスにカメラコライダーを初期化時に登録
+	const std::vector<ColliderBase*> cameraCollider =
+		camera_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
 	stage_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE), cameraCollider);
 
+	//各クラスにエネミーコライダーを初期化時に登録
 	const auto& enemys = enemys_->GetEnemys();
 	for (auto& enemy : enemys)
 	{
@@ -170,6 +169,21 @@ void GameScene::RegistCollider(void)
 			enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 
 		player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), enemyColliders);
+	}
+}
+
+void GameScene::UpdateCollider(void)
+{
+	// 各クラスに武器コライダーを更新に登録
+	const WeponBase* wepon = player_->GetWepon();
+	const std::vector<ColliderBase*> weponColliders =
+		wepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColliders);
+
+	// 生存していない時は削除
+	if (!wepon->GetIsAlive())
+	{
+		enemys_->RemoveCollider(ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::PLAYER_WEPON);
 	}
 }
 
@@ -187,12 +201,13 @@ void GameScene::UpdateAutoLockOn(void)
 	}
 
 	bool isLockOn = inp.IsTrgMouseMiddle();
-	bool isNextUp = inp.IsTrgDown(KEY_INPUT_UP);
-	bool isNextDown = inp.IsTrgDown(KEY_INPUT_DOWN);
-	bool isNextLeft = inp.IsTrgDown(KEY_INPUT_LEFT);
-	bool isNextRight = inp.IsTrgDown(KEY_INPUT_RIGHT);
 
 	if(camera_->GetCameraMode() == Camera::MODE::TARGET_ROCKE){
+
+		bool isNextUp = inp.IsTrgDown(KEY_INPUT_UP);
+		bool isNextDown = inp.IsTrgDown(KEY_INPUT_DOWN);
+		bool isNextLeft = inp.IsTrgDown(KEY_INPUT_LEFT);
+		bool isNextRight = inp.IsTrgDown(KEY_INPUT_RIGHT);
 
 		EnemyBase* lastTagerEnemy = targetEnemy_;
 

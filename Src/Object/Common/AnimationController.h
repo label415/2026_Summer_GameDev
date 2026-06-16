@@ -49,6 +49,8 @@ public:
 	// 再生中のアニメーション情報を取得
 	const Animation& GetPlayAnim(void) const;
 
+	void SetSpecificTime(float state, float end, bool SpecificLoop);
+
 private:
 
 	// アニメーションするモデルのハンドルID
@@ -61,10 +63,21 @@ private:
 	int playType_;
 	Animation playAnim_;
 
+	//特定の開始時間
+	float SpState_;
+
+	//特定の終了時間
+	float SpEnd_;
+
+	//特定の時間をループする
+	bool SpecificLoop_;
+
 	// アニメーションをループするかしないか
 	bool isLoop_;
 
 	// アニメーション追加の共通処理
 	void Add(int type, float speed, Animation& animation);
+
+	bool isReversing_;
 
 };

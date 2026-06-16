@@ -57,16 +57,12 @@ void EnemyDragon::Draw(void)
 	DrawString(0, 100, hit.c_str(), 0x000000);
 
 	const auto& cols = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-	int cnt = 0; // 対象となるカプセルの個数を数えるカウンタ
+	int cnt = 0;
 	for (const auto& col : cols) {
 		if (col->GetTag() != ColliderBase::TAG::ENEMY) continue;
-
 		ColliderCapsule* colliderCapsule = dynamic_cast<ColliderCapsule*>(col);
-		if (colliderCapsule)
-		{
-			// 配列の範囲外アクセス防止
-			if (cnt < std::size(ENEMY_CAPSULE_FRAMES))
-			{
+		if (colliderCapsule){
+			if (cnt < std::size(ENEMY_CAPSULE_FRAMES)){
 				if(isAttack_){
 					colliderCapsule->SetValid(true);
 				}
@@ -77,7 +73,6 @@ void EnemyDragon::Draw(void)
 			cnt++;
 		}
 	}
-
 
 #endif
 }
@@ -218,7 +213,7 @@ void EnemyDragon::InitPost(void)
 		std::bind(&EnemyDragon::ChangeStateEnd, this));
 
 	// 初期状態設定
-	ChangeState(STATE::BRACELET_ATTACK);
+	ChangeState(STATE::IDLE);
 
 }
 
@@ -250,13 +245,13 @@ void EnemyDragon::UpdateProcess(void)
 				VECTOR tFramePos = MV1GetFramePosition(transform_.modelId, topFrame);
 				VECTOR dFramePos = MV1GetFramePosition(transform_.modelId, downFrame);
 
-				if (cnt == 0) {
+				if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::BODY)) {
 					colliderCapsule->SetRadius(BODY_RADIUS);
-					tFramePos.y -= 50.0f;
-					dFramePos.y -= 50.0f;
+					tFramePos.y -= 90.0f;
+					dFramePos.y -= 90.0f;
 				}
-
-				if (cnt == 1 || cnt == 3 || cnt == 4) {
+				else if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::NECK)
+					|| colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::TAIL)) {
 					colliderCapsule->SetRadius(80.0f);
 					tFramePos.y -= 50.0f;
 					dFramePos.y -= 50.0f;
@@ -398,6 +393,8 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateBreathAttack, this);
 
+	attackCnt_ = 0.0f;
+
 	// 歩きアニメーション再生
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::BRACELET_ATTACK), false);
@@ -529,7 +526,19 @@ void EnemyDragon::UpdateFlyingAttack(void)
 
 void EnemyDragon::UpdateBreathAttack(void)
 {
-	if (anim_->IsEnd())
+	if(anim_->GetPlayAnim().step >= 27.0f)
+	{
+		if (attackCnt_ <= 2.0f) {
+			isAttack_ = true;
+			anim_->SetSpecificTime(27.0f, 30.0f, true);
+			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
+		}
+		else {
+			anim_->SetSpecificTime(0.0f, 0.0f, false);
+		}
+	}
+
+	if (anim_->GetPlayAnim().step >= 60.0f)
 	{
 		ChangeState(STATE::IDLE);
 	}
@@ -616,8 +625,6 @@ void EnemyDragon::SetTargetCollider(void)
 
 void EnemyDragon::HitDamage(bool isHit)
 {
-	if (!isHit)return;
-
 	// カプセルコライダ  
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 
@@ -641,7 +648,7 @@ void EnemyDragon::HitDamage(bool isHit)
 				// モデル以外は処理を飛ばす  
 				if (i->GetShape() != ColliderBase::SHAPE::CAPSULE) continue;
 
-				if (i->GetTag() != ColliderBase::TAG::WEPON) continue;
+				if (i->GetTag() != ColliderBase::TAG::PLAYER_WEPON) continue;
 
 				ColliderCapsule* colliderCapsule2 =
 					dynamic_cast<ColliderCapsule*>(i);

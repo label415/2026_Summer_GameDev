@@ -63,13 +63,11 @@ void Player::HitDamage(bool isHit)
 			for (const auto& i : hitCol.second)
 			{
 				// ƒ‚ƒfƒ‹ˆÈŠO‚Íˆ—‚ð”ò‚Î‚·  
-				if (i->GetShape() != ColliderBase::SHAPE::CAPSULE) continue;
-
-				if (i->GetTag() != ColliderBase::TAG::ENEMY) continue;
+				if (i->GetShape() != ColliderBase::SHAPE::CAPSULE
+					&& i->GetTag() != ColliderBase::TAG::ENEMY) continue;
 
 				ColliderCapsule* colliderCapsule2 =
 					dynamic_cast<ColliderCapsule*>(i);
-
 				if (colliderCapsule2 == nullptr) continue;
 
 				colliderCapsule1->PushBackAlongNormal(
@@ -265,10 +263,12 @@ void Player::ProcessAttack(void)
 
 	if (anim_->GetPlayAnim().step >= STATE_ATTACK_CILLIDER){ 
 		isAttack_ = true;
+		weponBlade_->SetCollider();
 	}
 
 	if (anim_->IsEnd()) {
 		state_ = STATE::IDLE;
+		weponBlade_->ClearCollider();
 	}
 }
 

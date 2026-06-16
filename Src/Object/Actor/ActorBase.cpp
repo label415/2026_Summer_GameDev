@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "../../Manager/ResourceManager.h"
 #include "../../Manager/SceneManager.h"
 #include "ActorBase.h"
@@ -83,14 +84,11 @@ const std::vector<ColliderBase*> ActorBase::GetOwnCollider(int key) const
 
 void ActorBase::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
 {
-	for (const auto& c : hitColliders_)
-	{
-			if (c.second == hitCollider)
-			{
-				return;
-			}
-	}
-	hitColliders_.emplace(shape, hitCollider);
+	hitColliders_[shape].insert(
+		hitColliders_[shape].end(),
+		hitCollider.begin(),
+		hitCollider.end()
+	);
 }
 
 void ActorBase::ClearHitCollider(void)
@@ -100,13 +98,13 @@ void ActorBase::ClearHitCollider(void)
 
 void ActorBase::RemoveHitColliderByShapeAndTag(ColliderBase::SHAPE shape, ColliderBase::TAG tag)
 {
-	for (auto& pair : hitColliders_) {
-		auto& vec = pair.second;
-		vec.erase(
-			std::remove_if(vec.begin(), vec.end(),
-				[shape, tag](const ColliderBase* col) {
-					return col && col->GetShape() == shape && col->GetTag() == tag;
-				}),
-			vec.end());
-	}
+	if (hitColliders_.count(static_cast<int>(shape)) == 0) return;
+	auto& vec = hitColliders_[static_cast<int>(shape)];
+	vec.erase(
+		std::remove_if(vec.begin(), vec.end(),
+			[tag](const ColliderBase* collider) {
+				return collider->GetTag() == tag;
+			}),
+		vec.end()
+	);
 }

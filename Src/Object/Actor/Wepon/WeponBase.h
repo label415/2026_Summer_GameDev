@@ -12,6 +12,9 @@ public:
 	// XV
 	virtual void Update(void) override;
 
+	virtual void SetCollider(void) {}
+	virtual void ClearCollider(void) {}
+
 protected:
 	// ’Ç]æTransform
 	const Transform& followTransform_;
