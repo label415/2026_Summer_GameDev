@@ -97,10 +97,10 @@ public:
 	const MODE& GetCameraMode(void)const;
 
 	// 追従対象の設定
-	void SetFollow(const Transform* follow);
+	void SetFollow(const Transform* follow) { followTransform_ = follow; }
 
 	//ロックオン対象の設定
-	void SetTargetFollow(const Transform* target);
+	void SetTargetFollow(const VECTOR* target) { targetTransform_ = target; }
 
 	// 衝突対象となるコライダを登録
     void AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider);
@@ -123,7 +123,7 @@ private:
 	const Transform* followTransform_;
 
 	//ロックオン対象のTransform
-	const Transform* targetTransform_;
+	const VECTOR* targetTransform_;
 
 	// 衝突時の押し戻し試行回数
 	static constexpr int CNT_TRY_COLLISION_CAMERA = 10;

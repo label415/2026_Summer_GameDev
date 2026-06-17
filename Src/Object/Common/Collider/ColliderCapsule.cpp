@@ -12,7 +12,8 @@ ColliderCapsule::ColliderCapsule(
 	ColliderBase(SHAPE::CAPSULE, tag, follow, patrTag),
 	localPosTop_(localPosTop),
 	localPosDown_(localPosDown),
-	radius_(radius)
+	radius_(radius),
+	center_(AsoUtility::VECTOR_ZERO)
 {
 }
 
@@ -55,12 +56,15 @@ float ColliderCapsule::GetHeight(void) const
 {
 	return localPosTop_.y;
 }
-VECTOR ColliderCapsule::GetCenter(void) const
+
+VECTOR& ColliderCapsule::GetCenter(void)
 {
+	// 一時オブジェクトではなくメンバに格納して参照で返す（呼び出し側がアドレスを取っても有効）
 	VECTOR top = GetPosTop();
 	VECTOR down = GetPosDown();
 	VECTOR diff = VSub(top, down);
-	return VAdd(down, VScale(diff, 0.5f));
+	center_ = VAdd(down, VScale(diff, 0.5f));
+	return center_;
 }
 
 VECTOR ColliderCapsule::GetPosPushBackAlongNormal(const MV1_COLL_RESULT_POLY& hitColPoly, int maxTryCnt, float pushDistance) const

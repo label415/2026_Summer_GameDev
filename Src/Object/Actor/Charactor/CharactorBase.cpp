@@ -68,7 +68,7 @@ void CharactorBase::Release(void)
 VECTOR CharactorBase::GetTargetDir(void)
 {
 	//自分と相手のベクトルを計算
-	VECTOR targetVec = VSub(targetTrans_->pos, transform_.pos);
+	VECTOR targetVec = VSub(*targetTrans_, transform_.pos);
 	//ベクトルを正規化
 	VECTOR targetdir = VNorm(targetVec);
 	//Y座標を無効

@@ -7,6 +7,7 @@ class Player;
 class Camera;
 class EnemyManager;
 class EnemyBase;
+class ColliderCapsule;
 
 class GameScene : public SceneBase
 {
@@ -52,7 +53,7 @@ private:
 	EnemyManager* enemys_;
 
 	//ロックオン対象のエネミー
-	EnemyBase* targetEnemy_;
+	ColliderCapsule* targetEnemy_;
 
 	//カメラ
 	Camera* camera_;

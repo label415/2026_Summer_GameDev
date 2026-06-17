@@ -34,7 +34,7 @@ void EnemyDragon::Draw(void)
 
 	VECTOR pos = MV1GetFramePosition(transform_.modelId, 1);
 
-	DrawFormatString(0, 20, 0x000000, L"モデルフレーム座標 %.1f, %.1f, %.1f", pos.x, pos.y, pos.z);
+	DrawFormatString(0, 20, 0xffffff, L"モデルフレーム座標 %.1f, %.1f, %.1f", pos.x, pos.y, pos.z);
 
 	std::wstring stateName[] = {
 		L"NONE",L"THINK",L"IDLE",L"ROAR",L"PATROL",
@@ -43,8 +43,8 @@ void EnemyDragon::Draw(void)
 
 	std::wstring attributeName[] = { L"NONE",L"ABOVE_GROUND",L"AIR" };
 
-	DrawFormatString(0, 40, 0x000000, L"Enemy State: %s", stateName[static_cast<int>(state_)].c_str());
-	DrawFormatString(0, 60, 0x000000, L"Enemy Attribute: %s", attributeName[static_cast<int>(attribute_)].c_str());
+	DrawFormatString(0, 40, 0xffffff, L"Enemy State: %s", stateName[static_cast<int>(state_)].c_str());
+	DrawFormatString(0, 60, 0xffffff, L"Enemy Attribute: %s", attributeName[static_cast<int>(attribute_)].c_str());
 
 
 	std::wstring hit;
@@ -54,7 +54,7 @@ void EnemyDragon::Draw(void)
 	else {
 		hit = L"当たっていない";
 	}
-	DrawString(0, 100, hit.c_str(), 0x000000);
+	DrawString(0, 100, hit.c_str(), 0xffffff);
 
 	const auto& cols = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 	int cnt = 0;

@@ -29,7 +29,7 @@ public:
 	// 高さ
 	float GetHeight(void) const;
 	// カプセルの中心座標
-	VECTOR GetCenter(void) const;
+	VECTOR& GetCenter(void);
 
 	// 指定された回数と距離で三角形の法線方向に押し戻した座標を取得
 	VECTOR GetPosPushBackAlongNormal(
@@ -61,4 +61,6 @@ private:
 	VECTOR localPosDown_;
 	// 半径
 	float radius_;
+	// カプセルの中心
+	VECTOR center_;
 };

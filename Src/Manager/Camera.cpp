@@ -79,16 +79,6 @@ void Camera::Release(void)
 {
 }
 
-void Camera::SetFollow(const Transform* follow)
-{
-	followTransform_ = follow;
-}
-
-void Camera::SetTargetFollow(const Transform* target)
-{
-	targetTransform_ = target;
-}
-
 void Camera::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
 {
 	for (const auto& c : hitColliders_)
@@ -231,8 +221,7 @@ void Camera::SynLockOn(void)
 {
 	//同期先の位置
 	VECTOR followPos = followTransform_->pos;
-	VECTOR TargetPos = targetTransform_->pos;
-
+	VECTOR TargetPos = *targetTransform_;
 	VECTOR toTarget = VSub(TargetPos, followPos);
 	angleY = atan2f(toTarget.x, toTarget.z);
 	angles_.y = angleY;
@@ -244,12 +233,25 @@ void Camera::SynLockOn(void)
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
 	VECTOR localPos;
-	// 注視点
-	localPos = transform_.quaRot.PosAxis(LOCKON_TARGET_LOCAL_POS);
-	targetPos_ = VAdd(TargetPos, localPos);
-	// カメラ位置
-	localPos = transform_.quaRot.PosAxis(LOCKON_CAMERA_LOCAL_POS);
-	transform_.pos = VAdd(followPos, localPos);
+	float diff = VSize(toTarget);
+	if (diff <= 100.0f) {
+		// 注視点
+	    // 注視点
+		localPos = transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS);
+		targetPos_ = VAdd(followPos, localPos);
+
+		// カメラ位置
+		localPos = transform_.quaRot.PosAxis(FOLLOW_CAMERA_LOCAL_POS);
+		transform_.pos = VAdd(followPos, localPos);
+	}
+	else {
+		// 注視点
+		localPos = transform_.quaRot.PosAxis(LOCKON_TARGET_LOCAL_POS);
+		targetPos_ = VAdd(TargetPos, localPos);
+		// カメラ位置
+		localPos = transform_.quaRot.PosAxis(LOCKON_CAMERA_LOCAL_POS);
+		transform_.pos = VAdd(followPos, localPos);
+	}
 
 }
 

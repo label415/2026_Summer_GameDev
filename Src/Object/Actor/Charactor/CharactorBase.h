@@ -25,7 +25,7 @@ public:
     const bool GetIsAttack(void) const { return isAttack_; }
 
     //ロックオン対象の設定
-    void SetTargetTransform(const Transform* transform) { targetTrans_ = transform; }
+    void SetTargetTransform(const VECTOR* transform) { targetTrans_ = transform; }
 
     //ターゲットの方向を取得
     VECTOR GetTargetDir(void);
@@ -44,7 +44,7 @@ protected:
     static constexpr float COLLISION_BACK_DIS = 1.0f;
 
     //ロックオン対象Transform
-    const Transform* targetTrans_;
+    const VECTOR* targetTrans_;
 
     //アニメーションコントローラ
     AnimationController* anim_;
