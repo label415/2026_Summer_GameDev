@@ -100,6 +100,7 @@ void WeponBracelet::Move(void)
 void WeponBracelet::Draw(void)
 {
 	ActorBase::Draw();
+	DrawCapsule3D(topPos_, downPos_, COL_CAPSULE_RADIUS, 10, 0xff0000, 0xff0000, true);
 }
 
 void WeponBracelet::SetCollider(void)

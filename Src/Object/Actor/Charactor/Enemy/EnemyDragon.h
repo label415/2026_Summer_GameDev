@@ -140,7 +140,7 @@ private:
 	static constexpr int LOCK_FRAME_NO = 1;
 
 	// 移動速度(通常)
-	static constexpr float SPEED_MOVE = 5.0f;
+	static constexpr float SPEED_MOVE = 15.0f;
 	// 移動速度(ダッシュ)
 	static constexpr float SPEED_DASH = 10.0f;
 
@@ -232,5 +232,7 @@ private:
 	Transform colTransform_;
 
 	void UpdateDebugImGui(void);
+	
+	VECTOR preMoverDir_;
 };
 

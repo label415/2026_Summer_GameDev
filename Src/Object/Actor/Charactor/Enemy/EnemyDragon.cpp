@@ -229,7 +229,7 @@ void EnemyDragon::InitPost(void)
 
 void EnemyDragon::UpdateProcess(void)
 {
-
+	preMoverDir_ = moveDir_;
 	//ターゲットの方向更新
 	moveDir_ = GetTargetDir();
 	
@@ -316,35 +316,43 @@ void EnemyDragon::ChangeStateThink(void)
 	// 思考
 	int rand = GetRand(100);
 
+	float diff = VSize(VSub(*targetTrans_, transform_.pos));
+
 	if(attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
-		if (rand < 20)
-		{
-			ChangeState(STATE::PATROL);
+		if (diff < 200.0f) {
+			ChangeState(STATE::BRACELET_ATTACK);
 		}
-		else if (rand > 20
-			&& rand < 60) {
-			ChangeState(STATE::TAKEOFF);
-		}
-		else {
-			ChangeState(STATE::MELEE_ATTACK);
-		}
-	}
-	if (attribute_ == ATTRIBUTE::AIR) 
-	{
-		// 思考
-		int rand = GetRand(100);
-		if (rand < 35) {
-			ChangeState(STATE::FLYING_ATTACK);
-		}
-		else if (rand > 35
-			&& rand < 70) {
-			ChangeState(STATE::FLYING);
+		else if(diff >= 200.0f
+			&&  diff <= 2000.0f){
+			if (rand < 60)
+			{
+				ChangeState(STATE::PATROL);
+			}
+			else {
+				ChangeState(STATE::BRACELET_ATTACK);
+			}
 		}
 		else {
-			ChangeState(STATE::LANDS);
+			ChangeState(STATE::BRACELET_ATTACK);
 		}
+
 	}
+	//if (attribute_ == ATTRIBUTE::AIR) 
+	//{
+	//	// 思考
+	//	int rand = GetRand(100);
+	//	if (rand < 35) {
+	//		ChangeState(STATE::FLYING_ATTACK);
+	//	}
+	//	else if (rand > 35
+	//		&& rand < 70) {
+	//		ChangeState(STATE::FLYING);
+	//	}
+	//	else {
+	//		ChangeState(STATE::LANDS);
+	//	}
+	//}
 }
 
 void EnemyDragon::ChangeStateIdle(void)
@@ -368,9 +376,12 @@ void EnemyDragon::ChangeStateRoar(void)
 	// 移動量ゼロ
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
+	// ランダムな待機時間
+	step_ = 5.0f + static_cast<float>(GetRand(2));
+
 	// 待機アニメーション再生
 	anim_->Play(
-		static_cast<int>(ANIM_TYPE::ROAR), false);
+		static_cast<int>(ANIM_TYPE::ROAR), true);
 }
 
 void EnemyDragon::ChangeStatePatrol(void)
@@ -402,6 +413,9 @@ void EnemyDragon::ChangeStateFlyingAttack(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateFlyingAttack, this);
 
+	wepon_ = new WeponBracelet(transform_, VNorm(VSub(*targetTrans_, transform_.pos)), 28);
+	wepon_->Init();
+
 	// 歩きアニメーション再生
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::FLYING_ATTACK), false);
@@ -413,7 +427,7 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 
 	attackCnt_ = 0.0f;
 
-	wepon_ = new WeponBracelet(transform_, moveDir_, 28);
+	wepon_ = new WeponBracelet(transform_, VNorm(VSub(*targetTrans_, transform_.pos)), 28);
 	wepon_->Init();
 
 	// 歩きアニメーション再生
@@ -506,13 +520,14 @@ void EnemyDragon::UpdateRoar(void)
 
 void EnemyDragon::UpdatePatrol(void)
 {
+	step_ -= scnMng_.GetDeltaTime();
 	moveSpeed_ = SPEED_MOVE;
 	movePow_ = VScale(moveDir_, moveSpeed_);
-
-	if (anim_->IsEnd()){
+	if (step_ < 0.0f)
+	{
 		ChangeState(STATE::IDLE);
 		return;
-	};
+	}
 }
 
 void EnemyDragon::UpdateChase(void)
@@ -536,8 +551,29 @@ void EnemyDragon::UpdateFlyingAttack(void)
 {
 	transform_.pos.y = MAX_TAKE;
 
-	moveSpeed_ = SPEED_MOVE;
-	movePow_ = VScale(moveDir_, moveSpeed_);
+	if (wepon_ != nullptr) {
+		wepon_->Update();
+	}
+
+	if (anim_->GetPlayAnim().step >= 27.0f)
+	{
+		if (attackCnt_ <= 2.0f) {
+			isAttack_ = true;
+			anim_->SetSpecificTime(27.0f, 30.0f, true);
+			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
+			wepon_->SetIsAttack(true);
+		}
+		else {
+			anim_->SetSpecificTime(0.0f, 0.0f, false);
+		}
+	}
+	if (anim_->GetPlayAnim().step >= 40.0f)
+	{
+		if (wepon_ != nullptr)
+		{
+			wepon_->SetIsEnd(true);
+		}
+	}
 
 	if (anim_->IsEnd())
 	{
@@ -553,6 +589,7 @@ void EnemyDragon::UpdateBreathAttack(void)
 
 	if(anim_->GetPlayAnim().step >= 27.0f)
 	{
+		moveDir_ = preMoverDir_;
 		if (attackCnt_ <= 2.0f) {
 			isAttack_ = true;
 			anim_->SetSpecificTime(27.0f, 30.0f, true);
@@ -565,6 +602,7 @@ void EnemyDragon::UpdateBreathAttack(void)
 	}
 	if (anim_->GetPlayAnim().step >= 40.0f)
 	{
+		moveDir_ = preMoverDir_;
 		if(wepon_ != nullptr)
 		{
 			wepon_->SetIsEnd(true);
@@ -583,6 +621,11 @@ void EnemyDragon::UpdateMeleeAttack(void)
 		isAttack_ = true;
 	}
 
+	if (anim_->GetPlayAnim().step >= 20.0f)
+	{
+		moveDir_ = preMoverDir_;
+	}
+
 	if (anim_->IsEnd())
 	{
 		ChangeState(STATE::IDLE);
@@ -597,7 +640,7 @@ void EnemyDragon::UpdateHover(void)
 	if (step_ < 0.0f)
 	{
 		// 待機終了
-		ChangeState(STATE::THINK);
+		ChangeState(STATE::FLYING_ATTACK);
 		return;
 	}
 }
