@@ -10,6 +10,7 @@
 #include "../../Common/Collider/ColliderLine.h"
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "../Wepon/WeponBlade.h"
+#include "../UI/UIHp.h"
 #include "Player.h"
 
 Player::Player(void)
@@ -36,6 +37,7 @@ void Player::Release(void)
 
 	wepon_->Release();
 	delete wepon_;
+	delete uiHp_;
 }
 
 void Player::HitDamage(bool isHit)
@@ -77,6 +79,11 @@ void Player::HitDamage(bool isHit)
 			}
 		}
 	}
+}
+
+void Player::DrawHp(void)
+{
+	uiHp_->Draw();
 }
 
 void Player::InitLoad(void)
@@ -159,6 +166,8 @@ void Player::InitPost(void)
 
 	//スタミナ
 	st_ = MAX_ST;
+
+	uiHp_ = new UIHp(10.0f, 10.0f, 500.0f, 30.0f, 5.0f);
 }
 
 void Player::ProcessMove(void)

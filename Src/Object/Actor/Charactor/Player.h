@@ -79,6 +79,9 @@ public:
 	//•Šíî•ñæ“¾
 	const WeponBase* GetWepon(void)const { return wepon_; }
 
+	//HP•`‰æ
+	void DrawHp(void)override;
+
 protected:
 
 	//ó‘Ô

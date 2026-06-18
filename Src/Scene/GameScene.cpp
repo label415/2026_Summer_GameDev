@@ -116,6 +116,11 @@ void GameScene::Draw(void)
 			true);
 
 	}
+
+	player_->DrawHp();
+	for (const auto& enemy : enemys_->GetEnemys()) {
+		enemy->DrawHp();
+	}
 }
 
 void GameScene::Release(void)
@@ -203,10 +208,10 @@ void GameScene::UpdateAutoLockOn(void)
 
 	if(camera_->GetCameraMode() == Camera::MODE::TARGET_ROCKE){
 
-		bool isNextUp = inp.IsTrgDown(KEY_INPUT_UP);
-		bool isNextDown = inp.IsTrgDown(KEY_INPUT_DOWN);
-		bool isNextLeft = inp.IsTrgDown(KEY_INPUT_LEFT);
-		bool isNextRight = inp.IsTrgDown(KEY_INPUT_RIGHT);
+		bool isNextUp = inp.IsTrgDown(KEY_INPUT_W);
+		bool isNextDown = inp.IsTrgDown(KEY_INPUT_S);
+		bool isNextLeft = inp.IsTrgDown(KEY_INPUT_A);
+		bool isNextRight = inp.IsTrgDown(KEY_INPUT_D);
 
 		ColliderCapsule* lastTagerEnemy = targetEnemy_;
 
@@ -220,33 +225,30 @@ void GameScene::UpdateAutoLockOn(void)
 			player_->SetTargetTransform(nullptr);
 		}
 
-		if (isNextUp){
-			diffMin = 0.0f;
-			for (auto& enemy : enemys){
-				for (const auto& collider 
-					: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))){
+		if (isNextUp) {
+			diffMin = FLT_MAX; // ここを0.0fからFLT_MAXに
+			for (auto& enemy : enemys) {
+				for (const auto& collider
+					: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
 
 					if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::HAND)
-						|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK))continue;
+						|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK)) continue;
 
-					// カプセルコライダ情報  
 					ColliderCapsule* colliderCapsule =
 						dynamic_cast<ColliderCapsule*>(collider);
 
 					if (colliderCapsule == nullptr
-						|| lastTagerEnemy == colliderCapsule)continue;
+						|| lastTagerEnemy == colliderCapsule) continue;
 
 					VECTOR enemyPos = colliderCapsule->GetCenter();
 
-					//プレイヤーと敵のベクトルの大きさ
 					float lockonDiff = VSize(VSub(enemyPos, playerPos));
-					diffMin = VSize(VSub(enemyPos, playerPos));
-					if (lockonDiff <= diffMin)continue;
+					if (lockonDiff >= diffMin) continue; // <--- ここも <= から >= へ
 
 					float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
 					float angle = acosf(dot);
 					float a = AsoUtility::Deg2RadF(VIEW_ANGLE);
-					if (angle >= a)continue;
+					if (angle >= a) continue;
 
 					diffMin = lockonDiff;
 					targetEnemy_ = colliderCapsule;

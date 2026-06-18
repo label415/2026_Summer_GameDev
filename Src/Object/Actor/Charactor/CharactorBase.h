@@ -1,6 +1,9 @@
 #pragma once
 #include "../ActorBase.h"
 #include "../../Common/AnimationController.h"
+
+class UIHp;
+
 class CharactorBase :
     public ActorBase
 {
@@ -30,6 +33,9 @@ public:
     //ターゲットの方向を取得
     VECTOR GetTargetDir(void);
 
+	//HP描画
+    virtual void DrawHp(void){}
+
 protected:
 
     //地面との当たり判定フラグ
@@ -45,6 +51,8 @@ protected:
 
     //ロックオン対象Transform
     const VECTOR* targetTrans_;
+
+	UIHp* uiHp_;
 
     //アニメーションコントローラ
     AnimationController* anim_;
@@ -85,5 +93,6 @@ protected:
 
     //攻撃フラグ
     bool isAttack_;
+
 };
 

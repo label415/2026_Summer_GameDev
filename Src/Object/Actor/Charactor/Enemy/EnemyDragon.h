@@ -12,8 +12,8 @@ public:
 		THINK,			//思考
 		IDLE,			//待機
 		ROAR,			//咆哮
+		CHARGE,			//突進
 		PATROL,			//探索
-		CHASE,			//追跡
 		FLYING,			//飛行中
 		FLYING_ATTACK,	//空中ブレス
 		BRACELET_ATTACK,//地上ブレス
@@ -38,6 +38,7 @@ public:
 		ROAR = 1,
 		IDLE = 8,
 		WALK = 13,
+		CHARGE = 13,
 		FLYING = 5,
 		FLYING_ATTACK = 6,
 		BRACELET_ATTACK = 4,
@@ -85,6 +86,10 @@ public:
 	void Release(void)override;
 
 	void HitDamage(bool isHit)override;
+
+	//HP描画
+	void DrawHp(void)override;
+
 protected:
 	// リソースロード
 	void InitLoad(void) override;
@@ -140,9 +145,9 @@ private:
 	static constexpr int LOCK_FRAME_NO = 1;
 
 	// 移動速度(通常)
-	static constexpr float SPEED_MOVE = 15.0f;
+	static constexpr float SPEED_MOVE = 10.0f;
 	// 移動速度(ダッシュ)
-	static constexpr float SPEED_DASH = 10.0f;
+	static constexpr float SPEED_DASH = 20.0f;
 
 	//各部位のフレーム
 	static constexpr FramePair ENEMY_CAPSULE_FRAMES[] =
@@ -160,6 +165,8 @@ private:
 		// 足
 		{ PATR_TAG::LEG, 2, 4 }, { PATR_TAG::LEG, 111, 113 }
 	};
+
+	static constexpr float ENEMY_ATTACK[] = {500.0f,1000.0f, 1500.0f};
 
 	// 状態
 	STATE state_;
@@ -186,10 +193,10 @@ private:
 	void ChangeStateIdle(void);
 	//咆哮
 	void ChangeStateRoar(void);
+	//突進
+	void ChangeStateCharge(void);
 	//探索
 	void ChangeStatePatrol(void);
-	//追跡
-	void ChangeStateChase(void);
 	//飛行中
 	void ChangeStateFlying(void);
 	//空中ブレス
@@ -214,8 +221,8 @@ private:
 	void UpdateThink(void);
 	void UpdateIdle(void);
 	void UpdateRoar(void);
+	void UpdateCharge(void);
 	void UpdatePatrol(void);
-	void UpdateChase(void);
 	void UpdateFlying(void);
 	void UpdateFlyingAttack(void);
 	void UpdateBreathAttack(void);

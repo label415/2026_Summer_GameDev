@@ -70,6 +70,7 @@
     <ClCompile Include="Src\Object\Actor\Wepon\WeponBase.cpp" />
     <ClCompile Include="Src\Object\Actor\Wepon\WeponBlade.cpp" />
     <ClCompile Include="Src\Object\Actor\Wepon\WeponBracelet.cpp" />
+    <ClCompile Include="Src\Object\Actor\UI\UIHp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Manager\CollisionManager.h" />
@@ -124,6 +125,7 @@
     <ClInclude Include="Src\Object\Actor\Wepon\WeponBase.h" />
     <ClInclude Include="Src\Object\Actor\Wepon\WeponBlade.h" />
     <ClInclude Include="Src\Object\Actor\Wepon\WeponBracelet.h" />
+    <ClInclude Include="Src\Object\Actor\UI\UIHp.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

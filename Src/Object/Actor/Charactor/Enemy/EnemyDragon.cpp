@@ -11,6 +11,7 @@
 #include "../../../../Utility/ModelFrameUtility.h"
 #include "../../../../Common/Quaternion.h"
 #include "../../Wepon/WeponBracelet.h"
+#include "../../UI/UIHp.h"
 #include "EnemyDragon.h"
 
 EnemyDragon::EnemyDragon(const EnemyBase::EnemyData& data)
@@ -79,12 +80,19 @@ void EnemyDragon::Draw(void)
 		}
 	}
 
+	if (targetTrans_ != nullptr)
+	{
+		float diff = VSize(VSub(*targetTrans_, transform_.pos));
+		DrawFormatString(0, 120, 0xffffff, L"diff:%.1f", diff);
+	}
+
 #endif
 }
 
 void EnemyDragon::Release(void)
 {
 	transform_.Release();
+	delete uiHp_;
 }
 
 void EnemyDragon::InitLoad(void)
@@ -157,6 +165,9 @@ void EnemyDragon::InitAnimation(void)
 	type = static_cast<int>(ANIM_TYPE::WALK);
 	anim_->AddInFbx(type, 30.0f, type);
 
+	type = static_cast<int>(ANIM_TYPE::CHARGE);
+	anim_->AddInFbx(type, 50.0f, type);
+
 	type = static_cast<int>(ANIM_TYPE::FLYING);
 	anim_->AddInFbx(type, 30.0f, type);
 
@@ -199,10 +210,10 @@ void EnemyDragon::InitPost(void)
 		std::bind(&EnemyDragon::ChangeStateIdle, this));
 	stateChanges_.emplace(static_cast<int>(STATE::PATROL),
 		std::bind(&EnemyDragon::ChangeStatePatrol, this));
-	stateChanges_.emplace(static_cast<int>(STATE::CHASE),
-		std::bind(&EnemyDragon::ChangeStateChase, this));
 	stateChanges_.emplace(static_cast<int>(STATE::ROAR),
 		std::bind(&EnemyDragon::ChangeStateRoar, this));
+	stateChanges_.emplace(static_cast<int>(STATE::CHARGE),
+		std::bind(&EnemyDragon::ChangeStateCharge, this));
 	stateChanges_.emplace(static_cast<int>(STATE::FLYING),
 		std::bind(&EnemyDragon::ChangeStateFlying, this));
 	stateChanges_.emplace(static_cast<int>(STATE::BRACELET_ATTACK),
@@ -224,6 +235,8 @@ void EnemyDragon::InitPost(void)
 
 	// 初期状態設定
 	ChangeState(STATE::ROAR);
+
+	uiHp_ = new UIHp(100.0f, 600.0f, 1180.0f, 680.0f, 5.0f);
 
 }
 
@@ -317,24 +330,33 @@ void EnemyDragon::ChangeStateThink(void)
 	int rand = GetRand(100);
 
 	float diff = VSize(VSub(*targetTrans_, transform_.pos));
-
 	if(attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
-		if (diff < 200.0f) {
-			ChangeState(STATE::BRACELET_ATTACK);
+		if (diff < 800.0f) {
+			if (rand < 40)
+			{
+				ChangeState(STATE::MELEE_ATTACK);
+			}
+			else {
+				ChangeState(STATE::CHARGE);
+			}
 		}
-		else if(diff >= 200.0f
+		else if(diff >= 800.0f
 			&&  diff <= 2000.0f){
-			if (rand < 60)
+			if (rand < 20)
 			{
 				ChangeState(STATE::PATROL);
+			}
+			else if (rand >= 20
+				&& rand < 60) {
+				ChangeState(STATE::CHARGE);
 			}
 			else {
 				ChangeState(STATE::BRACELET_ATTACK);
 			}
 		}
 		else {
-			ChangeState(STATE::BRACELET_ATTACK);
+			ChangeState(STATE::PATROL);
 		}
 
 	}
@@ -376,12 +398,24 @@ void EnemyDragon::ChangeStateRoar(void)
 	// 移動量ゼロ
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	// ランダムな待機時間
-	step_ = 5.0f + static_cast<float>(GetRand(2));
-
 	// 待機アニメーション再生
 	anim_->Play(
-		static_cast<int>(ANIM_TYPE::ROAR), true);
+		static_cast<int>(ANIM_TYPE::ROAR), false);
+}
+
+void EnemyDragon::ChangeStateCharge(void)
+{
+	stateUpdate_ = std::bind(&EnemyDragon::UpdateCharge, this);
+
+	// 移動量ゼロ
+	movePow_ = AsoUtility::VECTOR_ZERO;
+
+	// ランダムな待機時間
+	step_ = 2.0f + static_cast<float>(GetRand(2));
+
+	// 歩きアニメーション再生
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::ROAR), false);
 }
 
 void EnemyDragon::ChangeStatePatrol(void)
@@ -393,11 +427,7 @@ void EnemyDragon::ChangeStatePatrol(void)
 
 	// 歩きアニメーション再生
 	anim_->Play(
-		static_cast<int>(ANIM_TYPE::WALK), false);
-}
-
-void EnemyDragon::ChangeStateChase(void)
-{
+		static_cast<int>(ANIM_TYPE::WALK), true);
 }
 
 void EnemyDragon::ChangeStateFlying(void)
@@ -518,20 +548,44 @@ void EnemyDragon::UpdateRoar(void)
 	}
 }
 
+void EnemyDragon::UpdateCharge(void)
+{
+	if (anim_->IsEnd()
+		&& anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::ROAR))
+	{
+		anim_->Play(
+			static_cast<int>(ANIM_TYPE::CHARGE), true);
+	}
+	else if(anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::CHARGE)){
+		moveDir_ = preMoverDir_;
+		step_ -= scnMng_.GetDeltaTime();
+		isAttack_ = true;
+		moveSpeed_ = SPEED_DASH;
+		movePow_ = VScale(moveDir_, moveSpeed_);
+
+		if (step_ < 0.0f)
+		{
+			isAttack_ = false;
+			ChangeState(STATE::IDLE);
+			return;
+		}
+	}
+}
+
 void EnemyDragon::UpdatePatrol(void)
 {
 	step_ -= scnMng_.GetDeltaTime();
 	moveSpeed_ = SPEED_MOVE;
 	movePow_ = VScale(moveDir_, moveSpeed_);
-	if (step_ < 0.0f)
+
+	// 思考
+	int rand = GetRand(2);
+	float diff = VSize(VSub(*targetTrans_, transform_.pos));
+	if (diff <= ENEMY_ATTACK[rand])
 	{
 		ChangeState(STATE::IDLE);
 		return;
 	}
-}
-
-void EnemyDragon::UpdateChase(void)
-{
 }
 
 void EnemyDragon::UpdateFlying(void)
@@ -740,4 +794,9 @@ void EnemyDragon::HitDamage(bool isHit)
 			}
 		}
 	}
+}
+
+void EnemyDragon::DrawHp(void)
+{
+	uiHp_->Draw();
 }

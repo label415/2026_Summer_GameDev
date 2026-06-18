@@ -101,6 +101,9 @@ void ResourceManager::Init(void)
 
 	res = new RES(RES_T::IMG, PATH_IMG + L"Title選択カーソル.png");
 	resourcesMap_.emplace(SRC::TITLE_SELECT, res);
+
+	res = new RES(RES_T::IMG, PATH_IMG + L"Hp.png");
+	resourcesMap_.emplace(SRC::HP, res);
 }
 
 void ResourceManager::Release(void)

@@ -38,6 +38,7 @@ public:
 		L_FONT,
 
 		TITLE_SELECT,
+		HP
 
 	};
 
