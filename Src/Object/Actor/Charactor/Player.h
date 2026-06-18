@@ -77,7 +77,7 @@ public:
 	void HitDamage(bool isHit)override;
 
 	//武器情報取得
-	const WeponBase* GetWepon(void)const { return weponBlade_; }
+	const WeponBase* GetWepon(void)const { return wepon_; }
 
 protected:
 
@@ -106,7 +106,7 @@ protected:
 private:
 
 	//武器
-	WeponBase* weponBlade_;
+	WeponBase* wepon_;
 
 	//スタミナ
 	float st_;

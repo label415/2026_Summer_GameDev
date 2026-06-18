@@ -59,7 +59,6 @@ float ColliderCapsule::GetHeight(void) const
 
 VECTOR& ColliderCapsule::GetCenter(void)
 {
-	// 一時オブジェクトではなくメンバに格納して参照で返す（呼び出し側がアドレスを取っても有効）
 	VECTOR top = GetPosTop();
 	VECTOR down = GetPosDown();
 	VECTOR diff = VSub(top, down);

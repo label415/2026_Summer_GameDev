@@ -1,5 +1,6 @@
 #pragma once
 #include "EnemyBase.h"
+
 class EnemyDragon :
     public EnemyBase
 {
@@ -80,6 +81,8 @@ public:
 	~EnemyDragon(void) override;
 	// •`‰æ
 	void Draw(void) override;
+	// ‰ğ•ú
+	void Release(void)override;
 
 	void HitDamage(bool isHit)override;
 protected:
@@ -98,6 +101,8 @@ protected:
 	void UpdateProcessPost(void) override;
 
 private:
+
+
 	// ƒ‚ƒfƒ‹‚Ì‘å‚«‚³
 	static constexpr float SCALE = 0.4f;
 	// ƒ‚ƒfƒ‹‚Ì‰ñ“]’²®

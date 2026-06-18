@@ -206,52 +206,54 @@ void Camera::SyncFollow(void)
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
 	VECTOR localPos;
-
+	const float MOVE_SPEED = 0.7f;
 	// 注視点
 	localPos = transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS);
-	targetPos_ = VAdd(pos, localPos);
+	VECTOR nextTargetPos = VAdd(pos, localPos);
+	targetPos_ = AsoUtility::Lerp(transform_.pos, nextTargetPos,  MOVE_SPEED);
 
 	// カメラ位置
 	localPos = transform_.quaRot.PosAxis(FOLLOW_CAMERA_LOCAL_POS);
-	transform_.pos = VAdd(pos, localPos);
+	VECTOR nextCameraPos = VAdd(pos, localPos);
+	transform_.pos = AsoUtility::Lerp(transform_.pos, nextCameraPos, MOVE_SPEED);
 
 }
 
 void Camera::SynLockOn(void)
 {
-	//同期先の位置
+	const float ROT_SPEED = 0.1f;
+	const float MOVE_SPEED = 0.1f;
+
+	// 同期先の位置
 	VECTOR followPos = followTransform_->pos;
 	VECTOR TargetPos = *targetTransform_;
 	VECTOR toTarget = VSub(TargetPos, followPos);
-	angleY = atan2f(toTarget.x, toTarget.z);
-	angles_.y = angleY;
 
-	// Y軸
-	rotY_ = Quaternion::AngleAxis(angleY, AsoUtility::AXIS_Y);
+	float distanceSq = (toTarget.x * toTarget.x) + (toTarget.z * toTarget.z);
+	if (distanceSq > 200.0f){
+
+		angleY = atan2f(toTarget.x, toTarget.z);
+		angles_.y = angleY;
+
+		Quaternion targetRotY = Quaternion::AngleAxis(angleY, AsoUtility::AXIS_Y);
+		rotY_ = Quaternion::Slerp(rotY_, targetRotY, ROT_SPEED);
+	}
 
 	// Y軸 + X軸
-	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
+	Quaternion targetQuaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
+	// クォータニオン補間
+	transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetQuaRot, ROT_SPEED);
 
 	VECTOR localPos;
-	float diff = VSize(toTarget);
-	if (diff <= 100.0f) {
-		// 注視点
-	    // 注視点
-		localPos = transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS);
-		targetPos_ = VAdd(followPos, localPos);
+	// 注視点
+	localPos = transform_.quaRot.PosAxis(LOCKON_TARGET_LOCAL_POS);
+	VECTOR nextTargetPos = VAdd(TargetPos, localPos);
+	targetPos_ = AsoUtility::Lerp(transform_.pos, nextTargetPos, MOVE_SPEED);
 
-		// カメラ位置
-		localPos = transform_.quaRot.PosAxis(FOLLOW_CAMERA_LOCAL_POS);
-		transform_.pos = VAdd(followPos, localPos);
-	}
-	else {
-		// 注視点
-		localPos = transform_.quaRot.PosAxis(LOCKON_TARGET_LOCAL_POS);
-		targetPos_ = VAdd(TargetPos, localPos);
-		// カメラ位置
-		localPos = transform_.quaRot.PosAxis(LOCKON_CAMERA_LOCAL_POS);
-		transform_.pos = VAdd(followPos, localPos);
-	}
+	// カメラ位置
+	localPos = transform_.quaRot.PosAxis(LOCKON_CAMERA_LOCAL_POS);
+	VECTOR nextCameraPos = VAdd(followPos, localPos);
+	transform_.pos = AsoUtility::Lerp(transform_.pos, nextCameraPos, MOVE_SPEED);
 
 }
 

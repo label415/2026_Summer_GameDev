@@ -44,6 +44,8 @@ public:
 
 	void RemoveCollider(ColliderBase::SHAPE shape, ColliderBase::TAG tag);
 
+
+
 private:
 	// エネミー
 	std::vector<EnemyBase*> enemys_;

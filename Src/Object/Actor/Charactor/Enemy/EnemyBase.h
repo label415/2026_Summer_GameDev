@@ -2,6 +2,9 @@
 #include <DxLib.h>
 #include <functional>
 #include "../CharactorBase.h"
+
+class WeponBracelet;
+
 class EnemyBase :
     public CharactorBase
 {
@@ -34,7 +37,13 @@ public:
     // •`‰æ
     virtual void Draw(void) override;
 
+    //•Šíî•ñæ“¾
+    const WeponBracelet* GetWepon(void)const { return wepon_; }
+
 protected:
+
+    //•Ší
+    WeponBracelet* wepon_;
 
     // ó‘ÔŠÇ—
     int stateBase_;

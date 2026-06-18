@@ -14,7 +14,7 @@
 
 Player::Player(void)
 {
-	weponBlade_ = nullptr;
+	wepon_ = nullptr;
 }
 
 Player::~Player(void)
@@ -25,7 +25,7 @@ void Player::Draw(void)
 {
 	CharactorBase::Draw();
 
-	weponBlade_->Draw();
+	wepon_->Draw();
 
 	DrawFormatString(0, 0, 0x000000, L"スタミナ(%.2f)",st_);
 }
@@ -34,9 +34,8 @@ void Player::Release(void)
 {
 	transform_.Release();
 
-	weponBlade_->Release();
-	delete weponBlade_;
-	weponBlade_ = nullptr;
+	wepon_->Release();
+	delete wepon_;
 }
 
 void Player::HitDamage(bool isHit)
@@ -155,8 +154,8 @@ void Player::InitPost(void)
 	state_ = STATE::IDLE;
 
 	//武器
-	weponBlade_ = new WeponBlade(transform_,48);
-	weponBlade_->Init();
+	wepon_ = new WeponBlade(transform_,48);
+	wepon_->Init();
 
 	//スタミナ
 	st_ = MAX_ST;
@@ -220,7 +219,7 @@ void Player::ProcessMove(void)
 			VECTOR targetDir = GetTargetDir();
 			float targetAngleY = atan2f(targetDir.x, targetDir.z);
 			Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
-			transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetRot, 0.8f);
+			transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetRot, 0.1f);
 			moveDir_ = Quaternion::PosAxis(targetRot, dir);
 		}
 		else
@@ -263,12 +262,12 @@ void Player::ProcessAttack(void)
 
 	if (anim_->GetPlayAnim().step >= STATE_ATTACK_CILLIDER){ 
 		isAttack_ = true;
-		weponBlade_->SetCollider();
+		wepon_->SetCollider();
 	}
 
 	if (anim_->IsEnd()) {
 		state_ = STATE::IDLE;
-		weponBlade_->ClearCollider();
+		wepon_->ClearCollider();
 	}
 }
 
@@ -400,8 +399,8 @@ void Player::UpdateProcess(void)
 	ProcessAvoidance();
 
 	// 武器処理
-	if (weponBlade_){
-		weponBlade_->Update();
+	if (wepon_){
+		wepon_->Update();
 	}
 
 	//アニメーションの移動量を無効

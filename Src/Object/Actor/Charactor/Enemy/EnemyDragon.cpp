@@ -10,6 +10,7 @@
 #include "../../../../Libs/ImGui/imgui.h"
 #include "../../../../Utility/ModelFrameUtility.h"
 #include "../../../../Common/Quaternion.h"
+#include "../../Wepon/WeponBracelet.h"
 #include "EnemyDragon.h"
 
 EnemyDragon::EnemyDragon(const EnemyBase::EnemyData& data)
@@ -29,6 +30,10 @@ void EnemyDragon::Draw(void)
 {
 	// 基底クラスの描画処理
 	CharactorBase::Draw();
+
+	if (wepon_ != nullptr) {
+		wepon_->Draw();
+	}
 
 #ifdef _DEBUG
 
@@ -75,6 +80,11 @@ void EnemyDragon::Draw(void)
 	}
 
 #endif
+}
+
+void EnemyDragon::Release(void)
+{
+	transform_.Release();
 }
 
 void EnemyDragon::InitLoad(void)
@@ -213,12 +223,13 @@ void EnemyDragon::InitPost(void)
 		std::bind(&EnemyDragon::ChangeStateEnd, this));
 
 	// 初期状態設定
-	ChangeState(STATE::IDLE);
+	ChangeState(STATE::ROAR);
 
 }
 
 void EnemyDragon::UpdateProcess(void)
 {
+
 	//ターゲットの方向更新
 	moveDir_ = GetTargetDir();
 	
@@ -265,6 +276,13 @@ void EnemyDragon::UpdateProcess(void)
 	}
 
 	SetFrameUserLocalPos(LOCK_POS, LOCK_FRAME_NO);
+
+	if(wepon_ != nullptr &&!wepon_->GetIsAlive())
+	{
+		wepon_->Release();
+		delete wepon_;
+		wepon_ = nullptr;
+	}
 }
 
 void EnemyDragon::UpdateDebugImGui(void)
@@ -394,6 +412,9 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateBreathAttack, this);
 
 	attackCnt_ = 0.0f;
+
+	wepon_ = new WeponBracelet(transform_, moveDir_, 28);
+	wepon_->Init();
 
 	// 歩きアニメーション再生
 	anim_->Play(
@@ -526,15 +547,27 @@ void EnemyDragon::UpdateFlyingAttack(void)
 
 void EnemyDragon::UpdateBreathAttack(void)
 {
+	if (wepon_ != nullptr) {
+		wepon_->Update();
+	}
+
 	if(anim_->GetPlayAnim().step >= 27.0f)
 	{
 		if (attackCnt_ <= 2.0f) {
 			isAttack_ = true;
 			anim_->SetSpecificTime(27.0f, 30.0f, true);
 			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
+			wepon_->SetIsAttack(true);
 		}
 		else {
 			anim_->SetSpecificTime(0.0f, 0.0f, false);
+		}
+	}
+	if (anim_->GetPlayAnim().step >= 40.0f)
+	{
+		if(wepon_ != nullptr)
+		{
+			wepon_->SetIsEnd(true);
 		}
 	}
 

@@ -1,12 +1,14 @@
 #include "../../../Utility/AsoUtility.h"
+#include "../../../Utility/ModelFrameUtility.h"
 #include "../../../Manager/ResourceManager.h"
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "WeponBracelet.h"
-WeponBracelet::WeponBracelet(const Transform& followTransform, int followFrameId)
+WeponBracelet::WeponBracelet(const Transform& followTransform, const VECTOR moverDir, int followFrameId)
 	:
-	WeponBase(followTransform, followFrameId)
+	WeponBase(followTransform, followFrameId),
+	moveDir_(moverDir)
 {
-	isAlive_ = false;
+	isAttack_ = false;
 }
 
 WeponBracelet::~WeponBracelet(void)
@@ -15,49 +17,22 @@ WeponBracelet::~WeponBracelet(void)
 
 void WeponBracelet::Update(void)
 {
-	WeponBase::Update();
+	Move();
 }
 
 void WeponBracelet::InitLoad(void)
 {
-	// モデルのロード
-	transform_.SetModel(
-		resMng_.Load(ResourceManager::SRC::WEAPON_BLADE).handleId_);
 }
 
 void WeponBracelet::InitTransform(void)
 {
-	transform_.scl = VScale(AsoUtility::VECTOR_ONE, SCALE);
-	transform_.quaRot = Quaternion();
-	transform_.quaRotLocal = Quaternion();
-	transform_.pos = AsoUtility::VECTOR_ZERO;
-	localPos_ = { -2.0f, 0.0f, -3.0f };
-	localRot_ = {
-	AsoUtility::Deg2RadF(0.0f),
-	AsoUtility::Deg2RadF(0.0f),
-	AsoUtility::Deg2RadF(-90.0f)
-	};
 }
 
 void WeponBracelet::InitCollider(void)
 {
-
-}
-
-void WeponBracelet::InitAnimation(void)
-{
-}
-
-void WeponBracelet::InitPost(void)
-{
-}
-
-void WeponBracelet::SetCollider(void)
-{
-	isAlive_ = true;
 	ColliderCapsule* colCapsule = new ColliderCapsule(
-		ColliderBase::TAG::PLAYER_WEPON, &transform_,
-		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
+		ColliderBase::TAG::ENEMY_WEPON, &transform_,
+		AsoUtility::VECTOR_ZERO, AsoUtility::VECTOR_ZERO,
 		COL_CAPSULE_RADIUS);
 
 	std::vector<ColliderBase*> colCapsules;
@@ -65,8 +40,73 @@ void WeponBracelet::SetCollider(void)
 	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsules);
 }
 
+void WeponBracelet::InitAnimation(void)
+{
+}
+
+void WeponBracelet::InitPost(void)
+{ 
+	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
+	moveSpeed_ = SPEED;
+}
+
+void WeponBracelet::Move(void)
+{
+	if (isAttack_) {
+		transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
+
+		if (VSize(VSub(downPos_, topPos_)) <= LENGTH) {
+			topPos_ = VAdd(topPos_, VScale(moveDir_, moveSpeed_));
+		}
+		else {
+			topPos_ = topPos_;
+		}
+	}
+	else if (!isEnd_ && !isAttack_) {
+		transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
+	}
+
+	const auto& cols = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+	int cnt = 0; // 対象となるカプセルの個数を数えるカウンタ
+	for (const auto& col : cols) {
+		if (col->GetTag() != ColliderBase::TAG::ENEMY_WEPON) continue;
+
+		ColliderCapsule* colliderCapsule = dynamic_cast<ColliderCapsule*>(col);
+		if (colliderCapsule)
+		{
+			colliderCapsule->SetLocalPosTop(topPos_);
+		}
+	}
+
+	if (!isEnd_)return;
+	isAttack_ = false;
+	downPos_ = VAdd(downPos_, VScale(moveDir_, moveSpeed_));
+	if (VSize(VSub(downPos_, topPos_)) <= 50.0f) {
+		isAlive_ = false;
+	}
+
+	cnt = 0;
+	for (const auto& col : cols) {
+		if (col->GetTag() != ColliderBase::TAG::ENEMY_WEPON) continue;
+
+		ColliderCapsule* colliderCapsule = dynamic_cast<ColliderCapsule*>(col);
+		if (colliderCapsule)
+		{
+			colliderCapsule->SetLocalPosDown(downPos_);
+		}
+	}
+}
+
+void WeponBracelet::Draw(void)
+{
+	ActorBase::Draw();
+}
+
+void WeponBracelet::SetCollider(void)
+{
+}
+
 void WeponBracelet::ClearCollider(void)
 {
-	isAlive_ = false;
-	ownColliders_.erase(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+	
 }
