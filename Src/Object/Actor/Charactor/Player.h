@@ -3,6 +3,7 @@
 
 class Camara;
 class WeponBase;
+class UISt;
 
 class Player :
     public CharactorBase
@@ -16,7 +17,9 @@ public:
 		FAST_RUN,
 		ROLLING,
 		ATTACK,
-		AVOIDANCE
+		AVOIDANCE,
+		DOWN,
+		UP,
 	};
 
 	enum class STATE
@@ -25,7 +28,8 @@ public:
 		RUN,
 		FAST_RUN,
 		ATTACK,
-		AVOIDANCE
+		AVOIDANCE,
+		DOWN
 	};
 
 	//初期Y軸角度
@@ -48,7 +52,7 @@ public:
 	static constexpr float MIN_ST_FAST_RUN = 10.0f;
 
 	//スタミナ回復速度
-	static constexpr float RECOVERY_ST_SPEED = 10.0f;
+	static constexpr float RECOVERY_ST_SPEED = 20.0f;
 
 	//ダッシュ時スタミナ消費量
 	static constexpr float CONSUMPTION_ST_FAST_RUN = 25.0f;
@@ -83,6 +87,9 @@ public:
 	void DrawHp(void)override;
 
 protected:
+
+	// スタミナ UI
+	UISt * uiSt_;
 
 	//状態
 	STATE state_;
@@ -131,7 +138,8 @@ private:
 	{ 0.0f, -10.0f, 0.0f };
 
 	//アニメーションを固定化する座標
-	static constexpr VECTOR LOCK_POS = { 0.0f, 78.0f, 0.0f };
+	static constexpr VECTOR LOCK_POS1 = { 0.0f, 78.0f, 0.0f };
+	static constexpr VECTOR LOCK_POS2 = { 0.0f, 50.0f, 0.0f };
 
 	//アニメーションを固定化するフレーム
 	static constexpr int LOCK_FRAME_NO = 0;
@@ -152,9 +160,13 @@ private:
 	void ProcessMove(void);
 	void ProcessAttack(void);
 	void ProcessAvoidance(void);
+	void ProcessDownUp(void);
 
 	// 衝突判定
 	void CollisionReserve(void) override;
+
+	//無敵
+	bool isV_;
 
 };
 

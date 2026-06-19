@@ -260,16 +260,10 @@ void Camera::SynLockOn(void)
 void Camera::ProcessRot(bool isLimit)
 {
 
-	if (GetJoypadNum() == 0)
-	{
-		// 方向回転によるXYZの移動(キーボード)
-		RotKeyboard(isLimit);
-	}
-	else
-	{
-		// 方向回転によるXYZの移動(ゲームパッド)
-		RotGamePad(isLimit);
-	}
+	// 方向回転によるXYZの移動(キーボード)
+	RotKeyboard(isLimit);
+	// 方向回転によるXYZの移動(ゲームパッド)
+	RotGamePad(isLimit);
 
 }
 
@@ -514,7 +508,7 @@ void Camera::RotGamePad(bool isLimit)
 	angles_.y += dir.x * ROT_POW_RAD;
 
 	// 右スティック上下の傾き
-	angles_.x += dir.z * ROT_POW_RAD;
+	angles_.x -= dir.z * ROT_POW_RAD;
 	
 	// 角度制限
 	if (isLimit && angles_.x < -LIMIT_X_DW_RAD)

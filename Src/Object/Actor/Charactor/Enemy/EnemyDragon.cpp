@@ -245,11 +245,21 @@ void EnemyDragon::UpdateProcess(void)
 	preMoverDir_ = moveDir_;
 	//ターゲットの方向更新
 	moveDir_ = GetTargetDir();
+
+	// 無敵タイマー更新
+	if (isInvincible_) {
+		invincibleTimer_ -= scnMng_.GetDeltaTime();
+		if (invincibleTimer_ <= 0.0f) {
+			isInvincible_ = false;
+			invincibleTimer_ = 0.0f;
+			
+		}
+	}
 	
 	// 状態別更新
 	stateUpdate_();
 
-	UpdateDebugImGui();
+	/*UpdateDebugImGui();*/
 
 	const auto& cols = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 	int cnt = 0; // 対象となるカプセルの個数を数えるカウンタ
@@ -789,7 +799,12 @@ void EnemyDragon::HitDamage(bool isHit)
 					colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
 					colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius()))
 				{
-					isDamage_ = true;
+					if (!isInvincible_) {
+						uiHp_->SetHp(10.0f);
+						isInvincible_ = true;
+						invincibleTimer_ = INVINCIBLE_TIME;
+						return;
+					}
 				}
 			}
 		}

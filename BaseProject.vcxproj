@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Scene\GameClearScene.cpp" />
+    <ClCompile Include="Src\Scene\GameOverScene.cpp" />
     <ClCompile Include="Src\Manager\CollisionManager.cpp" />
     <ClCompile Include="Src\Libs\ImGuiWrapper.cpp" />
     <ClCompile Include="Src\Libs\ImGui\backends\imgui_impl_dx11.cpp" />
@@ -71,8 +73,11 @@
     <ClCompile Include="Src\Object\Actor\Wepon\WeponBlade.cpp" />
     <ClCompile Include="Src\Object\Actor\Wepon\WeponBracelet.cpp" />
     <ClCompile Include="Src\Object\Actor\UI\UIHp.cpp" />
+    <ClCompile Include="Src\Object\Actor\UI\UISt.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Scene\GameClearScene.h" />
+    <ClInclude Include="Src\Scene\GameOverScene.h" />
     <ClInclude Include="Src\Manager\CollisionManager.h" />
     <ClInclude Include="Src\Libs\ImGuiWrapper.h" />
     <ClInclude Include="Src\Libs\ImGui\backends\imgui_impl_dx11.h" />
@@ -126,6 +131,7 @@
     <ClInclude Include="Src\Object\Actor\Wepon\WeponBlade.h" />
     <ClInclude Include="Src\Object\Actor\Wepon\WeponBracelet.h" />
     <ClInclude Include="Src\Object\Actor\UI\UIHp.h" />
+    <ClInclude Include="Src\Object\Actor\UI\UISt.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

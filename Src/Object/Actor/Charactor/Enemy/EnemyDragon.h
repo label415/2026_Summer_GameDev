@@ -233,7 +233,6 @@ private:
 	void UpdateDead(void);
 	void UpdateEnd(void);
 
-	//対象コライダーの設定
 	void SetTargetCollider(void);
 
 	Transform colTransform_;
@@ -241,5 +240,11 @@ private:
 	void UpdateDebugImGui(void);
 	
 	VECTOR preMoverDir_;
+
+	// 被弾後の無敵時間（秒）
+	static constexpr float INVINCIBLE_TIME = 1.0f;
+	// 無敵フラグとタイマー
+	bool isInvincible_ = false;
+	float invincibleTimer_ = 0.0f;
 };
 

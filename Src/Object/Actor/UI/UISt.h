@@ -3,14 +3,14 @@
 
 class Vector2;
 
-class UIHp : public UIBase
+class UISt : public UIBase
 {
 public:
     // コンストラクタ
     // maxHp は省略時 100.0f
-    UIHp(float pos1X, float pos1Y, float pos2X, float pos2Y, float imgSize, float maxHp = 100.0f);
+    UISt(float pos1X, float pos1Y, float pos2X, float pos2Y, float imgSize, float maxHp = 100.0f);
     // デストラクタ
-    ~UIHp(void) override;
+    ~UISt(void) override;
     // 更新
     void Update(void) override;
     // 描画
@@ -44,4 +44,5 @@ private:
     float maxHp_;
     float currentHp_;
 };
+
 

@@ -10,12 +10,14 @@
 #include "../../Common/Collider/ColliderLine.h"
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "../Wepon/WeponBlade.h"
+#include "../UI/UISt.h"
 #include "../UI/UIHp.h"
 #include "Player.h"
 
 Player::Player(void)
 {
 	wepon_ = nullptr;
+	uiSt_ = nullptr;
 }
 
 Player::~Player(void)
@@ -38,6 +40,10 @@ void Player::Release(void)
 	wepon_->Release();
 	delete wepon_;
 	delete uiHp_;
+	if (uiSt_) {
+		delete uiSt_;
+		uiSt_ = nullptr;
+	}
 }
 
 void Player::HitDamage(bool isHit)
@@ -56,26 +62,64 @@ void Player::HitDamage(bool isHit)
 		const ColliderCapsule* colliderCapsule1 =
 			dynamic_cast<const ColliderCapsule*>(vec);
 
-		if (colliderCapsule1 == nullptr) return;
+		if (colliderCapsule1 == nullptr) continue; // ここは return ではなく次へ
 
 		// 登録されている衝突物を全てチェック  
 		for (const auto& hitCol : hitColliders_)
 		{
 			for (const auto& i : hitCol.second)
 			{
-				// モデル以外は処理を飛ばす  
-				if (i->GetShape() != ColliderBase::SHAPE::CAPSULE
-					&& i->GetTag() != ColliderBase::TAG::ENEMY) continue;
+				// 敵本体（ENEMY）との当たり判定は実際に衝突しているかを確認してからダメージ判定する
+				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
+					&& i->GetTag() == ColliderBase::TAG::ENEMY) {
 
-				ColliderCapsule* colliderCapsule2 =
-					dynamic_cast<ColliderCapsule*>(i);
-				if (colliderCapsule2 == nullptr) continue;
+					ColliderCapsule* colliderCapsule2 =
+						dynamic_cast<ColliderCapsule*>(i);
+					if (colliderCapsule2 == nullptr) continue;
 
-				colliderCapsule1->PushBackAlongNormal(
-					colliderCapsule2,
-					transform_,
-					20,
-					false,false);
+					// 実際にめり込んでいるか判定する
+					auto hits = HitCheck_Capsule_Capsule(
+						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
+						colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius());
+
+					// 衝突している場合のみ処理
+					if (hits) {
+						if (isHit && !isV_) {
+							uiHp_->SetHp(20.0f);
+							anim_->Play(
+								static_cast<int>(ANIM_TYPE::DOWN), false);
+							state_ = STATE::DOWN;
+						}
+						else {
+							// 衝突が発生しているが攻撃判定が無い場合は押し戻す
+							colliderCapsule1->PushBackAlongNormal(
+								colliderCapsule2,
+								transform_,
+								20,
+								false, false);
+						}
+					}
+				}
+
+				// 敵の武器との衝突（既存ロジックそのまま)
+				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
+					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
+
+					ColliderCapsule* colliderCapsule2 =
+						dynamic_cast<ColliderCapsule*>(i);
+					if (colliderCapsule2 == nullptr) continue;
+
+					auto hits = HitCheck_Capsule_Capsule(
+						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
+						colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius());
+
+					if (hits && !isV_) {
+						uiHp_->SetHp(0.5f);
+						anim_->Play(
+							static_cast<int>(ANIM_TYPE::DOWN), false);
+						state_ = STATE::DOWN;
+					}
+				}
 			}
 		}
 	}
@@ -84,6 +128,7 @@ void Player::HitDamage(bool isHit)
 void Player::DrawHp(void)
 {
 	uiHp_->Draw();
+	if(uiSt_) uiSt_->Draw();
 }
 
 void Player::InitLoad(void)
@@ -145,6 +190,10 @@ void Player::InitAnimation(void)
 		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK));
 	anim_->Add(static_cast<int>(ANIM_TYPE::AVOIDANCE),
 		80.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_AVOIDANCE));
+	anim_->Add(static_cast<int>(ANIM_TYPE::DOWN),
+		50.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_DOWN));
+	anim_->Add(static_cast<int>(ANIM_TYPE::UP),
+		100.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_UP));
 	anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 }
 
@@ -166,8 +215,9 @@ void Player::InitPost(void)
 
 	//スタミナ
 	st_ = MAX_ST;
-
 	uiHp_ = new UIHp(10.0f, 10.0f, 500.0f, 30.0f, 5.0f);
+	// スタミナUIを HP の下に表示
+	uiSt_ = new UISt(10.0f, 40.0f, 500.0f, 60.0f, 5.0f, MAX_ST);
 }
 
 void Player::ProcessMove(void)
@@ -177,40 +227,43 @@ void Player::ProcessMove(void)
 	VECTOR dir = AsoUtility::VECTOR_ZERO;
 
 	if (state_ == STATE::ATTACK
-		|| state_ == STATE::AVOIDANCE) {
+		|| state_ == STATE::AVOIDANCE
+		|| state_ == STATE::DOWN) {
 		return;
 	}
 
 	auto& ins = InputManager::GetInstance();
-	if (GetJoypadNum() == 0) {
 
-		if (ins.IsNew(KEY_INPUT_W)) { dir = AsoUtility::DIR_F; }
-		if (ins.IsNew(KEY_INPUT_A)) { dir = AsoUtility::DIR_L; }
-		if (ins.IsNew(KEY_INPUT_S)) { dir = AsoUtility::DIR_B; }
-		if (ins.IsNew(KEY_INPUT_D)) { dir = AsoUtility::DIR_R; }
+	// キーボード入力（WASD）
+	VECTOR keyDir = AsoUtility::VECTOR_ZERO;
+	if (ins.IsNew(KEY_INPUT_W)) { keyDir = AsoUtility::DIR_F; }
+	if (ins.IsNew(KEY_INPUT_A)) { keyDir = AsoUtility::DIR_L; }
+	if (ins.IsNew(KEY_INPUT_S)) { keyDir = AsoUtility::DIR_B; }
+	if (ins.IsNew(KEY_INPUT_D)) { keyDir = AsoUtility::DIR_R; }
+
+	// 接続されているゲームパッド１の情報を取得
+	InputManager::JOYPAD_IN_STATE padState =
+		ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+	// アナログキーの入力値から方向を取得
+	VECTOR padDir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
+
+	// 両対応：ゲームパッドの入力がある場合はゲームパッド優先、なければキーボード
+	if (!AsoUtility::EqualsVZero(padDir))
+	{
+		dir = padDir;
 	}
-	else {
-		// 接続されているゲームパッド１の情報を取得
-		InputManager::JOYPAD_IN_STATE padState =
-			ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
-		// アナログキーの入力値から方向を取得
-		dir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
+	else
+	{
+		dir = keyDir;
 	}
 
 	if (!AsoUtility::EqualsVZero(dir))
 	{
 		state_ = STATE::RUN;
 
-		bool isR = false;
 		auto& ins = InputManager::GetInstance();
-		if (GetJoypadNum() == 0)
-		{
-			isR = ins.IsNew(KEY_INPUT_SPACE);
-		}
-		else {
-			isR = ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
-				InputManager::JOYPAD_BTN::R_TRIGGER);
-		}
+		bool isR = isR = ins.IsNew(KEY_INPUT_SPACE)
+			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 
 		if (isR) {
 			moveSpeed_ = SPEED_DASH;
@@ -239,7 +292,7 @@ void Player::ProcessMove(void)
 		}
 		movePow_ = VScale(moveDir_, moveSpeed_);
 	}
-	else{
+	else {
 		state_ = STATE::IDLE;
 		anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 	}
@@ -248,18 +301,16 @@ void Player::ProcessMove(void)
 
 void Player::ProcessAttack(void)
 {
-	auto& ins = InputManager::GetInstance();
-
 	bool isHitAttack = false;
-
-	if(st_ >= 0){
+	auto& ins = InputManager::GetInstance();
+	if (st_ >= 0) {
 		isHitAttack = ins.IsClickMouseLeft()
-			|| ins.IsPadBtnTrgDown(
-				InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
+			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
 	}
 
 	if (isHitAttack && !isJump_ && state_ != STATE::ATTACK
-		&& state_ != STATE::AVOIDANCE){
+		&& state_ != STATE::AVOIDANCE
+		&& state_ != STATE::DOWN) {
 		state_ = STATE::ATTACK;
 		st_ -= CONSUMPTION_ST_ATTACK;
 	}
@@ -269,7 +320,7 @@ void Player::ProcessAttack(void)
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::ATTACK), false);
 
-	if (anim_->GetPlayAnim().step >= STATE_ATTACK_CILLIDER){ 
+	if (anim_->GetPlayAnim().step >= STATE_ATTACK_CILLIDER) {
 		isAttack_ = true;
 		wepon_->SetCollider();
 	}
@@ -285,22 +336,16 @@ void Player::ProcessAvoidance(void)
 
 	bool isP = false;
 	auto& ins = InputManager::GetInstance();
-	if (GetJoypadNum() == 0)
-	{
-		if (st_ >= 0) {
-			isP = ins.IsTrgDown(KEY_INPUT_LSHIFT);
-		}
-	}
-	else {
-		if (st_ >= 0) {
-			isP = ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,
-				InputManager::JOYPAD_BTN::DOWN);
-		}
+
+	if (st_ >= 0) {
+		isP = ins.IsTrgDown(KEY_INPUT_LSHIFT)
+			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT);
 	}
 
-	if (isP && !isJump_ 
+	if (isP && !isJump_
 		&& state_ != STATE::ATTACK
-		&& state_ != STATE::AVOIDANCE)
+		&& state_ != STATE::AVOIDANCE
+		&& state_ != STATE::DOWN)
 	{
 		state_ = STATE::AVOIDANCE;
 		lastQrot_ = transform_.quaRotLocal;
@@ -317,6 +362,7 @@ void Player::ProcessAvoidance(void)
 
 	moveSpeed_ = 10.0f;
 	movePow_ = VScale(moveDir_, moveSpeed_);
+	isV_ = true;
 
 	if (anim_->IsEnd()) {
 		transform_.quaRotLocal = lastQrot_;
@@ -325,10 +371,31 @@ void Player::ProcessAvoidance(void)
 
 }
 
+void Player::ProcessDownUp(void)
+{
+	if (state_ == STATE::DOWN)
+	{
+		isV_ = true;
+		state_ = STATE::DOWN;
+
+		if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::DOWN)
+			&& anim_->IsEnd()) {
+			anim_->Play(
+				static_cast<int>(ANIM_TYPE::UP), false);
+		}
+		else if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::UP)
+			&& anim_->IsEnd()) {
+			state_ = STATE::IDLE;
+		}
+	}
+
+}
+
 void Player::CollisionReserve(void)
 {
 	
-	if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::AVOIDANCE))
+	if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::AVOIDANCE)
+		|| anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::DOWN))
 	{
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)
 		{
@@ -390,12 +457,23 @@ void Player::CollisionReserve(void)
 
 void Player::UpdateProcess(void)
 {
+	isV_ = false;
 	if (st_ < MIN_ST) {
 		st_ = MIN_ST;
 	}
 	else if (st_ >= MIN_ST && st_ <= MAX_ST
-		&& (state_ == STATE::IDLE || state_ == STATE::RUN)) {
+		&& (state_ == STATE::IDLE || state_ == STATE::RUN || state_ == STATE::DOWN)) {
 		st_ += (RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
+	}
+
+	// UI に現在のスタミナを反映（絶対値セット）
+	if (uiSt_) {
+		uiSt_->SetHpAbsolute(st_);
+	}
+
+	if(wepon_ != nullptr && state_ != STATE::ATTACK)
+	{
+		wepon_->ClearCollider();
 	}
 
 	//攻撃処理
@@ -407,13 +485,25 @@ void Player::UpdateProcess(void)
 	//回避処理
 	ProcessAvoidance();
 
+	ProcessDownUp();
+
 	// 武器処理
 	if (wepon_){
 		wepon_->Update();
 	}
 
+	VECTOR LockPos;
+	if(STATE::DOWN == state_)
+	{
+		LockPos = LOCK_POS2;
+	}
+	else
+	{
+		LockPos = LOCK_POS1;
+	}
+
 	//アニメーションの移動量を無効
-	SetFrameUserLocalPos(LOCK_POS, LOCK_FRAME_NO);
+	SetFrameUserLocalPos(LockPos, LOCK_FRAME_NO);
 
 }
 

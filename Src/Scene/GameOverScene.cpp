@@ -7,21 +7,21 @@
 #include "../Manager/FontManager.h"
 #include "../Manager/Camera.h"
 #include "../Object/Actor/Stage/SkyDome.h"
-#include "TitleScene.h"
+#include "GameOverScene.h"
 
-TitleScene::TitleScene(void)
+GameOverScene::GameOverScene(void)
 	:
 	SceneBase()
 {
 }
 
-TitleScene::~TitleScene(void)
+GameOverScene::~GameOverScene(void)
 {
 }
 
-void TitleScene::Init(void)
+void GameOverScene::Init(void)
 {
-	
+
 	i = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
 
 	// フォントハンドルの作成
@@ -31,30 +31,27 @@ void TitleScene::Init(void)
 
 }
 
-void TitleScene::Update(void)
+void GameOverScene::Update(void)
 {
 
 	// シーン遷移
 	auto const& ins = InputManager::GetInstance();
 
-	 bool nextSene = ins.IsTrgDown(KEY_INPUT_SPACE)
-			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,InputManager::JOYPAD_BTN::DOWN);
+	bool nextSene = ins.IsTrgDown(KEY_INPUT_SPACE)
+		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 
 	if (nextSene)
 	{
-		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAME);
+		sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
 	}
 
 }
 
-void TitleScene::Draw(void)
+void GameOverScene::Draw(void)
 {
-	/*int posX = Application::SCREEN_SIZE_X / 2 - 140;
-	int posY = Application::SCREEN_SIZE_Y / 2 + 95.0f;
-	DrawRotaGraph3(posX, posY, 0.0f, 0.0f, 0.2f, 0.05f, 0.0f, i, true);*/
 
 	DrawFormatStringToHandle(
-		Application::SCREEN_SIZE_X / 6,
+		Application::SCREEN_SIZE_X / 8,
 		Application::SCREEN_SIZE_Y / 3,
 		0xffffff,
 		titleFont_,
@@ -66,7 +63,7 @@ void TitleScene::Draw(void)
 		//座標位置を設定
 		/*int posX = Application::SCREEN_SIZE_X / 2 - 110;
 		int posY = (Application::SCREEN_SIZE_Y / 2 +50+ (50.0f * i));*/
-		int posX = Application::SCREEN_SIZE_X / 2 - 300;
+		int posX = Application::SCREEN_SIZE_X / 2 - 200;
 		int posY = (Application::SCREEN_SIZE_Y / 2 + 50 + (50.0f * i));
 
 		//文字列を描画
@@ -79,8 +76,9 @@ void TitleScene::Draw(void)
 	}
 }
 
-void TitleScene::Release(void)
+void GameOverScene::Release(void)
 {
 	DeleteFontToHandle(titleFont_);
 	DeleteFontToHandle(pauseFont_);
 }
+

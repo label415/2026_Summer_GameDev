@@ -4,6 +4,7 @@
 #include "../Manager/InputManager.h"
 #include "../Manager/FontManager.h"
 #include "../Object/Actor/Wepon/WeponBase.h"
+#include "../Object/Actor/Wepon/WeponBracelet.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/Stage/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
@@ -11,6 +12,7 @@
 #include "../Object/Actor/Charactor/Enemy/EnemyDragon.h"
 #include "../Object/Common/Collider/ColliderCapsule.h"
 #include "../Utility/MatrixUtility.h"
+#include "../Object/Actor/UI/UIHp.h"
 #include "GameScene.h"
 
 GameScene::GameScene(void)
@@ -59,11 +61,22 @@ void GameScene::Init(void)
 void GameScene::Update(void)
 {
 	// シーン遷移
-	/*auto const& ins = InputManager::GetInstance();
-	if (ins.IsTrgDown(KEY_INPUT_SPACE))
+
+	if (!player_->GetHP()->IsActive())
 	{
-		sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
-	}*/
+		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMEOVER);
+	}
+
+	const auto& enemys = enemys_->GetEnemys();
+	for (auto& enemy : enemys)
+	{
+		if (enemy == nullptr)continue;
+
+		if (!enemy->GetHP()->IsActive())
+		{
+			sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
+		}
+	}
 
 	UpdateAutoLockOn();
 
@@ -85,6 +98,8 @@ void GameScene::Update(void)
 
 void GameScene::Draw(void)
 {
+
+
 	skydome_->Draw();
 
 	// シャドウマップへの描画の準備
@@ -184,7 +199,29 @@ void GameScene::UpdateCollider(void)
 		wepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColliders);
 
-	// 生存していない時は削除
+	const auto& enemys = enemys_->GetEnemys();
+	for (auto& enemy : enemys)
+	{
+		if (enemy == nullptr) continue;
+
+		// Enemy の武器が nullptr の可能性をチェックしてから取得する
+		const WeponBracelet* enemyWepon = enemy->GetWepon();
+		if (enemyWepon == nullptr) continue;
+
+		const std::vector<ColliderBase*> enemyWeponColliders =
+			enemyWepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+
+		// プレイヤー側のヒットコライダを上書き登録（ActorBase::AddHitCollider は置換するよう変更済)
+		player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), enemyWeponColliders);
+
+		// 生存していない時は削除
+		if (!enemyWepon->GetIsAlive())
+		{
+			enemys_->RemoveCollider(ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::ENEMY_WEPON);
+		}
+	}
+
+	// 生存していない時は削除（プレイヤー武器）
 	if (!wepon->GetIsAlive())
 	{
 		enemys_->RemoveCollider(ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::PLAYER_WEPON);
@@ -204,14 +241,31 @@ void GameScene::UpdateAutoLockOn(void)
 		enemy->SetTargetTransform(&player_->GetTransform().pos);
 	}
 
-	bool isLockOn = inp.IsTrgMouseMiddle();
+	bool isLockOn = inp.IsClickMouseRight()
+		|| inp.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
 
 	if(camera_->GetCameraMode() == Camera::MODE::TARGET_ROCKE){
 
-		bool isNextUp = inp.IsTrgDown(KEY_INPUT_W);
-		bool isNextDown = inp.IsTrgDown(KEY_INPUT_S);
-		bool isNextLeft = inp.IsTrgDown(KEY_INPUT_A);
-		bool isNextRight = inp.IsTrgDown(KEY_INPUT_D);
+		VECTOR dir = AsoUtility::VECTOR_ZERO;
+			InputManager::JOYPAD_IN_STATE padState =
+				inp.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+
+			// アナログスティック方向
+			dir = inp.GetDirectionXZAKey(padState.AKeyRX, padState.AKeyRY);
+
+			static float prevStickX = 0.0f;
+			static float prevStickZ = 0.0f;
+			const float stickThreshold = InputManager::THRESHOLD;
+
+			bool isNextUp = (dir.z > stickThreshold) && (prevStickZ <= stickThreshold) || inp.IsTrgDown(KEY_INPUT_W);
+			bool isNextDown = (dir.z < -stickThreshold) && (prevStickZ >= -stickThreshold) || inp.IsTrgDown(KEY_INPUT_S);
+			bool isNextRight = (dir.x > stickThreshold) && (prevStickX <= stickThreshold) || inp.IsTrgDown(KEY_INPUT_D);
+			bool isNextLeft = (dir.x < -stickThreshold) && (prevStickX >= -stickThreshold) || inp.IsTrgDown(KEY_INPUT_A);
+
+			// 次フレームの比較用に保存
+			prevStickX = dir.x;
+			prevStickZ = dir.z;
+
 
 		ColliderCapsule* lastTagerEnemy = targetEnemy_;
 

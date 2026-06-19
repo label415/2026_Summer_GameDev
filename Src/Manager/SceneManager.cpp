@@ -4,6 +4,8 @@
 #include "../Common/Fader.h"
 #include "../Scene/TitleScene.h"
 #include "../Scene/GameScene.h"
+#include "../Scene/GameClearScene.h"
+#include "../Scene/GameOverScene.h"
 #include "../Scene/Loading/Loading.h"
 #include "Camera.h"
 #include "ResourceManager.h"
@@ -53,6 +55,9 @@ void SceneManager::Init(void)
 
 	isSceneChanging_ = false;
 
+	// 遷移待ちタイマー初期化
+	sceneChangeDelayTimer_ = 0.0f;
+
 	// 初期シーンの設定
 	DoChangeScene(SCENE_ID::TITLE);
 }
@@ -100,6 +105,20 @@ void SceneManager::Update(void)
 
 	// ロード中
 	if (isSceneChanging_){
+		// タイトルへ戻る際に、直前が GAMEOVER/GAMECLEAR の場合は遅延を入れる
+		if (sceneChangeDelayTimer_ > 0.0f)
+		{
+			sceneChangeDelayTimer_ -= deltaTime_;
+			// 遅延中もロード画面は更新して表示を保つ
+			load_->Update();
+			// タイマーがまだ残っていれば遷移はまだ行わない
+			if (sceneChangeDelayTimer_ > 0.0f)
+			{
+				return;
+			}
+		}
+
+		// 遅延が終わった（または遅延不要）ので実際にシーン変更処理を行う
 		load_->Update();
 		DoChangeScene(waitSceneId_);
 		if (load_->IsLoading())
@@ -179,9 +198,22 @@ void SceneManager::Destroy(void)
 void SceneManager::ChangeScene(SCENE_ID nextId)
 {
 
-	// フェード処理が終わってからシーンを変える場合もあるため、
-	// 遷移先シーンをメンバ変数に保持
+	// 遷移先シーンを保持
 	waitSceneId_ = nextId;
+
+	// タイトルへ戻る場合で、現在が GAMEOVER または GAMECLEAR のときは
+	// 読み込みを長く見せるための遅延を設定する
+	if (
+		(nextId == SCENE_ID::TITLE &&(sceneId_ == SCENE_ID::GAMEOVER || sceneId_ == SCENE_ID::GAMECLEAR))
+		|| ((nextId == SCENE_ID::GAMEOVER || nextId == SCENE_ID::GAMECLEAR) && sceneId_ == SCENE_ID::GAME)
+		)
+	{
+		sceneChangeDelayTimer_ = TITLE_RETURN_DELAY;
+	}
+	else
+	{
+		sceneChangeDelayTimer_ = 0.0f;
+	}
 
 	isSceneChanging_ = true;
 
@@ -217,6 +249,7 @@ SceneManager::SceneManager(void)
 
 	camera_ = nullptr;
 	load_ = nullptr;
+	sceneChangeDelayTimer_ = 0.0f;
 
 }
 
@@ -249,6 +282,12 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 	case SCENE_ID::GAME:
 		scene_ = new GameScene();
 		break;
+	case SCENE_ID::GAMEOVER:
+		scene_ = new GameOverScene();
+		break;
+	case SCENE_ID::GAMECLEAR:
+		scene_ = new GameClearScene();
+		break;
 	case SCENE_ID::DEBUG:
 		scene_ = new DebugScene();
 		break;
@@ -264,6 +303,3 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 	waitSceneId_ = SCENE_ID::NONE;
 
 }
-
-
-

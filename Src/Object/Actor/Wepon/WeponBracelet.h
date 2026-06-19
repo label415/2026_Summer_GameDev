@@ -55,13 +55,6 @@ private:
 	VECTOR downPos_;
 	// 移動方向
 	VECTOR moveDir_;
-	// 移動量
-	VECTOR movePow_;
-	// 移動前の座標
-	VECTOR prevPos_;
-
-	//長さ
-	float length_;
 	// 移動スピード
 	float moveSpeed_;
 

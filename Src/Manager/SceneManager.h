@@ -25,6 +25,8 @@ public:
 		NONE,
 		TITLE,
 		GAME,
+		GAMEOVER,
+		GAMECLEAR,
 		DEBUG,
 	};
 	
@@ -100,4 +102,10 @@ private:
 
 	// シーン遷移
 	void DoChangeScene(SCENE_ID sceneId);
+
+	// タイトルへ戻る際にゲームクリア/ゲームオーバーからの遷移で
+	// タイトル読み込みを長くするための遅延（秒）
+	static constexpr float TITLE_RETURN_DELAY = 2.0f;
+	// 遷移待ちタイマー（秒）
+	float sceneChangeDelayTimer_;
 };

@@ -36,6 +36,9 @@ public:
 	//HP•`‰æ
     virtual void DrawHp(void){}
 
+    //HPî•ñæ“¾
+    const UIHp* GetHP(void)const { return uiHp_; }
+
 protected:
 
     //’n–Ê‚Æ‚Ì“–‚½‚è”»’èƒtƒ‰ƒO

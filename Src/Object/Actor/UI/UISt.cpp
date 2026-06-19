@@ -1,9 +1,10 @@
-#include <cmath>
+#include <algorithm>
+
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/SceneManager.h"
-#include "UIHp.h"
+#include "UISt.h"
 
-UIHp::UIHp(float pos1X, float pos1Y, float pos2X, float pos2Y, float imgSize, float maxHp)
+UISt::UISt(float pos1X, float pos1Y, float pos2X, float pos2Y, float imgSize, float maxHp)
 	:
 	pos1_(pos1X, pos1Y),
 	pos2_(pos2X, pos2Y),
@@ -11,18 +12,18 @@ UIHp::UIHp(float pos1X, float pos1Y, float pos2X, float pos2Y, float imgSize, fl
 	maxHp_(maxHp),
 	currentHp_(maxHp)
 {
-	active_ = true;
 }
 
-UIHp::~UIHp(void)
+UISt::~UISt(void)
 {
 }
 
-void UIHp::Update(void)
+void UISt::Update(void)
 {
+	// 必要ならここでアニメーション等を行う
 }
 
-void UIHp::Draw(void)
+void UISt::Draw(void)
 {
 	// 背景バー
 	DrawBoxAA(
@@ -30,7 +31,7 @@ void UIHp::Draw(void)
 		pos2_.x + imgSize_, pos2_.y + imgSize_,
 		0x000000, true);
 
-	// HPバー（割合で描画）
+	// スタミナバー（割合で描画）
 	float ratio = 0.0f;
 	if (maxHp_ > 0.0f) ratio = currentHp_ / maxHp_;
 	ratio = fmaxf(0.0f, fminf(1.0f, ratio));
@@ -38,46 +39,42 @@ void UIHp::Draw(void)
 	float left = pos1_.x;
 	float right = pos1_.x + (pos2_.x - pos1_.x) * ratio;
 
+	// 緑系で表示
 	DrawBoxAA(
 		left, pos1_.y,
 		right, pos2_.y,
-		0xff0000, true);
-
-	if (left >= right)
-	{
-		active_ = false;
-	}
+		0x00ff00, true);
 }
 
-void UIHp::SetHp(float delta)
+void UISt::SetHp(float delta)
 {
-	// delta は「減らす量」として扱う（ダメージ）
+	// delta は「減少量」として扱う
 	currentHp_ -= delta;
 	if (currentHp_ < 0.0f) currentHp_ = 0.0f;
 	if (currentHp_ > maxHp_) currentHp_ = maxHp_;
 }
 
-void UIHp::SetHpAbsolute(float hp)
+void UISt::SetHpAbsolute(float hp)
 {
 	currentHp_ = hp;
 	if (currentHp_ < 0.0f) currentHp_ = 0.0f;
 	if (currentHp_ > maxHp_) currentHp_ = maxHp_;
 }
 
-void UIHp::SetMaxHp(float maxHp)
+void UISt::SetMaxHp(float maxHp)
 {
 	maxHp_ = maxHp;
 	if (currentHp_ > maxHp_) currentHp_ = maxHp_;
 }
 
-void UIHp::InitLoad(void)
+void UISt::InitLoad(void)
 {
 }
 
-void UIHp::InitTransform(void)
+void UISt::InitTransform(void)
 {
 }
 
-void UIHp::InitPost(void)
+void UISt::InitPost(void)
 {
 }
