@@ -172,7 +172,7 @@ void EnemyDragon::InitAnimation(void)
 	anim_->AddInFbx(type, 30.0f, type);
 
 	type = static_cast<int>(ANIM_TYPE::BRACELET_ATTACK);
-	anim_->AddInFbx(type, 30.0f, type);
+	anim_->AddInFbx(type, 20.0f, type);
 
 	type = static_cast<int>(ANIM_TYPE::HOVER);
 	anim_->AddInFbx(type, 30.0f, type);
@@ -335,6 +335,9 @@ void EnemyDragon::ChangeStateNone(void)
 void EnemyDragon::ChangeStateThink(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateThink, this);
+
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::IDLE), true);
 
 	// Žvl
 	int rand = GetRand(100);
@@ -560,7 +563,7 @@ void EnemyDragon::UpdateRoar(void)
 
 void EnemyDragon::UpdateCharge(void)
 {
-	if (anim_->IsEnd()
+	if (anim_->GetPlayAnim().step >= 109.0f
 		&& anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::ROAR))
 	{
 		anim_->Play(
@@ -647,13 +650,13 @@ void EnemyDragon::UpdateFlyingAttack(void)
 
 void EnemyDragon::UpdateBreathAttack(void)
 {
+	moveDir_ = preMoverDir_;
 	if (wepon_ != nullptr) {
 		wepon_->Update();
 	}
 
 	if(anim_->GetPlayAnim().step >= 27.0f)
 	{
-		moveDir_ = preMoverDir_;
 		if (attackCnt_ <= 2.0f) {
 			isAttack_ = true;
 			anim_->SetSpecificTime(27.0f, 30.0f, true);
@@ -666,7 +669,6 @@ void EnemyDragon::UpdateBreathAttack(void)
 	}
 	if (anim_->GetPlayAnim().step >= 40.0f)
 	{
-		moveDir_ = preMoverDir_;
 		if(wepon_ != nullptr)
 		{
 			wepon_->SetIsEnd(true);

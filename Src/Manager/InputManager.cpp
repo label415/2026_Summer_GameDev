@@ -95,6 +95,7 @@ void InputManager::Update(void)
 	// マウス検知
 	mouseInput_ = GetMouseInput();
 	mousePrePos_ = mousePos_;
+	mouseWheelRotVolF_ = GetMouseWheelRotVolF();
 	GetMousePoint(&mousePos_.x, &mousePos_.y);
 
 	for (auto& p : mouseInfos_)
@@ -190,6 +191,11 @@ bool InputManager::IsTrgMouseRight(void) const
 bool InputManager::IsTrgMouseMiddle(void) const
 {
 	return FindMouse(MOUSE_INPUT_MIDDLE).keyTrgDown;
+}
+
+float InputManager::GetMouseWheelRot(void) const
+{
+	return mouseWheelRotVolF_;
 }
 
 InputManager::InputManager(void)

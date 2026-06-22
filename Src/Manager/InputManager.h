@@ -120,6 +120,9 @@ public:
 	// マウスが中央クリックされたか(押しっぱなしはNG)
 	bool IsTrgMouseMiddle(void) const;
 
+	// マウスが中央クリックされたか(押しっぱなしはNG)
+	float GetMouseWheelRot(void) const;
+
 	// コントローラの入力情報を取得する
 	JOYPAD_IN_STATE GetJPadInputState(JOYPAD_NO no);
 
@@ -176,9 +179,11 @@ private:
 
 	// マウスカーソルの位置
 	Vector2 mousePos_;
-
 	// 前マウスカーソルの位置
 	Vector2 mousePrePos_;
+
+	//マウスホイールの回転量
+	float mouseWheelRotVolF_;
 	
 	// マウスボタンの入力状態
 	int mouseInput_;

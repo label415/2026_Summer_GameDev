@@ -78,12 +78,12 @@ void GameScene::Update(void)
 		}
 	}
 
-	UpdateAutoLockOn();
-
 	skydome_->Update();
 
 	//ステージ更新
 	stage_->Update();
+
+	UpdateAutoLockOn();
 
 	player_->Update();
 	for(const auto& enemy : enemys_->GetEnemys()){
@@ -136,6 +136,9 @@ void GameScene::Draw(void)
 	for (const auto& enemy : enemys_->GetEnemys()) {
 		enemy->DrawHp();
 	}
+
+	auto& inp = InputManager::GetInstance();
+	DrawFormatString(0, 250, 0xffffff, L"MouseWheelRotVolF: %.1f", inp.GetMouseWheelRot());
 }
 
 void GameScene::Release(void)
@@ -241,7 +244,7 @@ void GameScene::UpdateAutoLockOn(void)
 		enemy->SetTargetTransform(&player_->GetTransform().pos);
 	}
 
-	bool isLockOn = inp.IsClickMouseRight()
+	bool isLockOn = inp.IsTrgMouseMiddle()
 		|| inp.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
 
 	if(camera_->GetCameraMode() == Camera::MODE::TARGET_ROCKE){
@@ -257,10 +260,10 @@ void GameScene::UpdateAutoLockOn(void)
 			static float prevStickZ = 0.0f;
 			const float stickThreshold = InputManager::THRESHOLD;
 
-			bool isNextUp = (dir.z > stickThreshold) && (prevStickZ <= stickThreshold) || inp.IsTrgDown(KEY_INPUT_W);
-			bool isNextDown = (dir.z < -stickThreshold) && (prevStickZ >= -stickThreshold) || inp.IsTrgDown(KEY_INPUT_S);
-			bool isNextRight = (dir.x > stickThreshold) && (prevStickX <= stickThreshold) || inp.IsTrgDown(KEY_INPUT_D);
-			bool isNextLeft = (dir.x < -stickThreshold) && (prevStickX >= -stickThreshold) || inp.IsTrgDown(KEY_INPUT_A);
+			bool isNextUp = (dir.z > stickThreshold) && (prevStickZ <= stickThreshold);
+			bool isNextDown = (dir.z < -stickThreshold) && (prevStickZ >= -stickThreshold);
+			bool isNextRight = (dir.x > stickThreshold) && (prevStickX <= stickThreshold) || inp.GetMouseWheelRot() > 0.0f;
+			bool isNextLeft = (dir.x < -stickThreshold) && (prevStickX >= -stickThreshold) || inp.GetMouseWheelRot() < 0.0f;
 
 			// 次フレームの比較用に保存
 			prevStickX = dir.x;
