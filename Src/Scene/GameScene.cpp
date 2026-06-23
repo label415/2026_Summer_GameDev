@@ -52,7 +52,7 @@ void GameScene::Init(void)
 	ShadowMapHandle = MakeShadowMap(1024, 1024);
 
 	// シャドウマップが想定するライトの方向もセット
-	SetShadowMapLightDirection(ShadowMapHandle, VGet(0.3f, -0.7f, 0.8f));
+	SetShadowMapLightDirection(ShadowMapHandle, VGet(1.0f, -1.0f, 1.0f));
 
 	// シャドウマップに描画する範囲を設定
 	SetShadowMapDrawArea(ShadowMapHandle, VGet(-1000.0f, -200.0f, -1000.0f), VGet(1000.0f, 1000.0f, 1000.0f));
@@ -108,6 +108,7 @@ void GameScene::Draw(void)
 	stage_->Draw();
 	player_->Draw();
 	enemys_->Draw();
+	SetShadowMapAdjustDepth(ShadowMapHandle, 0.5f);
 	// シャドウマップへの描画を終了
 	ShadowMap_DrawEnd();
 

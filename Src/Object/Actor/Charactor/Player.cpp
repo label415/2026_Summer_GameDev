@@ -234,13 +234,6 @@ void Player::ProcessMove(void)
 
 	auto& ins = InputManager::GetInstance();
 
-	// キーボード入力（WASD）
-	VECTOR keyDir = AsoUtility::VECTOR_ZERO;
-	if (ins.IsNew(KEY_INPUT_W)) { keyDir = AsoUtility::DIR_F; }
-	if (ins.IsNew(KEY_INPUT_A)) { keyDir = AsoUtility::DIR_L; }
-	if (ins.IsNew(KEY_INPUT_S)) { keyDir = AsoUtility::DIR_B; }
-	if (ins.IsNew(KEY_INPUT_D)) { keyDir = AsoUtility::DIR_R; }
-
 	// 接続されているゲームパッド１の情報を取得
 	InputManager::JOYPAD_IN_STATE padState =
 		ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
@@ -254,7 +247,19 @@ void Player::ProcessMove(void)
 	}
 	else
 	{
-		dir = keyDir;
+		// キーボード入力（WASD）
+		bool isUp = ins.IsNew(KEY_INPUT_W);
+		bool isDown = ins.IsNew(KEY_INPUT_S);
+		bool isLeft = ins.IsNew(KEY_INPUT_A);
+		bool isRight = ins.IsNew(KEY_INPUT_D);
+		if (isUp) { dir = AsoUtility::DIR_F; }
+		if (isLeft) { dir = AsoUtility::DIR_L; }
+		if (isDown) { dir = AsoUtility::DIR_B; }
+		if (isRight) { dir = AsoUtility::DIR_R; }
+		if (isUp && isLeft) { dir = VAdd(AsoUtility::DIR_F, AsoUtility::DIR_L); }
+		if (isUp && isRight) { dir = VAdd(AsoUtility::DIR_F, AsoUtility::DIR_R); }
+		if (isDown && isLeft) { dir = VAdd(AsoUtility::DIR_B, AsoUtility::DIR_L); }
+		if (isDown && isRight) { dir = VAdd(AsoUtility::DIR_B, AsoUtility::DIR_R); }
 	}
 
 	if (!AsoUtility::EqualsVZero(dir))
