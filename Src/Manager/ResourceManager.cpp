@@ -67,7 +67,7 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::WEAPON_BLADE, res);
 
 	//ゲームシーン
-	res = new RES(RES_T::MODEL, PATH_MDL + L"Stage/MainStage.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Stage/Stage.mv1");
 	resourcesMap_.emplace(SRC::MAIN_STAGE, res);
 
 	//スカイドーム
