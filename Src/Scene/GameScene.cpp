@@ -98,8 +98,6 @@ void GameScene::Update(void)
 
 void GameScene::Draw(void)
 {
-
-
 	skydome_->Draw();
 
 	// シャドウマップへの描画の準備

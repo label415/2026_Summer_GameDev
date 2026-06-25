@@ -105,6 +105,8 @@ protected:
 	void UpdateProcess(void) override;
 	void UpdateProcessPost(void) override;
 
+	void CollisionCapsule(void) override;
+
 private:
 
 
@@ -120,11 +122,11 @@ private:
 	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -10.0f, 0.0f };
 
 	// 地面衝突判定用カプセル上部球体
-	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 110.0f, 0.0f };
+	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 110.0f, 250.0f };
 	// 地面衝突判定用カプセル下部球体
-	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 30.0f, 0.0f };
+	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 110.0f, -250.0f };
 	// 地面衝突判定用カプセル球体半径
-	static constexpr float COL_CAPSULE_RADIUS = 30.0f;
+	static constexpr float COL_CAPSULE_RADIUS = 200.0f;
 
 	// 攻撃判定用カプセル球体半径
 	static constexpr float HIT_RADIUS = 50.0f;

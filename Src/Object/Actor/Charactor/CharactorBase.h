@@ -41,9 +41,6 @@ public:
 
 protected:
 
-    //地面との当たり判定フラグ
-    bool isGround_;
-
     // 最大落下速度
     static constexpr float MAX_FALL_SPEED = -30.0f;
 
@@ -86,7 +83,7 @@ protected:
     virtual void CollisionReserve(void) {}
     void Collision(void);
     void CollisionGravity(void);
-    void CollisionCapsule(void);
+    virtual void CollisionCapsule(void);
 
     //キャラクター移動量の無効
     void SetFrameUserLocalPos(VECTOR locakPos, int frameNo);

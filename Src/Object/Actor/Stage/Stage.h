@@ -40,7 +40,7 @@ protected:
 private:
 
 	// 除外フレーム名称
-	const std::vector<std::wstring> EXCLUDE_FRAME_NAMES = {	L"Mush", L"Grass", };
+	const std::vector<std::wstring> EXCLUDE_FRAME_NAMES = { L"Ground", };
 
 	// 対象フレーム
 	const std::vector<std::wstring> TARGET_FRAME_NAMES = { L"Ground", };

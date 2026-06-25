@@ -115,10 +115,6 @@ void EnemyDragon::InitTransform(void)
 
 void EnemyDragon::InitCollider(void)
 {
-	//地面との当たり判定のみのコライダーがあるので、
-	//ほかのコライダーと当たらないようにする
-	isGround_ = true;
-
 	//ライン
 	std::vector<ColliderBase*> colLines;
 	// 地面との衝突判定で使用するラインコライダー
@@ -319,6 +315,51 @@ void EnemyDragon::UpdateDebugImGui(void)
 void EnemyDragon::UpdateProcessPost(void)
 {
 	EnemyBase::UpdateProcessPost();
+}
+
+void EnemyDragon::CollisionCapsule(void)
+{
+	// カプセルコライダ  
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
+
+	// カプセルコライダが無ければ処理を抜ける  
+	if (ownColliders_.count(capsuleType) == 0) return;
+
+	const auto& vecs = ownColliders_.at(capsuleType);
+	for (const auto& vec : vecs)
+	{
+		if (vec->GetTag() != ColliderBase::TAG::GROUND)continue;
+
+		// カプセルコライダ情報  
+		ColliderCapsule* colliderCapsule =
+			dynamic_cast<ColliderCapsule*>(vec);
+
+		if (colliderCapsule == nullptr) return;
+
+		// 登録されている衝突物を全てチェック  
+		for (const auto& hitCol : hitColliders_)
+		{
+			for (const auto& i : hitCol.second)
+			{
+				// モデル以外は処理を飛ばす  
+				if (i->GetShape() != ColliderBase::SHAPE::MODEL) continue;
+
+				const ColliderModel* colliderModel =
+					dynamic_cast<const ColliderModel*>(i);
+
+				if (colliderModel == nullptr) continue;
+
+				colliderCapsule->PushBackAlongNormal(
+					colliderModel,
+					transform_,
+					CNT_TRY_COLLISION,
+					COLLISION_BACK_DIS,
+					true,
+					false
+				);
+			}
+		}
+	}
 }
 
 void EnemyDragon::ChangeState(STATE state)

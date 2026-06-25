@@ -12,7 +12,6 @@ CharactorBase::CharactorBase(void)
 	:
 	ActorBase()
 {
-	isGround_ = false;
 }
 
 CharactorBase::~CharactorBase(void)
@@ -162,7 +161,7 @@ void CharactorBase::CollisionGravity(void)
 
 				if (colliderModel == nullptr) continue;
 
-				bool isHit = colliderLine_->PushBackUp(colliderModel, transform_, 2.0f, true, false);
+				bool isHit = colliderLine_->PushBackUp(colliderModel, transform_, 2.0f, false, false);
 
 				if (isHit)
 				{
@@ -192,10 +191,6 @@ void CharactorBase::CollisionCapsule(void)
 	const auto& vecs = ownColliders_.at(capsuleType);
 	for (const auto& vec : vecs)
 	{
-		if (isGround_) {
-			if (vec->GetTag() != ColliderBase::TAG::GROUND)continue;
-		}
-
 		// カプセルコライダ情報  
 		ColliderCapsule* colliderCapsule =
 			dynamic_cast<ColliderCapsule*>(vec);
@@ -220,7 +215,7 @@ void CharactorBase::CollisionCapsule(void)
 					transform_,
 					CNT_TRY_COLLISION,
 					COLLISION_BACK_DIS,
-					true,
+					false,
 					false
 				);
 			}
