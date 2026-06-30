@@ -51,6 +51,7 @@ public:
 
 	void SetSpecificTime(float state, float end, bool SpecificLoop);
 
+	void SetStateTime(float state);
 private:
 
 	// アニメーションするモデルのハンドルID

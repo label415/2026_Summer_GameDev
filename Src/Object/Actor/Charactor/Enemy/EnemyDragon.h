@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include "EnemyBase.h"
 
 class EnemyDragon :
@@ -75,6 +76,12 @@ public:
 		PATR_TAG patrTag;
 		int top;
 		int down;
+	};
+
+	//攻撃エフェクト
+	enum class EFFECT_TYPE
+	{
+		BRACELET,
 	};
 
 

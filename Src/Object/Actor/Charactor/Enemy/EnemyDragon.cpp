@@ -1,3 +1,4 @@
+#include <DxLib.h>
 #include "../../../../Utility/AsoUtility.h"
 #include "../../../../Manager/ResourceManager.h"
 #include "../../../../Manager/SceneManager.h"
@@ -12,6 +13,8 @@
 #include "../../../../Common/Quaternion.h"
 #include "../../Wepon/WeponBracelet.h"
 #include "../../UI/UIHp.h"
+#include "../../../../Application.h"
+#include "../../../Common/EffectController.h"
 #include "EnemyDragon.h"
 
 EnemyDragon::EnemyDragon(const EnemyBase::EnemyData& data)
@@ -91,7 +94,7 @@ void EnemyDragon::Draw(void)
 
 void EnemyDragon::Release(void)
 {
-	transform_.Release();
+	CharactorBase::Release();
 	delete uiHp_;
 }
 
@@ -235,6 +238,11 @@ void EnemyDragon::InitPost(void)
 	ChangeState(STATE::ROAR);
 
 	uiHp_ = new UIHp(100.0f, 600.0f, 1180.0f, 680.0f, 5.0f);
+
+	effect_ = new EffectController();
+	effect_->Add(
+		static_cast<int>(EFFECT_TYPE::BRACELET),
+		(Application::PATH_EFFECT + L"Breath/Breath.efkefc"));
 
 }
 
@@ -546,6 +554,10 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 	VECTOR dir = VNorm(VSub(*targetTrans_, transform_.pos));
 	wepon_ = new WeponBracelet(transform_, dir, 28);
 	wepon_->Init();
+	effect_->Play(
+		static_cast<int>(EFFECT_TYPE::BRACELET),
+		MV1GetFramePosition(transform_.modelId, 28),
+		dir, VGet(100.0f, 100.0f, 100.0f));
 
 	// 歩きアニメーション再生
 	anim_->Play(
@@ -725,7 +737,7 @@ void EnemyDragon::UpdateFlyingAttack(void)
 			isAttack_ = true;
 			anim_->SetSpecificTime(123.0f, 125.0f, true);
 			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
-			wepon_->SetIsTopFlage(true);
+			wepon_->SetIsAttack(true);
 		}
 		else {
 			anim_->SetSpecificTime(0.0f, 0.0f, false);
@@ -735,7 +747,7 @@ void EnemyDragon::UpdateFlyingAttack(void)
 	{
 		if (wepon_ != nullptr)
 		{
-			wepon_->SetIsDownFlage(true);
+			wepon_->SetIsEnd(true);
 		}
 	}
 
@@ -758,7 +770,8 @@ void EnemyDragon::UpdateBreathAttack(void)
 			isAttack_ = true;
 			anim_->SetSpecificTime(27.0f, 30.0f, true);
 			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
-			wepon_->SetIsTopFlage(true);
+			wepon_->SetIsAttack(true);
+			effect_->Update(static_cast<int>(EFFECT_TYPE::BRACELET));
 		}
 		else {
 			anim_->SetSpecificTime(0.0f, 0.0f, false);
@@ -768,19 +781,13 @@ void EnemyDragon::UpdateBreathAttack(void)
 	{
 		if(wepon_ != nullptr)
 		{
-			wepon_->SetIsDownFlage(true);
+			wepon_->SetIsEnd(true);
 		}
 	}
 
 	if (anim_->GetPlayAnim().step >= 60.0f)
 	{
 		ChangeState(STATE::IDLE);
-	}
-
-	if (anim_->GetPlayAnim().step >= 27.0f)
-	{
-		anim_->SetSpecificTime(27.0f, 30.0f, true);
-		wepon_->SetIsTopFlage(true);
 	}
 }
 

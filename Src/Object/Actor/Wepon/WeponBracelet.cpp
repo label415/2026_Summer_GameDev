@@ -35,7 +35,7 @@ void WeponBracelet::InitCollider(void)
 {
 	ColliderCapsule* colCapsule = new ColliderCapsule(
 		ColliderBase::TAG::ENEMY_WEPON, &transform_,
-		AsoUtility::VECTOR_ZERO, AsoUtility::VECTOR_ZERO,
+		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_TOP_LOCAL_POS,
 		COL_CAPSULE_RADIUS);
 
 	std::vector<ColliderBase*> colCapsules;
@@ -106,17 +106,17 @@ void WeponBracelet::Move(void)
 
 void WeponBracelet::Draw(void)
 {
-	ActorBase::Draw();
+	/*ActorBase::Draw();*/
 
-	if (isAttack_ || isEnd_)
-	{
-		// DrawCapsule3D はワールド座標を要求するため、
-		// ベースとなる transform_.pos（手元の位置）を足してワールド座標に変換して描画する
-		VECTOR worldTop = VAdd(transform_.pos, topPos_);
-		VECTOR worldDown = VAdd(transform_.pos, downPos_);
+	//if (isAttack_ || isEnd_)
+	//{
+	//	// DrawCapsule3D はワールド座標を要求するため、
+	//	// ベースとなる transform_.pos（手元の位置）を足してワールド座標に変換して描画する
+	//	VECTOR worldTop = VAdd(transform_.pos, topPos_);
+	//	VECTOR worldDown = VAdd(transform_.pos, downPos_);
 
-		DrawCapsule3D(worldTop, worldDown, COL_CAPSULE_RADIUS, 10, 0xff0000, 0xff0000, true);
-	}
+	//	DrawCapsule3D(worldTop, worldDown, COL_CAPSULE_RADIUS, 10, 0xff0000, 0xff0000, true);
+	//}
 }
 
 void WeponBracelet::SetCollider(void)

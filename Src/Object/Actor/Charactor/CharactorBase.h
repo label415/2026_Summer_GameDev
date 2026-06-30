@@ -1,6 +1,7 @@
 #pragma once
 #include "../ActorBase.h"
 #include "../../Common/AnimationController.h"
+#include "../../Common/EffectController.h"
 
 class UIHp;
 
@@ -56,6 +57,10 @@ protected:
 
     //アニメーションコントローラ
     AnimationController* anim_;
+
+    //エフェクトコントローラ
+    EffectController* effect_;
+
     // 移動方向
     VECTOR moveDir_;
     // 移動量

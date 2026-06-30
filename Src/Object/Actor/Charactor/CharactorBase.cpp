@@ -62,6 +62,7 @@ void CharactorBase::Release(void)
 
 	anim_->Release();
 	delete anim_;
+	delete effect_;
 }
 
 VECTOR CharactorBase::GetTargetDir(void)

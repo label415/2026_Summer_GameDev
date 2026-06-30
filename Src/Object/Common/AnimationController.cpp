@@ -198,6 +198,11 @@ void AnimationController::SetSpecificTime(float state, float end, bool SpecificL
 	SpecificLoop_ = SpecificLoop;
 }
 
+void AnimationController::SetStateTime(float state)
+{
+	playAnim_.step = state;
+}
+
 void AnimationController::Add(int type, float speed, Animation& animation)
 {
 	animation.speed = speed;
