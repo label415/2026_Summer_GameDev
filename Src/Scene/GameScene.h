@@ -8,6 +8,7 @@ class Camera;
 class EnemyManager;
 class EnemyBase;
 class ColliderCapsule;
+class ShadowMap;
 
 class GameScene : public SceneBase
 {
@@ -58,7 +59,8 @@ private:
 	//カメラ
 	Camera* camera_;
 
-	int ShadowMapHandle;
+	//シャドウマップ
+	ShadowMap* shadowMap_;
 
 	//コライダー登録
 	void AddCollider(void);

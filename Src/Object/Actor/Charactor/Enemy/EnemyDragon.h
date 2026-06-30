@@ -15,6 +15,7 @@ public:
 		CHARGE,			//突進
 		PATROL,			//探索
 		FLYING,			//飛行中
+		FALLING＿ATTACK,//落下攻撃
 		FLYING_ATTACK,	//空中ブレス
 		BRACELET_ATTACK,//地上ブレス
 		MELEE_ATTACK,	//噛みつき攻撃
@@ -40,6 +41,7 @@ public:
 		WALK = 13,
 		CHARGE = 13,
 		FLYING = 5,
+		FALLING＿ATTACK = 2,
 		FLYING_ATTACK = 6,
 		BRACELET_ATTACK = 4,
 		MELEE_ATTACK = 2, 
@@ -122,9 +124,9 @@ private:
 	static constexpr VECTOR COL_LINE_END_LOCAL_POS = { 0.0f, -10.0f, 0.0f };
 
 	// 地面衝突判定用カプセル上部球体
-	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 110.0f, 250.0f };
+	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 110.0f, 300.0f };
 	// 地面衝突判定用カプセル下部球体
-	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 110.0f, -250.0f };
+	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 110.0f, -300.0f };
 	// 地面衝突判定用カプセル球体半径
 	static constexpr float COL_CAPSULE_RADIUS = 200.0f;
 
@@ -201,6 +203,8 @@ private:
 	void ChangeStatePatrol(void);
 	//飛行中
 	void ChangeStateFlying(void);
+	//落下攻撃
+	void ChangeStateFallingAttack(void);
 	//空中ブレス
 	void ChangeStateFlyingAttack(void);
 	//地上ブレス
@@ -225,6 +229,7 @@ private:
 	void UpdateRoar(void);
 	void UpdateCharge(void);
 	void UpdatePatrol(void);
+	void UpdateFallingAttack(void);
 	void UpdateFlying(void);
 	void UpdateFlyingAttack(void);
 	void UpdateBreathAttack(void);

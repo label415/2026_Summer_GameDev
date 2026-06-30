@@ -13,6 +13,7 @@
 #include "../Object/Common/Collider/ColliderCapsule.h"
 #include "../Utility/MatrixUtility.h"
 #include "../Object/Actor/UI/UIHp.h"
+#include "../Common/ShadowMap.h"
 #include "GameScene.h"
 
 GameScene::GameScene(void)
@@ -46,16 +47,12 @@ void GameScene::Init(void)
 
 	camera_->ChangeMode(Camera::MODE::FOLLOW);
 
+	shadowMap_ = new ShadowMap(1024, 1024);
+	shadowMap_->AddShadowMapLight(VGet(0.5f, -0.5f, 0.5f));
+	shadowMap_->AddShadowMapDrawArea(VGet(-1000.0f, -1.0f, -1000.0f), VGet(1000.0f, 1000.0f, 1000.0f));
+
 	// コライダ登録
 	AddCollider();
-
-	ShadowMapHandle = MakeShadowMap(1024, 1024);
-
-	// シャドウマップが想定するライトの方向もセット
-	SetShadowMapLightDirection(ShadowMapHandle, VGet(1.0f, -1.0f, 1.0f));
-
-	// シャドウマップに描画する範囲を設定
-	SetShadowMapDrawArea(ShadowMapHandle, VGet(-1000.0f, -200.0f, -1000.0f), VGet(1000.0f, 1000.0f, 1000.0f));
 }
 
 void GameScene::Update(void)
@@ -84,6 +81,7 @@ void GameScene::Update(void)
 	stage_->Update();
 
 	UpdateAutoLockOn();
+	UpdateCollider();
 
 	player_->Update();
 	for(const auto& enemy : enemys_->GetEnemys()){
@@ -92,32 +90,30 @@ void GameScene::Update(void)
 
 	enemys_->Update();
 	enemys_->HitDamegr(player_->GetIsAttack());
-
-	UpdateCollider();
 }
 
 void GameScene::Draw(void)
 {
+	player_->DrawHp();
+	for (const auto& enemy : enemys_->GetEnemys()) {
+		enemy->DrawHp();
+	}
+
+
 	skydome_->Draw();
 
-	// シャドウマップへの描画の準備
-	ShadowMap_DrawSetup(ShadowMapHandle);
-	//ステージ描画
+	shadowMap_->DrawSetup();
 	stage_->Draw();
 	player_->Draw();
 	enemys_->Draw();
-	SetShadowMapAdjustDepth(ShadowMapHandle, 0.5f);
-	// シャドウマップへの描画を終了
-	ShadowMap_DrawEnd();
+	shadowMap_->DrawEnd();
 
-	// 描画に使用するシャドウマップを設定
-	SetUseShadowMap(0, ShadowMapHandle);
-	//ステージ描画
+	shadowMap_->SetShadow();
 	stage_->Draw();
 	player_->Draw();
 	enemys_->Draw();
-	// 描画に使用するシャドウマップの設定を解除
-	SetUseShadowMap(0, -1);
+	shadowMap_->EndShadow();
+
 
 	if(targetEnemy_ != nullptr)
 	{
@@ -129,11 +125,6 @@ void GameScene::Draw(void)
 			0xfff000,
 			true);
 
-	}
-
-	player_->DrawHp();
-	for (const auto& enemy : enemys_->GetEnemys()) {
-		enemy->DrawHp();
 	}
 
 	auto& inp = InputManager::GetInstance();
@@ -156,8 +147,8 @@ void GameScene::Release(void)
 	delete enemys_;
 	delete targetEnemy_;
 
-	// シャドウマップの削除
-	DeleteShadowMap(ShadowMapHandle);
+	shadowMap_->Release();
+
 }
 
 void GameScene::AddCollider(void)

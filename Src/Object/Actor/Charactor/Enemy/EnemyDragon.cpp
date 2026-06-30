@@ -183,7 +183,7 @@ void EnemyDragon::InitAnimation(void)
 	anim_->AddInFbx(type, 30.0f, type);
 
 	type = static_cast<int>(ANIM_TYPE::FLYING_ATTACK);
-	anim_->AddInFbx(type, 30.0f, type);
+	anim_->AddInFbx(type, 20.0f, type);
 
 	type = static_cast<int>(ANIM_TYPE::ROAR);
 	anim_->AddInFbx(type, 30.0f, type);
@@ -212,6 +212,8 @@ void EnemyDragon::InitPost(void)
 		std::bind(&EnemyDragon::ChangeStateCharge, this));
 	stateChanges_.emplace(static_cast<int>(STATE::FLYING),
 		std::bind(&EnemyDragon::ChangeStateFlying, this));
+	stateChanges_.emplace(static_cast<int>(STATE::FALLING＿ATTACK),
+		std::bind(&EnemyDragon::ChangeStateFallingAttack, this));
 	stateChanges_.emplace(static_cast<int>(STATE::BRACELET_ATTACK),
 		std::bind(&EnemyDragon::ChangeStateBreathAttack, this));
 	stateChanges_.emplace(static_cast<int>(STATE::FLYING_ATTACK),
@@ -298,6 +300,7 @@ void EnemyDragon::UpdateProcess(void)
 
 	if(wepon_ != nullptr &&!wepon_->GetIsAlive())
 	{
+		wepon_->ClearCollider();
 		wepon_->Release();
 		delete wepon_;
 		wepon_ = nullptr;
@@ -306,10 +309,10 @@ void EnemyDragon::UpdateProcess(void)
 
 void EnemyDragon::UpdateDebugImGui(void)
 {
-	// ウィンドウタイトル&開始処理
-	ImGui::Begin("EnemyDragon");
-	// 終了処理
-	ImGui::End();
+	//// ウィンドウタイトル&開始処理
+	//ImGui::Begin("EnemyDragon");
+	//// 終了処理
+	//ImGui::End();
 }
 
 void EnemyDragon::UpdateProcessPost(void)
@@ -380,55 +383,71 @@ void EnemyDragon::ChangeStateThink(void)
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::IDLE), true);
 
-	// 思考
-	int rand = GetRand(100);
-
 	float diff = VSize(VSub(*targetTrans_, transform_.pos));
 	if(attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
-		if (diff < 800.0f) {
-			if (rand < 40)
-			{
-				ChangeState(STATE::MELEE_ATTACK);
-			}
-			else {
-				ChangeState(STATE::CHARGE);
-			}
-		}
-		else if(diff >= 800.0f
-			&&  diff <= 2000.0f){
-			if (rand < 20)
-			{
-				ChangeState(STATE::PATROL);
-			}
-			else if (rand >= 20
-				&& rand < 60) {
-				ChangeState(STATE::CHARGE);
-			}
-			else {
-				ChangeState(STATE::BRACELET_ATTACK);
-			}
-		}
-		else {
-			ChangeState(STATE::PATROL);
-		}
+		ChangeState(STATE::BRACELET_ATTACK);
+		return;
+		//// 思考
+		//int rand = GetRand(100);
+		//if(rand < 40){
+		//	ChangeState(STATE::TAKEOFF);
+		//	return;
+		//}
+
+		//if (diff < 800.0f) {
+		//	rand = GetRand(100);
+		//	if (rand < 40)
+		//	{
+		//		ChangeState(STATE::MELEE_ATTACK);
+		//		return;
+		//	}
+		//	else {
+		//		ChangeState(STATE::CHARGE);
+		//		return;
+		//	}
+		//}
+		//else if(diff >= 800.0f
+		//	&&  diff <= 2000.0f){
+		//	// 思考
+		//	rand = GetRand(100);
+		//	if (rand < 20)
+		//	{
+		//		ChangeState(STATE::PATROL);
+		//		return;
+		//	}
+		//	else if (rand >= 20
+		//		&& rand < 60) {
+		//		ChangeState(STATE::CHARGE);
+		//		return;
+		//	}
+		//	else {
+		//		ChangeState(STATE::BRACELET_ATTACK);
+		//		return;
+		//	}
+		//}
+		//else {
+		//	ChangeState(STATE::PATROL);
+		//	return;
+		//}
 
 	}
-	//if (attribute_ == ATTRIBUTE::AIR) 
-	//{
-	//	// 思考
-	//	int rand = GetRand(100);
-	//	if (rand < 35) {
-	//		ChangeState(STATE::FLYING_ATTACK);
-	//	}
-	//	else if (rand > 35
-	//		&& rand < 70) {
-	//		ChangeState(STATE::FLYING);
-	//	}
-	//	else {
-	//		ChangeState(STATE::LANDS);
-	//	}
-	//}
+	if (attribute_ == ATTRIBUTE::AIR) 
+	{
+		if (diff < 800.0f) {
+			ChangeState(STATE::FALLING＿ATTACK);
+			return;
+		}
+		else if (diff >= 800.0f
+			&& diff <= 2000.0f) {
+			ChangeState(STATE::FLYING_ATTACK);
+			return;
+		}
+		else {
+			ChangeState(STATE::FLYING);
+			return;
+		}
+	}
 }
 
 void EnemyDragon::ChangeStateIdle(void)
@@ -488,9 +507,22 @@ void EnemyDragon::ChangeStateFlying(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateFlying, this);
 
+	// 移動量ゼロ
+	movePow_ = AsoUtility::VECTOR_ZERO;
+
 	// 歩きアニメーション再生
 	anim_->Play(
-		static_cast<int>(ANIM_TYPE::FLYING), false);
+		static_cast<int>(ANIM_TYPE::FLYING), true);
+}
+
+void EnemyDragon::ChangeStateFallingAttack(void)
+{
+	stateUpdate_ = std::bind(&EnemyDragon::UpdateFallingAttack, this);
+
+	// アニメーション再生
+	anim_->Play(
+		static_cast<int>(ANIM_TYPE::FALLING＿ATTACK), false);
+
 }
 
 void EnemyDragon::ChangeStateFlyingAttack(void)
@@ -503,6 +535,7 @@ void EnemyDragon::ChangeStateFlyingAttack(void)
 	// 歩きアニメーション再生
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::FLYING_ATTACK), false);
+	anim_->SetStateTime(90.0f);
 }
 
 void EnemyDragon::ChangeStateBreathAttack(void)
@@ -510,8 +543,8 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateBreathAttack, this);
 
 	attackCnt_ = 0.0f;
-
-	wepon_ = new WeponBracelet(transform_, VNorm(VSub(*targetTrans_, transform_.pos)), 28);
+	VECTOR dir = VNorm(VSub(*targetTrans_, transform_.pos));
+	wepon_ = new WeponBracelet(transform_, dir, 28);
 	wepon_->Init();
 
 	// 歩きアニメーション再生
@@ -642,48 +675,71 @@ void EnemyDragon::UpdatePatrol(void)
 	}
 }
 
+void EnemyDragon::UpdateFallingAttack(void)
+{
+	if (isJump_) {
+		float jumpSpeed = 2000.0f * scnMng_.GetDeltaTime();
+		jumpPow_ = VAdd(jumpPow_, VScale(AsoUtility::DIR_D, jumpSpeed));
+		isAttack_ = true;
+		anim_->SetSpecificTime(15.0f,20.0f, true);
+	}
+	else {
+		anim_->SetSpecificTime(0.0f, 0.0f, false);
+	}
+
+	if(anim_->IsEnd()){
+		attribute_ = ATTRIBUTE::ABOVE_GROUND;
+		ChangeState(STATE::IDLE);
+		return;
+	}
+}
+
 void EnemyDragon::UpdateFlying(void)
 {
 	transform_.pos.y = MAX_TAKE;
-
+	step_ -= scnMng_.GetDeltaTime();
 	moveSpeed_ = SPEED_MOVE;
 	movePow_ = VScale(moveDir_, moveSpeed_);
 
-	if (anim_->IsEnd())
+	// 思考
+	int rand = GetRand(2);
+	float diff = VSize(VSub(*targetTrans_, transform_.pos));
+	if (diff <= ENEMY_ATTACK[rand])
 	{
 		ChangeState(STATE::HOVER);
+		return;
 	}
 }
 
 void EnemyDragon::UpdateFlyingAttack(void)
 {
 	transform_.pos.y = MAX_TAKE;
-
+	moveDir_ = preMoverDir_;
 	if (wepon_ != nullptr) {
 		wepon_->Update();
 	}
 
-	if (anim_->GetPlayAnim().step >= 27.0f)
+	if (anim_->GetPlayAnim().step >= 120.0f)
 	{
 		if (attackCnt_ <= 2.0f) {
 			isAttack_ = true;
-			anim_->SetSpecificTime(27.0f, 30.0f, true);
+			anim_->SetSpecificTime(123.0f, 125.0f, true);
 			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
-			wepon_->SetIsAttack(true);
+			wepon_->SetIsTopFlage(true);
 		}
 		else {
 			anim_->SetSpecificTime(0.0f, 0.0f, false);
 		}
 	}
-	if (anim_->GetPlayAnim().step >= 40.0f)
+	if (anim_->GetPlayAnim().step >= 127.0f)
 	{
 		if (wepon_ != nullptr)
 		{
-			wepon_->SetIsEnd(true);
+			wepon_->SetIsDownFlage(true);
 		}
 	}
 
-	if (anim_->IsEnd())
+	if (anim_->GetPlayAnim().step >= 180.0f)
 	{
 		ChangeState(STATE::HOVER);
 	}
@@ -702,7 +758,7 @@ void EnemyDragon::UpdateBreathAttack(void)
 			isAttack_ = true;
 			anim_->SetSpecificTime(27.0f, 30.0f, true);
 			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
-			wepon_->SetIsAttack(true);
+			wepon_->SetIsTopFlage(true);
 		}
 		else {
 			anim_->SetSpecificTime(0.0f, 0.0f, false);
@@ -712,13 +768,19 @@ void EnemyDragon::UpdateBreathAttack(void)
 	{
 		if(wepon_ != nullptr)
 		{
-			wepon_->SetIsEnd(true);
+			wepon_->SetIsDownFlage(true);
 		}
 	}
 
 	if (anim_->GetPlayAnim().step >= 60.0f)
 	{
 		ChangeState(STATE::IDLE);
+	}
+
+	if (anim_->GetPlayAnim().step >= 27.0f)
+	{
+		anim_->SetSpecificTime(27.0f, 30.0f, true);
+		wepon_->SetIsTopFlage(true);
 	}
 }
 
@@ -747,7 +809,7 @@ void EnemyDragon::UpdateHover(void)
 	if (step_ < 0.0f)
 	{
 		// 待機終了
-		ChangeState(STATE::FLYING_ATTACK);
+		ChangeState(STATE::THINK);
 		return;
 	}
 }
