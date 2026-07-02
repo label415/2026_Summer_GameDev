@@ -19,16 +19,17 @@ TitleScene::~TitleScene(void)
 {
 }
 
-void TitleScene::Init(void)
+void TitleScene::Load(void)
 {
-	
 	i = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
-
 	// フォントハンドルの作成
 	resMng_.Load(ResourceManager::SRC::FONT);
 	titleFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 140, 140);
 	pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 25, 25);
+}
 
+void TitleScene::LoadEnd(void)
+{
 }
 
 void TitleScene::Update(void)

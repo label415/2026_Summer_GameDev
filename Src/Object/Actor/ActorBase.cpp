@@ -16,11 +16,14 @@ ActorBase::~ActorBase(void)
 {
 }
 
-void ActorBase::Init(void)
+void ActorBase::Load(void)
 {
-
 	// リソースロード
 	InitLoad();
+}
+
+void ActorBase::Init(void)
+{
 
 	// Transform初期化
 	InitTransform();

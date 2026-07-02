@@ -78,12 +78,6 @@ public:
 		int down;
 	};
 
-	//攻撃エフェクト
-	enum class EFFECT_TYPE
-	{
-		BRACELET,
-	};
-
 
 	// コンストラクタ
 	EnemyDragon(const EnemyBase::EnemyData& data);

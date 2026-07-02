@@ -16,15 +16,20 @@ DebugScene::DebugScene(void)
 DebugScene::~DebugScene(void)
 {
 }
-void DebugScene::Init(void)
+void DebugScene::Load(void)
 {
 	// ステージ生成
 	stage_ = new Stage();
-	stage_->Init();
+
 	// カメラの追従設定
 	Camera* camera = sceMng_.GetCamera();
 	camera->ChangeMode(Camera::MODE::FREE);
 }
+void DebugScene::LoadEnd(void)
+{
+	stage_->Init();
+}
+
 void DebugScene::Update(void)
 {
 	// ステージ更新
@@ -32,6 +37,7 @@ void DebugScene::Update(void)
 	// デパッグポイントの配置
 	//PlaceDebugPoint();
 }
+
 void DebugScene::Draw(void)
 {
 	// ステージ描画
@@ -53,6 +59,7 @@ void DebugScene::Draw(void)
 		y += 20;
 	}
 }
+
 void DebugScene::Release(void)
 {
 	// ステージ解放
@@ -61,6 +68,7 @@ void DebugScene::Release(void)
 	// デバッグポイント群
 	points_.clear();
 }
+
 void DebugScene::PlaceDebugPoint(void)
 {
 	//const auto& ins = InputManager::GetInstance();
@@ -114,6 +122,7 @@ void DebugScene::PlaceDebugPoint(void)
 	//	SavePoints();
 	//}
 }
+
 void DebugScene::SavePoints(void)
 {
 	std::ofstream ofs("Data/Csv/PointSave.txt");

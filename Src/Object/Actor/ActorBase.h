@@ -17,6 +17,9 @@ public:
 	// デストラクタ
 	virtual ~ActorBase(void);
 
+	//読み込み
+	void Load(void);
+
 	// 初期化
 	void Init(void);
 

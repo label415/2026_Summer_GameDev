@@ -3,9 +3,21 @@
 #include <DxLib.h>
 #include "WeponBase.h"
 class Transform;
+class EffectController;
 class WeponBracelet : public WeponBase
 {
 public:
+
+	//攻撃エフェクト
+	enum class EFFECT_TYPE
+	{
+		BRACELET,
+	};
+
+	// 回転調整
+	static constexpr VECTOR DEFAULT_ROT =
+	{ 0.0f, -(90.0f * DX_PI_F / 180.0f), 0.0f };
+
 	// コンストラクタ
 	WeponBracelet(const Transform& followTransform, const VECTOR moverDir, int followFrameId);
 	// デストラクタ
@@ -14,10 +26,12 @@ public:
 	void Update(void) override;
 	// 描画
 	void Draw(void)override;
+	// 解放
+	void Release(void)override;
 	void SetCollider(void) override;
 	void ClearCollider(void) override;
 
-	void SetIsAttack(bool isAttack) { isAttack_ = isAttack; }
+	void SetIsAttack(bool isAttack);
 	void SetIsEnd(bool isEnd) { isEnd_ = isEnd; }
 
 protected:
@@ -35,9 +49,6 @@ protected:
 private:
 	// 	// モデルの大きさ
 	static constexpr float SCALE = 0.4f;
-	// モデルの回転調整
-	static constexpr VECTOR DEFAULT_LOCAL_ROT =
-	{ 0.0f, 180.0f * DX_PI_F / 180.0f, 0.0f };
 
 	// 衝突判定用カプセル上部球体
 	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 0.0f, 300.0f };
@@ -46,9 +57,12 @@ private:
 	// 衝突判定用カプセル球体半径
 	static constexpr float COL_CAPSULE_RADIUS = 200.0f;
 
-	static constexpr float SPEED = 100.0f;
+	static constexpr float SPEED = 150.0f;
 
-	static constexpr float LENGTH = 3000.0f;
+	static constexpr float LENGTH = 2000.0f;
+
+	//エフェクトコントローラ
+	EffectController* effect_;
 
 	//後ろ座標
 	VECTOR topPos_;

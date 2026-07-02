@@ -2,7 +2,10 @@
 #include "../../../Utility/ModelFrameUtility.h"
 #include "../../../Manager/ResourceManager.h"
 #include "../../Common/Collider/ColliderCapsule.h"
+#include "../../Common/EffectController.h"
+#include "../../../Application.h"
 #include "WeponBracelet.h"
+
 WeponBracelet::WeponBracelet(const Transform& followTransform, const VECTOR moverDir, int followFrameId)
 	:
 	WeponBase(followTransform, followFrameId),
@@ -21,6 +24,7 @@ WeponBracelet::~WeponBracelet(void)
 void WeponBracelet::Update(void)
 {
 	Move();
+	effect_->Update(static_cast<int>(EFFECT_TYPE::BRACELET));
 }
 
 void WeponBracelet::InitLoad(void)
@@ -57,6 +61,11 @@ void WeponBracelet::InitPost(void)
 	downPos_ = AsoUtility::VECTOR_ZERO;
 
 	moveSpeed_ = SPEED;
+
+	effect_ = new EffectController();
+	effect_->Add(
+		static_cast<int>(EFFECT_TYPE::BRACELET),
+		(Application::PATH_EFFECT + L"Breath/Breath.efkefc"));
 }
 
 void WeponBracelet::Move(void)
@@ -70,11 +79,6 @@ void WeponBracelet::Move(void)
 		// 1. 攻撃が伸びていくフェーズ (Topが移動)
 		if (VSize(VSub(topPos_, downPos_)) < LENGTH) {
 			topPos_ = VAdd(topPos_, VScale(moveDir_, moveSpeed_));
-		}
-		else {
-			// 最大まで伸びたら、自動的に消滅フェーズ(isEnd)へ移行する場合の例
-			// (外部のマネージャー等で切り替える場合は削除してください)
-			// isEnd_ = true; 
 		}
 	}
 	else if (isEnd_)
@@ -106,17 +110,13 @@ void WeponBracelet::Move(void)
 
 void WeponBracelet::Draw(void)
 {
-	/*ActorBase::Draw();*/
+	ActorBase::Draw();
+}
 
-	//if (isAttack_ || isEnd_)
-	//{
-	//	// DrawCapsule3D はワールド座標を要求するため、
-	//	// ベースとなる transform_.pos（手元の位置）を足してワールド座標に変換して描画する
-	//	VECTOR worldTop = VAdd(transform_.pos, topPos_);
-	//	VECTOR worldDown = VAdd(transform_.pos, downPos_);
-
-	//	DrawCapsule3D(worldTop, worldDown, COL_CAPSULE_RADIUS, 10, 0xff0000, 0xff0000, true);
-	//}
+void WeponBracelet::Release(void)
+{
+	ActorBase::Release();
+	delete effect_;
 }
 
 void WeponBracelet::SetCollider(void)
@@ -126,4 +126,22 @@ void WeponBracelet::SetCollider(void)
 void WeponBracelet::ClearCollider(void)
 {
 	
+}
+
+void WeponBracelet::SetIsAttack(bool isAttack)
+{
+	if (!isAttack_) {
+		float yaw = atan2f(moveDir_.x, moveDir_.z);
+		float pitch = -asinf(moveDir_.y);
+		VECTOR euler = { pitch, yaw, 0.0f };
+		euler = VAdd(euler, WeponBracelet::DEFAULT_ROT);
+		VECTOR effPos = transform_.pos;
+		effPos.y -= 250.0f;
+
+		effect_->Play(
+			static_cast<int>(EFFECT_TYPE::BRACELET),
+			effPos,
+			euler, VGet(400.0f, 400.0f, 1000.0f));
+	}
+	isAttack_ = isAttack;
 }

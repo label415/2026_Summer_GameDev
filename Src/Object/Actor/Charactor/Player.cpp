@@ -127,8 +127,8 @@ void Player::HitDamage(bool isHit)
 
 void Player::DrawHp(void)
 {
-	uiHp_->Draw();
-	if(uiSt_) uiSt_->Draw();
+	if (uiHp_) { uiHp_->Draw(); }
+	if (uiSt_) { uiSt_->Draw(); }
 }
 
 void Player::InitLoad(void)
@@ -139,6 +139,9 @@ void Player::InitLoad(void)
 	//プレイヤー
 	transform_.SetModel(resMng_.LoadModelDuplicate(
 		ResourceManager::SRC::PLAYER));
+
+	wepon_ = new WeponBlade(transform_, 48);
+	wepon_->Load();
 }
 
 void Player::InitTransform(void)
@@ -210,7 +213,6 @@ void Player::InitPost(void)
 	state_ = STATE::IDLE;
 
 	//武器
-	wepon_ = new WeponBlade(transform_,48);
 	wepon_->Init();
 
 	//スタミナ

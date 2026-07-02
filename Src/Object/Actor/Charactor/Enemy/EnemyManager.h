@@ -15,6 +15,9 @@ public:
 	// デストラクタ
 	~EnemyManager(void);
 
+	// 読み込み
+	void Load(void);
+
 	// 初期化
 	void Init(void);
 

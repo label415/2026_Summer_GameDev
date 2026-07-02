@@ -31,7 +31,6 @@ Application& Application::GetInstance(void)
 
 void Application::Init(void)
 {
-
 	// アプリケーションの初期設定
 	SetWindowText(L"2416001_阿津坂 圭吾");
 

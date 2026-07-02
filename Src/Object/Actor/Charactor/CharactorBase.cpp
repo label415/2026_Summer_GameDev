@@ -20,6 +20,8 @@ CharactorBase::~CharactorBase(void)
 
 void CharactorBase::Update(void)
 {
+	if (!isAlive_)return;
+
 	// 移動前座標を更新
 	prevPos_ = transform_.pos;
 	isAttack_ = false;

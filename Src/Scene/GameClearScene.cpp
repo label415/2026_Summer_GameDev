@@ -19,16 +19,18 @@ GameClearScene::~GameClearScene(void)
 {
 }
 
-void GameClearScene::Init(void)
+void GameClearScene::Load(void)
 {
-
 	i = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
 
 	// フォントハンドルの作成
 	resMng_.Load(ResourceManager::SRC::FONT);
 	titleFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 140, 140);
 	pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 25, 25);
+}
 
+void GameClearScene::LoadEnd(void)
+{
 }
 
 void GameClearScene::Update(void)

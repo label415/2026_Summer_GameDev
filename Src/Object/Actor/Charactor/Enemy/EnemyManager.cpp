@@ -16,10 +16,18 @@ EnemyManager::~EnemyManager(void)
 {
 }
 
-void EnemyManager::Init(void)
+void EnemyManager::Load(void)
 {
 	// エネミーのデータ読み込み
 	LoadCsvData();
+}
+
+void EnemyManager::Init(void)
+{
+	for (auto& enemy : enemys_)
+	{
+		enemy->Init();
+	}
 }
 
 void EnemyManager::Update(void)
@@ -132,7 +140,7 @@ EnemyBase* EnemyManager::Create(const EnemyBase::EnemyData& data)
 
 	if(enemy != nullptr)
 	{
-		enemy->Init();
+		enemy->Load();
 		enemys_.push_back(enemy);
 	}
 

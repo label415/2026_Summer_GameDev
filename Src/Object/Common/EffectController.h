@@ -43,6 +43,10 @@ public:
 
 	void Draw(int type, const VECTOR pos);
 
+	void SetEffectScl(int type, VECTOR scale);
+	void SetEffectPos(int type, VECTOR pos);
+	void SetEffectRot(int type, VECTOR rot);
+
 private:
 
 	// 種類別のアニメーションデータ

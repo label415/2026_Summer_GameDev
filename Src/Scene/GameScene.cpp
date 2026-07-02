@@ -26,30 +26,44 @@ GameScene::~GameScene(void)
 {
 }
 
-void GameScene::Init(void)
+void GameScene::Load(void)
 {
 	camera_ = SceneManager::GetInstance().GetCamera();
-
+	//スカイドーム読み込み
 	skydome_ = new SkyDome();
-	skydome_->Init();
-
+	skydome_->Load();
 	//ステージ初期化
 	stage_ = new Stage();
-	stage_->Init();
-
+	stage_->Load();
+	//プレイヤー読み込み
 	player_ = new Player();
-	camera_->SetFollow(&player_->GetTransform());
-	player_->Init();
-
+	player_->Load();
+	//エネミー読み込み
 	enemys_ = new EnemyManager();
-	enemys_->Init();
+	enemys_->Load();
 	targetEnemy_ = nullptr;
-
-	camera_->ChangeMode(Camera::MODE::FOLLOW);
-
+	//シャドーマップ読み込み
 	shadowMap_ = new ShadowMap(1024, 1024);
+	//カメラモード変更
+	camera_->SetFollow(&player_->GetTransform());
+	camera_->ChangeMode(Camera::MODE::FOLLOW);
+}
+
+void GameScene::LoadEnd(void)
+{
+	//スカイドーム初期化
+	skydome_->Init();
+	//ステージ初期化
+	stage_->Init();
+	//プレイヤー初期化
+	player_->Init();
+	//エネミー初期化
+	enemys_->Init();
+	//シャドーマップ初期化
 	shadowMap_->AddShadowMapLight(VGet(0.5f, -0.5f, 0.5f));
-	shadowMap_->AddShadowMapDrawArea(VGet(-1000.0f, -1.0f, -1000.0f), VGet(1000.0f, 1000.0f, 1000.0f));
+	shadowMap_->AddShadowMapDrawArea(
+		VGet(-1000.0f, -1.0f, -1000.0f),
+		VGet(1000.0f, 1000.0f, 1000.0f));
 
 	// コライダ登録
 	AddCollider();
@@ -83,13 +97,13 @@ void GameScene::Update(void)
 	UpdateAutoLockOn();
 	UpdateCollider();
 
-	player_->Update();
-	for(const auto& enemy : enemys_->GetEnemys()){
+	for (const auto& enemy : enemys_->GetEnemys()) {
 		player_->HitDamage(enemy->GetIsAttack());
 	}
+	player_->Update();
 
-	enemys_->Update();
 	enemys_->HitDamegr(player_->GetIsAttack());
+	enemys_->Update();
 }
 
 void GameScene::Draw(void)

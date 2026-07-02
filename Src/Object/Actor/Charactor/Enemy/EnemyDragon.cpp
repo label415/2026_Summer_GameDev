@@ -46,9 +46,10 @@ void EnemyDragon::Draw(void)
 	DrawFormatString(0, 20, 0xffffff, L"モデルフレーム座標 %.1f, %.1f, %.1f", pos.x, pos.y, pos.z);
 
 	std::wstring stateName[] = {
-		L"NONE",L"THINK",L"IDLE",L"ROAR",L"PATROL",
-		L"CHASE",L"FLYING",L"FLYING_ATTACK",L"BRACELET_ATTACK",
-		L"MELEE_ATTACK",L"HOVER",L"TAKEOFF",L"LANDS",L"DEAD",L"END" };
+		L"NONE",L"THINK",L"IDLE",L"ROAR",L"CHARGE",L"PATROL",L"FLYING",
+		L"FALLING＿ATTACK",L"FLYING_ATTACK",L"BRACELET_ATTACK",
+		L"MELEE_ATTACK",L"HOVER",L"TAKEOFF",L"LANDS",L"DEAD",L"END"
+	};
 
 	std::wstring attributeName[] = { L"NONE",L"ABOVE_GROUND",L"AIR" };
 
@@ -240,9 +241,6 @@ void EnemyDragon::InitPost(void)
 	uiHp_ = new UIHp(100.0f, 600.0f, 1180.0f, 680.0f, 5.0f);
 
 	effect_ = new EffectController();
-	effect_->Add(
-		static_cast<int>(EFFECT_TYPE::BRACELET),
-		(Application::PATH_EFFECT + L"Breath/Breath.efkefc"));
 
 }
 
@@ -554,10 +552,6 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 	VECTOR dir = VNorm(VSub(*targetTrans_, transform_.pos));
 	wepon_ = new WeponBracelet(transform_, dir, 28);
 	wepon_->Init();
-	effect_->Play(
-		static_cast<int>(EFFECT_TYPE::BRACELET),
-		MV1GetFramePosition(transform_.modelId, 28),
-		dir, VGet(100.0f, 100.0f, 100.0f));
 
 	// 歩きアニメーション再生
 	anim_->Play(
@@ -771,7 +765,6 @@ void EnemyDragon::UpdateBreathAttack(void)
 			anim_->SetSpecificTime(27.0f, 30.0f, true);
 			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
 			wepon_->SetIsAttack(true);
-			effect_->Update(static_cast<int>(EFFECT_TYPE::BRACELET));
 		}
 		else {
 			anim_->SetSpecificTime(0.0f, 0.0f, false);
@@ -925,5 +918,5 @@ void EnemyDragon::HitDamage(bool isHit)
 
 void EnemyDragon::DrawHp(void)
 {
-	uiHp_->Draw();
+	if (uiHp_) { uiHp_->Draw(); }
 }
