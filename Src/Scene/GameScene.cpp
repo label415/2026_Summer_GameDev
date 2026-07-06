@@ -95,38 +95,38 @@ void GameScene::Update(void)
 	stage_->Update();
 
 	UpdateAutoLockOn();
-	UpdateCollider();
+
+	enemys_->HitDamegr(player_->GetIsAttack());
+	enemys_->Update();
 
 	for (const auto& enemy : enemys_->GetEnemys()) {
 		player_->HitDamage(enemy->GetIsAttack());
 	}
 	player_->Update();
 
-	enemys_->HitDamegr(player_->GetIsAttack());
-	enemys_->Update();
+	UpdateCollider();
 }
 
 void GameScene::Draw(void)
 {
+	skydome_->Draw();
+
+	shadowMap_->DrawSetup();
+	player_->Draw();
+	enemys_->Draw();
+	stage_->Draw();
+	shadowMap_->DrawEnd();
+
+	shadowMap_->SetShadow();
+	player_->Draw();
+	enemys_->Draw();
+	stage_->Draw();
+	shadowMap_->EndShadow();
+
 	player_->DrawHp();
 	for (const auto& enemy : enemys_->GetEnemys()) {
 		enemy->DrawHp();
 	}
-
-
-	skydome_->Draw();
-
-	shadowMap_->DrawSetup();
-	stage_->Draw();
-	player_->Draw();
-	enemys_->Draw();
-	shadowMap_->DrawEnd();
-
-	shadowMap_->SetShadow();
-	stage_->Draw();
-	player_->Draw();
-	enemys_->Draw();
-	shadowMap_->EndShadow();
 
 
 	if(targetEnemy_ != nullptr)

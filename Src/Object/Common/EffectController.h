@@ -38,7 +38,6 @@ public:
 	void Stop(int type);
 
 	void LoopUpdate(int type, const VECTOR pos);
-	void Update(int type, const VECTOR pos);
 	void Update(int type = -1);
 
 	void Draw(int type, const VECTOR pos);

@@ -3,7 +3,9 @@
 #include "../../../Manager/ResourceManager.h"
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "../../Common/EffectController.h"
+#include "../../../Manager/SceneManager.h"
 #include "../../../Application.h"
+#include "../../../Libs/ImGui/imgui.h"
 #include "WeponBracelet.h"
 
 WeponBracelet::WeponBracelet(const Transform& followTransform, const VECTOR moverDir, int followFrameId)
@@ -23,6 +25,7 @@ WeponBracelet::~WeponBracelet(void)
 
 void WeponBracelet::Update(void)
 {
+	UpdateDebugImGui();
 	Move();
 	effect_->Update(static_cast<int>(EFFECT_TYPE::BRACELET));
 }
@@ -53,10 +56,8 @@ void WeponBracelet::InitAnimation(void)
 
 void WeponBracelet::InitPost(void)
 {
-	// 初期位置を手元のワールド座標に合わせる
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
 
-	// top と down は手元からの相対座標(0,0,0)からスタート
 	topPos_ = AsoUtility::VECTOR_ZERO;
 	downPos_ = AsoUtility::VECTOR_ZERO;
 
@@ -70,30 +71,23 @@ void WeponBracelet::InitPost(void)
 
 void WeponBracelet::Move(void)
 {
-	// 常に手元のボーン位置に追従（ベース座標の更新）
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
 
-	// --- 状態ごとの処理 ---
 	if (isAttack_ && !isEnd_)
 	{
-		// 1. 攻撃が伸びていくフェーズ (Topが移動)
 		if (VSize(VSub(topPos_, downPos_)) < LENGTH) {
 			topPos_ = VAdd(topPos_, VScale(moveDir_, moveSpeed_));
 		}
 	}
 	else if (isEnd_)
 	{
-		// 2. 攻撃が根元から消えていくフェーズ (Downが追いつく)
 		isAttack_ = false;
 		downPos_ = VAdd(downPos_, VScale(moveDir_, moveSpeed_));
-
-		// Topに追いついたら（判定が縮みきったら）消滅
 		if (VSize(VSub(topPos_, downPos_)) <= 50.0f) {
 			isAlive_ = false;
 		}
 	}
 
-	// --- コライダーの更新 (ローカル座標として設定) ---
 	const auto& cols = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 	for (const auto& col : cols) {
 		if (col->GetTag() != ColliderBase::TAG::ENEMY_WEPON) continue;
@@ -101,7 +95,6 @@ void WeponBracelet::Move(void)
 		ColliderCapsule* colliderCapsule = dynamic_cast<ColliderCapsule*>(col);
 		if (colliderCapsule)
 		{
-			// ローカル座標（手元からの相対位置）をそのまま渡す
 			colliderCapsule->SetLocalPosTop(topPos_);
 			colliderCapsule->SetLocalPosDown(downPos_);
 		}
@@ -144,4 +137,24 @@ void WeponBracelet::SetIsAttack(bool isAttack)
 			euler, VGet(400.0f, 400.0f, 1000.0f));
 	}
 	isAttack_ = isAttack;
+}
+
+void WeponBracelet::UpdateDebugImGui(void)
+{
+	// ウィンドウタイトル&開始処理
+	ImGui::Begin("Wepon");
+	// 角度
+	VECTOR rotDeg = VECTOR();
+	rotDeg.x = AsoUtility::Rad2DegF(localRot_.x);
+	rotDeg.y = AsoUtility::Rad2DegF(localRot_.y);
+	rotDeg.z = AsoUtility::Rad2DegF(localRot_.z);
+	ImGui::Text("angle(deg)");
+	ImGui::SliderFloat("RotX", &rotDeg.x, 0.0f, 360.0f);
+	ImGui::SliderFloat("RotY", &rotDeg.y, 0.0f, 360.0f);
+	ImGui::SliderFloat("RotZ", &rotDeg.z, 0.0f, 360.0f);
+	localRot_.x = AsoUtility::Deg2RadF(rotDeg.x);
+	localRot_.y = AsoUtility::Deg2RadF(rotDeg.y);
+	localRot_.z = AsoUtility::Deg2RadF(rotDeg.z);
+	// 終了処理
+	ImGui::End();
 }

@@ -3,7 +3,6 @@
 #include <DxLib.h>
 #include "WeponBase.h"
 class Transform;
-class EffectController;
 class WeponBracelet : public WeponBase
 {
 public:
@@ -61,9 +60,6 @@ private:
 
 	static constexpr float LENGTH = 2000.0f;
 
-	//エフェクトコントローラ
-	EffectController* effect_;
-
 	//後ろ座標
 	VECTOR topPos_;
 	VECTOR downPos_;
@@ -77,6 +73,8 @@ private:
 
 	//移動処理
 	void Move(void);
+
+	void UpdateDebugImGui(void);
 
 };
 

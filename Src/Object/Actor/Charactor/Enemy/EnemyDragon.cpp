@@ -96,6 +96,13 @@ void EnemyDragon::Draw(void)
 void EnemyDragon::Release(void)
 {
 	CharactorBase::Release();
+	if (wepon_ != nullptr && !wepon_->GetIsAlive())
+	{
+		wepon_->ClearCollider();
+		wepon_->Release();
+		delete wepon_;
+		wepon_ = nullptr;
+	}
 	delete uiHp_;
 }
 
@@ -235,12 +242,20 @@ void EnemyDragon::InitPost(void)
 	stateChanges_.emplace(static_cast<int>(STATE::END),
 		std::bind(&EnemyDragon::ChangeStateEnd, this));
 
-	// 初期状態設定
-	ChangeState(STATE::ROAR);
-
 	uiHp_ = new UIHp(100.0f, 600.0f, 1180.0f, 680.0f, 5.0f);
 
+	effectType_ = EFFECT::NONE;
+
 	effect_ = new EffectController();
+	effect_->Add(
+		static_cast<int>(EFFECT::FALLING_ATTACK),
+		(Application::PATH_EFFECT + L"Fall/Fall.efkefc"));
+	effect_->Add(
+		static_cast<int>(EFFECT::ROAT),
+		(Application::PATH_EFFECT + L"Roar/RoarEff.efkefc"));
+
+	// 初期状態設定
+	ChangeState(STATE::ROAR);
 
 }
 
@@ -392,7 +407,7 @@ void EnemyDragon::ChangeStateThink(void)
 	float diff = VSize(VSub(*targetTrans_, transform_.pos));
 	if(attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
-		ChangeState(STATE::BRACELET_ATTACK);
+		ChangeState(STATE::HOVER);
 		return;
 		//// 思考
 		//int rand = GetRand(100);
@@ -440,7 +455,8 @@ void EnemyDragon::ChangeStateThink(void)
 	}
 	if (attribute_ == ATTRIBUTE::AIR) 
 	{
-		if (diff < 800.0f) {
+		ChangeState(STATE::FALLING＿ATTACK);
+		/*if (diff < 800.0f) {
 			ChangeState(STATE::FALLING＿ATTACK);
 			return;
 		}
@@ -452,7 +468,7 @@ void EnemyDragon::ChangeStateThink(void)
 		else {
 			ChangeState(STATE::FLYING);
 			return;
-		}
+		}*/
 	}
 }
 
@@ -476,6 +492,10 @@ void EnemyDragon::ChangeStateRoar(void)
 
 	// 移動量ゼロ
 	movePow_ = AsoUtility::VECTOR_ZERO;
+
+	effectType_ = EFFECT::ROAT;
+	effect_->Play(static_cast<int>(effectType_));
+	effect_->SetEffectScl(static_cast<int>(effectType_), VGet(250.0f, 250.0f, 250.0f));
 
 	// 待機アニメーション再生
 	anim_->Play(
@@ -633,6 +653,9 @@ void EnemyDragon::UpdateIdle(void)
 
 void EnemyDragon::UpdateRoar(void)
 {
+	effect_->SetEffectPos(static_cast<int>(effectType_), MV1GetFramePosition(transform_.modelId, 28));
+	effect_->Update(static_cast<int>(effectType_));
+
 	if (anim_->IsEnd()) {
 		// 待機終了
 		attribute_ = ATTRIBUTE::ABOVE_GROUND;

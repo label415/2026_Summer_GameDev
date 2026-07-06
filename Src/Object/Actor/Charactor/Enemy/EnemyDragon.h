@@ -71,6 +71,14 @@ public:
 		NECK,
 	};
 
+	//各部位のタグ
+	enum class EFFECT {
+		NONE,
+		ROAT,
+		FALLING_ATTACK,
+
+	};
+
 	//部位のカプセルフレーム
 	struct FramePair {
 		PATR_TAG patrTag;
@@ -178,6 +186,9 @@ private:
 
 	//属性
 	ATTRIBUTE attribute_;
+
+	//エフェクト
+	EFFECT effectType_;
 
 	//攻撃時間
 	float attackCnt_;

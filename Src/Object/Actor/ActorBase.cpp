@@ -10,6 +10,7 @@ ActorBase::ActorBase(void)
 	transform_()
 {
 	isAlive_ = true;
+	effect_ = nullptr;
 }
 
 ActorBase::~ActorBase(void)

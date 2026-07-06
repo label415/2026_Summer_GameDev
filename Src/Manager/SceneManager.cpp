@@ -163,13 +163,13 @@ void SceneManager::Draw(void)
 	{
 		// 各シーンの描画処理
 		scene_->Draw();
+
+		// カメラ描画
+		camera_->DrawDebug();
+
+		// Effekseerにより再生中のエフェクトを描画する。
+		DrawEffekseer3D();
 	}
-
-	// カメラ描画
-	camera_->DrawDebug();
-
-	// Effekseerにより再生中のエフェクトを描画する。
-	DrawEffekseer3D();
 }
 
 void SceneManager::Destroy(void)

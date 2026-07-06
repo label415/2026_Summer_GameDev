@@ -164,7 +164,7 @@ void CharactorBase::CollisionGravity(void)
 
 				if (colliderModel == nullptr) continue;
 
-				bool isHit = colliderLine_->PushBackUp(colliderModel, transform_, 2.0f, false, false);
+				bool isHit = colliderLine_->PushBackUp(colliderModel, transform_, 2.0f, false, true);
 
 				if (isHit)
 				{
@@ -218,8 +218,7 @@ void CharactorBase::CollisionCapsule(void)
 					transform_,
 					CNT_TRY_COLLISION,
 					COLLISION_BACK_DIS,
-					false,
-					false
+					true, false
 				);
 			}
 		}

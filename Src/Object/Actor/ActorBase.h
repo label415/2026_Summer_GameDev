@@ -5,6 +5,7 @@
 #include "../Common/Collider/ColliderBase.h"
 class ResourceManager;
 class SceneManager;
+class EffectController;
 
 class ActorBase
 {
@@ -64,6 +65,9 @@ protected:
 
 	// モデル制御の基本情報
 	Transform transform_;
+
+	//エフェクトコントローラ
+	EffectController* effect_;
 
 	// 自身の衝突情報
 	std::map<int, std::vector<ColliderBase*>> ownColliders_;
