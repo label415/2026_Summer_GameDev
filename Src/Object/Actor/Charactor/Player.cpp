@@ -62,7 +62,7 @@ void Player::HitDamage(bool isHit)
 		const ColliderCapsule* colliderCapsule1 =
 			dynamic_cast<const ColliderCapsule*>(vec);
 
-		if (colliderCapsule1 == nullptr) continue; // ここは return ではなく次へ
+		if (colliderCapsule1 == nullptr) continue;
 
 		// 登録されている衝突物を全てチェック  
 		for (const auto& hitCol : hitColliders_)
@@ -101,7 +101,8 @@ void Player::HitDamage(bool isHit)
 					}
 				}
 
-				// 敵の武器との衝突（既存ロジックそのまま)
+				if (!isV_)continue;
+				// 敵の武器との衝突
 				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
 
@@ -113,7 +114,7 @@ void Player::HitDamage(bool isHit)
 						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
 						colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius());
 
-					if (hits && !isV_) {
+					if (hits) {
 						uiHp_->SetHp(0.5f);
 						anim_->Play(
 							static_cast<int>(ANIM_TYPE::DOWN), false);

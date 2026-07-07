@@ -249,10 +249,10 @@ void EnemyDragon::InitPost(void)
 	effect_ = new EffectController();
 	effect_->Add(
 		static_cast<int>(EFFECT::FALLING_ATTACK),
-		(Application::PATH_EFFECT + L"Fall/Fall.efkefc"));
+		(Application::PATH_EFFECT + L"Fall.efkefc"));
 	effect_->Add(
 		static_cast<int>(EFFECT::ROAT),
-		(Application::PATH_EFFECT + L"Roar/RoarEff.efkefc"));
+		(Application::PATH_EFFECT + L"RoarEff.efkefc"));
 
 	// 初期状態設定
 	ChangeState(STATE::ROAR);
@@ -407,7 +407,7 @@ void EnemyDragon::ChangeStateThink(void)
 	float diff = VSize(VSub(*targetTrans_, transform_.pos));
 	if(attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
-		ChangeState(STATE::HOVER);
+		ChangeState(STATE::TAKEOFF);
 		return;
 		//// 思考
 		//int rand = GetRand(100);
@@ -545,6 +545,8 @@ void EnemyDragon::ChangeStateFallingAttack(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateFallingAttack, this);
 
+	attackCnt_ = 0.0f;
+
 	// アニメーション再生
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::FALLING＿ATTACK), false);
@@ -605,6 +607,7 @@ void EnemyDragon::ChangeStateHover(void)
 void EnemyDragon::ChangeStateTakeOff(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateTakeOff, this);
+
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::TAKEOFF), false);
 }
@@ -707,17 +710,24 @@ void EnemyDragon::UpdatePatrol(void)
 void EnemyDragon::UpdateFallingAttack(void)
 {
 	if (isJump_) {
-		float jumpSpeed = 2000.0f * scnMng_.GetDeltaTime();
+		float jumpSpeed = 10000.0f * scnMng_.GetDeltaTime();
 		jumpPow_ = VAdd(jumpPow_, VScale(AsoUtility::DIR_D, jumpSpeed));
 		isAttack_ = true;
 		anim_->SetSpecificTime(15.0f,20.0f, true);
 	}
 	else {
+		if (attribute_ == ATTRIBUTE::AIR) {
+			effectType_ = EFFECT::FALLING_ATTACK;
+			effect_->Play(static_cast<int>(effectType_));
+			effect_->SetEffectScl(static_cast<int>(effectType_), VGet(150.0f, 150.0f, 150.0f));
+			effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
+			effect_->Update(static_cast<int>(effectType_));
+		}
 		anim_->SetSpecificTime(0.0f, 0.0f, false);
+		attribute_ = ATTRIBUTE::ABOVE_GROUND;
 	}
 
 	if(anim_->IsEnd()){
-		attribute_ = ATTRIBUTE::ABOVE_GROUND;
 		ChangeState(STATE::IDLE);
 		return;
 	}
@@ -725,6 +735,7 @@ void EnemyDragon::UpdateFallingAttack(void)
 
 void EnemyDragon::UpdateFlying(void)
 {
+	isJump_ = true;
 	transform_.pos.y = MAX_TAKE;
 	step_ -= scnMng_.GetDeltaTime();
 	moveSpeed_ = SPEED_MOVE;
@@ -742,6 +753,7 @@ void EnemyDragon::UpdateFlying(void)
 
 void EnemyDragon::UpdateFlyingAttack(void)
 {
+	isJump_ = true;
 	transform_.pos.y = MAX_TAKE;
 	moveDir_ = preMoverDir_;
 	if (wepon_ != nullptr) {
@@ -839,6 +851,7 @@ void EnemyDragon::UpdateHover(void)
 
 void EnemyDragon::UpdateTakeOff(void)
 {
+	isJump_ = true;
 	if(transform_.pos.y <= MAX_TAKE)
 	{
 		float jumpSpeed = 690.0f * scnMng_.GetDeltaTime();

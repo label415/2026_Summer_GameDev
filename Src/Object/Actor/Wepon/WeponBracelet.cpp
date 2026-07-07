@@ -66,7 +66,7 @@ void WeponBracelet::InitPost(void)
 	effect_ = new EffectController();
 	effect_->Add(
 		static_cast<int>(EFFECT_TYPE::BRACELET),
-		(Application::PATH_EFFECT + L"Breath/Breath.efkefc"));
+		(Application::PATH_EFFECT + L"Breath.efkefc"));
 }
 
 void WeponBracelet::Move(void)
