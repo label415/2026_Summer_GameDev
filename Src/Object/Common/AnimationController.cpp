@@ -9,6 +9,7 @@ AnimationController::AnimationController(int modelId)
 	playAnim_(),
 	isLoop_(true)
 {
+	isStop_ = false;
 }
 
 AnimationController::~AnimationController(void)
@@ -88,7 +89,7 @@ void AnimationController::Play(int type, bool isLoop)
 
 void AnimationController::Update(void)
 {
-
+	if (isStop_)return;
 	// Œo‰ßŽžŠÔ‚ÌŽæ“¾
 	float deltaTime = SceneManager::GetInstance().GetDeltaTime();
 
@@ -201,6 +202,11 @@ void AnimationController::SetSpecificTime(float state, float end, bool SpecificL
 void AnimationController::SetStateTime(float state)
 {
 	playAnim_.step = state;
+}
+
+void AnimationController::SetIsStopFlager(bool isStop)
+{
+	isStop_ = isStop;
 }
 
 void AnimationController::Add(int type, float speed, Animation& animation)

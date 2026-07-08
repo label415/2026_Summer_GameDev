@@ -76,6 +76,7 @@
     <ClCompile Include="Src\Object\Actor\Wepon\WeponBracelet.cpp" />
     <ClCompile Include="Src\Object\Actor\UI\UIHp.cpp" />
     <ClCompile Include="Src\Object\Actor\UI\UISt.cpp" />
+    <ClCompile Include="Src\Object\Actor\Wepon\WeponFlameThrower.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Common\ShadowMap.h" />
@@ -136,6 +137,7 @@
     <ClInclude Include="Src\Object\Actor\Wepon\WeponBracelet.h" />
     <ClInclude Include="Src\Object\Actor\UI\UIHp.h" />
     <ClInclude Include="Src\Object\Actor\UI\UISt.h" />
+    <ClInclude Include="Src\Object\Actor\Wepon\WeponFlameThrower.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -15,6 +15,9 @@ public:
 	virtual void SetCollider(void) {}
 	virtual void ClearCollider(void) {}
 
+	virtual void SetIsAttack(bool isAttack){}
+	virtual void SetIsEnd(bool isEnd){}
+
 protected:
 	// í«è]êÊTransform
 	const Transform& followTransform_;

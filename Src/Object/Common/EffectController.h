@@ -38,7 +38,7 @@ public:
 	void Stop(int type);
 
 	void LoopUpdate(int type, const VECTOR pos);
-	void Update(int type = -1);
+	void Update(int type = -1, bool isLoop = false);
 
 	void Draw(int type, const VECTOR pos);
 

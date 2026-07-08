@@ -52,6 +52,8 @@ public:
 	void SetSpecificTime(float state, float end, bool SpecificLoop);
 
 	void SetStateTime(float state);
+
+	void SetIsStopFlager(bool isStop);
 private:
 
 	// アニメーションするモデルのハンドルID
@@ -80,5 +82,7 @@ private:
 	void Add(int type, float speed, Animation& animation);
 
 	bool isReversing_;
+
+	bool isStop_;
 
 };

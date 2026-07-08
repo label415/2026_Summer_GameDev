@@ -30,8 +30,8 @@ public:
 	void SetCollider(void) override;
 	void ClearCollider(void) override;
 
-	void SetIsAttack(bool isAttack);
-	void SetIsEnd(bool isEnd) { isEnd_ = isEnd; }
+	void SetIsAttack(bool isAttack)override;
+	void SetIsEnd(bool isEnd) override { isEnd_ = isEnd; }
 
 protected:
 	// リソースロード

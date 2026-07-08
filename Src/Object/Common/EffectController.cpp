@@ -93,7 +93,7 @@ void EffectController::LoopUpdate(int type, const VECTOR pos)
 	SetPosPlayingEffekseer3DEffect(effects_[type]->PlayId_, pos.x, pos.y, pos.z);
 }
 
-void EffectController::Update(int type)
+void EffectController::Update(int type, bool isLoop)
 {
 	// 指定されたエフェクトが存在しない場合は処理しない
 	auto it = effects_.find(type);
@@ -106,7 +106,12 @@ void EffectController::Update(int type)
 	int ret = IsEffekseer3DEffectPlaying(effects_[type]->PlayId_);
 	if (ret == -1)
 	{
-		StopEffekseer3DEffect(effects_[type]->PlayId_);
+		if (isLoop) {
+			effects_[type]->PlayId_ = PlayEffekseer3DEffect(effects_[type]->ResId);
+		}
+		else {
+			StopEffekseer3DEffect(effects_[type]->PlayId_);
+		}
 	}
 }
 

@@ -212,7 +212,7 @@ void GameScene::UpdateCollider(void)
 		if (enemy == nullptr) continue;
 
 		// Enemy の武器が nullptr の可能性をチェックしてから取得する
-		const WeponBracelet* enemyWepon = enemy->GetWepon();
+		const WeponBase* enemyWepon = enemy->GetWepon();
 		if (enemyWepon == nullptr) continue;
 
 		const std::vector<ColliderBase*> enemyWeponColliders =

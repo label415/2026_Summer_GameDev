@@ -12,6 +12,8 @@
 #include "../../../../Utility/ModelFrameUtility.h"
 #include "../../../../Common/Quaternion.h"
 #include "../../Wepon/WeponBracelet.h"
+#include "../../Wepon/WeponBase.h"
+#include "../../Wepon/WeponFlameThrower.h"
 #include "../../UI/UIHp.h"
 #include "../../../../Application.h"
 #include "../../../Common/EffectController.h"
@@ -179,7 +181,7 @@ void EnemyDragon::InitAnimation(void)
 	anim_->AddInFbx(type, 30.0f, type);
 
 	type = static_cast<int>(ANIM_TYPE::BRACELET_ATTACK);
-	anim_->AddInFbx(type, 20.0f, type);
+	anim_->AddInFbx(type, 17.0f, type);
 
 	type = static_cast<int>(ANIM_TYPE::HOVER);
 	anim_->AddInFbx(type, 30.0f, type);
@@ -194,7 +196,7 @@ void EnemyDragon::InitAnimation(void)
 	anim_->AddInFbx(type, 30.0f, type);
 
 	type = static_cast<int>(ANIM_TYPE::FLYING_ATTACK);
-	anim_->AddInFbx(type, 20.0f, type);
+	anim_->AddInFbx(type, 15.0f, type);
 
 	type = static_cast<int>(ANIM_TYPE::ROAR);
 	anim_->AddInFbx(type, 30.0f, type);
@@ -253,6 +255,9 @@ void EnemyDragon::InitPost(void)
 	effect_->Add(
 		static_cast<int>(EFFECT::ROAT),
 		(Application::PATH_EFFECT + L"RoarEff.efkefc"));
+	effect_->Add(
+		static_cast<int>(EFFECT::CHARGE),
+		(Application::PATH_EFFECT + L"Charge.efkefc"));
 
 	// 初期状態設定
 	ChangeState(STATE::ROAR);
@@ -455,7 +460,7 @@ void EnemyDragon::ChangeStateThink(void)
 	}
 	if (attribute_ == ATTRIBUTE::AIR) 
 	{
-		ChangeState(STATE::FALLING＿ATTACK);
+		ChangeState(STATE::FLYING_ATTACK);
 		/*if (diff < 800.0f) {
 			ChangeState(STATE::FALLING＿ATTACK);
 			return;
@@ -556,9 +561,6 @@ void EnemyDragon::ChangeStateFallingAttack(void)
 void EnemyDragon::ChangeStateFlyingAttack(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateFlyingAttack, this);
-
-	wepon_ = new WeponBracelet(transform_, VNorm(VSub(*targetTrans_, transform_.pos)), 28);
-	wepon_->Init();
 
 	// 歩きアニメーション再生
 	anim_->Play(
@@ -669,11 +671,27 @@ void EnemyDragon::UpdateRoar(void)
 
 void EnemyDragon::UpdateCharge(void)
 {
+	if (step_ < 0.0f)
+	{		effect_->Stop(static_cast<int>(effectType_));
+		isAttack_ = false;
+		ChangeState(STATE::IDLE);
+		return;
+	}
+
 	if (anim_->GetPlayAnim().step >= 109.0f
 		&& anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::ROAR))
 	{
 		anim_->Play(
 			static_cast<int>(ANIM_TYPE::CHARGE), true);
+		effectType_ = EFFECT::CHARGE;
+		float yaw = atan2f(moveDir_.x, moveDir_.z);
+		float pitch = -asinf(moveDir_.y);
+		VECTOR euler = { pitch, yaw, 0.0f };
+		euler = VAdd(euler, VGet(0.0f, 00.0f * DX_PI_F / 180.0f, 0.0f));
+		effect_->Play(
+			static_cast<int>(effectType_),
+			MV1GetFramePosition(transform_.modelId, 28),
+			euler, VGet(150.0f, 150.0f, 150.0f));
 	}
 	else if(anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::CHARGE)){
 		moveDir_ = preMoverDir_;
@@ -682,12 +700,8 @@ void EnemyDragon::UpdateCharge(void)
 		moveSpeed_ = SPEED_DASH;
 		movePow_ = VScale(moveDir_, moveSpeed_);
 
-		if (step_ < 0.0f)
-		{
-			isAttack_ = false;
-			ChangeState(STATE::IDLE);
-			return;
-		}
+		effect_->SetEffectPos(static_cast<int>(effectType_), MV1GetFramePosition(transform_.modelId, 28));
+		effect_->Update(static_cast<int>(effectType_), true);
 	}
 }
 
@@ -760,24 +774,11 @@ void EnemyDragon::UpdateFlyingAttack(void)
 		wepon_->Update();
 	}
 
-	if (anim_->GetPlayAnim().step >= 120.0f)
+	if (anim_->GetPlayAnim().step == 120.0f)
 	{
-		if (attackCnt_ <= 2.0f) {
-			isAttack_ = true;
-			anim_->SetSpecificTime(123.0f, 125.0f, true);
-			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
-			wepon_->SetIsAttack(true);
-		}
-		else {
-			anim_->SetSpecificTime(0.0f, 0.0f, false);
-		}
-	}
-	if (anim_->GetPlayAnim().step >= 127.0f)
-	{
-		if (wepon_ != nullptr)
-		{
-			wepon_->SetIsEnd(true);
-		}
+		VECTOR dir = VNorm(VSub(*targetTrans_, MV1GetFramePosition(transform_.modelId, 28)));
+		wepon_ = new WeponFlameThrower(transform_, dir, 28);
+		wepon_->Init();
 	}
 
 	if (anim_->GetPlayAnim().step >= 180.0f)

@@ -76,7 +76,7 @@ public:
 		NONE,
 		ROAT,
 		FALLING_ATTACK,
-
+		CHARGE,
 	};
 
 	//部位のカプセルフレーム

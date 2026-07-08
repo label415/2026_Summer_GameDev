@@ -25,6 +25,10 @@ WeponBracelet::~WeponBracelet(void)
 
 void WeponBracelet::Update(void)
 {
+	if (!isAlive_) {
+		ClearCollider();
+		return;
+	}
 	UpdateDebugImGui();
 	Move();
 	effect_->Update(static_cast<int>(EFFECT_TYPE::BRACELET));
@@ -118,7 +122,7 @@ void WeponBracelet::SetCollider(void)
 
 void WeponBracelet::ClearCollider(void)
 {
-	
+	ownColliders_.erase(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 }
 
 void WeponBracelet::SetIsAttack(bool isAttack)
@@ -134,7 +138,7 @@ void WeponBracelet::SetIsAttack(bool isAttack)
 		effect_->Play(
 			static_cast<int>(EFFECT_TYPE::BRACELET),
 			effPos,
-			euler, VGet(400.0f, 400.0f, 1000.0f));
+			euler, VGet(400.0f, 400.0f, LENGTH / 2.0f));
 	}
 	isAttack_ = isAttack;
 }
