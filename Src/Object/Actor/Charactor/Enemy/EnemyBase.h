@@ -3,7 +3,8 @@
 #include <functional>
 #include "../CharactorBase.h"
 
-class WeponBase;
+class WeponBracelet;
+class WeponFlameThrower;
 
 class EnemyBase :
     public CharactorBase
@@ -38,12 +39,15 @@ public:
     virtual void Draw(void) override;
 
     //•Šíî•ñæ“¾
-    const WeponBase* GetWepon(void)const { return wepon_; }
+    const WeponBracelet* GetWeponBracelet(void)const { return weponBracelet_; }
+
+    //•Šíî•ñæ“¾
+    const WeponFlameThrower* GetWeponFlameThrower(void)const { return WeponFlameThrower_; }
 
 protected:
 
-    //•Ší
-    WeponBase* wepon_;
+    WeponBracelet* weponBracelet_;
+    WeponFlameThrower* WeponFlameThrower_;
 
     // ó‘ÔŠÇ—
     int stateBase_;

@@ -46,6 +46,8 @@ public:
 	void SetEffectPos(int type, VECTOR pos);
 	void SetEffectRot(int type, VECTOR rot);
 
+	bool IsEnd(int type);
+
 private:
 
 	// 種類別のアニメーションデータ

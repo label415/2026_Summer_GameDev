@@ -156,6 +156,7 @@ void ColliderCapsule::PushBackAlongNormal(const ColliderCapsule* colliderCapsule
 
 			// 押し出す方向（敵からプレイヤーへの正規化ベクトル）
 			VECTOR pushDir = VNorm(vBA);
+			pushDir.y = 0.0f;
 
 			// プレイヤーだけを動かす場合は overlap をそのまま使います
 			transform.pos = VAdd(transform.pos, VScale(pushDir, overlap));

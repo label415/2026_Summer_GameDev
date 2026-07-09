@@ -1,6 +1,7 @@
 #pragma once
 #include <DxLib.h>
 #include "ColliderBase.h"
+class ColliderModel;
 class ColliderSphere :
     public ColliderBase
 {
@@ -28,6 +29,9 @@ public:
         const MV1_COLL_RESULT_POLY& hitColPoly,
         int maxTryCnt,
         float pushDistance) const override;
+
+    //‹…‘Ì‚Æƒ‚ƒfƒ‹‚ÌÕ“Ë”»’è
+    bool GetHitSpher_Model(const ColliderModel* colliderModel,bool isExclude = false, bool isTarget = false) const;
 
 protected:
 

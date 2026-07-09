@@ -37,8 +37,11 @@ void EnemyDragon::Draw(void)
 	// 基底クラスの描画処理
 	CharactorBase::Draw();
 
-	if (wepon_ != nullptr) {
-		wepon_->Draw();
+	if (weponBracelet_ != nullptr) {
+		weponBracelet_->Draw();
+	}
+	if (WeponFlameThrower_ != nullptr) {
+		WeponFlameThrower_->Draw();
 	}
 
 #ifdef _DEBUG
@@ -98,12 +101,20 @@ void EnemyDragon::Draw(void)
 void EnemyDragon::Release(void)
 {
 	CharactorBase::Release();
-	if (wepon_ != nullptr && !wepon_->GetIsAlive())
+	if (weponBracelet_ != nullptr && !weponBracelet_->GetIsAlive())
 	{
-		wepon_->ClearCollider();
-		wepon_->Release();
-		delete wepon_;
-		wepon_ = nullptr;
+		weponBracelet_->ClearCollider();
+		weponBracelet_->Release();
+		delete weponBracelet_;
+		weponBracelet_ = nullptr;
+	}
+
+	if (WeponFlameThrower_ != nullptr && !WeponFlameThrower_->GetIsAlive())
+	{
+		WeponFlameThrower_->ClearCollider();
+		WeponFlameThrower_->Release();
+		delete WeponFlameThrower_;
+		WeponFlameThrower_ = nullptr;
 	}
 	delete uiHp_;
 }
@@ -324,12 +335,19 @@ void EnemyDragon::UpdateProcess(void)
 
 	SetFrameUserLocalPos(LOCK_POS, LOCK_FRAME_NO);
 
-	if(wepon_ != nullptr &&!wepon_->GetIsAlive())
+	if(weponBracelet_ != nullptr &&!weponBracelet_->GetIsAlive())
 	{
-		wepon_->ClearCollider();
-		wepon_->Release();
-		delete wepon_;
-		wepon_ = nullptr;
+		weponBracelet_->ClearCollider();
+		weponBracelet_->Release();
+		delete weponBracelet_;
+		weponBracelet_ = nullptr;
+	}
+	if (WeponFlameThrower_ != nullptr && !WeponFlameThrower_->GetIsAlive())
+	{
+		WeponFlameThrower_->ClearCollider();
+		WeponFlameThrower_->Release();
+		delete WeponFlameThrower_;
+		WeponFlameThrower_ = nullptr;
 	}
 }
 
@@ -412,11 +430,10 @@ void EnemyDragon::ChangeStateThink(void)
 	float diff = VSize(VSub(*targetTrans_, transform_.pos));
 	if(attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
-		ChangeState(STATE::TAKEOFF);
-		return;
-		//// 思考
+		ChangeState(STATE::BRACELET_ATTACK);
+		// 思考
 		//int rand = GetRand(100);
-		//if(rand < 40){
+		//if(rand < 30){
 		//	ChangeState(STATE::TAKEOFF);
 		//	return;
 		//}
@@ -460,20 +477,27 @@ void EnemyDragon::ChangeStateThink(void)
 	}
 	if (attribute_ == ATTRIBUTE::AIR) 
 	{
-		ChangeState(STATE::FLYING_ATTACK);
-		/*if (diff < 800.0f) {
-			ChangeState(STATE::FALLING＿ATTACK);
-			return;
-		}
-		else if (diff >= 800.0f
-			&& diff <= 2000.0f) {
-			ChangeState(STATE::FLYING_ATTACK);
-			return;
-		}
-		else {
-			ChangeState(STATE::FLYING);
-			return;
-		}*/
+		ChangeState(STATE::FALLING＿ATTACK);
+		//// 思考
+		//int rand = GetRand(100);
+		//if (rand < 20) {
+		//	ChangeState(STATE::LANDS);
+		//}
+		//else {
+		//	if (diff < 800.0f) {
+		//		ChangeState(STATE::FALLING＿ATTACK);
+		//		return;
+		//	}
+		//	else if (diff >= 800.0f
+		//		&& diff <= 2000.0f) {
+		//		ChangeState(STATE::FLYING_ATTACK);
+		//		return;
+		//	}
+		//	else {
+		//		ChangeState(STATE::FLYING);
+		//		return;
+		//	}
+		//}
 	}
 }
 
@@ -574,8 +598,24 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 
 	attackCnt_ = 0.0f;
 	VECTOR dir = VNorm(VSub(*targetTrans_, transform_.pos));
-	wepon_ = new WeponBracelet(transform_, dir, 28);
-	wepon_->Init();
+
+	// 登録されている衝突物を全てチェック  
+	for (const auto& hitCol : hitColliders_)
+	{
+		for (const auto& i : hitCol.second)
+		{
+			// モデル以外は処理を飛ばす  
+			if (i->GetShape() != ColliderBase::SHAPE::MODEL
+				&& i->GetTag() != ColliderBase::TAG::STAGE) continue;
+
+			//派生クラスへキャスト
+			const ColliderModel* colliderModel =
+				dynamic_cast<const ColliderModel*>(i);
+
+			weponBracelet_ = new WeponBracelet(transform_, colliderModel, dir, 28);
+			weponBracelet_->Init();
+		}
+	}
 
 	// 歩きアニメーション再生
 	anim_->Play(
@@ -723,9 +763,9 @@ void EnemyDragon::UpdatePatrol(void)
 
 void EnemyDragon::UpdateFallingAttack(void)
 {
+	moveDir_ = preMoverDir_;
 	if (isJump_) {
-		float jumpSpeed = 10000.0f * scnMng_.GetDeltaTime();
-		jumpPow_ = VAdd(jumpPow_, VScale(AsoUtility::DIR_D, jumpSpeed));
+		jumpPow_ = VAdd(jumpPow_, VScale(moveDir_, 5.0f));
 		isAttack_ = true;
 		anim_->SetSpecificTime(15.0f,20.0f, true);
 	}
@@ -770,15 +810,30 @@ void EnemyDragon::UpdateFlyingAttack(void)
 	isJump_ = true;
 	transform_.pos.y = MAX_TAKE;
 	moveDir_ = preMoverDir_;
-	if (wepon_ != nullptr) {
-		wepon_->Update();
+	if (WeponFlameThrower_ != nullptr) {
+		WeponFlameThrower_->Update();
 	}
 
 	if (anim_->GetPlayAnim().step == 120.0f)
 	{
 		VECTOR dir = VNorm(VSub(*targetTrans_, MV1GetFramePosition(transform_.modelId, 28)));
-		wepon_ = new WeponFlameThrower(transform_, dir, 28);
-		wepon_->Init();
+		// 登録されている衝突物を全てチェック  
+		for (const auto& hitCol : hitColliders_)
+		{
+			for (const auto& i : hitCol.second)
+			{
+				// モデル以外は処理を飛ばす  
+				if (i->GetShape() != ColliderBase::SHAPE::MODEL
+					&& i->GetTag() != ColliderBase::TAG::STAGE) continue;
+
+				//派生クラスへキャスト
+				const ColliderModel* colliderModel =
+					dynamic_cast<const ColliderModel*>(i);
+
+				WeponFlameThrower_ = new WeponFlameThrower(transform_, colliderModel, dir, 28);
+				WeponFlameThrower_->Init();
+			}
+		}
 	}
 
 	if (anim_->GetPlayAnim().step >= 180.0f)
@@ -790,8 +845,8 @@ void EnemyDragon::UpdateFlyingAttack(void)
 void EnemyDragon::UpdateBreathAttack(void)
 {
 	moveDir_ = preMoverDir_;
-	if (wepon_ != nullptr) {
-		wepon_->Update();
+	if (weponBracelet_ != nullptr) {
+		weponBracelet_->Update();
 	}
 
 	if(anim_->GetPlayAnim().step >= 27.0f)
@@ -800,7 +855,7 @@ void EnemyDragon::UpdateBreathAttack(void)
 			isAttack_ = true;
 			anim_->SetSpecificTime(27.0f, 30.0f, true);
 			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
-			wepon_->SetIsAttack(true);
+			weponBracelet_->SetIsAttack(true);
 		}
 		else {
 			anim_->SetSpecificTime(0.0f, 0.0f, false);
@@ -808,9 +863,9 @@ void EnemyDragon::UpdateBreathAttack(void)
 	}
 	if (anim_->GetPlayAnim().step >= 40.0f)
 	{
-		if(wepon_ != nullptr)
+		if(weponBracelet_ != nullptr)
 		{
-			wepon_->SetIsEnd(true);
+			weponBracelet_->SetIsEnd(true);
 		}
 	}
 

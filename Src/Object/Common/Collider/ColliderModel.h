@@ -2,6 +2,7 @@
 #include<vector>
 #include <string>
 #include "ColliderBase.h"
+
 class ColliderModel : public ColliderBase
 {
 public:
@@ -24,6 +25,7 @@ public:
 	// ‘ÎÛƒtƒŒ[ƒ€”»’è
 	bool IsTargetFrame(int frameIdx) const;
 
+	bool IsHit(VECTOR pos1, VECTOR pos2, bool isExclude = false, bool isTarget = false)const;
 
 
 protected:

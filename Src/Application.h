@@ -56,6 +56,9 @@ public:
 	// 重力の取得
 	float GetGravityPow(void) const { return GRAVITY * GRAVITY_SCALE; }
 
+	// エフェクシアの初期化
+	void InitEffekseer(void);
+
 private:
 
 	// 静的インスタンス
@@ -79,8 +82,5 @@ private:
 
 	// デストラクタも同様
 	~Application(void) = default;
-
-	// エフェクシアの初期化
-	void InitEffekseer(void);
 
 };

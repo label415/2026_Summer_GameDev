@@ -5,6 +5,7 @@
 #include "../Manager/FontManager.h"
 #include "../Object/Actor/Wepon/WeponBase.h"
 #include "../Object/Actor/Wepon/WeponBracelet.h"
+#include "../Object/Actor/Wepon/WeponFlameThrower.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/Stage/SkyDome.h"
 #include "../Object/Actor/Charactor/Player.h"
@@ -96,15 +97,15 @@ void GameScene::Update(void)
 
 	UpdateAutoLockOn();
 
-	enemys_->HitDamegr(player_->GetIsAttack());
 	enemys_->Update();
+	player_->Update();
+
+	UpdateCollider();
 
 	for (const auto& enemy : enemys_->GetEnemys()) {
 		player_->HitDamage(enemy->GetIsAttack());
 	}
-	player_->Update();
-
-	UpdateCollider();
+	enemys_->HitDamegr(player_->GetIsAttack());
 }
 
 void GameScene::Draw(void)
@@ -211,24 +212,32 @@ void GameScene::UpdateCollider(void)
 	{
 		if (enemy == nullptr) continue;
 
-		// Enemy の武器が nullptr の可能性をチェックしてから取得する
-		const WeponBase* enemyWepon = enemy->GetWepon();
-		if (enemyWepon == nullptr) continue;
-
-		const std::vector<ColliderBase*> enemyWeponColliders =
-			enemyWepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-
-		// プレイヤー側のヒットコライダを上書き登録（ActorBase::AddHitCollider は置換するよう変更済)
-		player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), enemyWeponColliders);
-
+		const WeponBracelet* weponBracelet = enemy->GetWeponBracelet();
+		if (weponBracelet == nullptr)continue;
+		const std::vector<ColliderBase*> enemyWeponCapsule =
+			weponBracelet->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+		player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), enemyWeponCapsule);
 		// 生存していない時は削除
-		if (!enemyWepon->GetIsAlive())
-		{
+		if (!weponBracelet->GetIsAlive()) {
 			enemys_->RemoveCollider(ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::ENEMY_WEPON);
 		}
 	}
 
-	// 生存していない時は削除（プレイヤー武器）
+	for (auto& enemy : enemys)
+	{
+		const WeponFlameThrower* weponFlameThrower = enemy->GetWeponFlameThrower();
+		if (weponFlameThrower != nullptr) {
+			const std::vector<ColliderBase*> enemyWeponCapsule =
+				weponFlameThrower->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
+			player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE), enemyWeponCapsule);
+			// 生存していない時は削除
+			if (!weponFlameThrower->GetIsAlive()) {
+				enemys_->RemoveCollider(ColliderBase::SHAPE::SPHERE, ColliderBase::TAG::ENEMY_WEPON);
+			}
+		}
+	}
+
+	// 生存していない時は削除
 	if (!wepon->GetIsAlive())
 	{
 		enemys_->RemoveCollider(ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::PLAYER_WEPON);
@@ -269,7 +278,6 @@ void GameScene::UpdateAutoLockOn(void)
 			bool isNextRight = (dir.x > stickThreshold) && (prevStickX <= stickThreshold) || inp.GetMouseWheelRot() > 0.0f;
 			bool isNextLeft = (dir.x < -stickThreshold) && (prevStickX >= -stickThreshold) || inp.GetMouseWheelRot() < 0.0f;
 
-			// 次フレームの比較用に保存
 			prevStickX = dir.x;
 			prevStickZ = dir.z;
 

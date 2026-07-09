@@ -2,6 +2,9 @@
 #include <string>
 #include "EnemyBase.h"
 
+class WeponBracelet;
+class WeponFlameThrower;
+
 class EnemyDragon :
     public EnemyBase
 {
@@ -101,6 +104,8 @@ public:
 	//HP描画
 	void DrawHp(void)override;
 
+	
+
 protected:
 	// リソースロード
 	void InitLoad(void) override;
@@ -180,6 +185,8 @@ private:
 	};
 
 	static constexpr float ENEMY_ATTACK[] = {500.0f,1000.0f, 1500.0f};
+
+	
 
 	// 状態
 	STATE state_;

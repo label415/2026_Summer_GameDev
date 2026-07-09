@@ -79,7 +79,11 @@ void EffectController::LoopPlay(int type)
 
 void EffectController::Stop(int type)
 {
-	StopEffekseer3DEffect(effects_[type]->PlayId_);
+	int ret = IsEffekseer3DEffectPlaying(effects_[type]->PlayId_);
+	if (ret == 0)
+	{
+		StopEffekseer3DEffect(effects_[type]->PlayId_);
+	}
 }
 
 void EffectController::LoopUpdate(int type, const VECTOR pos)
@@ -133,12 +137,22 @@ void EffectController::SetEffectScl(int type, VECTOR scale)
 
 void EffectController::SetEffectPos(int type, VECTOR pos)
 {
-	
 	SetPosPlayingEffekseer3DEffect(effects_[type]->PlayId_, pos.x, pos.y, pos.z);
 }
 
 void EffectController::SetEffectRot(int type, VECTOR rot)
 {
 	SetRotationPlayingEffekseer3DEffect(effects_[type]->PlayId_, rot.x, rot.y, rot.z);
+}
+
+bool EffectController::IsEnd(int type)
+{
+	bool res = false;
+	int ret = IsEffekseer3DEffectPlaying(effects_[type]->PlayId_);
+	if (ret == -1)
+	{
+		res =  true;
+	}
+	return res;
 }
 

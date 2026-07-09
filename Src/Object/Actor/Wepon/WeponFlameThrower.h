@@ -1,6 +1,7 @@
 #pragma once
 #include "WeponBase.h"
 class Transform;
+class ColliderModel;
 class WeponFlameThrower :
     public WeponBase
 {
@@ -8,11 +9,13 @@ public:
 	//攻撃エフェクト
 	enum class EFFECT_TYPE
 	{
-		FIREBALL,
+		NONE,
+		BULLET,
+		EXPLOSION,
 	};
 
 	// コンストラクタ
-	WeponFlameThrower(const Transform& followTransform, const VECTOR moverDir, int followFrameId);
+	WeponFlameThrower(const Transform& followTransform, const ColliderModel* colMod, const VECTOR moverDir, int followFrameId);
 	// デストラクタ
 	~WeponFlameThrower(void) override;
 	// 更新
@@ -28,7 +31,10 @@ protected:
 	// 衝突判定用カプセル球体半径
 	static constexpr float MIN_RADIUS = 50.0f;
 	// 衝突判定用カプセル球体半径
-	static constexpr float MAX_RADIUS = 5000.0f;
+	static constexpr float MAX_RADIUS = 1100.0f;
+
+	//爆破開始時間
+	static constexpr float EXPLOSION_STATO_TIME = 1.0f;
 
 	// リソースロード
 	void InitLoad(void) override;
@@ -43,9 +49,10 @@ protected:
 
 private:
 
-	static constexpr float SPEED = 15.0f;
+	static constexpr float SPEED = 30.0f;
 
-	static constexpr float LENGTH = 2000.0f;
+	//エフェクトタイプ
+	EFFECT_TYPE effectType_;
 
 	// 移動方向
 	VECTOR moveDir_;
@@ -54,8 +61,18 @@ private:
 
 	float radius_;
 
+	//爆発開始時間
+	float exState_;
+
 	//移動処理
 	void Move(void);
+
+	const ColliderModel* ColMod_;
+
+	//前フレームの座標
+	VECTOR prePos_;
+
+	void ChangerEffect(EFFECT_TYPE effectType);
 
 };
 

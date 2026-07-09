@@ -3,6 +3,7 @@
 #include <DxLib.h>
 #include "WeponBase.h"
 class Transform;
+class ColliderModel;
 class WeponBracelet : public WeponBase
 {
 public:
@@ -18,7 +19,7 @@ public:
 	{ 0.0f, -(90.0f * DX_PI_F / 180.0f), 0.0f };
 
 	// コンストラクタ
-	WeponBracelet(const Transform& followTransform, const VECTOR moverDir, int followFrameId);
+	WeponBracelet(const Transform& followTransform, const ColliderModel* colMod, const VECTOR moverDir, int followFrameId);
 	// デストラクタ
 	~WeponBracelet(void) override;
 	// 更新
@@ -60,6 +61,8 @@ private:
 
 	static constexpr float LENGTH = 2000.0f;
 
+	const ColliderModel* ColMod_;
+
 	//後ろ座標
 	VECTOR topPos_;
 	VECTOR downPos_;
@@ -73,8 +76,6 @@ private:
 
 	//移動処理
 	void Move(void);
-
-	void UpdateDebugImGui(void);
 
 };
 

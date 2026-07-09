@@ -9,9 +9,12 @@
 #include "../../../Common/Quaternion.h"
 #include "../../Common/Collider/ColliderLine.h"
 #include "../../Common/Collider/ColliderCapsule.h"
+#include "../../Common/Collider/ColliderSphere.h"
+#include "../../Common/Collider/ColliderModel.h"
 #include "../Wepon/WeponBlade.h"
 #include "../UI/UISt.h"
 #include "../UI/UIHp.h"
+#include "Enemy/EnemyDragon.h"
 #include "Player.h"
 
 Player::Player(void)
@@ -48,6 +51,12 @@ void Player::Release(void)
 
 void Player::HitDamage(bool isHit)
 {
+	VECTOR playerPos = transform_.pos;
+	VECTOR enemyPos = AsoUtility::VECTOR_ZERO;
+	if (targetTrans_ != nullptr)
+	{
+		enemyPos = *targetTrans_;
+	}
 
 	// カプセルコライダ  
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
@@ -64,45 +73,60 @@ void Player::HitDamage(bool isHit)
 
 		if (colliderCapsule1 == nullptr) continue;
 
-		// 登録されている衝突物を全てチェック  
+		playerPos = colliderCapsule1->GetFollow()->pos;
+
+
+		bool isModel = false;
 		for (const auto& hitCol : hitColliders_)
 		{
 			for (const auto& i : hitCol.second)
 			{
-				// 敵本体（ENEMY）との当たり判定は実際に衝突しているかを確認してからダメージ判定する
+				if (i->GetShape() == ColliderBase::SHAPE::MODEL
+					&& i->GetTag() == ColliderBase::TAG::STAGE) {
+					const ColliderModel* colliderModel =
+						dynamic_cast<ColliderModel*>(i);
+					if (colliderModel == nullptr) continue;
+
+					if (colliderModel->IsHit(enemyPos, playerPos, true, false)) {
+						isModel = true; // 遮蔽物あり
+					}
+				}
+			}
+		}
+
+
+		for (const auto& hitCol : hitColliders_)
+		{
+			for (const auto& i : hitCol.second)
+			{
+				// 敵本体（ENEMY）との当たり判定
 				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY) {
 
-					ColliderCapsule* colliderCapsule2 =
+					const ColliderCapsule* colliderCapsule2 =
 						dynamic_cast<ColliderCapsule*>(i);
 					if (colliderCapsule2 == nullptr) continue;
 
-					// 実際にめり込んでいるか判定する
 					auto hits = HitCheck_Capsule_Capsule(
 						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
 						colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius());
 
-					// 衝突している場合のみ処理
 					if (hits) {
 						if (isHit && !isV_) {
-							uiHp_->SetHp(20.0f);
-							anim_->Play(
-								static_cast<int>(ANIM_TYPE::DOWN), false);
+							anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 							state_ = STATE::DOWN;
+							uiHp_->SetHp(20.0f);
+							return;
 						}
 						else {
-							// 衝突が発生しているが攻撃判定が無い場合は押し戻す
-							colliderCapsule1->PushBackAlongNormal(
-								colliderCapsule2,
-								transform_,
-								20,
-								false, false);
+							colliderCapsule1->PushBackAlongNormal(colliderCapsule2, transform_, 20, false, false);
 						}
 					}
 				}
 
-				if (!isV_)continue;
-				// 敵の武器との衝突
+				if (isV_) continue;
+
+				// 敵の武器（カプセル）との衝突
 				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
 
@@ -114,11 +138,32 @@ void Player::HitDamage(bool isHit)
 						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
 						colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius());
 
+					if (isHit) continue;
+
 					if (hits) {
-						uiHp_->SetHp(0.5f);
-						anim_->Play(
-							static_cast<int>(ANIM_TYPE::DOWN), false);
+						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
+						uiHp_->SetHp(0.5f);
+					}
+				}
+
+				// 敵の武器（ブレス球体）との衝突
+				if (i->GetShape() == ColliderBase::SHAPE::SPHERE
+					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
+
+					ColliderSphere* colliderSphere =
+						dynamic_cast<ColliderSphere*>(i);
+					if (colliderSphere == nullptr) continue;
+
+					auto hits = HitCheck_Sphere_Capsule(
+						colliderSphere->GetPos(), colliderSphere->GetRadius(),
+						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius());
+
+					// 事前チェックした isModel を使うので、処理順に左右されず確実に防げる！
+					if (hits && !isModel) {
+						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
+						state_ = STATE::DOWN;
+						uiHp_->SetHp(0.5f);
 					}
 				}
 			}

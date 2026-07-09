@@ -8,9 +8,10 @@
 #include "../../../Libs/ImGui/imgui.h"
 #include "WeponBracelet.h"
 
-WeponBracelet::WeponBracelet(const Transform& followTransform, const VECTOR moverDir, int followFrameId)
+WeponBracelet::WeponBracelet(const Transform& followTransform, const ColliderModel* colMod, const VECTOR moverDir, int followFrameId)
 	:
 	WeponBase(followTransform, followFrameId),
+	ColMod_(colMod),
 	moveDir_(moverDir)
 {
 	isAttack_ = false;
@@ -29,7 +30,6 @@ void WeponBracelet::Update(void)
 		ClearCollider();
 		return;
 	}
-	UpdateDebugImGui();
 	Move();
 	effect_->Update(static_cast<int>(EFFECT_TYPE::BRACELET));
 }
@@ -138,27 +138,7 @@ void WeponBracelet::SetIsAttack(bool isAttack)
 		effect_->Play(
 			static_cast<int>(EFFECT_TYPE::BRACELET),
 			effPos,
-			euler, VGet(400.0f, 400.0f, LENGTH / 2.0f));
+			euler, VGet(400.0f, 400.0f, LENGTH / 2.2f));
 	}
 	isAttack_ = isAttack;
-}
-
-void WeponBracelet::UpdateDebugImGui(void)
-{
-	// ウィンドウタイトル&開始処理
-	ImGui::Begin("Wepon");
-	// 角度
-	VECTOR rotDeg = VECTOR();
-	rotDeg.x = AsoUtility::Rad2DegF(localRot_.x);
-	rotDeg.y = AsoUtility::Rad2DegF(localRot_.y);
-	rotDeg.z = AsoUtility::Rad2DegF(localRot_.z);
-	ImGui::Text("angle(deg)");
-	ImGui::SliderFloat("RotX", &rotDeg.x, 0.0f, 360.0f);
-	ImGui::SliderFloat("RotY", &rotDeg.y, 0.0f, 360.0f);
-	ImGui::SliderFloat("RotZ", &rotDeg.z, 0.0f, 360.0f);
-	localRot_.x = AsoUtility::Deg2RadF(rotDeg.x);
-	localRot_.y = AsoUtility::Deg2RadF(rotDeg.y);
-	localRot_.z = AsoUtility::Deg2RadF(rotDeg.z);
-	// 終了処理
-	ImGui::End();
 }

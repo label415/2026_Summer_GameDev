@@ -79,3 +79,32 @@ bool ColliderModel::IsTargetFrame(int frameIdx) const
 	}
 	return false;
 }
+
+bool ColliderModel::IsHit(VECTOR pos1, VECTOR pos2, bool isExclude, bool isTarget)const
+{
+	bool ret = false;
+
+	// モデルとカプセルの衝突判定
+	auto hits = MV1CollCheck_Line(
+		GetFollow()->modelId, -1,
+		pos1, pos2);
+
+	if(hits.HitFlag == 1){
+
+		// 除外フレームは無視する
+		if (isExclude && IsExcludeFrame(hits.FrameIndex))
+		{
+			return false;
+		}
+		// 対象フレーム以外は無視する
+		if (isTarget && !IsTargetFrame(hits.FrameIndex))
+		{
+			return false;
+		}
+
+		ret = true;
+
+	}
+
+	return ret;
+}
