@@ -18,6 +18,9 @@ public:
 
     //回復瓶の数を調整
     void SetBottleCnt(int cnt);
+
+    const int GetBottlcCnt(void)const{ return cnt_; }
+
 protected:
     // リソースロード
     void InitLoad(void) override;

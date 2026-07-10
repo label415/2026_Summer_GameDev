@@ -120,7 +120,7 @@ void Player::HitDamage(bool isHit)
 								dynamic_cast<ColliderModel*>(i);
 							if (colliderModel == nullptr) continue;
 
-							if (colliderModel->IsHit(enemyPos, playerPos, true, false)) {
+							if (colliderModel->IsHit(enemyPos, playerPos, false, false)) {
 								isModel = true;
 							}
 						}
@@ -477,7 +477,7 @@ void Player::ProcessRecovery(void)
 	isP = ins.IsTrgDown(KEY_INPUT_R)
 		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
 
-	if (isP) {
+	if (isP && uiRecovery_->GetBottlcCnt() > 0) {
 		state_ = STATE::RECOVERY;
 	}
 
