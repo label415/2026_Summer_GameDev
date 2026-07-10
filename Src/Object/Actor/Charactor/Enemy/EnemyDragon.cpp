@@ -430,74 +430,72 @@ void EnemyDragon::ChangeStateThink(void)
 	float diff = VSize(VSub(*targetTrans_, transform_.pos));
 	if(attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
-		ChangeState(STATE::BRACELET_ATTACK);
 		// 思考
-		//int rand = GetRand(100);
-		//if(rand < 30){
-		//	ChangeState(STATE::TAKEOFF);
-		//	return;
-		//}
+		int rand = GetRand(100);
+		if(rand < 30){
+			ChangeState(STATE::TAKEOFF);
+			return;
+		}
 
-		//if (diff < 800.0f) {
-		//	rand = GetRand(100);
-		//	if (rand < 40)
-		//	{
-		//		ChangeState(STATE::MELEE_ATTACK);
-		//		return;
-		//	}
-		//	else {
-		//		ChangeState(STATE::CHARGE);
-		//		return;
-		//	}
-		//}
-		//else if(diff >= 800.0f
-		//	&&  diff <= 2000.0f){
-		//	// 思考
-		//	rand = GetRand(100);
-		//	if (rand < 20)
-		//	{
-		//		ChangeState(STATE::PATROL);
-		//		return;
-		//	}
-		//	else if (rand >= 20
-		//		&& rand < 60) {
-		//		ChangeState(STATE::CHARGE);
-		//		return;
-		//	}
-		//	else {
-		//		ChangeState(STATE::BRACELET_ATTACK);
-		//		return;
-		//	}
-		//}
-		//else {
-		//	ChangeState(STATE::PATROL);
-		//	return;
-		//}
+		if (diff < 800.0f) {
+			rand = GetRand(100);
+			if (rand < 40)
+			{
+				ChangeState(STATE::MELEE_ATTACK);
+				return;
+			}
+			else {
+				ChangeState(STATE::CHARGE);
+				return;
+			}
+		}
+		else if(diff >= 800.0f
+			&&  diff <= 2000.0f){
+			// 思考
+			rand = GetRand(100);
+			if (rand < 20)
+			{
+				ChangeState(STATE::PATROL);
+				return;
+			}
+			else if (rand >= 20
+				&& rand < 60) {
+				ChangeState(STATE::CHARGE);
+				return;
+			}
+			else {
+				ChangeState(STATE::BRACELET_ATTACK);
+				return;
+			}
+		}
+		else {
+			ChangeState(STATE::PATROL);
+			return;
+		}
 
 	}
 	if (attribute_ == ATTRIBUTE::AIR) 
 	{
-		ChangeState(STATE::FALLING＿ATTACK);
-		//// 思考
-		//int rand = GetRand(100);
-		//if (rand < 20) {
-		//	ChangeState(STATE::LANDS);
-		//}
-		//else {
-		//	if (diff < 800.0f) {
-		//		ChangeState(STATE::FALLING＿ATTACK);
-		//		return;
-		//	}
-		//	else if (diff >= 800.0f
-		//		&& diff <= 2000.0f) {
-		//		ChangeState(STATE::FLYING_ATTACK);
-		//		return;
-		//	}
-		//	else {
-		//		ChangeState(STATE::FLYING);
-		//		return;
-		//	}
-		//}
+		// 思考
+		int rand = GetRand(100);
+		if (rand < 20) {
+			ChangeState(STATE::LANDS);
+		}
+		else {
+			if (diff < 800.0f) {
+				ChangeState(STATE::FALLING＿ATTACK);
+				return;
+			}
+			else if (diff >= 800.0f
+				&& diff <= 2000.0f) {
+				ChangeState(STATE::FLYING_ATTACK);
+				return;
+			}
+			else {
+				ChangeState(STATE::FLYING);
+				return;
+			}
+		}
 	}
 }
 

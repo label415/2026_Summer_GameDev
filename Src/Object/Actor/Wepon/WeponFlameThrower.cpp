@@ -23,7 +23,10 @@ WeponFlameThrower::~WeponFlameThrower(void)
 
 void WeponFlameThrower::Update(void)
 {
-	if (!isAlive_)return;
+	if (!isAlive_) {
+		ClearCollider();
+		return;
+	}
 	prePos_ = transform_.pos;
 	Move();
 	effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
@@ -83,14 +86,9 @@ void WeponFlameThrower::Move(void)
 	const ColliderSphere* colliderCapsule1 =
 		dynamic_cast<const ColliderSphere*>(vecs[0]);
 
-	if (colliderCapsule1->GetHitSpher_Model(ColMod_, false, true)) {
+	if (colliderCapsule1->GetHitSpher_Model(ColMod_, false, false)) {
 
 		transform_.pos = prePos_;
-
-		/*if (exState_ >= 0.0f) {
-			exState_ -= 1.0f * SceneManager::GetInstance().GetDeltaTime();
-			return;
-		}*/
 
 		if (MAX_RADIUS >= radius_) {
 			ChangerEffect(EFFECT_TYPE::EXPLOSION);
@@ -110,7 +108,7 @@ void WeponFlameThrower::Move(void)
 			}
 		}
 		else {
-			ClearCollider();
+			isAlive_ = false;
 		}
 
 	}
@@ -152,5 +150,5 @@ void WeponFlameThrower::Release(void)
 void WeponFlameThrower::ClearCollider(void)
 {
 	ownColliders_.erase(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-	isAlive_ = false;
+	
 }

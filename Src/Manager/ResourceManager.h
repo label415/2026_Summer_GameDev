@@ -23,6 +23,7 @@ public:
 		ANIM_PLAYER_AVOIDANCE,
 		ANIM_PLAYER_DOWN,
 		ANIM_PLAYER_UP,
+		ANIM_PLAYER_RECOVERY,
 
 		//ステージ
 		MAIN_STAGE,
@@ -40,7 +41,10 @@ public:
 		L_FONT,
 
 		TITLE_SELECT,
-		HP
+		HP,
+
+		UI_BOX,
+		UI_RECOVERY_BOTTLE,
 
 	};
 

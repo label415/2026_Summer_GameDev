@@ -141,9 +141,6 @@ void GameScene::Draw(void)
 			true);
 
 	}
-
-	auto& inp = InputManager::GetInstance();
-	DrawFormatString(0, 250, 0xffffff, L"MouseWheelRotVolF: %.1f", inp.GetMouseWheelRot());
 }
 
 void GameScene::Release(void)
@@ -225,15 +222,16 @@ void GameScene::UpdateCollider(void)
 
 	for (auto& enemy : enemys)
 	{
+		if (enemy == nullptr) continue;
+
 		const WeponFlameThrower* weponFlameThrower = enemy->GetWeponFlameThrower();
-		if (weponFlameThrower != nullptr) {
-			const std::vector<ColliderBase*> enemyWeponCapsule =
-				weponFlameThrower->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
-			player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE), enemyWeponCapsule);
-			// ¶‘¶‚µ‚Ä‚¢‚È‚¢Žž‚Ííœ
-			if (!weponFlameThrower->GetIsAlive()) {
-				enemys_->RemoveCollider(ColliderBase::SHAPE::SPHERE, ColliderBase::TAG::ENEMY_WEPON);
-			}
+		if (weponFlameThrower == nullptr)continue;
+		const std::vector<ColliderBase*> enemyWeponCapsule =
+			weponFlameThrower->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
+		player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE), enemyWeponCapsule);
+		// ¶‘¶‚µ‚Ä‚¢‚È‚¢Žž‚Ííœ
+		if (!weponFlameThrower->GetIsAlive()) {
+			enemys_->RemoveCollider(ColliderBase::SHAPE::SPHERE, ColliderBase::TAG::ENEMY_WEPON);
 		}
 	}
 

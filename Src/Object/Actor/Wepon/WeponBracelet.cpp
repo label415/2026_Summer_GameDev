@@ -122,6 +122,7 @@ void WeponBracelet::SetCollider(void)
 
 void WeponBracelet::ClearCollider(void)
 {
+	isAlive_ = false;
 	ownColliders_.erase(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 }
 

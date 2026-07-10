@@ -14,6 +14,7 @@
 #include "../Wepon/WeponBlade.h"
 #include "../UI/UISt.h"
 #include "../UI/UIHp.h"
+#include "../UI/UIRecovery.h"
 #include "Enemy/EnemyDragon.h"
 #include "Player.h"
 
@@ -43,6 +44,7 @@ void Player::Release(void)
 	wepon_->Release();
 	delete wepon_;
 	delete uiHp_;
+	delete uiRecovery_;
 	if (uiSt_) {
 		delete uiSt_;
 		uiSt_ = nullptr;
@@ -76,25 +78,6 @@ void Player::HitDamage(bool isHit)
 		playerPos = colliderCapsule1->GetFollow()->pos;
 
 
-		bool isModel = false;
-		for (const auto& hitCol : hitColliders_)
-		{
-			for (const auto& i : hitCol.second)
-			{
-				if (i->GetShape() == ColliderBase::SHAPE::MODEL
-					&& i->GetTag() == ColliderBase::TAG::STAGE) {
-					const ColliderModel* colliderModel =
-						dynamic_cast<ColliderModel*>(i);
-					if (colliderModel == nullptr) continue;
-
-					if (colliderModel->IsHit(enemyPos, playerPos, true, false)) {
-						isModel = true; // 遮蔽物あり
-					}
-				}
-			}
-		}
-
-
 		for (const auto& hitCol : hitColliders_)
 		{
 			for (const auto& i : hitCol.second)
@@ -115,7 +98,7 @@ void Player::HitDamage(bool isHit)
 						if (isHit && !isV_) {
 							anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 							state_ = STATE::DOWN;
-							uiHp_->SetHp(20.0f);
+							uiHp_->SetHp(30.0f);
 							return;
 						}
 						else {
@@ -125,6 +108,25 @@ void Player::HitDamage(bool isHit)
 				}
 
 				if (isV_) continue;
+
+				bool isModel = false;
+				for (const auto& hitCol : hitColliders_)
+				{
+					for (const auto& i : hitCol.second)
+					{
+						if (i->GetShape() == ColliderBase::SHAPE::MODEL
+							&& i->GetTag() == ColliderBase::TAG::STAGE) {
+							const ColliderModel* colliderModel =
+								dynamic_cast<ColliderModel*>(i);
+							if (colliderModel == nullptr) continue;
+
+							if (colliderModel->IsHit(enemyPos, playerPos, true, false)) {
+								isModel = true;
+							}
+						}
+					}
+				}
+
 
 				// 敵の武器（カプセル）との衝突
 				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
@@ -138,12 +140,11 @@ void Player::HitDamage(bool isHit)
 						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
 						colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius());
 
-					if (isHit) continue;
-
-					if (hits) {
+					if (hits && !isModel) {
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
-						uiHp_->SetHp(0.5f);
+						uiHp_->SetHp(40.0f);
+						return;
 					}
 				}
 
@@ -163,7 +164,8 @@ void Player::HitDamage(bool isHit)
 					if (hits && !isModel) {
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
-						uiHp_->SetHp(0.5f);
+						uiHp_->SetHp(40.0f);
+						return;
 					}
 				}
 			}
@@ -175,6 +177,8 @@ void Player::DrawHp(void)
 {
 	if (uiHp_) { uiHp_->Draw(); }
 	if (uiSt_) { uiSt_->Draw(); }
+
+	if (uiRecovery_) { uiRecovery_->Draw(); }
 }
 
 void Player::InitLoad(void)
@@ -188,6 +192,9 @@ void Player::InitLoad(void)
 
 	wepon_ = new WeponBlade(transform_, 48);
 	wepon_->Load();
+
+	uiRecovery_ = new UIRecovery(5);
+	uiRecovery_->Load();
 }
 
 void Player::InitTransform(void)
@@ -243,6 +250,8 @@ void Player::InitAnimation(void)
 		50.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_DOWN));
 	anim_->Add(static_cast<int>(ANIM_TYPE::UP),
 		100.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_UP));
+	anim_->Add(static_cast<int>(ANIM_TYPE::RECOVERY),
+		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RECOVERY));
 	anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 }
 
@@ -263,9 +272,15 @@ void Player::InitPost(void)
 
 	//スタミナ
 	st_ = MAX_ST;
+
+	//クールタイム
+	ct_ = 0.0f;
+
 	uiHp_ = new UIHp(10.0f, 10.0f, 500.0f, 30.0f, 5.0f);
 	// スタミナUIを HP の下に表示
 	uiSt_ = new UISt(10.0f, 40.0f, 500.0f, 60.0f, 5.0f, MAX_ST);
+
+	uiRecovery_->Init();
 }
 
 void Player::ProcessMove(void)
@@ -276,7 +291,8 @@ void Player::ProcessMove(void)
 
 	if (state_ == STATE::ATTACK
 		|| state_ == STATE::AVOIDANCE
-		|| state_ == STATE::DOWN) {
+		|| state_ == STATE::DOWN
+		|| state_ == STATE::RECOVERY) {
 		return;
 	}
 
@@ -315,10 +331,11 @@ void Player::ProcessMove(void)
 		state_ = STATE::RUN;
 
 		auto& ins = InputManager::GetInstance();
-		bool isR = isR = ins.IsNew(KEY_INPUT_SPACE)
+		bool isR = isR = ins.IsNew(KEY_INPUT_LSHIFT)
 			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 
-		if (isR) {
+		if (isR && ct_ <= 0.0f) {
+
 			moveSpeed_ = SPEED_DASH;
 			state_ = STATE::FAST_RUN;
 			st_ -= (CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
@@ -363,7 +380,8 @@ void Player::ProcessAttack(void)
 
 	if (isHitAttack && !isJump_ && state_ != STATE::ATTACK
 		&& state_ != STATE::AVOIDANCE
-		&& state_ != STATE::DOWN) {
+		&& state_ != STATE::DOWN
+		&& state_ != STATE::RECOVERY) {
 		state_ = STATE::ATTACK;
 		st_ -= CONSUMPTION_ST_ATTACK;
 	}
@@ -391,14 +409,15 @@ void Player::ProcessAvoidance(void)
 	auto& ins = InputManager::GetInstance();
 
 	if (st_ >= 0) {
-		isP = ins.IsTrgDown(KEY_INPUT_LSHIFT)
+		isP = ins.IsTrgDown(KEY_INPUT_SPACE)
 			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT);
 	}
 
 	if (isP && !isJump_
 		&& state_ != STATE::ATTACK
 		&& state_ != STATE::AVOIDANCE
-		&& state_ != STATE::DOWN)
+		&& state_ != STATE::DOWN
+		&& state_ != STATE::RECOVERY)
 	{
 		state_ = STATE::AVOIDANCE;
 		lastQrot_ = transform_.quaRotLocal;
@@ -441,6 +460,40 @@ void Player::ProcessDownUp(void)
 			state_ = STATE::IDLE;
 		}
 	}
+
+}
+
+void Player::ProcessRecovery(void)
+{
+	bool isP = false;
+	auto& ins = InputManager::GetInstance();
+	if (state_ != STATE::IDLE
+		&& state_ != STATE::RUN
+		&& state_ != STATE::FAST_RUN
+		&& state_ != STATE::RECOVERY) {
+		return;
+	}
+
+	isP = ins.IsTrgDown(KEY_INPUT_R)
+		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
+
+	if (isP) {
+		state_ = STATE::RECOVERY;
+	}
+
+	if (state_ != STATE::RECOVERY) return;
+
+	anim_->Play(static_cast<int>(ANIM_TYPE::RECOVERY), false);
+
+	if (anim_->GetPlayAnim().step == 10.0f) {
+		uiHp_->SetHpAbsolute(40.0f);
+		uiRecovery_->SetBottleCnt(1);
+	}
+
+	if (anim_->IsEnd()) {
+		state_ = STATE::IDLE;
+	}
+
 
 }
 
@@ -513,10 +566,15 @@ void Player::UpdateProcess(void)
 	isV_ = false;
 	if (st_ < MIN_ST) {
 		st_ = MIN_ST;
+		ct_ = CT;
 	}
 	else if (st_ >= MIN_ST && st_ <= MAX_ST
 		&& (state_ == STATE::IDLE || state_ == STATE::RUN || state_ == STATE::DOWN)) {
 		st_ += (RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
+	}
+
+	if (ct_ > 0.0f) {
+		ct_ -= 1.0f * SceneManager::GetInstance().GetDeltaTime();
 	}
 
 	// UI に現在のスタミナを反映（絶対値セット）
@@ -529,6 +587,8 @@ void Player::UpdateProcess(void)
 		wepon_->ClearCollider();
 	}
 
+	ProcessRecovery();
+
 	//攻撃処理
 	ProcessAttack();
 
@@ -539,6 +599,7 @@ void Player::UpdateProcess(void)
 	ProcessAvoidance();
 
 	ProcessDownUp();
+
 
 	// 武器処理
 	if (wepon_){

@@ -4,6 +4,7 @@
 class Camara;
 class WeponBase;
 class UISt;
+class UIRecovery;
 
 class Player :
     public CharactorBase
@@ -20,6 +21,7 @@ public:
 		AVOIDANCE,
 		DOWN,
 		UP,
+		RECOVERY,
 	};
 
 	enum class STATE
@@ -29,7 +31,8 @@ public:
 		FAST_RUN,
 		ATTACK,
 		AVOIDANCE,
-		DOWN
+		DOWN,
+		RECOVERY
 	};
 
 	//初期Y軸角度
@@ -91,6 +94,9 @@ protected:
 	// スタミナ UI
 	UISt * uiSt_;
 
+	// 回復
+	UIRecovery* uiRecovery_;
+
 	//状態
 	STATE state_;
 
@@ -144,6 +150,9 @@ private:
 	//アニメーションを固定化するフレーム
 	static constexpr int LOCK_FRAME_NO = 0;
 
+	//スタミナ枯渇時のクールタイム
+	static constexpr float CT = 2.0f;
+
 	// 衝突判定用線分開始
 	static constexpr VECTOR COL_LINE_START_LOCAL_POS = { 0.0f, 80.0f, 0.0f };
 	// 衝突判定用線分終了
@@ -161,12 +170,15 @@ private:
 	void ProcessAttack(void);
 	void ProcessAvoidance(void);
 	void ProcessDownUp(void);
+	void ProcessRecovery(void);
 
 	// 衝突判定
 	void CollisionReserve(void) override;
 
 	//無敵
 	bool isV_;
+
+	float ct_;
 
 };
 

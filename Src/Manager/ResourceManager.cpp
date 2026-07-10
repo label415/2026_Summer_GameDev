@@ -61,6 +61,8 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::ANIM_PLAYER_DOWN, res);
 	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Up.mv1");
 	resourcesMap_.emplace(SRC::ANIM_PLAYER_UP, res);
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Recovery.mv1");
+	resourcesMap_.emplace(SRC::ANIM_PLAYER_RECOVERY, res);
 
 	//ïêäÌ
 	res = new RES(RES_T::MODEL, PATH_MDL + L"Wepon/KeyBlade1.mv1");
@@ -108,6 +110,11 @@ void ResourceManager::Init(void)
 
 	res = new RES(RES_T::IMG, PATH_IMG + L"Hp.png");
 	resourcesMap_.emplace(SRC::HP, res);
+
+	res = new RES(RES_T::IMG, PATH_IMG + L"UIBox.png");
+	resourcesMap_.emplace(SRC::UI_BOX, res);
+	res = new RES(RES_T::IMG, PATH_IMG + L"RecoveryBottle.png");
+	resourcesMap_.emplace(SRC::UI_RECOVERY_BOTTLE, res);
 }
 
 void ResourceManager::Release(void)

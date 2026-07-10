@@ -59,7 +59,7 @@ void UIHp::SetHp(float delta)
 
 void UIHp::SetHpAbsolute(float hp)
 {
-	currentHp_ = hp;
+	currentHp_ += hp;
 	if (currentHp_ < 0.0f) currentHp_ = 0.0f;
 	if (currentHp_ > maxHp_) currentHp_ = maxHp_;
 }
