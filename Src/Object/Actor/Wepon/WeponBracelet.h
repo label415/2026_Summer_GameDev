@@ -29,7 +29,6 @@ public:
 	// ‰ð•ú
 	void Release(void)override;
 	void SetCollider(void) override;
-	void ClearCollider(void) override;
 
 	void SetIsAttack(bool isAttack)override;
 	void SetIsEnd(bool isEnd) override { isEnd_ = isEnd; }

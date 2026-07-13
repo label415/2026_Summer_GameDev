@@ -26,10 +26,6 @@ WeponBracelet::~WeponBracelet(void)
 
 void WeponBracelet::Update(void)
 {
-	if (!isAlive_) {
-		ClearCollider();
-		return;
-	}
 	Move();
 	effect_->Update(static_cast<int>(EFFECT_TYPE::BRACELET));
 }
@@ -118,12 +114,6 @@ void WeponBracelet::Release(void)
 
 void WeponBracelet::SetCollider(void)
 {
-}
-
-void WeponBracelet::ClearCollider(void)
-{
-	isAlive_ = false;
-	ownColliders_.erase(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 }
 
 void WeponBracelet::SetIsAttack(bool isAttack)

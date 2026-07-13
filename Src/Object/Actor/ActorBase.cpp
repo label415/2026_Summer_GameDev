@@ -88,6 +88,7 @@ const std::vector<ColliderBase*> ActorBase::GetOwnCollider(int key) const
 
 void ActorBase::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
 {
+	if (hitCollider.size() == 0)return;
 	hitColliders_[shape].insert(
 		hitColliders_[shape].end(),
 		hitCollider.begin(),

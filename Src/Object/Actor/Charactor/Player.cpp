@@ -99,6 +99,8 @@ void Player::HitDamage(bool isHit)
 							anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 							state_ = STATE::DOWN;
 							uiHp_->SetHp(30.0f);
+							effect_->Play(7);
+							effect_->SetEffectScl(7, VGet(10.0f, 10.0f, 10.0f));
 							return;
 						}
 						else {
@@ -281,6 +283,11 @@ void Player::InitPost(void)
 	uiSt_ = new UISt(10.0f, 40.0f, 500.0f, 60.0f, 5.0f, MAX_ST);
 
 	uiRecovery_->Init();
+
+	effect_ = new EffectController();
+	effect_->Add(
+		7,
+		(Application::PATH_EFFECT + L"Blood.efkefc"));
 }
 
 void Player::ProcessMove(void)
@@ -563,6 +570,8 @@ void Player::CollisionReserve(void)
 
 void Player::UpdateProcess(void)
 {
+	effect_->SetEffectPos(7, transform_.pos);
+
 	isV_ = false;
 	if (st_ < MIN_ST) {
 		st_ = MIN_ST;

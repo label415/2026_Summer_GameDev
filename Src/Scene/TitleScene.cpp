@@ -4,6 +4,7 @@
 #include "../Manager/InputManager.h"
 #include "../Manager/SceneManager.h"
 #include "../Manager/ResourceManager.h"
+#include "../Manager/SoundManager.h"
 #include "../Manager/FontManager.h"
 #include "../Manager/Camera.h"
 #include "../Object/Actor/Stage/SkyDome.h"
@@ -21,7 +22,7 @@ TitleScene::~TitleScene(void)
 
 void TitleScene::Load(void)
 {
-	i = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
+	i = resMng_.Load(ResourceManager::SRC::SE_5).handleId_;
 	// フォントハンドルの作成
 	resMng_.Load(ResourceManager::SRC::FONT);
 	titleFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 140, 140);
@@ -37,12 +38,14 @@ void TitleScene::Update(void)
 
 	// シーン遷移
 	auto const& ins = InputManager::GetInstance();
+	auto& son = SoundManager::GetInstance();
 
 	 bool nextSene = ins.IsTrgDown(KEY_INPUT_SPACE)
 			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,InputManager::JOYPAD_BTN::DOWN);
 
 	if (nextSene)
 	{
+		son.PlaySE(SoundManager::SeId::WEPON_P1, i);
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAME);
 	}
 

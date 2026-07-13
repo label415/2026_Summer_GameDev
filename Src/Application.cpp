@@ -4,6 +4,7 @@
 #include "Manager/ResourceManager.h"
 #include "Manager/SceneManager.h"
 #include "Common/FpsController.h"
+#include "Manager/SoundManager.h"
 #include "Libs/ImGuiWrapper.h"
 #include "Application.h"
 
@@ -14,6 +15,8 @@ const std::wstring Application::PATH_MODEL = L"Data/Model/";
 const std::wstring Application::PATH_EFFECT = L"Data/Effect/";
 const std::wstring Application::PATH_FONT = L"Data/Font/";
 const std::wstring Application::PATH_CSV = L"Data/Csv/";
+const std::wstring Application::PATH_BGM = L"Data/BGM/";
+
 
 void Application::CreateInstance(void)
 {
@@ -36,7 +39,7 @@ void Application::Init(void)
 
 	// ウィンドウサイズ
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, 32);
-	ChangeWindowMode(false);
+	ChangeWindowMode(true);
 	// FPS制御初期化
 	fpsController_ = new FpsController(FRAME_RATE);
 	// DxLibの初期化
@@ -70,6 +73,7 @@ void Application::Init(void)
 
 	// シーン管理初期化
 	SceneManager::CreateInstance();
+	SoundManager::CreateInstance();
 
 	// デバッグ描画初期化
 	ImGuiWrapper::CreateInstance();

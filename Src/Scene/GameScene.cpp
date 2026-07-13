@@ -209,29 +209,21 @@ void GameScene::UpdateCollider(void)
 	{
 		if (enemy == nullptr) continue;
 
-		const WeponBracelet* weponBracelet = enemy->GetWeponBracelet();
-		if (weponBracelet == nullptr)continue;
-		const std::vector<ColliderBase*> enemyWeponCapsule =
-			weponBracelet->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-		player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), enemyWeponCapsule);
-		// ¶‘¶‚µ‚Ä‚¢‚È‚¢Žž‚Ííœ
-		if (!weponBracelet->GetIsAlive()) {
-			enemys_->RemoveCollider(ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::ENEMY_WEPON);
+		const WeponBase* enemyWepon = enemy->GetWepon();
+		if (enemyWepon != nullptr) {
+
+			const std::vector<ColliderBase*> weponCollider1 =
+				enemyWepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+			player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponCollider1);
+
+			const std::vector<ColliderBase*> weponCollider2 =
+				enemyWepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
+			player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE), weponCollider2);
+
 		}
-	}
-
-	for (auto& enemy : enemys)
-	{
-		if (enemy == nullptr) continue;
-
-		const WeponFlameThrower* weponFlameThrower = enemy->GetWeponFlameThrower();
-		if (weponFlameThrower == nullptr)continue;
-		const std::vector<ColliderBase*> enemyWeponCapsule =
-			weponFlameThrower->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
-		player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE), enemyWeponCapsule);
-		// ¶‘¶‚µ‚Ä‚¢‚È‚¢Žž‚Ííœ
-		if (!weponFlameThrower->GetIsAlive()) {
-			enemys_->RemoveCollider(ColliderBase::SHAPE::SPHERE, ColliderBase::TAG::ENEMY_WEPON);
+		else{
+			player_->RemoveHitColliderByShapeAndTag(ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::ENEMY_WEPON);
+			player_->RemoveHitColliderByShapeAndTag(ColliderBase::SHAPE::SPHERE, ColliderBase::TAG::ENEMY_WEPON);
 		}
 	}
 

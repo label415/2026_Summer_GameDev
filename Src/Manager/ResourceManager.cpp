@@ -115,6 +115,28 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::UI_BOX, res);
 	res = new RES(RES_T::IMG, PATH_IMG + L"RecoveryBottle.png");
 	resourcesMap_.emplace(SRC::UI_RECOVERY_BOTTLE, res);
+
+	res = new RES(RES_T::SOUND, PATH_IMG + L"blip03.mp3");
+	resourcesMap_.emplace(SRC::SE_1, res);
+
+	res = new RES(RES_T::SOUND, PATH_IMG + L"ƒhƒ‰ƒSƒ“‚ª‰Î‚ğ“f‚­.mp3");
+	resourcesMap_.emplace(SRC::SE_2, res);
+
+	res = new RES(RES_T::SOUND, PATH_IMG + L"ƒhƒ‰ƒSƒ“‚Ì‰H‚Î‚½‚«.mp3");
+	resourcesMap_.emplace(SRC::SE_3, res);
+
+	res = new RES(RES_T::SOUND, PATH_IMG + L"‰öb‚Ì‘«‰¹.mp3");
+	resourcesMap_.emplace(SRC::SE_4, res);
+
+	res = new RES(RES_T::SOUND, PATH_IMG + L"Œˆ’èƒ{ƒ^ƒ“‚ğ‰Ÿ‚·9.mp3");
+	resourcesMap_.emplace(SRC::SE_5, res);
+
+	res = new RES(RES_T::SOUND, PATH_IMG + L"Œ•‚Åa‚é2.mp3");
+	resourcesMap_.emplace(SRC::SE_6, res);
+
+	res = new RES(RES_T::SOUND, PATH_IMG + L"“‚Åa‚é4.mp3");
+	resourcesMap_.emplace(SRC::SE_7, res);
+
 }
 
 void ResourceManager::Release(void)

@@ -7,6 +7,7 @@
 #include "../Scene/GameClearScene.h"
 #include "../Scene/GameOverScene.h"
 #include "../Scene/Loading/Loading.h"
+#include "../Manager/SoundManager.h"
 #include "Camera.h"
 #include "../Application.h"
 #include "ResourceManager.h"
@@ -201,6 +202,9 @@ void SceneManager::ChangeScene(SCENE_ID nextId)
 
 	// 遷移先シーンを保持
 	waitSceneId_ = nextId;
+
+	SoundManager::GetInstance().StopBGM();
+	SoundManager::GetInstance().AllStopSE();
 
 	// タイトルへ戻る場合で、現在が GAMEOVER または GAMECLEAR のときは
 	// 読み込みを長く見せるための遅延を設定する

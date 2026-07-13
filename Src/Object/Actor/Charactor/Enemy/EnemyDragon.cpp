@@ -37,11 +37,8 @@ void EnemyDragon::Draw(void)
 	// 基底クラスの描画処理
 	CharactorBase::Draw();
 
-	if (weponBracelet_ != nullptr) {
-		weponBracelet_->Draw();
-	}
-	if (WeponFlameThrower_ != nullptr) {
-		WeponFlameThrower_->Draw();
+	if (wepon_ != nullptr) {
+		wepon_->Draw();
 	}
 
 #ifdef _DEBUG
@@ -101,21 +98,11 @@ void EnemyDragon::Draw(void)
 void EnemyDragon::Release(void)
 {
 	CharactorBase::Release();
-	if (weponBracelet_ != nullptr && !weponBracelet_->GetIsAlive())
-	{
-		weponBracelet_->ClearCollider();
-		weponBracelet_->Release();
-		delete weponBracelet_;
-		weponBracelet_ = nullptr;
+	if (wepon_ != nullptr){
+		wepon_->Release();
+		delete wepon_;
 	}
 
-	if (WeponFlameThrower_ != nullptr && !WeponFlameThrower_->GetIsAlive())
-	{
-		WeponFlameThrower_->ClearCollider();
-		WeponFlameThrower_->Release();
-		delete WeponFlameThrower_;
-		WeponFlameThrower_ = nullptr;
-	}
 	delete uiHp_;
 }
 
@@ -269,6 +256,9 @@ void EnemyDragon::InitPost(void)
 	effect_->Add(
 		static_cast<int>(EFFECT::CHARGE),
 		(Application::PATH_EFFECT + L"Charge.efkefc"));
+	effect_->Add(
+		7,
+		(Application::PATH_EFFECT + L"Blood.efkefc"));
 
 	// 初期状態設定
 	ChangeState(STATE::ROAR);
@@ -277,6 +267,7 @@ void EnemyDragon::InitPost(void)
 
 void EnemyDragon::UpdateProcess(void)
 {
+	effect_->SetEffectPos(7, transform_.pos);
 	preMoverDir_ = moveDir_;
 	//ターゲットの方向更新
 	moveDir_ = GetTargetDir();
@@ -335,19 +326,13 @@ void EnemyDragon::UpdateProcess(void)
 
 	SetFrameUserLocalPos(LOCK_POS, LOCK_FRAME_NO);
 
-	if(weponBracelet_ != nullptr &&!weponBracelet_->GetIsAlive())
-	{
-		weponBracelet_->ClearCollider();
-		weponBracelet_->Release();
-		delete weponBracelet_;
-		weponBracelet_ = nullptr;
-	}
-	if (WeponFlameThrower_ != nullptr && !WeponFlameThrower_->GetIsAlive())
-	{
-		WeponFlameThrower_->ClearCollider();
-		WeponFlameThrower_->Release();
-		delete WeponFlameThrower_;
-		WeponFlameThrower_ = nullptr;
+	if (wepon_ != nullptr) {
+		if (!wepon_->GetIsAlive()) {
+			delete wepon_;
+			wepon_ = nullptr;
+			return;
+		}
+		wepon_->Update();
 	}
 }
 
@@ -610,8 +595,8 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 			const ColliderModel* colliderModel =
 				dynamic_cast<const ColliderModel*>(i);
 
-			weponBracelet_ = new WeponBracelet(transform_, colliderModel, dir, 28);
-			weponBracelet_->Init();
+			wepon_ = new WeponBracelet(transform_, colliderModel, dir, 28);
+			wepon_->Init();
 		}
 	}
 
@@ -808,9 +793,6 @@ void EnemyDragon::UpdateFlyingAttack(void)
 	isJump_ = true;
 	transform_.pos.y = MAX_TAKE;
 	moveDir_ = preMoverDir_;
-	if (WeponFlameThrower_ != nullptr) {
-		WeponFlameThrower_->Update();
-	}
 
 	if (anim_->GetPlayAnim().step == 120.0f)
 	{
@@ -828,8 +810,8 @@ void EnemyDragon::UpdateFlyingAttack(void)
 				const ColliderModel* colliderModel =
 					dynamic_cast<const ColliderModel*>(i);
 
-				WeponFlameThrower_ = new WeponFlameThrower(transform_, colliderModel, dir, 28);
-				WeponFlameThrower_->Init();
+				wepon_ = new WeponFlameThrower(transform_, colliderModel, dir, 28);
+				wepon_->Init();
 			}
 		}
 	}
@@ -843,9 +825,6 @@ void EnemyDragon::UpdateFlyingAttack(void)
 void EnemyDragon::UpdateBreathAttack(void)
 {
 	moveDir_ = preMoverDir_;
-	if (weponBracelet_ != nullptr) {
-		weponBracelet_->Update();
-	}
 
 	if(anim_->GetPlayAnim().step >= 27.0f)
 	{
@@ -853,7 +832,7 @@ void EnemyDragon::UpdateBreathAttack(void)
 			isAttack_ = true;
 			anim_->SetSpecificTime(27.0f, 30.0f, true);
 			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
-			weponBracelet_->SetIsAttack(true);
+			wepon_->SetIsAttack(true);
 		}
 		else {
 			anim_->SetSpecificTime(0.0f, 0.0f, false);
@@ -861,9 +840,9 @@ void EnemyDragon::UpdateBreathAttack(void)
 	}
 	if (anim_->GetPlayAnim().step >= 40.0f)
 	{
-		if(weponBracelet_ != nullptr)
+		if(wepon_ != nullptr)
 		{
-			weponBracelet_->SetIsEnd(true);
+			wepon_->SetIsEnd(true);
 		}
 	}
 
@@ -973,7 +952,8 @@ void EnemyDragon::HitDamage(bool isHit)
 		const ColliderCapsule* colliderCapsule1 =
 			dynamic_cast<const ColliderCapsule*>(vec);
 
-		if (colliderCapsule1 == nullptr) return;
+		if (colliderCapsule1 == nullptr
+			|| colliderCapsule1->GetTag() != ColliderBase::TAG::ENEMY) continue;
 
 		// 登録されている衝突物を全てチェック  
 		for (const auto& hitCol : hitColliders_)
@@ -981,9 +961,8 @@ void EnemyDragon::HitDamage(bool isHit)
 			for (const auto& i : hitCol.second)
 			{
 				// モデル以外は処理を飛ばす  
-				if (i->GetShape() != ColliderBase::SHAPE::CAPSULE) continue;
-
-				if (i->GetTag() != ColliderBase::TAG::PLAYER_WEPON) continue;
+				if (i->GetShape() != ColliderBase::SHAPE::CAPSULE
+					|| i->GetTag() != ColliderBase::TAG::PLAYER_WEPON) continue;
 
 				ColliderCapsule* colliderCapsule2 =
 					dynamic_cast<ColliderCapsule*>(i);
@@ -998,6 +977,8 @@ void EnemyDragon::HitDamage(bool isHit)
 						uiHp_->SetHp(10.0f);
 						isInvincible_ = true;
 						invincibleTimer_ = INVINCIBLE_TIME;
+						effect_->Play(7);
+						effect_->SetEffectScl(7, VGet(10.0f, 10.0f, 10.0f));
 						return;
 					}
 				}

@@ -23,10 +23,6 @@ WeponFlameThrower::~WeponFlameThrower(void)
 
 void WeponFlameThrower::Update(void)
 {
-	if (!isAlive_) {
-		ClearCollider();
-		return;
-	}
 	prePos_ = transform_.pos;
 	Move();
 	effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
@@ -145,10 +141,4 @@ void WeponFlameThrower::Release(void)
 {
 	ActorBase::Release();
 	delete effect_;
-}
-
-void WeponFlameThrower::ClearCollider(void)
-{
-	ownColliders_.erase(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-	
 }

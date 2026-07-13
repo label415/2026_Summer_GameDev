@@ -15,7 +15,8 @@ public:
 		IMGS,
 		MODEL,
 		FONT,
-		EFFEKSEER
+		EFFEKSEER,
+		SOUND,
 	};
 
 	// コンストラクタ

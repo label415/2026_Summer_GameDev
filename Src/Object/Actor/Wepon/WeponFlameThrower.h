@@ -24,7 +24,6 @@ public:
 	void Draw(void)override;
 	// ‰ð•ú
 	void Release(void)override;
-	void ClearCollider(void) override;
 
 protected:
 
