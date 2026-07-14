@@ -41,11 +41,11 @@ public:
 		L_FONT,
 
 		TITLE_SELECT,
-		HP,
+		HP_1,
+		HP_2,
 
 		UI_BOX,
 		UI_RECOVERY_BOTTLE,
-
 		SE_1,
 		SE_2,
 		SE_3,

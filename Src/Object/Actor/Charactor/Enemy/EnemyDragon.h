@@ -80,6 +80,7 @@ public:
 		ROAT,
 		FALLING_ATTACK,
 		CHARGE,
+		BLOOD
 	};
 
 	//部位のカプセルフレーム

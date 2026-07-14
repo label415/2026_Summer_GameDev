@@ -35,6 +35,12 @@ public:
 		RECOVERY
 	};
 
+	//各部位のタグ
+	enum class EFFECT {
+		NONE,
+		BLOOD
+	};
+
 	//初期Y軸角度
 	static constexpr float ANGLE_AXIS_Y = 180.0f;
 
@@ -129,6 +135,8 @@ private:
 
 	//初期角度を保存
 	Quaternion lastQrot_;
+
+	EFFECT effType_;
 
 	// 衝突判定用カプセル上部球体(回避時)
 	static constexpr VECTOR COL_CAPSULE_TOP_AVOIDANCE_LOCAL_POS =

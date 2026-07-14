@@ -99,8 +99,10 @@ void Player::HitDamage(bool isHit)
 							anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 							state_ = STATE::DOWN;
 							uiHp_->SetHp(30.0f);
-							effect_->Play(7);
-							effect_->SetEffectScl(7, VGet(10.0f, 10.0f, 10.0f));
+							effType_ = EFFECT::BLOOD;
+							effect_->Play(static_cast<int>(effType_));
+							effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), VGet(3.0f, 3.0f, 3.0f));
+							effect_->SetEffectPos(static_cast<int>(effType_), transform_.pos);
 							return;
 						}
 						else {
@@ -197,6 +199,12 @@ void Player::InitLoad(void)
 
 	uiRecovery_ = new UIRecovery(5);
 	uiRecovery_->Load();
+
+	uiHp_ = new UIHp(10.0f, 10.0f, 500.0f, 30.0f, 5.0f);
+	uiHp_->Load();
+	// スタミナUIを HP の下に表示
+	uiSt_ = new UISt(10.0f, 40.0f, 500.0f, 60.0f, 5.0f, MAX_ST);
+	uiSt_->Load();
 }
 
 void Player::InitTransform(void)
@@ -278,15 +286,12 @@ void Player::InitPost(void)
 	//クールタイム
 	ct_ = 0.0f;
 
-	uiHp_ = new UIHp(10.0f, 10.0f, 500.0f, 30.0f, 5.0f);
-	// スタミナUIを HP の下に表示
-	uiSt_ = new UISt(10.0f, 40.0f, 500.0f, 60.0f, 5.0f, MAX_ST);
-
 	uiRecovery_->Init();
 
+	effType_ = EFFECT::NONE;
 	effect_ = new EffectController();
 	effect_->Add(
-		7,
+		static_cast<int>(EFFECT::BLOOD),
 		(Application::PATH_EFFECT + L"Blood.efkefc"));
 }
 
@@ -570,7 +575,7 @@ void Player::CollisionReserve(void)
 
 void Player::UpdateProcess(void)
 {
-	effect_->SetEffectPos(7, transform_.pos);
+	effect_->SetEffectPos(static_cast<int>(effType_), transform_.pos);
 
 	isV_ = false;
 	if (st_ < MIN_ST) {

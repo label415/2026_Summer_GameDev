@@ -108,8 +108,11 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::IMG, PATH_IMG + L"TitleëIëÉJÅ[É\Éã.png");
 	resourcesMap_.emplace(SRC::TITLE_SELECT, res);
 
-	res = new RES(RES_T::IMG, PATH_IMG + L"Hp.png");
-	resourcesMap_.emplace(SRC::HP, res);
+	res = new RES(RES_T::IMG, PATH_IMG + L"Hp1.png");
+	resourcesMap_.emplace(SRC::HP_1, res);
+
+	res = new RES(RES_T::IMG, PATH_IMG + L"Hp2.png");
+	resourcesMap_.emplace(SRC::HP_2, res);
 
 	res = new RES(RES_T::IMG, PATH_IMG + L"UIBox.png");
 	resourcesMap_.emplace(SRC::UI_BOX, res);
@@ -133,6 +136,9 @@ void ResourceManager::Init(void)
 
 	res = new RES(RES_T::SOUND, PATH_IMG + L"åïÇ≈éaÇÈ2.mp3");
 	resourcesMap_.emplace(SRC::SE_6, res);
+
+	res = new RES(RES_T::SOUND, PATH_IMG + L"ìÅÇ≈éaÇÈ4.mp3");
+	resourcesMap_.emplace(SRC::SE_7, res);
 
 	res = new RES(RES_T::SOUND, PATH_IMG + L"ìÅÇ≈éaÇÈ4.mp3");
 	resourcesMap_.emplace(SRC::SE_7, res);

@@ -257,7 +257,7 @@ void EnemyDragon::InitPost(void)
 		static_cast<int>(EFFECT::CHARGE),
 		(Application::PATH_EFFECT + L"Charge.efkefc"));
 	effect_->Add(
-		7,
+		static_cast<int>(EFFECT::BLOOD),
 		(Application::PATH_EFFECT + L"Blood.efkefc"));
 
 	// ‰Šúó‘ÔÝ’è
@@ -977,9 +977,16 @@ void EnemyDragon::HitDamage(bool isHit)
 						uiHp_->SetHp(10.0f);
 						isInvincible_ = true;
 						invincibleTimer_ = INVINCIBLE_TIME;
-						effect_->Play(7);
-						effect_->SetEffectScl(7, VGet(10.0f, 10.0f, 10.0f));
+						effect_->Play(static_cast<int>(EFFECT::BLOOD));
+						effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), VGet(5.0f, 5.0f, 5.0f));
+
+						VECTOR diff = VSub(colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown());
+						VECTOR center = VAdd(colliderCapsule1->GetPosDown(), VScale(diff, 0.5f));
+						effect_->SetEffectPos(static_cast<int>(EFFECT::BLOOD), center);
+
 						return;
+					}
+					else {
 					}
 				}
 			}

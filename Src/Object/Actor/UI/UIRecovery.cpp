@@ -46,8 +46,8 @@ void UIRecovery::InitLoad(void)
 	resMng_.Load(ResourceManager::SRC::FONT);
 	titleFont_ = FontManager::GetInstance().CreateMyFont(L"KazukiReiwa", 50, 50);
 
-	imgBox_ = resMng_.Load(ResourceManager::SRC::UI_BOX).handleId_;;
-	imgBottle_ = resMng_.Load(ResourceManager::SRC::UI_RECOVERY_BOTTLE).handleId_;;
+	imgBox_ = resMng_.Load(ResourceManager::SRC::UI_BOX).handleId_;
+	imgBottle_ = resMng_.Load(ResourceManager::SRC::UI_RECOVERY_BOTTLE).handleId_;
 }
 
 void UIRecovery::InitTransform(void)

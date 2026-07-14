@@ -1,6 +1,8 @@
 #include <cmath>
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/SceneManager.h"
+#include "../../../Manager/FontManager.h"
+#include "../../../Application.h"
 #include "UIHp.h"
 
 UIHp::UIHp(float pos1X, float pos1Y, float pos2X, float pos2Y, float imgSize, float maxHp)
@@ -25,28 +27,40 @@ void UIHp::Update(void)
 void UIHp::Draw(void)
 {
 	// 背景バー
-	DrawBoxAA(
-		pos1_.x - imgSize_, pos1_.y - imgSize_,
-		pos2_.x + imgSize_, pos2_.y + imgSize_,
-		0x000000, true);
+	//DrawBoxAA(
+	//	pos1_.x - imgSize_, pos1_.y - imgSize_,
+	//	pos2_.x + imgSize_, pos2_.y + imgSize_,
+	//	0x000000, true);
 
-	// HPバー（割合で描画）
-	float ratio = 0.0f;
-	if (maxHp_ > 0.0f) ratio = currentHp_ / maxHp_;
-	ratio = fmaxf(0.0f, fminf(1.0f, ratio));
+	//// HPバー（割合で描画）
+	//float ratio = 0.0f;
+	//if (maxHp_ > 0.0f) ratio = currentHp_ / maxHp_;
+	//ratio = fmaxf(0.0f, fminf(1.0f, ratio));
 
-	float left = pos1_.x;
-	float right = pos1_.x + (pos2_.x - pos1_.x) * ratio;
+	//float left = pos1_.x;
+	//float right = pos1_.x + (pos2_.x - pos1_.x) * ratio;
 
-	DrawBoxAA(
-		left, pos1_.y,
-		right, pos2_.y,
-		0xff0000, true);
+	//DrawBoxAA(
+	//	left, pos1_.y,
+	//	right, pos2_.y,
+	//	0xff0000, true);
 
-	if (left >= right)
-	{
-		active_ = false;
-	}
+	DrawRotaGraph(
+		Application::SCREEN_SIZE_X / 4,
+		20,
+		0.7f, 0.0f, hpUi1_, true);
+
+	DrawExtendGraphF(
+		Application::SCREEN_SIZE_X / 4 - IMG_SIZE_X / 2,
+		0,
+		Application::SCREEN_SIZE_X / 4 + IMG_SIZE_X / 2,
+		100,
+		hpUi2_, true);
+
+	//if (left >= right)
+	//{
+	//	active_ = false;
+	//}
 }
 
 void UIHp::SetHp(float delta)
@@ -72,6 +86,8 @@ void UIHp::SetMaxHp(float maxHp)
 
 void UIHp::InitLoad(void)
 {
+	hpUi1_ = resMng_.Load(ResourceManager::SRC::HP_1).handleId_;
+	hpUi2_ = resMng_.Load(ResourceManager::SRC::HP_2).handleId_;
 }
 
 void UIHp::InitTransform(void)

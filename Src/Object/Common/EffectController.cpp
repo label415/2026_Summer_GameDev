@@ -132,16 +132,28 @@ void EffectController::Draw(int type, const VECTOR pos)
 
 void EffectController::SetEffectScl(int type, VECTOR scale)
 {
+	auto it = effects_.find(type);
+	if (it == effects_.end()) {
+		return;
+	}
 	SetScalePlayingEffekseer3DEffect(effects_[type]->PlayId_, scale.x, scale.y, scale.z);
 }
 
 void EffectController::SetEffectPos(int type, VECTOR pos)
 {
+	auto it = effects_.find(type);
+	if (it == effects_.end()) {
+		return;
+	}
 	SetPosPlayingEffekseer3DEffect(effects_[type]->PlayId_, pos.x, pos.y, pos.z);
 }
 
 void EffectController::SetEffectRot(int type, VECTOR rot)
 {
+	auto it = effects_.find(type);
+	if (it == effects_.end()) {
+		return;
+	}
 	SetRotationPlayingEffekseer3DEffect(effects_[type]->PlayId_, rot.x, rot.y, rot.z);
 }
 

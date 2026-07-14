@@ -37,6 +37,14 @@ protected:
     // ‰Šú‰»Œã‚ÌŒÂ•Êˆ—
     void InitPost(void) override;
 private:
+
+    //‰æ‘œƒTƒCƒY
+    static constexpr float IMG_SIZE_X = 866.0f;
+    static constexpr float IMG_SIZE_Y = 288.0f;
+
+    int hpUi1_;
+    int hpUi2_;
+
     Vector2 pos1_;
     Vector2 pos2_;
     float imgSize_;

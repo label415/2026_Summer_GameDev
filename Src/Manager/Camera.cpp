@@ -206,7 +206,7 @@ void Camera::SyncFollow(void)
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
 	VECTOR localPos;
-	const float MOVE_SPEED = 0.7f;
+	const float MOVE_SPEED = 0.5f;
 	// ’Ž‹“_
 	localPos = transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS);
 	VECTOR nextTargetPos = VAdd(pos, localPos);
@@ -222,7 +222,7 @@ void Camera::SyncFollow(void)
 void Camera::SynLockOn(void)
 {
 	const float ROT_SPEED = 0.1f;
-	const float MOVE_SPEED = 0.1f;
+	const float MOVE_SPEED = 0.05f;
 
 	// “¯Šúæ‚ÌˆÊ’u
 	VECTOR followPos = followTransform_->pos;

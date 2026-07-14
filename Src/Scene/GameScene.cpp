@@ -285,7 +285,7 @@ void GameScene::UpdateAutoLockOn(void)
 		}
 
 		if (isNextUp) {
-			diffMin = FLT_MAX; // ‚±‚±‚ð0.0f‚©‚çFLT_MAX‚É
+			diffMin = FLT_MAX;
 			for (auto& enemy : enemys) {
 				for (const auto& collider
 					: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
@@ -302,7 +302,7 @@ void GameScene::UpdateAutoLockOn(void)
 					VECTOR enemyPos = colliderCapsule->GetCenter();
 
 					float lockonDiff = VSize(VSub(enemyPos, playerPos));
-					if (lockonDiff >= diffMin) continue; // <--- ‚±‚±‚à <= ‚©‚ç >= ‚Ö
+					if (lockonDiff >= diffMin) continue;
 
 					float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
 					float angle = acosf(dot);
