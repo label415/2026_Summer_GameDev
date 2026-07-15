@@ -1,17 +1,10 @@
-#include <cmath>
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/SceneManager.h"
 #include "../../../Manager/FontManager.h"
 #include "../../../Application.h"
 #include "UIHp.h"
 
-UIHp::UIHp(float pos1X, float pos1Y, float pos2X, float pos2Y, float imgSize, float maxHp)
-	:
-	pos1_(pos1X, pos1Y),
-	pos2_(pos2X, pos2Y),
-	imgSize_(imgSize),
-	maxHp_(maxHp),
-	currentHp_(maxHp)
+UIHp::UIHp(void)
 {
 	active_ = true;
 }
@@ -26,62 +19,46 @@ void UIHp::Update(void)
 
 void UIHp::Draw(void)
 {
-	// 背景バー
-	//DrawBoxAA(
-	//	pos1_.x - imgSize_, pos1_.y - imgSize_,
-	//	pos2_.x + imgSize_, pos2_.y + imgSize_,
-	//	0x000000, true);
-
-	//// HPバー（割合で描画）
-	//float ratio = 0.0f;
-	//if (maxHp_ > 0.0f) ratio = currentHp_ / maxHp_;
-	//ratio = fmaxf(0.0f, fminf(1.0f, ratio));
-
-	//float left = pos1_.x;
-	//float right = pos1_.x + (pos2_.x - pos1_.x) * ratio;
-
-	//DrawBoxAA(
-	//	left, pos1_.y,
-	//	right, pos2_.y,
-	//	0xff0000, true);
-
+	// 背景バーの描画
 	DrawRotaGraph(
-		Application::SCREEN_SIZE_X / 4,
-		20,
+		pos_.x,
+		pos_.y,
 		0.7f, 0.0f, hpUi1_, true);
 
-	DrawExtendGraphF(
-		Application::SCREEN_SIZE_X / 4 - IMG_SIZE_X / 2,
-		0,
-		Application::SCREEN_SIZE_X / 4 + IMG_SIZE_X / 2,
-		100,
-		hpUi2_, true);
+	float hpRate = hp_ / 100.0f;
+	float realHalfWidth  = IMG_SIZE_X / 2.9f;
+	float realHalfHeight = IMG_SIZE_Y / 4.0f;
 
-	//if (left >= right)
-	//{
-	//	active_ = false;
-	//}
+	float left   = pos_.x - realHalfWidth;
+	float top    = pos_.y - realHalfHeight;
+	float bottom = pos_.y + realHalfHeight;
+
+	int srcWidth = static_cast<int>(IMG_SIZE_X * hpRate);
+	float currentBarRight = left + (realHalfWidth * 2.0f * hpRate);
+
+	// HPバー
+	DrawRectExtendGraphF(
+		left, top,
+		currentBarRight, bottom, 
+		0, 0, srcWidth, 
+		static_cast<int>(IMG_SIZE_Y),
+		hpUi2_, true);
 }
 
 void UIHp::SetHp(float delta)
 {
-	// delta は「減らす量」として扱う（ダメージ）
-	currentHp_ -= delta;
-	if (currentHp_ < 0.0f) currentHp_ = 0.0f;
-	if (currentHp_ > maxHp_) currentHp_ = maxHp_;
+	hp_ -= delta;
+	if (hp_ <= 0.0f)
+	{
+		hp_ = 0.0f;
+		active_ = false;
+	}
 }
 
 void UIHp::SetHpAbsolute(float hp)
 {
-	currentHp_ += hp;
-	if (currentHp_ < 0.0f) currentHp_ = 0.0f;
-	if (currentHp_ > maxHp_) currentHp_ = maxHp_;
-}
-
-void UIHp::SetMaxHp(float maxHp)
-{
-	maxHp_ = maxHp;
-	if (currentHp_ > maxHp_) currentHp_ = maxHp_;
+	hp_ += hp;
+	if (hp_ >= MAX_HP) hp_ = MAX_HP;
 }
 
 void UIHp::InitLoad(void)
@@ -96,4 +73,6 @@ void UIHp::InitTransform(void)
 
 void UIHp::InitPost(void)
 {
+	pos_ = { Application::SCREEN_SIZE_X / 4, 20 };
+	hp_ = MAX_HP;
 }

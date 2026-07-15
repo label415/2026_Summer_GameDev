@@ -43,6 +43,7 @@ public:
 		TITLE_SELECT,
 		HP_1,
 		HP_2,
+		ST,
 
 		UI_BOX,
 		UI_RECOVERY_BOTTLE,

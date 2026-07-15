@@ -1,17 +1,12 @@
-#include <algorithm>
-
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/SceneManager.h"
+#include "../../../Manager/FontManager.h"
+#include "../../../Application.h"
 #include "UISt.h"
 
-UISt::UISt(float pos1X, float pos1Y, float pos2X, float pos2Y, float imgSize, float maxHp)
-	:
-	pos1_(pos1X, pos1Y),
-	pos2_(pos2X, pos2Y),
-	imgSize_(imgSize),
-	maxHp_(maxHp),
-	currentHp_(maxHp)
+UISt::UISt(void)
 {
+	active_ = true;
 }
 
 UISt::~UISt(void)
@@ -20,55 +15,45 @@ UISt::~UISt(void)
 
 void UISt::Update(void)
 {
-	// 必要ならここでアニメーション等を行う
 }
 
 void UISt::Draw(void)
 {
-	// 背景バー
-	DrawBoxAA(
-		pos1_.x - imgSize_, pos1_.y - imgSize_,
-		pos2_.x + imgSize_, pos2_.y + imgSize_,
-		0x000000, true);
+	DrawRotaGraph(
+		pos_.x,
+		pos_.y,
+		0.7f, 0.0f, stUi1_, true);
 
-	// スタミナバー（割合で描画）
-	float ratio = 0.0f;
-	if (maxHp_ > 0.0f) ratio = currentHp_ / maxHp_;
-	ratio = fmaxf(0.0f, fminf(1.0f, ratio));
+	float left = pos_.x - IMG_SIZE_X / 2.9f;
+	float right = pos_.x + IMG_SIZE_X / 2.9f * (st_ * 0.01f);
 
-	float left = pos1_.x;
-	float right = pos1_.x + (pos2_.x - pos1_.x) * ratio;
-
-	// 緑系で表示
-	DrawBoxAA(
-		left, pos1_.y,
-		right, pos2_.y,
-		0x00ff00, true);
+	DrawExtendGraphF(
+		pos_.x - IMG_SIZE_X / 2.9f,
+		pos_.y - IMG_SIZE_Y / 4,
+		right,
+		pos_.y + IMG_SIZE_Y / 4,
+		stUi2_, true);
 }
 
-void UISt::SetHp(float delta)
+void UISt::SetSt(float delta)
 {
-	// delta は「減少量」として扱う
-	currentHp_ -= delta;
-	if (currentHp_ < 0.0f) currentHp_ = 0.0f;
-	if (currentHp_ > maxHp_) currentHp_ = maxHp_;
+	st_ -= delta;
+	if (st_ < MIN_ST)
+	{
+		st_ = MIN_ST;
+	}
 }
 
 void UISt::SetHpAbsolute(float hp)
 {
-	currentHp_ = hp;
-	if (currentHp_ < 0.0f) currentHp_ = 0.0f;
-	if (currentHp_ > maxHp_) currentHp_ = maxHp_;
-}
-
-void UISt::SetMaxHp(float maxHp)
-{
-	maxHp_ = maxHp;
-	if (currentHp_ > maxHp_) currentHp_ = maxHp_;
+	st_ += hp;
+	if (st_ > MAX_ST) st_ = MAX_ST;
 }
 
 void UISt::InitLoad(void)
 {
+	stUi1_ = resMng_.Load(ResourceManager::SRC::HP_1).handleId_;
+	stUi2_ = resMng_.Load(ResourceManager::SRC::ST).handleId_;
 }
 
 void UISt::InitTransform(void)
@@ -77,4 +62,6 @@ void UISt::InitTransform(void)
 
 void UISt::InitPost(void)
 {
+	pos_ = { Application::SCREEN_SIZE_X / 4 , 60 };
+	st_ = MAX_ST;
 }

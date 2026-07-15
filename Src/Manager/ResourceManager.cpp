@@ -114,6 +114,9 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::IMG, PATH_IMG + L"Hp2.png");
 	resourcesMap_.emplace(SRC::HP_2, res);
 
+	res = new RES(RES_T::IMG, PATH_IMG + L"ST.png");
+	resourcesMap_.emplace(SRC::ST, res);
+
 	res = new RES(RES_T::IMG, PATH_IMG + L"UIBox.png");
 	resourcesMap_.emplace(SRC::UI_BOX, res);
 	res = new RES(RES_T::IMG, PATH_IMG + L"RecoveryBottle.png");

@@ -52,14 +52,6 @@ public:
 	// 移動速度(ダッシュ)
 	static constexpr float SPEED_DASH = 8.0f;
 
-	//スタミナ最大値
-	static constexpr float MAX_ST = 100.0f;
-
-	//スタミナ最小値
-	static constexpr float MIN_ST = -15.0f;
-	//スタミナ最小値
-	static constexpr float MIN_ST_FAST_RUN = 10.0f;
-
 	//スタミナ回復速度
 	static constexpr float RECOVERY_ST_SPEED = 20.0f;
 
@@ -129,9 +121,6 @@ private:
 
 	//武器
 	WeponBase* wepon_;
-
-	//スタミナ
-	float st_;
 
 	//初期角度を保存
 	Quaternion lastQrot_;

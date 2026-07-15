@@ -113,6 +113,9 @@ void EnemyDragon::InitLoad(void)
 	// ƒ‚ƒfƒ‹‚Ìƒ[ƒh
 	transform_.SetModel(
 		resMng_.LoadModelDuplicate(ResourceManager::SRC::ENEMY_DRAGON));
+
+	uiHp_ = new UIHp();
+	uiHp_->Load();
 }
 
 void EnemyDragon::InitTransform(void)
@@ -242,8 +245,6 @@ void EnemyDragon::InitPost(void)
 	stateChanges_.emplace(static_cast<int>(STATE::END),
 		std::bind(&EnemyDragon::ChangeStateEnd, this));
 
-	uiHp_ = new UIHp(100.0f, 600.0f, 1180.0f, 680.0f, 5.0f);
-
 	effectType_ = EFFECT::NONE;
 
 	effect_ = new EffectController();
@@ -259,6 +260,8 @@ void EnemyDragon::InitPost(void)
 	effect_->Add(
 		static_cast<int>(EFFECT::BLOOD),
 		(Application::PATH_EFFECT + L"Blood.efkefc"));
+
+	uiHp_->Init();
 
 	// ‰Šúó‘ÔÝ’è
 	ChangeState(STATE::ROAR);
@@ -996,5 +999,5 @@ void EnemyDragon::HitDamage(bool isHit)
 
 void EnemyDragon::DrawHp(void)
 {
-	if (uiHp_) { uiHp_->Draw(); }
+	/*if (uiHp_) { uiHp_->Draw(); }*/
 }

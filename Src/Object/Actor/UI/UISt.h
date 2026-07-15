@@ -6,9 +6,15 @@ class Vector2;
 class UISt : public UIBase
 {
 public:
+
+    //スタミナ最大値
+    static constexpr float MAX_ST = 100.0f;
+    //スタミナ最小値
+    static constexpr float MIN_ST = -15.0f;
+
     // コンストラクタ
     // maxHp は省略時 100.0f
-    UISt(float pos1X, float pos1Y, float pos2X, float pos2Y, float imgSize, float maxHp = 100.0f);
+    UISt(void);
     // デストラクタ
     ~UISt(void) override;
     // 更新
@@ -17,13 +23,12 @@ public:
     void Draw(void) override;
 
     // ダメージ
-    void SetHp(float delta);
+    void SetSt(float delta);
 
     //回復
     void SetHpAbsolute(float hp);
 
-    // 最大HPを設定
-    void SetMaxHp(float maxHp);
+    const float GetSt(void)const { return st_; }
 
 protected:
     // リソースロード
@@ -37,12 +42,17 @@ protected:
     // 初期化後の個別処理
     void InitPost(void) override;
 private:
-    Vector2 pos1_;
-    Vector2 pos2_;
-    float imgSize_;
 
-    float maxHp_;
-    float currentHp_;
+    //画像サイズ
+    static constexpr int IMG_SIZE_X = 866;
+    static constexpr int IMG_SIZE_Y = 288;
+
+    int stUi1_;
+    int stUi2_;
+
+    Vector2 pos_;
+
+    float st_;
 };
 
 

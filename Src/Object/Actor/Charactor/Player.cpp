@@ -33,8 +33,6 @@ void Player::Draw(void)
 	CharactorBase::Draw();
 
 	wepon_->Draw();
-
-	DrawFormatString(0, 0, 0x000000, L"スタミナ(%.2f)",st_);
 }
 
 void Player::Release(void)
@@ -200,10 +198,11 @@ void Player::InitLoad(void)
 	uiRecovery_ = new UIRecovery(5);
 	uiRecovery_->Load();
 
-	uiHp_ = new UIHp(10.0f, 10.0f, 500.0f, 30.0f, 5.0f);
+	uiHp_ = new UIHp();
 	uiHp_->Load();
+
 	// スタミナUIを HP の下に表示
-	uiSt_ = new UISt(10.0f, 40.0f, 500.0f, 60.0f, 5.0f, MAX_ST);
+	uiSt_ = new UISt();
 	uiSt_->Load();
 }
 
@@ -280,8 +279,9 @@ void Player::InitPost(void)
 	//武器
 	wepon_->Init();
 
-	//スタミナ
-	st_ = MAX_ST;
+	uiHp_->Init();
+
+	uiSt_->Init();
 
 	//クールタイム
 	ct_ = 0.0f;
@@ -350,7 +350,7 @@ void Player::ProcessMove(void)
 
 			moveSpeed_ = SPEED_DASH;
 			state_ = STATE::FAST_RUN;
-			st_ -= (CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
+			uiSt_->SetSt(CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
 			anim_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
 		}
 		else {
@@ -385,7 +385,7 @@ void Player::ProcessAttack(void)
 {
 	bool isHitAttack = false;
 	auto& ins = InputManager::GetInstance();
-	if (st_ >= 0) {
+	if (uiSt_->GetSt() >= 0) {
 		isHitAttack = ins.IsClickMouseLeft()
 			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
 	}
@@ -395,7 +395,7 @@ void Player::ProcessAttack(void)
 		&& state_ != STATE::DOWN
 		&& state_ != STATE::RECOVERY) {
 		state_ = STATE::ATTACK;
-		st_ -= CONSUMPTION_ST_ATTACK;
+		uiSt_->SetSt(CONSUMPTION_ST_ATTACK);
 	}
 
 	if (state_ != STATE::ATTACK) return;
@@ -420,7 +420,7 @@ void Player::ProcessAvoidance(void)
 	bool isP = false;
 	auto& ins = InputManager::GetInstance();
 
-	if (st_ >= 0) {
+	if (uiSt_->GetSt() >= 0) {
 		isP = ins.IsTrgDown(KEY_INPUT_SPACE)
 			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT);
 	}
@@ -436,7 +436,7 @@ void Player::ProcessAvoidance(void)
 		transform_.quaRotLocal =
 			Quaternion::Mult(transform_.quaRotLocal,
 				Quaternion::AngleAxis(AsoUtility::Deg2RadF(100.0f), AsoUtility::AXIS_Y));
-		st_ -= CONSUMPTION_ST_AVOIDANCE;
+		uiSt_->SetSt(CONSUMPTION_ST_AVOIDANCE);
 	}
 
 	if (state_ != STATE::AVOIDANCE) return;
@@ -578,22 +578,16 @@ void Player::UpdateProcess(void)
 	effect_->SetEffectPos(static_cast<int>(effType_), transform_.pos);
 
 	isV_ = false;
-	if (st_ < MIN_ST) {
-		st_ = MIN_ST;
+	if (uiSt_->GetSt() <= UISt::MIN_ST) {
 		ct_ = CT;
 	}
-	else if (st_ >= MIN_ST && st_ <= MAX_ST
-		&& (state_ == STATE::IDLE || state_ == STATE::RUN || state_ == STATE::DOWN)) {
-		st_ += (RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
+
+	if (state_ == STATE::IDLE || state_ == STATE::RUN || state_ == STATE::DOWN) {
+		uiSt_->SetHpAbsolute(RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
 	}
 
 	if (ct_ > 0.0f) {
 		ct_ -= 1.0f * SceneManager::GetInstance().GetDeltaTime();
-	}
-
-	// UI に現在のスタミナを反映（絶対値セット）
-	if (uiSt_) {
-		uiSt_->SetHpAbsolute(st_);
 	}
 
 	if(wepon_ != nullptr && state_ != STATE::ATTACK)

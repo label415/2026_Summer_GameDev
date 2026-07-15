@@ -8,7 +8,7 @@ class UIHp : public UIBase
 public:
     // コンストラクタ
     // maxHp は省略時 100.0f
-    UIHp(float pos1X, float pos1Y, float pos2X, float pos2Y, float imgSize, float maxHp = 100.0f);
+    UIHp(void);
     // デストラクタ
     ~UIHp(void) override;
     // 更新
@@ -21,9 +21,6 @@ public:
 
     //回復
     void SetHpAbsolute(float hp);
-
-    // 最大HPを設定
-    void SetMaxHp(float maxHp);
 
 protected:
     // リソースロード
@@ -38,6 +35,9 @@ protected:
     void InitPost(void) override;
 private:
 
+    //最大HP
+    static constexpr float MAX_HP = 100.0f;
+
     //画像サイズ
     static constexpr float IMG_SIZE_X = 866.0f;
     static constexpr float IMG_SIZE_Y = 288.0f;
@@ -45,11 +45,8 @@ private:
     int hpUi1_;
     int hpUi2_;
 
-    Vector2 pos1_;
-    Vector2 pos2_;
-    float imgSize_;
+    Vector2 pos_;
 
-    float maxHp_;
-    float currentHp_;
+    float hp_;
 };
 
