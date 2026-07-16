@@ -61,10 +61,12 @@ void GameScene::LoadEnd(void)
 	//エネミー初期化
 	enemys_->Init();
 	//シャドーマップ初期化
-	shadowMap_->AddShadowMapLight(VGet(0.5f, -0.5f, 0.5f));
+	shadowMap_->AddShadowMapLight(GetLightDirection());
+	VECTOR playerPos = player_->GetTransform().pos;
+	float shadowDiff = 1000.0f;
 	shadowMap_->AddShadowMapDrawArea(
-		VGet(-1000.0f, -1.0f, -1000.0f),
-		VGet(1000.0f, 1000.0f, 1000.0f));
+		VGet((playerPos.x - shadowDiff), -1.0f, (playerPos.z - shadowDiff)),
+		VGet((playerPos.x + shadowDiff), shadowDiff * 1.5f, (playerPos.z + shadowDiff)));
 
 	// コライダ登録
 	AddCollider();
@@ -106,6 +108,12 @@ void GameScene::Update(void)
 		player_->HitDamage(enemy->GetIsAttack());
 	}
 	enemys_->HitDamegr(player_->GetIsAttack());
+
+	VECTOR playerPos = player_->GetTransform().pos;
+	float shadowDiff = 1000.0f;
+	shadowMap_->AddShadowMapDrawArea(
+		VGet((playerPos.x - shadowDiff), -1.0f, (playerPos.z - shadowDiff)),
+		VGet((playerPos.x + shadowDiff), shadowDiff * 1.5f, (playerPos.z + shadowDiff)));
 }
 
 void GameScene::Draw(void)
@@ -124,18 +132,18 @@ void GameScene::Draw(void)
 	stage_->Draw();
 	shadowMap_->EndShadow();
 
+	// Effekseerにより再生中のエフェクトを描画する。
+	DrawEffekseer3D();
+
 	player_->DrawHp();
 	for (const auto& enemy : enemys_->GetEnemys()) {
 		enemy->DrawHp();
 	}
 
-
-	if(targetEnemy_ != nullptr)
-	{
+	if(targetEnemy_ != nullptr){
 		VECTOR enemyTransform = targetEnemy_->GetCenter();
 		DrawSphere3D(enemyTransform,
-			50.0f,
-			10,
+			50.0f,10,
 			0xfff000,
 			0xfff000,
 			true);
@@ -160,6 +168,7 @@ void GameScene::Release(void)
 	delete targetEnemy_;
 
 	shadowMap_->Release();
+	delete shadowMap_;
 
 }
 

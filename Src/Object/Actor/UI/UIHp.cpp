@@ -4,7 +4,14 @@
 #include "../../../Application.h"
 #include "UIHp.h"
 
-UIHp::UIHp(void)
+UIHp::UIHp(float posX, float posY,
+	float flameScl, float hpSclX, float hpSclY, float hp)
+	:
+	pos_(posX, posY),
+	hp_(hp),
+	flameScl_(flameScl),
+	hpSclX_(hpSclX),
+	hpSclY_(hpSclY)
 {
 	active_ = true;
 }
@@ -23,11 +30,11 @@ void UIHp::Draw(void)
 	DrawRotaGraph(
 		pos_.x,
 		pos_.y,
-		0.7f, 0.0f, hpUi1_, true);
+		flameScl_, 0.0f, hpUi1_, true);
 
 	float hpRate = hp_ / 100.0f;
-	float realHalfWidth  = IMG_SIZE_X / 2.9f;
-	float realHalfHeight = IMG_SIZE_Y / 4.0f;
+	float realHalfWidth  = IMG_SIZE_X / hpSclX_;
+	float realHalfHeight = IMG_SIZE_Y / hpSclY_;
 
 	float left   = pos_.x - realHalfWidth;
 	float top    = pos_.y - realHalfHeight;
@@ -73,6 +80,4 @@ void UIHp::InitTransform(void)
 
 void UIHp::InitPost(void)
 {
-	pos_ = { Application::SCREEN_SIZE_X / 4, 20 };
-	hp_ = MAX_HP;
 }

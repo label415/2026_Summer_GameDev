@@ -99,8 +99,7 @@ void Player::HitDamage(bool isHit)
 							uiHp_->SetHp(30.0f);
 							effType_ = EFFECT::BLOOD;
 							effect_->Play(static_cast<int>(effType_));
-							effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), VGet(3.0f, 3.0f, 3.0f));
-							effect_->SetEffectPos(static_cast<int>(effType_), transform_.pos);
+							effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), VGet(5.0f, 5.0f, 5.0f));
 							return;
 						}
 						else {
@@ -198,11 +197,15 @@ void Player::InitLoad(void)
 	uiRecovery_ = new UIRecovery(5);
 	uiRecovery_->Load();
 
-	uiHp_ = new UIHp();
+	uiHp_ = new UIHp(
+		Application::SCREEN_SIZE_X / 4, 20,
+		0.7f, 2.9f, 4.0f);
 	uiHp_->Load();
 
 	// スタミナUIを HP の下に表示
-	uiSt_ = new UISt();
+	uiSt_ = new UISt(
+		Application::SCREEN_SIZE_X / 4, 60,
+		0.7f, 2.9f, 4.0f);
 	uiSt_->Load();
 }
 
@@ -293,6 +296,9 @@ void Player::InitPost(void)
 	effect_->Add(
 		static_cast<int>(EFFECT::BLOOD),
 		(Application::PATH_EFFECT + L"Blood.efkefc"));
+	effect_->Add(
+		static_cast<int>(EFFECT::HP_ABSOLUTE),
+		(Application::PATH_EFFECT + L"Absolute.efkefc"));
 }
 
 void Player::ProcessMove(void)
@@ -437,6 +443,7 @@ void Player::ProcessAvoidance(void)
 			Quaternion::Mult(transform_.quaRotLocal,
 				Quaternion::AngleAxis(AsoUtility::Deg2RadF(100.0f), AsoUtility::AXIS_Y));
 		uiSt_->SetSt(CONSUMPTION_ST_AVOIDANCE);
+
 	}
 
 	if (state_ != STATE::AVOIDANCE) return;
@@ -461,6 +468,8 @@ void Player::ProcessDownUp(void)
 	{
 		isV_ = true;
 		state_ = STATE::DOWN;
+
+		effect_->SetEffectPos(static_cast<int>(effType_), MV1GetFramePosition(transform_.modelId, 2));
 
 		if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::DOWN)
 			&& anim_->IsEnd()) {
@@ -491,6 +500,12 @@ void Player::ProcessRecovery(void)
 
 	if (isP && uiRecovery_->GetBottlcCnt() > 0) {
 		state_ = STATE::RECOVERY;
+
+		effect_->Play(
+			static_cast<int>(EFFECT::HP_ABSOLUTE),
+			VGet(transform_.pos.x, transform_.pos.y + 100.0f, transform_.pos.z),
+			AsoUtility::VECTOR_ZERO,
+			VScale(AsoUtility::VECTOR_ONE, 10.0f));
 	}
 
 	if (state_ != STATE::RECOVERY) return;

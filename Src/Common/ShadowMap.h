@@ -7,10 +7,12 @@ public:
 	~ShadowMap(void);
 	void AddShadowMapLight(VECTOR lightPos);
 	void AddShadowMapDrawArea(VECTOR minPos, VECTOR maxPos);
+	void AddShadowMapAdjustDepth(float depth);
 	void DrawSetup(void);
 	void DrawEnd(void);
 	void SetShadow(void);
 	void EndShadow(void);
+	void TestDraw(void);
 	void Release(void);
 
 private:

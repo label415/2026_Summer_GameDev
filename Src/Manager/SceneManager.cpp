@@ -170,7 +170,7 @@ void SceneManager::Draw(void)
 		camera_->DrawDebug();
 
 		// Effekseerにより再生中のエフェクトを描画する。
-		DrawEffekseer3D();
+		/*DrawEffekseer3D();*/
 	}
 }
 

@@ -4,7 +4,14 @@
 #include "../../../Application.h"
 #include "UISt.h"
 
-UISt::UISt(void)
+UISt::UISt(float posX, float posY, float flameScl,
+	float stSclX, float stSclY, float st)
+	:
+	pos_(posX, posY),
+	st_(st),
+	flameScl_(flameScl),
+	stSclX_(stSclX),
+	stSclY_(stSclY)
 {
 	active_ = true;
 }
@@ -19,19 +26,29 @@ void UISt::Update(void)
 
 void UISt::Draw(void)
 {
+	// îwåiÉoÅ[ÇÃï`âÊ
 	DrawRotaGraph(
 		pos_.x,
 		pos_.y,
-		0.7f, 0.0f, stUi1_, true);
+		flameScl_, 0.0f, stUi1_, true);
 
-	float left = pos_.x - IMG_SIZE_X / 2.9f;
-	float right = pos_.x + IMG_SIZE_X / 2.9f * (st_ * 0.01f);
+	float hpRate = st_ / 100.0f;
+	float realHalfWidth = IMG_SIZE_X / stSclX_;
+	float realHalfHeight = IMG_SIZE_Y / stSclY_;
 
-	DrawExtendGraphF(
-		pos_.x - IMG_SIZE_X / 2.9f,
-		pos_.y - IMG_SIZE_Y / 4,
-		right,
-		pos_.y + IMG_SIZE_Y / 4,
+	float left = pos_.x - realHalfWidth;
+	float top = pos_.y - realHalfHeight;
+	float bottom = pos_.y + realHalfHeight;
+
+	int srcWidth = static_cast<int>(IMG_SIZE_X * hpRate);
+	float currentBarRight = left + (realHalfWidth * 2.0f * hpRate);
+
+	// HPÉoÅ[
+	DrawRectExtendGraphF(
+		left, top,
+		currentBarRight, bottom,
+		0, 0, srcWidth,
+		static_cast<int>(IMG_SIZE_Y),
 		stUi2_, true);
 }
 
@@ -62,6 +79,4 @@ void UISt::InitTransform(void)
 
 void UISt::InitPost(void)
 {
-	pos_ = { Application::SCREEN_SIZE_X / 4 , 60 };
-	st_ = MAX_ST;
 }

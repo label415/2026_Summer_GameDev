@@ -38,7 +38,8 @@ public:
 	//各部位のタグ
 	enum class EFFECT {
 		NONE,
-		BLOOD
+		BLOOD,
+		HP_ABSOLUTE,
 	};
 
 	//初期Y軸角度

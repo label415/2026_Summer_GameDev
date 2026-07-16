@@ -114,7 +114,10 @@ void EnemyDragon::InitLoad(void)
 	transform_.SetModel(
 		resMng_.LoadModelDuplicate(ResourceManager::SRC::ENEMY_DRAGON));
 
-	uiHp_ = new UIHp();
+	uiHp_ = new UIHp(
+		Application::SCREEN_SIZE_X / 2,
+		Application::SCREEN_SIZE_Y - 75.0f,
+		1.3f, 1.57f, 2.0f);
 	uiHp_->Load();
 }
 
@@ -981,7 +984,7 @@ void EnemyDragon::HitDamage(bool isHit)
 						isInvincible_ = true;
 						invincibleTimer_ = INVINCIBLE_TIME;
 						effect_->Play(static_cast<int>(EFFECT::BLOOD));
-						effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), VGet(5.0f, 5.0f, 5.0f));
+						effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), VGet(7.5f, 7.5f, 7.5f));
 
 						VECTOR diff = VSub(colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown());
 						VECTOR center = VAdd(colliderCapsule1->GetPosDown(), VScale(diff, 0.5f));
@@ -999,5 +1002,5 @@ void EnemyDragon::HitDamage(bool isHit)
 
 void EnemyDragon::DrawHp(void)
 {
-	/*if (uiHp_) { uiHp_->Draw(); }*/
+	if (uiHp_) { uiHp_->Draw(); }
 }

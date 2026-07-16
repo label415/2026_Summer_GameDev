@@ -14,7 +14,9 @@ public:
 
     // コンストラクタ
     // maxHp は省略時 100.0f
-    UISt(void);
+    UISt(float posX, float posY, float flameScl = 1.0f,
+        float stSclX = 1.0f, float stSclY = 1.0f, float st = MAX_ST);
+    // デストラクタ
     // デストラクタ
     ~UISt(void) override;
     // 更新
@@ -53,6 +55,10 @@ private:
     Vector2 pos_;
 
     float st_;
+
+    float flameScl_;
+    float stSclX_;
+    float stSclY_;
 };
 
 

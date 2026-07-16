@@ -6,19 +6,18 @@ class Vector2;
 class UIHp : public UIBase
 {
 public:
+
     // コンストラクタ
-    // maxHp は省略時 100.0f
-    UIHp(void);
+    UIHp(float posX, float posY,float flameScl = 1.0f,
+        float hpSclX = 1.0f, float hpSclY = 1.0f, float hp = MAX_HP);
     // デストラクタ
     ~UIHp(void) override;
     // 更新
     void Update(void) override;
     // 描画
     void Draw(void) override;
-
     // ダメージ
     void SetHp(float delta);
-
     //回復
     void SetHpAbsolute(float hp);
 
@@ -48,5 +47,9 @@ private:
     Vector2 pos_;
 
     float hp_;
+
+    float flameScl_;
+    float hpSclX_;
+    float hpSclY_;
 };
 
