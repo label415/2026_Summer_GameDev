@@ -29,6 +29,7 @@ void ResourceManager::Init(void)
 	static std::wstring PATH_MDL = Application::PATH_MODEL;
 	static std::wstring PATH_FONT = Application::PATH_FONT;
 	static std::wstring PATH_EFF = Application::PATH_EFFECT;
+	static std::wstring PATH_SND = Application::PATH_SOUND;
 
 	Resource* res;
 
@@ -136,7 +137,7 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::SOUND, PATH_IMG + L"‰öb‚Ì‘«‰¹.mp3");
 	resourcesMap_.emplace(SRC::SE_4, res);
 
-	res = new RES(RES_T::SOUND, PATH_IMG + L"Œˆ’èƒ{ƒ^ƒ“‚ğ‰Ÿ‚·9.mp3");
+	res = new RES(RES_T::SOUND, PATH_SND + L"title.mp3");
 	resourcesMap_.emplace(SRC::SE_5, res);
 
 	res = new RES(RES_T::SOUND, PATH_IMG + L"Œ•‚Åa‚é2.mp3");

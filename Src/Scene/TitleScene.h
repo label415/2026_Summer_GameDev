@@ -54,8 +54,6 @@ private:
 	//ポーズリストの選択
 	int selectIndex_;
 
-	int i;
-
 	//選択リスト
 	std::wstring pasueList_[LIST_MAX] =
 	{

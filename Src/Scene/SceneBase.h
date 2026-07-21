@@ -2,6 +2,7 @@
 class ResourceManager;
 class SceneManager;
 class FontManager;	
+class SoundManager;
 
 class SceneBase
 {
@@ -35,5 +36,13 @@ protected:
 
 	// フォント管理
 	FontManager& fontMng_;
+
+	// サウンド管理
+	SoundManager& sonMng_;
+
+	// BGMのハンドル
+	int bgm_;
+	// BGMの音量
+	int volume_;
 
 };

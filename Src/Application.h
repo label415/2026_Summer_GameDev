@@ -22,7 +22,7 @@ public:
 	static const std::wstring PATH_EFFECT;
 	static const std::wstring PATH_FONT;
 	static const std::wstring PATH_CSV;
-	static const std::wstring PATH_BGM;
+	static const std::wstring PATH_SOUND;
 
 	static const std::wstring PATH_KEY_CONFIG;
 	static const std::wstring PATH_KEY_CONFIG_GAMEPAD;

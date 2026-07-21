@@ -22,11 +22,16 @@ TitleScene::~TitleScene(void)
 
 void TitleScene::Load(void)
 {
-	i = resMng_.Load(ResourceManager::SRC::SE_5).handleId_;
+	bgm_ = resMng_.Load(ResourceManager::SRC::SE_5).handleId_;
 	// フォントハンドルの作成
 	resMng_.Load(ResourceManager::SRC::FONT);
 	titleFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 140, 140);
 	pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 25, 25);
+
+	volume_ = 100;
+
+	// 直接インスタンスを取得して呼び出すことで null 参照を防ぐ
+	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
 }
 
 void TitleScene::LoadEnd(void)
@@ -45,7 +50,6 @@ void TitleScene::Update(void)
 
 	if (nextSene)
 	{
-		son.PlaySE(SoundManager::SeId::WEPON_P1, i);
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAME);
 	}
 

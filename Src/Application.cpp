@@ -15,7 +15,7 @@ const std::wstring Application::PATH_MODEL = L"Data/Model/";
 const std::wstring Application::PATH_EFFECT = L"Data/Effect/";
 const std::wstring Application::PATH_FONT = L"Data/Font/";
 const std::wstring Application::PATH_CSV = L"Data/Csv/";
-const std::wstring Application::PATH_BGM = L"Data/BGM/";
+const std::wstring Application::PATH_SOUND = L"Data/Sound/";
 
 
 void Application::CreateInstance(void)
