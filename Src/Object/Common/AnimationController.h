@@ -42,12 +42,15 @@ public:
 
 	// 再生中のアニメーション
 	int GetPlayType(void) const;
+	int GetPlayType(int type) const;
 
 	// 再生終了
 	bool IsEnd(void) const;
+	bool IsEnd(int type) const;
 
 	// 再生中のアニメーション情報を取得
 	const Animation& GetPlayAnim(void) const;
+	const Animation& GetPlayAnim(int type) const;
 
 	void SetSpecificTime(float state, float end, bool SpecificLoop);
 

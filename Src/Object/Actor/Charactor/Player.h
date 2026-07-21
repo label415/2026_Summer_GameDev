@@ -17,7 +17,9 @@ public:
 		RUN,
 		FAST_RUN,
 		ROLLING,
-		ATTACK,
+		ATTACK_1,
+		ATTACK_2,
+		ATTACK_3,
 		AVOIDANCE,
 		DOWN,
 		UP,
@@ -40,6 +42,73 @@ public:
 		NONE,
 		BLOOD,
 		HP_ABSOLUTE,
+	};
+
+	// 攻撃コンボ状態
+	enum class STATE_ATTACK_COMBO
+	{
+		COMBO_1,
+		COMBO_2,
+		COMBO_3,
+		MAX
+	};
+
+	// 攻撃コンボ制御
+	struct ATTACK_COMBO
+	{
+		// アニメーション種別
+		ANIM_TYPE animType = ANIM_TYPE::IDLE;
+		// コンボ受付開始ステップ
+		float stepInputStart = 0.0f;
+		// コンボ受付終了ステップ
+		float stepInputEnd = 0.0f;
+		// 衝突判定開始ステップ
+		float stepCollisionStart = 0.0f;
+		// 衝突判定終了ステップ
+		float stepCollisionEnd = 0.0f;
+		// アニメーション割り込みステップ
+		float stepInterrupt = 0.0f;
+		// 移動入力時の移動速度
+		float moveSpeed = 0.0f;
+		// 次のコンボ状態
+		STATE_ATTACK_COMBO nextCombo = STATE_ATTACK_COMBO::MAX;
+		// 次のコンボに必要なアクション
+		std::function<bool(void)> actionNextCombo = nullptr;
+		// 次のコンボに繋げるか
+		bool isNextCombo = false;
+		// ノックバックするか
+		bool isKnockBack = false;
+		// 追加の初期処理
+		std::function<void(void)> extraInit = nullptr;
+		// 追加の更新処理
+		std::function<void(void)> extraUpdate = nullptr;
+		// 追加の割込条件
+		std::function<bool(ATTACK_COMBO&)> isExtraInterrupt = nullptr;
+		// 追加の終了条件
+		std::function<bool(void)> isExtraEnd = nullptr;
+		// 更新ステップ
+		float step = 0.0f;
+
+		// コンボ受付有効ステップ
+		bool IsValidCombo(float step) const
+		{
+			return step > stepInputStart
+				&& step < stepInputEnd;
+		}
+
+		// 衝突判定有効ステップ
+		bool IsValidCollsion(float step) const
+		{
+			return step > stepCollisionStart
+				&& step < stepCollisionEnd;
+		}
+
+		// 割り込み有効ステップ
+		bool IsValidInterrupt(float step) const
+		{
+			return step > stepInterrupt;
+		}
+
 	};
 
 	//初期Y軸角度
@@ -119,6 +188,11 @@ protected:
 	void UpdateProcessPost(void)override;
 
 private:
+
+	// 攻撃コンボデータ
+	std::map<STATE_ATTACK_COMBO, ATTACK_COMBO> atkComboData_;
+
+	STATE_ATTACK_COMBO stateAtkCombo_;
 
 	//武器
 	WeponBase* wepon_;

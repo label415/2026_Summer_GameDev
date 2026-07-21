@@ -406,12 +406,6 @@ void Camera::Collision(void)
 			{
 				const auto& hit = hits.Dim[i];
 
-				//// 除外フレームは無視する
-				//if (colliderModel->IsExcludeFrame(hit.FrameIndex))
-				//{
-				//	continue;
-				//}
-
 				// 対象フレーム以外は無視する
 				if (!colliderModel->IsTargetFrame(hit.FrameIndex))
 				{

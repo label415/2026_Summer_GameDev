@@ -835,7 +835,6 @@ void EnemyDragon::UpdateBreathAttack(void)
 	if(anim_->GetPlayAnim().step >= 27.0f)
 	{
 		if (attackCnt_ <= 2.0f) {
-			isAttack_ = true;
 			anim_->SetSpecificTime(27.0f, 30.0f, true);
 			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
 			wepon_->SetIsAttack(true);

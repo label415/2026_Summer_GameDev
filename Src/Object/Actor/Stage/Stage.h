@@ -43,7 +43,7 @@ private:
 	const std::vector<std::wstring> EXCLUDE_FRAME_NAMES = { L"Ground", };
 
 	// ‘ÎÛƒtƒŒ[ƒ€
-	const std::vector<std::wstring> TARGET_FRAME_NAMES = { L"Ground", };
+	const std::vector<std::wstring> TARGET_FRAME_NAMES = { L"Ground", L"Rocka" };
 
 	std::vector<int> frameOpacityRate_;
 

@@ -96,8 +96,8 @@ bool ColliderModel::IsHit(VECTOR pos1, VECTOR pos2, bool isExclude, bool isTarge
 		{
 			return false;
 		}
-		// 対象フレーム以外は無視する
-		if (isTarget && !IsTargetFrame(hits.FrameIndex))
+		// 対象フレームは無視する
+		if (isTarget && IsTargetFrame(hits.FrameIndex))
 		{
 			return false;
 		}

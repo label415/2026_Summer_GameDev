@@ -165,8 +165,43 @@ int AnimationController::GetPlayType(void) const
 	return playType_;
 }
 
+int AnimationController::GetPlayType(int type) const
+{
+	auto it = animations_.find(type);
+	if (it == animations_.end()) {
+		return -1;
+	}
+
+	return playType_;
+}
+
 bool AnimationController::IsEnd(void) const
 {
+	bool ret = false;
+
+	if (isLoop_)
+	{
+		// ループ設定されているなら、
+		// 無条件で終了しないを返す
+		return ret;
+	}
+
+	if (playAnim_.step >= playAnim_.totalTime)
+	{
+		// 再生時間を過ぎたらtrue
+		return true;
+	}
+
+	return ret;
+
+}
+
+bool AnimationController::IsEnd(int type) const
+{
+	auto it = animations_.find(type);
+	if (it == animations_.end()) {
+		return false;
+	}
 
 	bool ret = false;
 
@@ -189,6 +224,15 @@ bool AnimationController::IsEnd(void) const
 
 const AnimationController::Animation& AnimationController::GetPlayAnim(void) const
 {
+	return playAnim_;
+}
+
+const AnimationController::Animation& AnimationController::GetPlayAnim(int type) const
+{
+	auto it = animations_.find(type);
+	if (it == animations_.end()) {
+		return Animation();
+	}
 	return playAnim_;
 }
 

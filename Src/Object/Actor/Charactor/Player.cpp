@@ -254,8 +254,12 @@ void Player::InitAnimation(void)
 		25.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
 	anim_->Add(static_cast<int>(ANIM_TYPE::FAST_RUN),
 		30.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
-	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK),
-		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK));
+	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK_1),
+		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_1));
+	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK_2),
+		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_2));
+	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK_3),
+		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_3));
 	anim_->Add(static_cast<int>(ANIM_TYPE::AVOIDANCE),
 		80.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_AVOIDANCE));
 	anim_->Add(static_cast<int>(ANIM_TYPE::DOWN),
@@ -299,6 +303,43 @@ void Player::InitPost(void)
 	effect_->Add(
 		static_cast<int>(EFFECT::HP_ABSOLUTE),
 		(Application::PATH_EFFECT + L"Absolute.efkefc"));
+
+	ATTACK_COMBO data;
+	// 横切り攻撃(アニメーション時間：0.0～72.0)
+	// コンボ受付開始、衝突判定開始
+	data = {
+		ANIM_TYPE::ATTACK_1,
+		15.0f, 50.0f, 24.0f, 38.0f, 55.0f, 8.0f,
+		STATE_ATTACK_COMBO::COMBO_2, [this](void) { return false; }, false,
+		false,
+		nullptr, nullptr, nullptr, nullptr,
+	};
+	atkComboData_.emplace(
+		STATE_ATTACK_COMBO::COMBO_1, data);
+
+	// 縦切り攻撃(アニメーション時間：0.0～68.0)
+	// コンボ受付開始、衝突判定開始
+	data = {
+		ANIM_TYPE::ATTACK_2,
+		10.0f, 40.0f, 18.0f, 32.0f, 50.0f, 5.0f,
+		STATE_ATTACK_COMBO::COMBO_3, [this](void) { return false; }, false,
+		false,
+		nullptr, nullptr, nullptr, nullptr,
+	};
+	atkComboData_.emplace(
+		STATE_ATTACK_COMBO::COMBO_2, data);
+
+	// 回転攻撃
+	// コンボ受付開始、衝突判定開始
+	data = {
+		ANIM_TYPE::ATTACK_3,
+		0.0f, 0.0f, 26.0f, 34.0f, 95.0f, 12.0f,
+		STATE_ATTACK_COMBO::MAX, [this]() { return false; }, false,
+		true,
+		nullptr, nullptr, nullptr, nullptr,
+	};
+	atkComboData_.emplace(
+		STATE_ATTACK_COMBO::COMBO_3, data);
 }
 
 void Player::ProcessMove(void)
@@ -307,10 +348,9 @@ void Player::ProcessMove(void)
 	movePow_ = AsoUtility::VECTOR_ZERO;
 	VECTOR dir = AsoUtility::VECTOR_ZERO;
 
-	if (state_ == STATE::ATTACK
-		|| state_ == STATE::AVOIDANCE
-		|| state_ == STATE::DOWN
-		|| state_ == STATE::RECOVERY) {
+	if (state_ != STATE::IDLE
+		&& state_ != STATE::RUN
+		&& state_ != STATE::FAST_RUN) {
 		return;
 	}
 
@@ -396,10 +436,11 @@ void Player::ProcessAttack(void)
 			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
 	}
 
-	if (isHitAttack && !isJump_ && state_ != STATE::ATTACK
-		&& state_ != STATE::AVOIDANCE
-		&& state_ != STATE::DOWN
-		&& state_ != STATE::RECOVERY) {
+	if (isHitAttack && !isJump_
+		&& (state_ == STATE::IDLE
+		|| state_ == STATE::RUN
+		|| state_ == STATE::FAST_RUN)) 
+	{
 		state_ = STATE::ATTACK;
 		uiSt_->SetSt(CONSUMPTION_ST_ATTACK);
 	}
@@ -407,10 +448,9 @@ void Player::ProcessAttack(void)
 	if (state_ != STATE::ATTACK) return;
 
 	anim_->Play(
-		static_cast<int>(ANIM_TYPE::ATTACK), false);
+		static_cast<int>(ANIM_TYPE::ATTACK_1), false);
 
 	if (anim_->GetPlayAnim().step >= STATE_ATTACK_CILLIDER) {
-		isAttack_ = true;
 		wepon_->SetCollider();
 	}
 
@@ -432,10 +472,9 @@ void Player::ProcessAvoidance(void)
 	}
 
 	if (isP && !isJump_
-		&& state_ != STATE::ATTACK
-		&& state_ != STATE::AVOIDANCE
-		&& state_ != STATE::DOWN
-		&& state_ != STATE::RECOVERY)
+		&& (state_ == STATE::IDLE
+		|| state_ == STATE::RUN
+		|| state_ == STATE::FAST_RUN))
 	{
 		state_ = STATE::AVOIDANCE;
 		lastQrot_ = transform_.quaRotLocal;
