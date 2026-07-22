@@ -9,6 +9,7 @@ class EnemyManager;
 class EnemyBase;
 class ColliderCapsule;
 class ShadowMap;
+class PauseScene;
 
 class GameScene : public SceneBase
 {
@@ -43,6 +44,8 @@ private:
 
 	//ロックオン角度
 	static constexpr float VIEW_ANGLE = 80.0f;
+
+	PauseScene* pauseScene_;
 
 	//スカイドーム
 	SkyDome* skydome_;

@@ -7,57 +7,48 @@
 #include "../Manager/SoundManager.h"
 #include "../Manager/FontManager.h"
 #include "TitleScene.h"
+#include "PauseScene.h"
 
-TitleScene::TitleScene(void)
-	:
-	SceneBase()
+PauseScene::PauseScene(void)
 {
 }
 
-TitleScene::~TitleScene(void)
+PauseScene::~PauseScene(void)
 {
 }
 
-void TitleScene::Load(void)
+void PauseScene::LoadEnd(void)
 {
-	bgm_ = resMng_.Load(ResourceManager::SRC::TITLE_BGM).handleId_;
-	volume_ = 50;
-	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
-
 	// フォントハンドルの作成
 	resMng_.Load(ResourceManager::SRC::FONT);
 	pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 30, 30);
-
-	titleImg_ = resMng_.Load(ResourceManager::SRC::TITLE_IMG).handleId_;
 	selectImg_ = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
-
-	InputManager::GetInstance().SetMouseFlage(true);
 
 	selectIndex_ = 0;
 	selectImgX_ = 0.0f;
 	selectImgY_ = 0.0f;
+
 	isHovered = true;
+	isAlive_ = false;
 }
 
-void TitleScene::LoadEnd(void)
-{
-}
+// PauseScene.cpp
 
-void TitleScene::Update(void)
+void PauseScene::Update(void)
 {
 	auto& ins = InputManager::GetInstance();
 
+	// === 1. パッド / キーボードの操作判定 ===
 	InputManager::JOYPAD_IN_STATE padState =
 		ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
 	VECTOR dir = AsoUtility::VECTOR_ZERO;
 	dir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
 
-	constexpr float STICK_DEAD_ZONE = 0.5f;
+	constexpr float STICK_DEAD_ZONE = 0.35f;
 
 	bool isUp = (dir.z > STICK_DEAD_ZONE);
 	bool isDown = (dir.z < -STICK_DEAD_ZONE);
-
 
 	if (isUp)
 	{
@@ -69,6 +60,7 @@ void TitleScene::Update(void)
 				selectIndex_ = LIST_MAX - 1;
 			}
 			isStickInput_ = true;
+			// スティック操作があったらホバー状態にする
 			isHovered = true;
 		}
 	}
@@ -82,6 +74,7 @@ void TitleScene::Update(void)
 				selectIndex_ = 0;
 			}
 			isStickInput_ = true;
+			// スティック操作があったらホバー状態にする
 			isHovered = true;
 		}
 	}
@@ -90,14 +83,48 @@ void TitleScene::Update(void)
 		isStickInput_ = false;
 	}
 
+	// === 2. マウスの操作判定（★ここに追加） ===
+	Vector2 mousePos = ins.GetMousePos();
+
+	// ★重要：マウスが実際に動いた場合のみ、選択インデックスを更新する
+	if (mousePos.x != prevMousePos_.x || mousePos.y != prevMousePos_.y)
+	{
+		for (int i = 0; i < LIST_MAX; ++i)
+		{
+			// PauseSceneのY座標計算式
+			int itemPosY = static_cast<int>(Application::SCREEN_SIZE_Y / 2.0f - 90) + (70 * i);
+
+			if (mousePos.y >= itemPosY && mousePos.y < itemPosY + 50)
+			{
+				isHovered = true;
+				selectIndex_ = i;
+				// 項目に乗ったらループを抜ける
+				break;
+			}
+			else
+			{
+				// どの項目にも乗っていない場合はホバーをオフにする（オプション）
+				// isHovered = false; 
+			}
+		}
+		// 今のマウス位置を記憶
+		prevMousePos_ = mousePos;
+	}
+
+	// === 3. 決定処理 ===
 	bool nextSene = ins.IsTrgMouseLeft()
 		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 
 	if (nextSene && isHovered)
 	{
-		if (selectIndex_ == static_cast<int>(LIST::始める))
+		if (selectIndex_ == static_cast<int>(LIST::ゲームに戻る))
 		{
-			sceMng_.ChangeScene(SceneManager::SCENE_ID::GAME);
+			isAlive_ = false;
+		}
+		// 念のため else if に変更
+		else if (selectIndex_ == static_cast<int>(LIST::タイトルに戻る))
+		{
+			sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
 		}
 		else if (selectIndex_ == static_cast<int>(LIST::ゲーム終了))
 		{
@@ -106,34 +133,38 @@ void TitleScene::Update(void)
 	}
 }
 
-void TitleScene::Draw(void)
+void PauseScene::Draw(void)
 {
-	DrawRotaGraph(
-		Application::SCREEN_SIZE_X / 2,
-		Application::SCREEN_SIZE_Y / 2 - 100,
-		0.8f, 0.0f,
-		titleImg_, true);
+	const auto centerY = Application::SCREEN_SIZE_Y / 2;
+	auto height = 200;
 
-	Vector2 mousePos = InputManager::GetInstance().GetMousePos();
+	// 背景の半透明黒（セロファン）
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 168);
+	DrawBoxAA(
+		height, centerY - height * 1.0f,
+		Application::SCREEN_SIZE_X - height, centerY + height * 1.0f,
+		0x000000,
+		true, 1.0f
+	);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	// マウスが動いた場合のみ、マウスでホバー中の項目に切り替える
-	for (int i = 0; i < LIST_MAX; ++i)
-	{
-		int itemPosY = static_cast<int>(Application::SCREEN_SIZE_Y / 1.6f) + (70 * i);
+	// 白枠
+	DrawBoxAA(
+		height, centerY - height * 1.0f,
+		Application::SCREEN_SIZE_X - height, centerY + height * 1.0f,
+		0xffffff,
+		false,
+		3.0f);
 
-		if (mousePos.y >= itemPosY && mousePos.y < itemPosY + 50)
-		{
-			isHovered = true;
-			selectIndex_ = i;
-			break;
-		}
-	}
+	// --- マウス判定のループがあった場所 ---
+	// ★ここにあった mousePos の取得と for文のループは完全に削除します。
+	// --------------------------------------
 
 	// 選択中の項目のY座標を算出
 	float selectImgY = Application::SCREEN_SIZE_Y / 2 + 105.0f;
 	if (selectIndex_ >= 0 && selectIndex_ < LIST_MAX)
 	{
-		int itemPosY = static_cast<int>(Application::SCREEN_SIZE_Y / 1.6f) + (70 * selectIndex_);
+		int itemPosY = static_cast<int>(Application::SCREEN_SIZE_Y / 2.0f - 90) + (70 * selectIndex_);
 		selectImgY = static_cast<float>(itemPosY + 15);
 	}
 
@@ -156,7 +187,7 @@ void TitleScene::Draw(void)
 			pauseFont_);
 
 		int posX = (Application::SCREEN_SIZE_X / 2) - (stringWidth / 2);
-		int posY = static_cast<int>(Application::SCREEN_SIZE_Y / 1.6f) + (70 * i);
+		int posY = static_cast<int>(Application::SCREEN_SIZE_Y / 2.0f - 90) + (70 * i);
 
 		DrawFormatStringToHandle(
 			posX,
@@ -167,7 +198,6 @@ void TitleScene::Draw(void)
 	}
 }
 
-void TitleScene::Release(void)
+void PauseScene::Release(void)
 {
-	DeleteFontToHandle(pauseFont_);
 }

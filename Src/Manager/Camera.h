@@ -105,6 +105,10 @@ public:
 	// 衝突対象となるコライダを登録
     void AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider);
 
+	void SetIsMouseInput(bool isMouseInput) { isMouseInput_ = isMouseInput; }
+
+	bool GetIsMouseInput(void) { return isMouseInput_; }
+
 protected:
 	// リソースロード
 	void InitLoad(void) override{}
@@ -189,5 +193,7 @@ private:
 	float mouseY;
 	float preMouseX;
 	float preMouseY;
+
+	bool isMouseInput_;
 
 };

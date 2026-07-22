@@ -76,12 +76,13 @@ void Player::HitDamage(bool isHit)
 
 		playerPos = colliderCapsule1->GetFollow()->pos;
 
-
 		for (const auto& hitCol : hitColliders_)
 		{
 			for (const auto& i : hitCol.second)
 			{
-				// 敵本体（ENEMY）との当たり判定
+				// -------------------------------------------------------------
+				// 1. 敵本体（ENEMY）との当たり判定
+				// -------------------------------------------------------------
 				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY) {
 
@@ -114,26 +115,37 @@ void Player::HitDamage(bool isHit)
 
 				if (isV_) continue;
 
-				bool isModel = false;
-				for (const auto& hitCol : hitColliders_)
+				// -------------------------------------------------------------
+				// 2. プレイヤーと敵の間に障害物（ステージモデル）があるか確認
+				// -------------------------------------------------------------
+				bool isBlockedByWall = false; // 壁で遮られているか
+
+				for (const auto& stageColPair : hitColliders_)
 				{
-					for (const auto& i : hitCol.second)
+					for (const auto& stageCol : stageColPair.second)
 					{
-						if (i->GetShape() == ColliderBase::SHAPE::MODEL
-							&& i->GetTag() == ColliderBase::TAG::STAGE) {
+						if (stageCol->GetShape() == ColliderBase::SHAPE::MODEL
+							&& stageCol->GetTag() == ColliderBase::TAG::STAGE) {
 							const ColliderModel* colliderModel =
-								dynamic_cast<ColliderModel*>(i);
+								dynamic_cast<ColliderModel*>(stageCol);
 							if (colliderModel == nullptr) continue;
 
+							// 敵とプレイヤーの間の直線上にモデルがあれば true
 							if (colliderModel->IsHit(enemyPos, playerPos, false, false)) {
-								isModel = true;
+								isBlockedByWall = true;
+								break;
 							}
 						}
 					}
+					if (isBlockedByWall) break;
 				}
 
+				// 壁で遮られているなら、以下の攻撃（武器/ブレス）判定をスキップする
+				if (isBlockedByWall) continue;
 
-				// 敵の武器（カプセル）との衝突
+				// -------------------------------------------------------------
+				// 3. 敵の武器（カプセル）との衝突
+				// -------------------------------------------------------------
 				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
 
@@ -145,7 +157,7 @@ void Player::HitDamage(bool isHit)
 						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
 						colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius());
 
-					if (hits && !isModel) {
+					if (hits) {
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
 						uiHp_->SetHp(40.0f);
@@ -156,7 +168,9 @@ void Player::HitDamage(bool isHit)
 					}
 				}
 
-				// 敵の武器（ブレス球体）との衝突
+				// -------------------------------------------------------------
+				// 4. 敵の武器（ブレス球体）との衝突
+				// -------------------------------------------------------------
 				if (i->GetShape() == ColliderBase::SHAPE::SPHERE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
 
@@ -168,8 +182,7 @@ void Player::HitDamage(bool isHit)
 						colliderSphere->GetPos(), colliderSphere->GetRadius(),
 						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius());
 
-					// 事前チェックした isModel を使うので、処理順に左右されず確実に防げる！
-					if (hits && !isModel) {
+					if (hits) {
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
 						uiHp_->SetHp(40.0f);
@@ -546,6 +559,10 @@ void Player::ProcessDownUp(void)
 			anim_->Play(
 				static_cast<int>(ANIM_TYPE::UP), false);
 		}
+
+		if (!uiHp_->IsActive()) {
+			ProcessDie();
+		}
 		else if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::UP)
 			&& anim_->IsEnd()) {
 			state_ = STATE::IDLE;
@@ -598,6 +615,11 @@ void Player::ProcessRecovery(void)
 	}
 
 
+}
+
+void Player::ProcessDie(void)
+{
+	state_ = STATE::DIE;
 }
 
 void Player::CollisionReserve(void)
@@ -666,6 +688,7 @@ void Player::CollisionReserve(void)
 
 void Player::UpdateProcess(void)
 {
+
 	effect_->SetEffectPos(static_cast<int>(effType_), transform_.pos);
 
 	isV_ = false;

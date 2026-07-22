@@ -152,7 +152,7 @@ void SceneManager::Draw(void)
 	camera_->SetBeforeDraw();
 
 	// Effekseerにより再生中のエフェクトを更新する。
-	UpdateEffekseer3D();
+	/*UpdateEffekseer3D();*/
 
 	// ロード中ならロード画面を描画
 	if (isSceneChanging_)

@@ -49,6 +49,7 @@ public:
 		RIGHT,
 		TOP,
 		DOWN,
+		START,
 		R_TRIGGER,
 		L_TRIGGER,
 		MAX

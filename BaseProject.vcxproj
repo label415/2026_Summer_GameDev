@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Scene\PauseScene.cpp" />
     <ClCompile Include="Src\Common\ShadowMap.cpp" />
     <ClCompile Include="Src\Manager\SoundManager.cpp" />
     <ClCompile Include="Src\Object\Actor\UI\UIRecovery.cpp" />
@@ -81,6 +82,7 @@
     <ClCompile Include="Src\Object\Actor\Wepon\WeponFlameThrower.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Scene\PauseScene.h" />
     <ClInclude Include="Src\Common\ShadowMap.h" />
     <ClInclude Include="Src\Manager\SoundManager.h" />
     <ClInclude Include="Src\Object\Actor\UI\UIRecovery.h" />

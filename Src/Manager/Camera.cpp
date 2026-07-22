@@ -115,6 +115,8 @@ void Camera::InitPost(void)
 	mouseY = ins.GetMousePos().y;
 	preMouseX = ins.GetMousePos().x;
 	preMouseY = ins.GetMousePos().y;
+
+	isMouseInput_ = false;
 }
 
 const VECTOR& Camera::GetPos(void) const
@@ -339,6 +341,7 @@ void Camera::SetBeforeDrawFree(void)
 
 void Camera::SetBeforeDrawFollow(void)
 {
+	if (!isMouseInput_)return;
 
 	// ÉJÉÅÉâëÄçÏ(âÒì])
 	ProcessRot(true);
@@ -473,7 +476,8 @@ void Camera::RotKeyboard(bool isLimit)
 		angles_.y += mouseMove.x * MROT_POW_RAD;
 	}
 
-	if(SceneManager::GetInstance().GetSceneID() == SceneManager::SCENE_ID::GAME)
+	if(SceneManager::GetInstance().GetSceneID() == SceneManager::SCENE_ID::GAME
+		&& isMouseInput_)
 	{
 		ins.SetMousePos(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
 	}

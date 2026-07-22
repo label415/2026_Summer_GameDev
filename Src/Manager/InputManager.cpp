@@ -49,6 +49,8 @@ void InputManager::Init(void)
 	InputManager::GetInstance().Add(KEY_INPUT_LSHIFT);
 
 	InputManager::GetInstance().Add(KEY_INPUT_BACKSLASH);
+	InputManager::GetInstance().Add(KEY_INPUT_ESCAPE);
+	
 
 	InputManager::MouseInfo info;
 
@@ -341,6 +343,9 @@ InputManager::JOYPAD_IN_STATE InputManager::GetJPadInputState(JOYPAD_NO no)
 
 		idx = static_cast<int>(JOYPAD_BTN::DOWN);
 		ret.ButtonsNew[idx] = d.Buttons[0];// A
+
+		idx = static_cast<int>(JOYPAD_BTN::START);
+		ret.ButtonsNew[idx] = d.Buttons[6];// A
 
 		idx = static_cast<int>(JOYPAD_BTN::R_TRIGGER);
 		ret.ButtonsNew[idx] = x.RightTrigger;// R_TRIGGER

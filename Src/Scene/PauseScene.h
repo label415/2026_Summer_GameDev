@@ -1,19 +1,16 @@
 #pragma once
+#include <string>
 #include "SceneBase.h"
-#include "../Object/Common/Transform.h"
-#include "../Object/Common/AnimationController.h"
 
-class SkyDome;
-
-class TitleScene : public SceneBase
+class PauseScene :public SceneBase
 {
-
 public:
 
 	enum class LIST
 	{
-		始める,		// 続ける
-		ゲーム終了, // ゲームの終了
+		ゲームに戻る,
+		タイトルに戻る,
+		ゲーム終了,
 		MAX
 	};
 
@@ -21,13 +18,13 @@ public:
 	static constexpr int LIST_MAX = static_cast<int>(LIST::MAX);
 
 	// コンストラクタ
-	TitleScene(void);
+	PauseScene(void);
 
 	// デストラクタ
-	~TitleScene(void) override;
+	~PauseScene(void) override;
 
 	//読み込み
-	void Load(void)override;
+	void Load(void)override{}
 
 	//読み込み後の初期化
 	void LoadEnd(void)override;
@@ -41,7 +38,13 @@ public:
 	// 解放
 	void Release(void) override;
 
+	void SetIsAlive(bool isAlive) { isAlive_ = isAlive; }
+
+	bool GetIsAlive(void) const { return isAlive_; }
+
 private:
+
+	Vector2 prevMousePos_;
 
 	//ポーズフォント
 	int pauseFont_;
@@ -60,11 +63,15 @@ private:
 
 	bool isStickInput_;
 
+	bool isAlive_;
+
 	//選択リスト
 	std::wstring pasueList_[LIST_MAX] =
 	{
-		L"GAME STATE",// 続ける
-		L"QUIT",   // ゲームの終了
+		L"ゲームに戻る",
+		L"タイトルに戻る",
+		L"ゲーム終了",
 	};
 
 };
+

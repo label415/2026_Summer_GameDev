@@ -60,7 +60,7 @@ public:
 	// エフェクシアの初期化
 	void InitEffekseer(void);
 
-	void SetIsEnd(bool isEnd = false);
+	void SetIsEnd(bool isEnd);
 
 private:
 

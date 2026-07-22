@@ -34,7 +34,9 @@ public:
 		ATTACK,
 		AVOIDANCE,
 		DOWN,
-		RECOVERY
+		RECOVERY,
+		DIE,
+		END,
 	};
 
 	//各部位のタグ
@@ -132,7 +134,7 @@ public:
 	static constexpr float CONSUMPTION_ST_AVOIDANCE = 40.0f;
 
 	//回避時スタミナ消費量
-	static constexpr float CONSUMPTION_ST_ATTACK = 30.0f;
+	static constexpr float CONSUMPTION_ST_ATTACK = 25.0f;
 
 	//攻撃判定発生時間
 	static constexpr float STATE_ATTACK_CILLIDER = 18.0f;
@@ -156,6 +158,8 @@ public:
 
 	//HP描画
 	void DrawHp(void)override;
+
+	const STATE GetState(void)const { return state_; }
 
 protected:
 
@@ -243,6 +247,7 @@ private:
 	void ProcessAvoidance(void);
 	void ProcessDownUp(void);
 	void ProcessRecovery(void);
+	void ProcessDie(void);
 
 	// 衝突判定
 	void CollisionReserve(void) override;

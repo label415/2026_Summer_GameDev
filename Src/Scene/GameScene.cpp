@@ -18,6 +18,7 @@
 #include "../Utility/MatrixUtility.h"
 #include "../Object/Actor/UI/UIHp.h"
 #include "../Common/ShadowMap.h"
+#include "PauseScene.h"
 #include "GameScene.h"
 
 GameScene::GameScene(void)
@@ -49,6 +50,7 @@ void GameScene::Load(void)
 	targetEnemy_ = nullptr;
 	//シャドーマップ読み込み
 	shadowMap_ = new ShadowMap(1024, 1024);
+	pauseScene_ = new PauseScene();
 	//カメラモード変更
 	camera_->SetFollow(&player_->GetTransform());
 	camera_->ChangeMode(Camera::MODE::FOLLOW);
@@ -77,30 +79,36 @@ void GameScene::LoadEnd(void)
 	shadowMap_->AddShadowMapDrawArea(
 		VGet((playerPos.x - shadowDiff), -1.0f, (playerPos.z - shadowDiff)),
 		VGet((playerPos.x + shadowDiff), shadowDiff * 1.5f, (playerPos.z + shadowDiff)));
-
+	pauseScene_->LoadEnd();
 	// コライダ登録
 	AddCollider();
 }
 
 void GameScene::Update(void)
 {
-	// シーン遷移
 
-	if (!player_->GetHP()->IsActive())
-	{
-		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMEOVER);
+	bool isSelect = InputManager::GetInstance().IsTrgDown(KEY_INPUT_ESCAPE)
+	|| InputManager::GetInstance().IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::START);
+
+	if (isSelect) {
+		bool currentStatus = pauseScene_->GetIsAlive();
+		pauseScene_->SetIsAlive(!currentStatus);
 	}
 
-	const auto& enemys = enemys_->GetEnemys();
-	for (auto& enemy : enemys)
-	{
-		if (enemy == nullptr)continue;
-
-		if (!enemy->GetHP()->IsActive())
-		{
-			sceMng_.ChangeScene(SceneManager::SCENE_ID::GAMECLEAR);
-		}
+	if (pauseScene_->GetIsAlive()) {
+		pauseScene_->Update();
+		camera_->SetIsMouseInput(false);
+		InputManager::GetInstance().SetMouseFlage(true);
+		SoundManager::GetInstance().AllStopSE();
+		return;
 	}
+	else {
+		camera_->SetIsMouseInput(true);
+		InputManager::GetInstance().SetMouseFlage(false);
+	}
+
+	// Effekseerにより再生中のエフェクトを更新する。
+	UpdateEffekseer3D();
 
 	skydome_->Update();
 
@@ -158,6 +166,10 @@ void GameScene::Draw(void)
 			0xfff000,
 			true);
 
+	}
+
+	if (pauseScene_->GetIsAlive()) {
+		pauseScene_->Draw();
 	}
 }
 

@@ -90,8 +90,7 @@ void Application::Run(void)
 	SceneManager& sceneManager = SceneManager::GetInstance();
 
 	// ÉQÅ[ÉÄÉãÅ[Év
-	while (ProcessMessage() == 0 &&
-		(CheckHitKey(KEY_INPUT_ESCAPE) == 0 || isEnd_))
+	while (ProcessMessage() == 0 && !isEnd_)
 	{
 
 		inputManager.Update();
@@ -165,7 +164,7 @@ void Application::InitEffekseer(void)
 	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
 }
 
-void Application::SetIsEnd(bool isEnd = false)
+void Application::SetIsEnd(bool isEnd)
 {
 	isEnd_ = isEnd;
 }

@@ -54,7 +54,6 @@ public:
     void PlaySlowSE(SeId id, int handle, int volume = MaxVolumeValue,int slow=2);  // ƒXƒ[SEÄ¶
     void StopSE(SeId id);                                               // “Á’è‚ÌSE‚ğ’â~
     void AllStopSE();                                                   // ‘S‚Ä‚ÌSE‚ğ’â~
-
     void SetSESpeed(SeId id, float speed);
 
 private:
