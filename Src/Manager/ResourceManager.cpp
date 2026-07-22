@@ -108,7 +108,7 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::FONT, PATH_FONT + L"KazukiReiwa.ttf");
 	resourcesMap_.emplace(SRC::FONT, res);
 
-	res = new RES(RES_T::IMG, PATH_IMG + L"TitleëIëÉJÅ[É\Éã.png");
+	res = new RES(RES_T::IMG, PATH_IMG + L"TitleSelect.png");
 	resourcesMap_.emplace(SRC::TITLE_SELECT, res);
 
 	res = new RES(RES_T::IMG, PATH_IMG + L"Hp1.png");
@@ -125,30 +125,68 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::IMG, PATH_IMG + L"RecoveryBottle.png");
 	resourcesMap_.emplace(SRC::UI_RECOVERY_BOTTLE, res);
 
-	res = new RES(RES_T::SOUND, PATH_IMG + L"blip03.mp3");
-	resourcesMap_.emplace(SRC::SE_1, res);
+	res = new RES(RES_T::SOUND, PATH_SND + L"TitleBgm.mp3");
+	resourcesMap_.emplace(SRC::TITLE_BGM, res);
 
-	res = new RES(RES_T::SOUND, PATH_IMG + L"ÉhÉâÉSÉìÇ™âŒÇìfÇ≠.mp3");
-	resourcesMap_.emplace(SRC::SE_2, res);
+	res = new RES(RES_T::SOUND, PATH_SND + L"GameBgm.mp3");
+	resourcesMap_.emplace(SRC::GAME_BGM, res);
 
-	res = new RES(RES_T::SOUND, PATH_IMG + L"ÉhÉâÉSÉìÇÃâHÇŒÇΩÇ´.mp3");
-	resourcesMap_.emplace(SRC::SE_3, res);
+	res = new RES(RES_T::SOUND, PATH_SND + L"Player_Wepon_hit1.mp3");
+	resourcesMap_.emplace(SRC::PLAYER_WEPON_SE1, res);
 
-	res = new RES(RES_T::SOUND, PATH_IMG + L"âˆèbÇÃë´âπ.mp3");
-	resourcesMap_.emplace(SRC::SE_4, res);
+	res = new RES(RES_T::SOUND, PATH_SND + L"1.mp3");
+	resourcesMap_.emplace(SRC::PLAYER_WEPON_SE2, res);
 
-	res = new RES(RES_T::SOUND, PATH_SND + L"title.mp3");
-	resourcesMap_.emplace(SRC::SE_5, res);
+	res = new RES(RES_T::SOUND, PATH_SND + L"Dame.mp3");
+	resourcesMap_.emplace(SRC::PLAYER_DMAGE, res);
 
-	res = new RES(RES_T::SOUND, PATH_IMG + L"åïÇ≈éaÇÈ2.mp3");
-	resourcesMap_.emplace(SRC::SE_6, res);
+	res = new RES(RES_T::SOUND, PATH_SND + L"REVE.mp3");
+	resourcesMap_.emplace(SRC::PLAYER_HER, res);
 
-	res = new RES(RES_T::SOUND, PATH_IMG + L"ìÅÇ≈éaÇÈ4.mp3");
-	resourcesMap_.emplace(SRC::SE_7, res);
+	res = new RES(RES_T::SOUND, PATH_SND + L"PlayerAve.mp3");
+	resourcesMap_.emplace(SRC::PLAYER_AVE, res);
 
-	res = new RES(RES_T::SOUND, PATH_IMG + L"ìÅÇ≈éaÇÈ4.mp3");
-	resourcesMap_.emplace(SRC::SE_7, res);
+	res = new RES(RES_T::SOUND, PATH_SND + L"PlayerWake.mp3");
+	resourcesMap_.emplace(SRC::PLAYER_WAKE, res);
 
+	res = new RES(RES_T::SOUND, PATH_SND + L"PlayerRan.mp3");
+	resourcesMap_.emplace(SRC::PLAYER_RAN, res);
+
+	res = new RES(RES_T::SOUND, PATH_SND + L"DragomRoar.mp3");
+	resourcesMap_.emplace(SRC::ENEMY_ROAR, res);
+
+	res = new RES(RES_T::SOUND, PATH_SND + L"DragomBreath1.mp3");
+	resourcesMap_.emplace(SRC::ENEMY_BREASE1, res);
+
+	res = new RES(RES_T::SOUND, PATH_SND + L"DragomBreath2.mp3");
+	resourcesMap_.emplace(SRC::ENEMY_BREASE2, res);
+
+	res = new RES(RES_T::SOUND, PATH_SND + L"DragomBreath1.mp3");
+	resourcesMap_.emplace(SRC::ENEMY_BREASE1, res);
+
+	res = new RES(RES_T::SOUND, PATH_SND + L"DragomBreath2.mp3");
+	resourcesMap_.emplace(SRC::ENEMY_BREASE2, res);
+
+	res = new RES(RES_T::SOUND, PATH_SND + L"DragoAtr.mp3");
+	resourcesMap_.emplace(SRC::ENEMY_ARE, res);
+
+	res = new RES(RES_T::SOUND, PATH_SND + L"DragomAttack.mp3");
+	resourcesMap_.emplace(SRC::ENEMY_ATTCEK, res);
+
+	res = new RES(RES_T::SOUND, PATH_SND + L"DragonWake.mp3");
+	resourcesMap_.emplace(SRC::ENEMY_WAKE, res);
+
+	res = new RES(RES_T::SOUND, PATH_SND + L"EnemyFliyer_Att1.mp3");
+	resourcesMap_.emplace(SRC::ENEMY_ARE_ENEMY_BREASE1, res);
+
+	res = new RES(RES_T::SOUND, PATH_SND + L"EnemyFliyer_Att2.mp3");
+	resourcesMap_.emplace(SRC::ENEMY_ARE_ENEMY_BREASE2, res);
+
+	res = new RES(RES_T::SOUND, PATH_SND + L"DragomFall.mp3");
+	resourcesMap_.emplace(SRC::ENEMY_FALL , res);
+
+	res = new RES(RES_T::IMG, PATH_IMG + L"TitleImg.png");
+	resourcesMap_.emplace(SRC::TITLE_IMG, res);
 }
 
 void ResourceManager::Release(void)

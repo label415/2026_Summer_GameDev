@@ -3,6 +3,7 @@
 #include "../Utility/AsoUtility.h"
 #include "../Application.h"
 #include "../Manager/InputManager.h"
+#include "../Manager/SceneManager.h"
 #include "../Object/Common/Transform.h"
 #include "../Object/Common/Collider/ColliderModel.h"
 #include "../Object/Common/Collider/ColliderSphere.h"
@@ -472,7 +473,10 @@ void Camera::RotKeyboard(bool isLimit)
 		angles_.y += mouseMove.x * MROT_POW_RAD;
 	}
 
-	ins.SetMousePos(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
+	if(SceneManager::GetInstance().GetSceneID() == SceneManager::SCENE_ID::GAME)
+	{
+		ins.SetMousePos(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
+	}
 
 	// äpìxêßå¿
 	if (isLimit && angles_.x < -LIMIT_X_DW_RAD)

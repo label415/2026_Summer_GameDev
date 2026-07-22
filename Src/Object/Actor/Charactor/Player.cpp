@@ -3,6 +3,7 @@
 #include "../../../Manager/SceneManager.h"
 #include "../../../Manager/Camera.h"
 #include "../../../Manager/InputManager.h"
+#include "../../../Manager/SoundManager.h"
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Utility/MatrixUtility.h"
 #include "../../../Application.h"
@@ -100,6 +101,9 @@ void Player::HitDamage(bool isHit)
 							effType_ = EFFECT::BLOOD;
 							effect_->Play(static_cast<int>(effType_));
 							effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), VGet(5.0f, 5.0f, 5.0f));
+							int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_DMAGE).handleId_;
+							int volume_ = 50;
+							SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, volume_);
 							return;
 						}
 						else {
@@ -145,6 +149,9 @@ void Player::HitDamage(bool isHit)
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
 						uiHp_->SetHp(40.0f);
+						int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_DMAGE).handleId_;
+						int volume_ = 50;
+						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, volume_);
 						return;
 					}
 				}
@@ -166,6 +173,9 @@ void Player::HitDamage(bool isHit)
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
 						uiHp_->SetHp(40.0f);
+						int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_DMAGE).handleId_;
+						int volume_ = 50;
+						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, volume_);
 						return;
 					}
 				}
@@ -351,6 +361,8 @@ void Player::ProcessMove(void)
 	if (state_ != STATE::IDLE
 		&& state_ != STATE::RUN
 		&& state_ != STATE::FAST_RUN) {
+		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WAKE);
+		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
 		return;
 	}
 
@@ -398,10 +410,18 @@ void Player::ProcessMove(void)
 			state_ = STATE::FAST_RUN;
 			uiSt_->SetSt(CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
 			anim_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
+			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WAKE);
+			int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_RAN).handleId_;
+			int volume_ = 50;
+			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_RAN, bgm_, volume_);
 		}
 		else {
 			moveSpeed_ = SPEED_MOVE;
 			anim_->Play(static_cast<int>(ANIM_TYPE::RUN));
+			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
+			int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_WAKE).handleId_;
+			int volume_ = 50;
+			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_WAKE, bgm_, volume_);
 		}
 
 		if (targetTrans_ != nullptr)
@@ -422,6 +442,8 @@ void Player::ProcessMove(void)
 	}
 	else {
 		state_ = STATE::IDLE;
+		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WAKE);
+		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
 		anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 	}
 
@@ -449,6 +471,12 @@ void Player::ProcessAttack(void)
 
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::ATTACK_1), false);
+
+	if (anim_->GetPlayAnim().step == 10.0f) {
+		int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_WEPON_SE1).handleId_;
+		int volume_ = 30;
+		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEPON_SE1, bgm_, volume_);
+	}
 
 	if (anim_->GetPlayAnim().step >= STATE_ATTACK_CILLIDER) {
 		wepon_->SetCollider();
@@ -482,6 +510,9 @@ void Player::ProcessAvoidance(void)
 			Quaternion::Mult(transform_.quaRotLocal,
 				Quaternion::AngleAxis(AsoUtility::Deg2RadF(100.0f), AsoUtility::AXIS_Y));
 		uiSt_->SetSt(CONSUMPTION_ST_AVOIDANCE);
+		int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_AVE).handleId_;
+		int volume_ = 50;
+		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_AVE, bgm_, volume_);
 
 	}
 
@@ -537,9 +568,11 @@ void Player::ProcessRecovery(void)
 	isP = ins.IsTrgDown(KEY_INPUT_R)
 		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
 
-	if (isP && uiRecovery_->GetBottlcCnt() > 0) {
-		state_ = STATE::RECOVERY;
+	if (isP && uiRecovery_->GetBottlcCnt() > 0
+		&& anim_ ->GetPlayType() != static_cast<int>(EFFECT::HP_ABSOLUTE)
+		&& state_ != STATE::RECOVERY) {
 
+		state_ = STATE::RECOVERY;
 		effect_->Play(
 			static_cast<int>(EFFECT::HP_ABSOLUTE),
 			VGet(transform_.pos.x, transform_.pos.y + 100.0f, transform_.pos.z),
@@ -554,10 +587,14 @@ void Player::ProcessRecovery(void)
 	if (anim_->GetPlayAnim().step == 10.0f) {
 		uiHp_->SetHpAbsolute(40.0f);
 		uiRecovery_->SetBottleCnt(1);
+		int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_HER).handleId_;
+		int volume_ = 50;
+		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_HER, bgm_, volume_);
 	}
 
 	if (anim_->IsEnd()) {
 		state_ = STATE::IDLE;
+		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_HER);
 	}
 
 
@@ -636,7 +673,10 @@ void Player::UpdateProcess(void)
 		ct_ = CT;
 	}
 
-	if (state_ == STATE::IDLE || state_ == STATE::RUN || state_ == STATE::DOWN) {
+	if (state_ == STATE::IDLE 
+		|| state_ == STATE::RUN 
+		|| state_ == STATE::DOWN 
+		|| state_ == STATE::RECOVERY) {
 		uiSt_->SetHpAbsolute(RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
 	}
 

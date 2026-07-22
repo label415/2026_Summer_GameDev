@@ -22,16 +22,19 @@ TitleScene::~TitleScene(void)
 
 void TitleScene::Load(void)
 {
-	bgm_ = resMng_.Load(ResourceManager::SRC::SE_5).handleId_;
+	bgm_ = resMng_.Load(ResourceManager::SRC::TITLE_BGM).handleId_;
+	volume_ = 50;
+	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
+
 	// フォントハンドルの作成
 	resMng_.Load(ResourceManager::SRC::FONT);
-	titleFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 140, 140);
-	pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 25, 25);
+	pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 30, 30);
 
-	volume_ = 100;
+	titleImg_ = resMng_.Load(ResourceManager::SRC::TITLE_IMG).handleId_;
+	selectImg_ = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
 
-	// 直接インスタンスを取得して呼び出すことで null 参照を防ぐ
-	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
+	InputManager::GetInstance().SetMouseFlage(true);
+
 }
 
 void TitleScene::LoadEnd(void)
@@ -40,44 +43,61 @@ void TitleScene::LoadEnd(void)
 
 void TitleScene::Update(void)
 {
-
 	// シーン遷移
 	auto const& ins = InputManager::GetInstance();
-	auto& son = SoundManager::GetInstance();
 
-	 bool nextSene = ins.IsTrgDown(KEY_INPUT_SPACE)
-			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1,InputManager::JOYPAD_BTN::DOWN);
+	bool nextSene = ins.IsTrgDown(KEY_INPUT_SPACE)
+		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 
 	if (nextSene)
 	{
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::GAME);
 	}
-
 }
 
 void TitleScene::Draw(void)
 {
-	/*int posX = Application::SCREEN_SIZE_X / 2 - 140;
-	int posY = Application::SCREEN_SIZE_Y / 2 + 95.0f;
-	DrawRotaGraph3(posX, posY, 0.0f, 0.0f, 0.2f, 0.05f, 0.0f, i, true);*/
+	DrawRotaGraph(
+		Application::SCREEN_SIZE_X / 2,
+		Application::SCREEN_SIZE_Y / 2 - 100,
+		0.8f, 0.0f,
+		titleImg_, true);
 
-	DrawFormatStringToHandle(
-		Application::SCREEN_SIZE_X / 6,
-		Application::SCREEN_SIZE_Y / 3,
-		0xffffff,
-		titleFont_,
-		pasueList_[static_cast<int>(LIST::ASOSEOUL)].c_str());
+	Vector2 mousePos = InputManager::GetInstance().GetMousePos();
 
-
-	for (int i = 1; i < LIST_MAX; ++i)
+	float selectImgY = Application::SCREEN_SIZE_Y / 2 + 105.0f;
+	isHovered = false;
+	for (int i = 0; i < LIST_MAX; ++i)
 	{
-		//座標位置を設定
-		/*int posX = Application::SCREEN_SIZE_X / 2 - 110;
-		int posY = (Application::SCREEN_SIZE_Y / 2 +50+ (50.0f * i));*/
-		int posX = Application::SCREEN_SIZE_X / 2 - 300;
-		int posY = (Application::SCREEN_SIZE_Y / 2 + 50 + (50.0f * i));
+		int itemPosY = static_cast<int>(Application::SCREEN_SIZE_Y / 1.6f) + (70 * i);
 
-		//文字列を描画
+		if (mousePos.y >= itemPosY && mousePos.y < itemPosY + 50)
+		{
+			selectImgY = static_cast<float>(itemPosY + 15);
+			isHovered = true;
+			break;
+		}
+	}
+
+	if(isHovered)
+	{
+		DrawRotaGraph(
+			Application::SCREEN_SIZE_X / 2,
+			static_cast<int>(selectImgY),
+			0.2f, 0.0f,
+			selectImg_, true);
+	}
+
+	for (int i = 0; i < LIST_MAX; ++i)
+	{
+		int stringWidth = GetDrawStringWidthToHandle(
+			pasueList_[i].c_str(),
+			-1,
+			pauseFont_);
+
+		int posX = (Application::SCREEN_SIZE_X / 2) - (stringWidth / 2);
+		int posY = static_cast<int>(Application::SCREEN_SIZE_Y / 1.6f) + (70 * i);
+
 		DrawFormatStringToHandle(
 			posX,
 			posY,
@@ -89,6 +109,5 @@ void TitleScene::Draw(void)
 
 void TitleScene::Release(void)
 {
-	DeleteFontToHandle(titleFont_);
 	DeleteFontToHandle(pauseFont_);
 }

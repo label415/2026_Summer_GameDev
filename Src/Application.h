@@ -60,6 +60,8 @@ public:
 	// エフェクシアの初期化
 	void InitEffekseer(void);
 
+	void SetIsEnd(bool isEnd = false);
+
 private:
 
 	// 静的インスタンス
@@ -73,6 +75,8 @@ private:
 
 	// 解放失敗
 	bool isReleaseFail_;
+
+	bool isEnd_;
 
 	// デフォルトコンストラクタをprivateにして、
 	// 外部から生成できない様にする

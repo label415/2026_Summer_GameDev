@@ -12,6 +12,9 @@
 #include "../Object/Actor/Charactor/Enemy/EnemyManager.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyDragon.h"
 #include "../Object/Common/Collider/ColliderCapsule.h"
+#include "../Manager/ResourceManager.h"
+#include "../Manager/SoundManager.h"
+#include "../Manager/SoundManager.h"
 #include "../Utility/MatrixUtility.h"
 #include "../Object/Actor/UI/UIHp.h"
 #include "../Common/ShadowMap.h"
@@ -29,6 +32,7 @@ GameScene::~GameScene(void)
 
 void GameScene::Load(void)
 {
+
 	camera_ = SceneManager::GetInstance().GetCamera();
 	//スカイドーム読み込み
 	skydome_ = new SkyDome();
@@ -48,10 +52,16 @@ void GameScene::Load(void)
 	//カメラモード変更
 	camera_->SetFollow(&player_->GetTransform());
 	camera_->ChangeMode(Camera::MODE::FOLLOW);
+
+	InputManager::GetInstance().SetMouseFlage(false);
 }
 
 void GameScene::LoadEnd(void)
 {
+	bgm_ = resMng_.Load(ResourceManager::SRC::GAME_BGM).handleId_;
+	volume_ = 40;
+	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
+
 	//スカイドーム初期化
 	skydome_->Init();
 	//ステージ初期化

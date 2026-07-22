@@ -1,6 +1,7 @@
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Utility/ModelFrameUtility.h"
 #include "../../../Manager/ResourceManager.h"
+#include "../../../Manager/SoundManager.h"
 #include "../../Common/Collider/ColliderSphere.h"
 #include "../../Common/Collider/ColliderModel.h"
 #include "../../Common/EffectController.h"
@@ -83,6 +84,10 @@ void WeponFlameThrower::Move(void)
 		dynamic_cast<const ColliderSphere*>(vecs[0]);
 
 	if (colliderCapsule1->GetHitSpher_Model(ColMod_, false, false)) {
+
+		int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_ARE_ENEMY_BREASE2).handleId_;
+		int volume_ = 100;
+		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ARE_ENEMY_BREASE2, bgm_, volume_);
 
 		transform_.pos = prePos_;
 

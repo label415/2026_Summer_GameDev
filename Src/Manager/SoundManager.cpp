@@ -116,6 +116,21 @@ void SoundManager::PlaySE(SeId id, int handle, int volume)
     }
 }
 
+void SoundManager::PlayLoopSE(SeId id, int handle, int volume)
+{
+    if (CheckSoundMem(seMap_[id]) == 1)return;
+
+    StopSE(id);
+
+    int newSe = DuplicateSoundMem(handle);
+    if (newSe != -1)
+    {
+        ChangeVolumeSoundMem(CalcVolume(volume), newSe);
+        PlaySoundMem(newSe, DX_PLAYTYPE_LOOP, TRUE); // 非同期で再生
+        seMap_[id] = newSe; // IDをキーにしてハンドルを保存
+    }
+}
+
 void SoundManager::StopSE(SeId id)
 {
     // マップ内に指定されたIDが存在するか確認
@@ -135,6 +150,12 @@ void SoundManager::AllStopSE()
         DeleteSoundMem(pair.second);
     }
     seMap_.clear();
+}
+
+void SoundManager::SetSESpeed(SeId id, float speed)
+{
+    int freq = GetFrequencySoundMem(seMap_[id]);
+    SetFrequencySoundMem(static_cast<int>(freq * speed), seMap_[id]);
 }
 
 void SoundManager::PlaySlowSE(SeId id, int handle, int volume,int slow)

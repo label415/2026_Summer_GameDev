@@ -12,10 +12,8 @@ public:
 
 	enum class LIST
 	{
-		ASOSEOUL,
 		始める,		// 続ける
-		//設定,		// タイトルに戻る
-		//ゲーム終了,   // ゲームの終了
+		ゲーム終了, // ゲームの終了
 		MAX
 	};
 
@@ -45,22 +43,26 @@ public:
 
 private:
 
-	//タイトルフォント
-	int titleFont_;
-
 	//ポーズフォント
 	int pauseFont_;
 
 	//ポーズリストの選択
 	int selectIndex_;
 
+	int titleImg_;
+
+	int selectImg_;
+
+	float selectImgX_ = 0.0f;
+	float selectImgY_ = 0.0f;
+
+	bool isHovered = false;
+
 	//選択リスト
 	std::wstring pasueList_[LIST_MAX] =
 	{
-		L"ASO SOLES",
-		L"GAME STATE : KEY : SPACE or PAD : A",		// 続ける
-		//L"    SYSTEM",		// タイトルに戻る
-		//L"      QUIT",   // ゲームの終了
+		L"GAME STATE",// 続ける
+		L"	QUIT",   // ゲームの終了
 	};
 
 };

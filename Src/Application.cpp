@@ -78,6 +78,8 @@ void Application::Init(void)
 	// デバッグ描画初期化
 	ImGuiWrapper::CreateInstance();
 
+	isEnd_ = false;
+
 }
 
 void Application::Run(void)
@@ -88,7 +90,8 @@ void Application::Run(void)
 	SceneManager& sceneManager = SceneManager::GetInstance();
 
 	// ゲームループ
-	while (ProcessMessage() == 0 && CheckHitKey(KEY_INPUT_ESCAPE) == 0)
+	while (ProcessMessage() == 0 &&
+		(CheckHitKey(KEY_INPUT_ESCAPE) == 0 || isEnd_))
 	{
 
 		inputManager.Update();
@@ -161,3 +164,9 @@ void Application::InitEffekseer(void)
 
 	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
 }
+
+void Application::SetIsEnd(bool isEnd = false)
+{
+	isEnd_ = isEnd;
+}
+

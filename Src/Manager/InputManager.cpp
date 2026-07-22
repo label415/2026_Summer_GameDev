@@ -79,7 +79,6 @@ void InputManager::Init(void)
 	info.keyTrgUp = false;
 	mouseInfos_.emplace(info.key, info);
 	SetMousePoint(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
-	SetMouseDispFlag(false);
 }
 
 void InputManager::Update(void)
@@ -285,6 +284,11 @@ void InputManager::SetJPadInState(JOYPAD_NO jpNo)
 	stateNow.AKeyRX = stateNew.AKeyRX;
 	stateNow.AKeyRY = stateNew.AKeyRY;
 
+}
+
+void InputManager::SetMouseFlage(bool isFlage)
+{
+	SetMouseDispFlag(isFlage);
 }
 
 void InputManager::SetMousePos(int posX, int posY)

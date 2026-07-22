@@ -138,6 +138,8 @@ public:
 
 	Vector2 GetMousePosDistance(void) const;
 
+	void SetMouseFlage(bool isFlage);
+
 private:
 
 	// ƒL[î•ñ
