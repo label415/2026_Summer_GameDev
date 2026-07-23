@@ -80,9 +80,7 @@ void Player::HitDamage(bool isHit)
 		{
 			for (const auto& i : hitCol.second)
 			{
-				// -------------------------------------------------------------
-				// 1. 敵本体（ENEMY）との当たり判定
-				// -------------------------------------------------------------
+
 				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY) {
 
@@ -115,10 +113,7 @@ void Player::HitDamage(bool isHit)
 
 				if (isV_) continue;
 
-				// -------------------------------------------------------------
-				// 2. プレイヤーと敵の間に障害物（ステージモデル）があるか確認
-				// -------------------------------------------------------------
-				bool isBlockedByWall = false; // 壁で遮られているか
+				bool isBlockedByWall = false;
 
 				for (const auto& stageColPair : hitColliders_)
 				{
@@ -140,12 +135,8 @@ void Player::HitDamage(bool isHit)
 					if (isBlockedByWall) break;
 				}
 
-				// 壁で遮られているなら、以下の攻撃（武器/ブレス）判定をスキップする
 				if (isBlockedByWall) continue;
 
-				// -------------------------------------------------------------
-				// 3. 敵の武器（カプセル）との衝突
-				// -------------------------------------------------------------
 				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
 
@@ -168,9 +159,6 @@ void Player::HitDamage(bool isHit)
 					}
 				}
 
-				// -------------------------------------------------------------
-				// 4. 敵の武器（ブレス球体）との衝突
-				// -------------------------------------------------------------
 				if (i->GetShape() == ColliderBase::SHAPE::SPHERE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
 
@@ -315,6 +303,8 @@ void Player::InitPost(void)
 
 	//クールタイム
 	ct_ = 0.0f;
+
+	i_ = 0.0f;
 
 	uiRecovery_->Init();
 
@@ -556,14 +546,17 @@ void Player::ProcessDownUp(void)
 
 		if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::DOWN)
 			&& anim_->IsEnd()) {
-			anim_->Play(
-				static_cast<int>(ANIM_TYPE::UP), false);
+
+			if (!uiHp_->IsActive()) {
+				state_ = STATE::DIE;
+			}
+			else{
+				anim_->Play(
+					static_cast<int>(ANIM_TYPE::UP), false);
+			}
 		}
 
-		if (!uiHp_->IsActive()) {
-			ProcessDie();
-		}
-		else if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::UP)
+		if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::UP)
 			&& anim_->IsEnd()) {
 			state_ = STATE::IDLE;
 		}
@@ -619,7 +612,12 @@ void Player::ProcessRecovery(void)
 
 void Player::ProcessDie(void)
 {
-	state_ = STATE::DIE;
+	i_ += 0.3 * SceneManager::GetInstance().GetDeltaTime();
+	if (i_ > 1.8f) {
+		i_ = 1.8f;
+		state_ = STATE::END;
+	}
+	//MV1SetOpacityRate(transform_.modelId, 1.0f - i_);
 }
 
 void Player::CollisionReserve(void)
@@ -688,6 +686,11 @@ void Player::CollisionReserve(void)
 
 void Player::UpdateProcess(void)
 {
+	if (state_ == STATE::DIE)
+	{
+		ProcessDie();
+		return;
+	}
 
 	effect_->SetEffectPos(static_cast<int>(effType_), transform_.pos);
 
@@ -735,6 +738,9 @@ void Player::UpdateProcess(void)
 	if(STATE::DOWN == state_)
 	{
 		LockPos = LOCK_POS2;
+	}
+	else if (STATE::DIE == state_) {
+		LockPos = {0.0f, 30.0f, 0.0f};
 	}
 	else
 	{

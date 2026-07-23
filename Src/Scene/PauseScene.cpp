@@ -52,6 +52,7 @@ void PauseScene::Update(void)
 
 	if (isUp)
 	{
+		InputManager::GetInstance().SetMouseFlage(false);
 		if (!isStickInput_)
 		{
 			selectIndex_--;
@@ -66,6 +67,7 @@ void PauseScene::Update(void)
 	}
 	else if (isDown)
 	{
+		InputManager::GetInstance().SetMouseFlage(false);
 		if (!isStickInput_)
 		{
 			selectIndex_++;
@@ -96,6 +98,7 @@ void PauseScene::Update(void)
 
 			if (mousePos.y >= itemPosY && mousePos.y < itemPosY + 50)
 			{
+				InputManager::GetInstance().SetMouseFlage(true);
 				isHovered = true;
 				selectIndex_ = i;
 				// 項目に乗ったらループを抜ける
@@ -155,10 +158,6 @@ void PauseScene::Draw(void)
 		0xffffff,
 		false,
 		3.0f);
-
-	// --- マウス判定のループがあった場所 ---
-	// ★ここにあった mousePos の取得と for文のループは完全に削除します。
-	// --------------------------------------
 
 	// 選択中の項目のY座標を算出
 	float selectImgY = Application::SCREEN_SIZE_Y / 2 + 105.0f;

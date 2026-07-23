@@ -45,6 +45,9 @@ private:
 	//ロックオン角度
 	static constexpr float VIEW_ANGLE = 80.0f;
 
+	int gameClear_;
+	int gameOver_;
+
 	PauseScene* pauseScene_;
 
 	//スカイドーム

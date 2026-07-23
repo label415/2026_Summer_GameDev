@@ -31,8 +31,6 @@ void TitleScene::Load(void)
 	titleImg_ = resMng_.Load(ResourceManager::SRC::TITLE_IMG).handleId_;
 	selectImg_ = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
 
-	InputManager::GetInstance().SetMouseFlage(true);
-
 	selectIndex_ = 0;
 	selectImgX_ = 0.0f;
 	selectImgY_ = 0.0f;
@@ -61,6 +59,7 @@ void TitleScene::Update(void)
 
 	if (isUp)
 	{
+		InputManager::GetInstance().SetMouseFlage(false);
 		if (!isStickInput_)
 		{
 			selectIndex_--;
@@ -74,6 +73,7 @@ void TitleScene::Update(void)
 	}
 	else if (isDown)
 	{
+		InputManager::GetInstance().SetMouseFlage(false);
 		if (!isStickInput_)
 		{
 			selectIndex_++;
@@ -123,6 +123,7 @@ void TitleScene::Draw(void)
 
 		if (mousePos.y >= itemPosY && mousePos.y < itemPosY + 50)
 		{
+			InputManager::GetInstance().SetMouseFlage(true);
 			isHovered = true;
 			selectIndex_ = i;
 			break;

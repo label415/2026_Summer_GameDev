@@ -29,9 +29,9 @@ protected:
 
 private:
 	// モデルの大きさ
-	static constexpr float SCALE = 0.2f;
+	static constexpr float SCALE = 1.3f;
 	// 衝突判定用カプセル上部球体
-	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 110.0f, 0.0f };
+	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 130.0f, 0.0f };
 	// 衝突判定用カプセル下部球体
 		static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 20.0f, 0.0f };
 	// 衝突判定用カプセル球体半径

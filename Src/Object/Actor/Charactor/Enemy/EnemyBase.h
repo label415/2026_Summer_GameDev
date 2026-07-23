@@ -40,6 +40,10 @@ public:
     //•Šíî•ñæ“¾
     const WeponBase* GetWepon(void)const { return wepon_; }
 
+    const int GetState(void)const { return stateBase_; }
+
+    const float Geti(void)const { return i_; }
+
 protected:
 
     WeponBase* wepon_;
@@ -75,6 +79,8 @@ protected:
     float moveRadius_;
     // HP
     int hp_;
+
+    float i_;
 
     // ó‘Ô‘JˆÚ
     void ChangeState(int state);

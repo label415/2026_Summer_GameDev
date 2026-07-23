@@ -207,7 +207,7 @@ void EnemyDragon::InitAnimation(void)
 	anim_->AddInFbx(type, 30.0f, type);
 
 	type = static_cast<int>(ANIM_TYPE::MELEE_ATTACK);
-	anim_->AddInFbx(type, 30.0f, type);
+	anim_->AddInFbx(type, 20.0f, type);
 
 	// 初期アニメーション再生
 	anim_->Play(static_cast<int>(ANIM_TYPE::IDLE), true);
@@ -288,7 +288,7 @@ void EnemyDragon::UpdateProcess(void)
 			
 		}
 	}
-	
+
 	// 状態別更新
 	stateUpdate_();
 
@@ -414,6 +414,7 @@ void EnemyDragon::ChangeStateNone(void)
 
 void EnemyDragon::ChangeStateThink(void)
 {
+
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateThink, this);
 
 	anim_->Play(
@@ -699,10 +700,17 @@ void EnemyDragon::UpdateNone(void)
 
 void EnemyDragon::UpdateThink(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
 }
 
 void EnemyDragon::UpdateIdle(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	step_ -= scnMng_.GetDeltaTime();
 	if (step_ < 0.0f)
 	{
@@ -714,6 +722,10 @@ void EnemyDragon::UpdateIdle(void)
 
 void EnemyDragon::UpdateRoar(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	effect_->SetEffectPos(static_cast<int>(effectType_), MV1GetFramePosition(transform_.modelId, 28));
 	effect_->Update(static_cast<int>(effectType_));
 
@@ -727,6 +739,10 @@ void EnemyDragon::UpdateRoar(void)
 
 void EnemyDragon::UpdateCharge(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	if (step_ < 0.0f)
 	{		effect_->Stop(static_cast<int>(effectType_));
 		isAttack_ = false;
@@ -772,6 +788,10 @@ void EnemyDragon::UpdateCharge(void)
 
 void EnemyDragon::UpdatePatrol(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	step_ -= scnMng_.GetDeltaTime();
 	moveSpeed_ = SPEED_MOVE;
 	movePow_ = VScale(moveDir_, moveSpeed_);
@@ -789,6 +809,10 @@ void EnemyDragon::UpdatePatrol(void)
 
 void EnemyDragon::UpdateFallingAttack(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	moveDir_ = preMoverDir_;
 	if (isJump_) {
 		jumpPow_ = VAdd(jumpPow_, VScale(moveDir_, 5.0f));
@@ -820,6 +844,10 @@ void EnemyDragon::UpdateFallingAttack(void)
 
 void EnemyDragon::UpdateFlying(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	isJump_ = true;
 	transform_.pos.y = MAX_TAKE;
 	step_ -= scnMng_.GetDeltaTime();
@@ -838,6 +866,10 @@ void EnemyDragon::UpdateFlying(void)
 
 void EnemyDragon::UpdateFlyingAttack(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	isJump_ = true;
 	transform_.pos.y = MAX_TAKE;
 	moveDir_ = preMoverDir_;
@@ -872,6 +904,10 @@ void EnemyDragon::UpdateFlyingAttack(void)
 
 void EnemyDragon::UpdateBreathAttack(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	moveDir_ = preMoverDir_;
 
 	if (anim_->GetPlayAnim().step >= 24.0f
@@ -912,6 +948,10 @@ void EnemyDragon::UpdateBreathAttack(void)
 
 void EnemyDragon::UpdateMeleeAttack(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	if (anim_->GetPlayAnim().step >= 20.0f 
 		&& anim_->GetPlayAnim().step <= MELEE_ATTACK_CILLIDER) {
 		int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_ATTCEK).handleId_;
@@ -936,6 +976,10 @@ void EnemyDragon::UpdateMeleeAttack(void)
 
 void EnemyDragon::UpdateHover(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	transform_.pos.y = MAX_TAKE;
 
 	step_ -= scnMng_.GetDeltaTime();
@@ -949,6 +993,10 @@ void EnemyDragon::UpdateHover(void)
 
 void EnemyDragon::UpdateTakeOff(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	isJump_ = true;
 	if(transform_.pos.y <= MAX_TAKE)
 	{
@@ -963,6 +1011,10 @@ void EnemyDragon::UpdateTakeOff(void)
 
 void EnemyDragon::UpdateLands(void)
 {
+	if (!uiHp_->IsActive()) {
+		ChangeState(STATE::DEAD);
+	}
+
 	if (anim_->IsEnd())
 	{
 		attribute_ = ATTRIBUTE::ABOVE_GROUND;
@@ -973,14 +1025,21 @@ void EnemyDragon::UpdateLands(void)
 
 void EnemyDragon::UpdateDead(void)
 {
+	moveDir_ = preMoverDir_;
+
 	if (anim_->IsEnd())
 	{
-		ChangeState(STATE::END);
+		i_ += 0.3 * SceneManager::GetInstance().GetDeltaTime();
+		if (i_ > 1.8f) {
+			i_ = 1.8f;
+			ChangeState(STATE::END);
+		}
 	}
 }
 
 void EnemyDragon::UpdateEnd(void)
 {
+	moveDir_ = preMoverDir_;
 }
 
 void EnemyDragon::SetTargetCollider(void)

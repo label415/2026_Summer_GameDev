@@ -14,7 +14,7 @@
 #include "../Object/Common/Collider/ColliderCapsule.h"
 #include "../Manager/ResourceManager.h"
 #include "../Manager/SoundManager.h"
-#include "../Manager/SoundManager.h"
+#include "../Application.h"
 #include "../Utility/MatrixUtility.h"
 #include "../Object/Actor/UI/UIHp.h"
 #include "../Common/ShadowMap.h"
@@ -56,6 +56,9 @@ void GameScene::Load(void)
 	camera_->ChangeMode(Camera::MODE::FOLLOW);
 
 	InputManager::GetInstance().SetMouseFlage(false);
+
+	gameClear_ = resMng_.Load(ResourceManager::SRC::GAME_CLEAR).handleId_;
+	gameOver_ = resMng_.Load(ResourceManager::SRC::GAME_OVER).handleId_;
 }
 
 void GameScene::LoadEnd(void)
@@ -86,6 +89,18 @@ void GameScene::LoadEnd(void)
 
 void GameScene::Update(void)
 {
+	if (player_->GetState() == Player::STATE::END) {
+		sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
+		return;
+	}
+
+	for (const auto& enemy : enemys_->GetEnemys())
+	{
+		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::END)) {
+			sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
+			return;
+		}
+	}
 
 	bool isSelect = InputManager::GetInstance().IsTrgDown(KEY_INPUT_ESCAPE)
 	|| InputManager::GetInstance().IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::START);
@@ -170,6 +185,39 @@ void GameScene::Draw(void)
 
 	if (pauseScene_->GetIsAlive()) {
 		pauseScene_->Draw();
+	}
+
+	for (const auto& enemy : enemys_->GetEnemys())
+	{
+		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::DEAD)) {
+
+			int alpha = static_cast<int>(enemy->Geti() * 255.0f);
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+			DrawRotaGraph(
+				Application::SCREEN_SIZE_X / 2,
+				Application::SCREEN_SIZE_Y / 2,
+				1.0f,
+				0.0f,
+				gameClear_,
+				true);
+
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		}
+	}
+
+	if (player_->GetState() == Player::STATE::DIE) {
+
+		int alpha = static_cast<int>(player_->Geti() * 255.0f);
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+		DrawRotaGraph(
+			Application::SCREEN_SIZE_X / 2,
+			Application::SCREEN_SIZE_Y / 2,
+			1.0f,
+			0.0f,
+			gameOver_,
+			true);
+
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 }
 

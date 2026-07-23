@@ -68,7 +68,7 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::ANIM_PLAYER_RECOVERY, res);
 
 	//武器
-	res = new RES(RES_T::MODEL, PATH_MDL + L"Wepon/KeyBlade1.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Wepon/Wepon.mv1");
 	resourcesMap_.emplace(SRC::WEAPON_BLADE, res);
 
 	//ゲームシーン
@@ -102,6 +102,12 @@ void ResourceManager::Init(void)
 	//エネミーロボット円錐モデル
 	res = new RES(RES_T::IMG, PATH_IMG + L"Surprise.png");
 	resourcesMap_.emplace(SRC::UI_SURPRISE, res);
+
+	res = new RES(RES_T::IMG, PATH_IMG + L"GameClear.png");
+	resourcesMap_.emplace(SRC::GAME_CLEAR, res);
+
+	res = new RES(RES_T::IMG, PATH_IMG + L"GameOver.png");
+	resourcesMap_.emplace(SRC::GAME_OVER, res);
 
 
 	//フォント

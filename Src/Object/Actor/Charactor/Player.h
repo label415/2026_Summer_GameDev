@@ -161,6 +161,8 @@ public:
 
 	const STATE GetState(void)const { return state_; }
 
+	const float Geti(void)const { return i_; }
+
 protected:
 
 	// スタミナ UI
@@ -256,6 +258,8 @@ private:
 	bool isV_;
 
 	float ct_;
+
+	float i_;
 
 };
 

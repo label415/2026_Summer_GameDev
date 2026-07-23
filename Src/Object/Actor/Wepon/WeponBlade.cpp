@@ -36,7 +36,6 @@ void WeponBlade::InitTransform(void)
 }
 void WeponBlade::InitCollider(void)
 {
-	
 }
 
 void WeponBlade::InitAnimation(void)

@@ -10,6 +10,8 @@ EnemyBase::EnemyBase(const EnemyBase::EnemyData& data)
 {
 	// ‰ŠúÀ•W‚Ìİ’è
 	transform_.pos = defaultPos_;
+
+	i_ = 0.0f;
 }
 
 EnemyBase::~EnemyBase(void)

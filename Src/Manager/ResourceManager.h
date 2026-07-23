@@ -72,6 +72,9 @@ public:
 		ENEMY_ARE_ENEMY_BREASE1,
 		ENEMY_ARE_ENEMY_BREASE2,
 
+		GAME_CLEAR,
+		GAME_OVER,
+
 	};
 
 	// 明示的にインステンスを生成する
