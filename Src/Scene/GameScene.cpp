@@ -59,6 +59,8 @@ void GameScene::Load(void)
 
 	gameClear_ = resMng_.Load(ResourceManager::SRC::GAME_CLEAR).handleId_;
 	gameOver_ = resMng_.Load(ResourceManager::SRC::GAME_OVER).handleId_;
+
+	lockOnImg_ = resMng_.Load(ResourceManager::SRC::LOCKON_IMG).handleId_;	
 }
 
 void GameScene::LoadEnd(void)
@@ -175,12 +177,12 @@ void GameScene::Draw(void)
 
 	if(targetEnemy_ != nullptr){
 		VECTOR enemyTransform = targetEnemy_->GetCenter();
-		DrawSphere3D(enemyTransform,
-			50.0f,10,
-			0xfff000,
-			0xfff000,
-			true);
-
+		SetUseZBuffer3D(FALSE);
+		DrawBillboard3D(
+			enemyTransform,
+			0.5f, 0.5f,
+			50.0f, 0.0f, lockOnImg_, true);
+		SetUseZBuffer3D(TRUE);
 	}
 
 	if (pauseScene_->GetIsAlive()) {

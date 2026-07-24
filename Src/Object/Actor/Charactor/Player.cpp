@@ -322,7 +322,7 @@ void Player::InitPost(void)
 	// コンボ受付開始、衝突判定開始
 	data = {
 		ANIM_TYPE::ATTACK_1,
-		15.0f, 50.0f, 24.0f, 38.0f, 55.0f, 8.0f,
+		20.0f, 50.0f, 24.0f, 38.0f, 55.0f, 8.0f,
 		STATE_ATTACK_COMBO::COMBO_2, [this](void) { return false; }, false,
 		false,
 		nullptr, nullptr, nullptr, nullptr,
@@ -334,7 +334,7 @@ void Player::InitPost(void)
 	// コンボ受付開始、衝突判定開始
 	data = {
 		ANIM_TYPE::ATTACK_2,
-		10.0f, 40.0f, 18.0f, 32.0f, 50.0f, 5.0f,
+		15.0f, 40.0f, 18.0f, 32.0f, 50.0f, 5.0f,
 		STATE_ATTACK_COMBO::COMBO_3, [this](void) { return false; }, false,
 		false,
 		nullptr, nullptr, nullptr, nullptr,
@@ -353,13 +353,15 @@ void Player::InitPost(void)
 	};
 	atkComboData_.emplace(
 		STATE_ATTACK_COMBO::COMBO_3, data);
+
+	stateAtkCombo_ = STATE_ATTACK_COMBO::COMBO_1;
+	isComboNext_ = false;
 }
 
 void Player::ProcessMove(void)
 {
 	moveSpeed_ = 0.0f;
 	movePow_ = AsoUtility::VECTOR_ZERO;
-	VECTOR dir = AsoUtility::VECTOR_ZERO;
 
 	if (state_ != STATE::IDLE
 		&& state_ != STATE::RUN
@@ -369,46 +371,28 @@ void Player::ProcessMove(void)
 		return;
 	}
 
-	auto& ins = InputManager::GetInstance();
+	// ★ 共通化した関数から方向（カメラ/ターゲット変換済み）を取得
+	VECTOR inputDir = GetInputDirection();
 
-	// 接続されているゲームパッド１の情報を取得
-	InputManager::JOYPAD_IN_STATE padState =
-		ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
-	// アナログキーの入力値から方向を取得
-	VECTOR padDir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
-
-	// 両対応：ゲームパッドの入力がある場合はゲームパッド優先、なければキーボード
-	if (!AsoUtility::EqualsVZero(padDir))
-	{
-		dir = padDir;
-	}
-	else
-	{
-		// キーボード入力（WASD）
-		bool isUp = ins.IsNew(KEY_INPUT_W);
-		bool isDown = ins.IsNew(KEY_INPUT_S);
-		bool isLeft = ins.IsNew(KEY_INPUT_A);
-		bool isRight = ins.IsNew(KEY_INPUT_D);
-		if (isUp) { dir = AsoUtility::DIR_F; }
-		if (isLeft) { dir = AsoUtility::DIR_L; }
-		if (isDown) { dir = AsoUtility::DIR_B; }
-		if (isRight) { dir = AsoUtility::DIR_R; }
-		if (isUp && isLeft) { dir = VAdd(AsoUtility::DIR_F, AsoUtility::DIR_L); }
-		if (isUp && isRight) { dir = VAdd(AsoUtility::DIR_F, AsoUtility::DIR_R); }
-		if (isDown && isLeft) { dir = VAdd(AsoUtility::DIR_B, AsoUtility::DIR_L); }
-		if (isDown && isRight) { dir = VAdd(AsoUtility::DIR_B, AsoUtility::DIR_R); }
-	}
-
-	if (!AsoUtility::EqualsVZero(dir))
+	if (!AsoUtility::EqualsVZero(inputDir))
 	{
 		state_ = STATE::RUN;
+		moveDir_ = inputDir; // 最終移動方向を保持
+
+		// ターゲットに向かって回転（ターゲット時のみ）
+		if (targetTrans_ != nullptr)
+		{
+			VECTOR targetDir = GetTargetDir();
+			float targetAngleY = atan2f(targetDir.x, targetDir.z);
+			Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
+			transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetRot, 0.1f);
+		}
 
 		auto& ins = InputManager::GetInstance();
-		bool isR = isR = ins.IsNew(KEY_INPUT_LSHIFT)
+		bool isR = ins.IsNew(KEY_INPUT_LSHIFT)
 			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 
 		if (isR && ct_ <= 0.0f) {
-
 			moveSpeed_ = SPEED_DASH;
 			state_ = STATE::FAST_RUN;
 			uiSt_->SetSt(CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
@@ -427,20 +411,6 @@ void Player::ProcessMove(void)
 			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_WAKE, bgm_, volume_);
 		}
 
-		if (targetTrans_ != nullptr)
-		{
-			VECTOR targetDir = GetTargetDir();
-			float targetAngleY = atan2f(targetDir.x, targetDir.z);
-			Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
-			transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetRot, 0.1f);
-			moveDir_ = Quaternion::PosAxis(targetRot, dir);
-		}
-		else
-		{
-			// 通常時：カメラ方向を基準に移動
-			Quaternion cameraRot = scnMng_.GetCamera()->GetQuaRotY();
-			moveDir_ = Quaternion::PosAxis(cameraRot, dir);
-		}
 		movePow_ = VScale(moveDir_, moveSpeed_);
 	}
 	else {
@@ -449,45 +419,138 @@ void Player::ProcessMove(void)
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
 		anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 	}
-
 }
 
 void Player::ProcessAttack(void)
 {
-	bool isHitAttack = false;
 	auto& ins = InputManager::GetInstance();
+	bool isAttackInput = false;
+
+	// 1. 攻撃入力判定
 	if (uiSt_->GetSt() >= 0) {
-		isHitAttack = ins.IsClickMouseLeft()
+		isAttackInput = ins.IsClickMouseLeft()
 			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
 	}
 
-	if (isHitAttack && !isJump_
-		&& (state_ == STATE::IDLE
-		|| state_ == STATE::RUN
-		|| state_ == STATE::FAST_RUN)) 
+	// 2. 通常状態（移動中など）からの新規攻撃開始
+	if (isAttackInput && !isJump_
+		&& (state_ == STATE::IDLE || state_ == STATE::RUN || state_ == STATE::FAST_RUN))
 	{
 		state_ = STATE::ATTACK;
+		stateAtkCombo_ = STATE_ATTACK_COMBO::COMBO_1; // 最初からスタート
+
+		// データの参照と初期設定
+		auto& comboData = atkComboData_.at(stateAtkCombo_);
+		comboData.isNextCombo = false; // 次コンボフラグをリセット
+
 		uiSt_->SetSt(CONSUMPTION_ST_ATTACK);
+
+		// 追加の初期処理があれば実行
+		if (comboData.extraInit) {
+			comboData.extraInit();
+		}
+
+		// 攻撃アニメーション再生
+		anim_->Play(static_cast<int>(comboData.animType), false);
 	}
 
+	// 攻撃状態でなければ処理終了
 	if (state_ != STATE::ATTACK) return;
 
-	anim_->Play(
-		static_cast<int>(ANIM_TYPE::ATTACK_1), false);
+	// --- ここから STATE::ATTACK の更新処理 ---
 
-	if (anim_->GetPlayAnim().step == 10.0f) {
+	auto& comboData = atkComboData_.at(stateAtkCombo_);
+	float currentStep = anim_->GetPlayAnim().step;
+
+	if (comboData.moveSpeed > 0.0f && currentStep < comboData.stepCollisionStart)
+	{
+		// 1. 入力方向を取得
+		VECTOR inputDir = GetInputDirection();
+
+		// 2. 「入力がある場合」のみ回転と踏み込み移動を行う
+		// （攻撃開始直後や入力がない状態では移動・回転させない）
+		if (!AsoUtility::EqualsVZero(inputDir))
+		{
+			// ① 入力方向へ回転（Y軸）
+			float targetAngleY = atan2f(inputDir.x, inputDir.z);
+			Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
+			transform_.quaRot = targetRot;
+
+			// ② 向いた正面方向へ向かって踏み込み移動（Lerp補間）
+			VECTOR forward = transform_.GetForward();
+			VECTOR targetPos = VAdd(transform_.pos, VScale(forward, comboData.moveSpeed));
+
+			transform_.pos = AsoUtility::Lerp(transform_.pos, targetPos, 0.2f);
+		}
+	}
+
+	// 3. 追加更新処理（ガードキャンセルや特殊効果など）
+	if (comboData.extraUpdate) {
+		comboData.extraUpdate();
+	}
+
+	// 4. コンボ入力受付判定
+	// 構造体の IsValidCombo() を使用
+	if (comboData.IsValidCombo(currentStep)) {
+		// 通常の攻撃入力、または固有の条件（actionNextCombo）を満たした場合
+		bool isCustomAction = comboData.actionNextCombo ? comboData.actionNextCombo() : false;
+		if (isAttackInput || isCustomAction) {
+			comboData.isNextCombo = true;
+		}
+	}
+
+	// 5. 衝突判定（Hitbox）の処理
+	// 構造体の IsValidCollsion() を使用
+	if (comboData.IsValidCollsion(currentStep)) {
+		wepon_->SetCollider();
+	}
+	else {
+		wepon_->ClearCollider();
+	}
+
+	// 6. SE再生処理（例：ステップ固定または必要に応じて条件化）
+	if (currentStep == 10.0f) {
 		int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_WEPON_SE1).handleId_;
 		int volume_ = 30;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEPON_SE1, bgm_, volume_);
 	}
 
-	if (anim_->GetPlayAnim().step >= STATE_ATTACK_CILLIDER) {
-		wepon_->SetCollider();
+	// 7. コンボ遷移チェック（割り込みタイミング or アニメーション終了時）
+	bool canInterrupt = comboData.IsValidInterrupt(currentStep);
+	bool isAnimEnd = anim_->IsEnd();
+
+	// 追加割込条件のチェック
+	if (comboData.isExtraInterrupt && comboData.isExtraInterrupt(comboData)) {
+		canInterrupt = true;
 	}
 
-	if (anim_->IsEnd()) {
-		state_ = STATE::IDLE;
-		wepon_->ClearCollider();
+	// 「割り込み可能ステップに達している」かつ「入力済み（isNextCombo）」または「アニメーション終了」の時にチェック
+	if ((canInterrupt && comboData.isNextCombo) || isAnimEnd) {
+		// 次のコンボへ繋ぐ場合
+		if (comboData.isNextCombo && comboData.nextCombo != STATE_ATTACK_COMBO::MAX) {
+			// 次のコンボへ状態遷移
+			stateAtkCombo_ = comboData.nextCombo;
+			wepon_->ClearCollider();
+
+			// 新しいコンボデータのセットアップ
+			auto& nextData = atkComboData_.at(stateAtkCombo_);
+			nextData.isNextCombo = false; // フラグ初期化
+
+			uiSt_->SetSt(CONSUMPTION_ST_ATTACK);
+
+			if (nextData.extraInit) {
+				nextData.extraInit();
+			}
+
+			anim_->Play(static_cast<int>(nextData.animType), false);
+		}
+		// コンボを継続しない / 最終段が終わった場合（かつアニメーションが終了している場合）
+		else if (isAnimEnd || (comboData.isExtraEnd && comboData.isExtraEnd())) {
+			state_ = STATE::IDLE;
+			stateAtkCombo_ = STATE_ATTACK_COMBO::COMBO_1;
+			comboData.isNextCombo = false;
+			wepon_->ClearCollider();
+		}
 	}
 }
 
@@ -550,14 +613,20 @@ void Player::ProcessDownUp(void)
 			if (!uiHp_->IsActive()) {
 				state_ = STATE::DIE;
 			}
-			else{
+			else {
 				anim_->Play(
 					static_cast<int>(ANIM_TYPE::UP), false);
+
+				state_ = STATE::UP;
 			}
 		}
+	}
 
-		if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::UP)
-			&& anim_->IsEnd()) {
+	if(state_ == STATE::UP)
+	{
+		isV_ = true;
+		state_ = STATE::UP;
+		if (anim_->IsEnd()) {
 			state_ = STATE::IDLE;
 		}
 	}
@@ -702,6 +771,7 @@ void Player::UpdateProcess(void)
 	if (state_ == STATE::IDLE 
 		|| state_ == STATE::RUN 
 		|| state_ == STATE::DOWN 
+		|| state_ == STATE::UP
 		|| state_ == STATE::RECOVERY) {
 		uiSt_->SetHpAbsolute(RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
 	}
@@ -734,13 +804,16 @@ void Player::UpdateProcess(void)
 		wepon_->Update();
 	}
 
-	VECTOR LockPos;
 	if(STATE::DOWN == state_)
 	{
 		LockPos = LOCK_POS2;
 	}
 	else if (STATE::DIE == state_) {
-		LockPos = {0.0f, 30.0f, 0.0f};
+		LockPos = LOCK_POS4;
+	}
+	else if (STATE::UP == state_)
+	{
+		LockPos.y += 0.7f;
 	}
 	else
 	{
@@ -754,4 +827,70 @@ void Player::UpdateProcess(void)
 
 void Player::UpdateProcessPost(void)
 {
+}
+
+VECTOR Player::GetInputDirection(void)
+{
+	VECTOR dir = AsoUtility::VECTOR_ZERO;
+	auto& ins = InputManager::GetInstance();
+
+	// 1. ゲームパッドの入力を取得
+	InputManager::JOYPAD_IN_STATE padState =
+		ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+	VECTOR padDir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
+
+	// 両対応：ゲームパッド優先、無ければキーボード
+	if (!AsoUtility::EqualsVZero(padDir))
+	{
+		dir = padDir;
+	}
+	else
+	{
+		// キーボード入力（WASD）
+		bool isUp = ins.IsNew(KEY_INPUT_W);
+		bool isDown = ins.IsNew(KEY_INPUT_S);
+		bool isLeft = ins.IsNew(KEY_INPUT_A);
+		bool isRight = ins.IsNew(KEY_INPUT_D);
+
+		if (isUp) { dir = AsoUtility::DIR_F; }
+		if (isLeft) { dir = AsoUtility::DIR_L; }
+		if (isDown) { dir = AsoUtility::DIR_B; }
+		if (isRight) { dir = AsoUtility::DIR_R; }
+
+		if (isUp && isLeft) { dir = VAdd(AsoUtility::DIR_F, AsoUtility::DIR_L); }
+		if (isUp && isRight) { dir = VAdd(AsoUtility::DIR_F, AsoUtility::DIR_R); }
+		if (isDown && isLeft) { dir = VAdd(AsoUtility::DIR_B, AsoUtility::DIR_L); }
+		if (isDown && isRight) { dir = VAdd(AsoUtility::DIR_B, AsoUtility::DIR_R); }
+
+		// 斜め入力の正規化（必要に応じて）
+		if (!AsoUtility::EqualsVZero(dir)) {
+			dir = VNorm(dir);
+		}
+	}
+
+	// 入力がない場合はゼロベクトルを返す
+	if (AsoUtility::EqualsVZero(dir))
+	{
+		return AsoUtility::VECTOR_ZERO;
+	}
+
+	// 2. ターゲットまたはカメラ基準のワールド方向に変換
+	VECTOR worldDir = AsoUtility::VECTOR_ZERO;
+
+	if (targetTrans_ != nullptr)
+	{
+		// ターゲットがいる場合
+		VECTOR targetDir = GetTargetDir();
+		float targetAngleY = atan2f(targetDir.x, targetDir.z);
+		Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
+		worldDir = Quaternion::PosAxis(targetRot, dir);
+	}
+	else
+	{
+		// 通常時：カメラ方向を基準に変換
+		Quaternion cameraRot = scnMng_.GetCamera()->GetQuaRotY();
+		worldDir = Quaternion::PosAxis(cameraRot, dir);
+	}
+
+	return worldDir;
 }

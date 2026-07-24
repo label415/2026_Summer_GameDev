@@ -44,6 +44,8 @@ public:
 		FONT,
 		L_FONT,
 
+		LOCKON_IMG,
+
 		TITLE_SELECT,
 		HP_1,
 		HP_2,

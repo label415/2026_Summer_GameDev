@@ -48,6 +48,8 @@ private:
 	int gameClear_;
 	int gameOver_;
 
+	int lockOnImg_;
+
 	PauseScene* pauseScene_;
 
 	//スカイドーム

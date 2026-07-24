@@ -34,6 +34,7 @@ public:
 		ATTACK,
 		AVOIDANCE,
 		DOWN,
+		UP,
 		RECOVERY,
 		DIE,
 		END,
@@ -200,6 +201,8 @@ private:
 
 	STATE_ATTACK_COMBO stateAtkCombo_;
 
+	bool isComboNext_;
+
 	//武器
 	WeponBase* wepon_;
 
@@ -223,7 +226,9 @@ private:
 
 	//アニメーションを固定化する座標
 	static constexpr VECTOR LOCK_POS1 = { 0.0f, 78.0f, 0.0f };
-	static constexpr VECTOR LOCK_POS2 = { 0.0f, 50.0f, 0.0f };
+	static constexpr VECTOR LOCK_POS2 = { 0.0f, 20.0f, 0.0f };
+	static constexpr VECTOR LOCK_POS3 = { 0.0f, 20.0f, 0.0f };
+	static constexpr VECTOR LOCK_POS4 = { 0.0f, 30.0f, 0.0f };
 
 	//アニメーションを固定化するフレーム
 	static constexpr int LOCK_FRAME_NO = 0;
@@ -260,6 +265,10 @@ private:
 	float ct_;
 
 	float i_;
+
+	VECTOR LockPos;
+
+	VECTOR GetInputDirection(void);
 
 };
 

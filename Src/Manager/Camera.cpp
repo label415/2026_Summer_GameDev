@@ -54,18 +54,25 @@ void Camera::SetBeforeDraw(void)
 	case Camera::MODE::FOLLOW:
 		SetBeforeDrawFollow();
 		break;
-		break;
+
 	case Camera::MODE::TARGET_ROCKE:
 		SetBeforeDrawTargetLockeOn();
 		break;
 	}
 
-	// カメラの設定(位置と注視点による制御)
-	SetCameraPositionAndTargetAndUpVec(
-		transform_.pos, 
-		targetPos_, 
-		transform_.quaRot.GetUp()
-	);
+	// カメラの設定（ロックオン時は Y軸Up を固定すると安定します）
+	if (mode_ == Camera::MODE::TARGET_ROCKE) {
+		// ロックオン時は常に頭上（Y軸）を上として扱うことで画面の傾きを防ぐ
+		SetCameraPositionAndTarget_UpVecY(transform_.pos, targetPos_);
+	}
+	else {
+		// 通常カメラ時は既存の Up ベクトルを使用
+		SetCameraPositionAndTargetAndUpVec(
+			transform_.pos,
+			targetPos_,
+			transform_.quaRot.GetUp()
+		);
+	}
 
 	// DXライブラリのカメラとEffekseerのカメラを同期する。
 	Effekseer_Sync3DSetting();
@@ -151,9 +158,10 @@ VECTOR Camera::GetForward(void) const
 
 void Camera::ChangeMode(MODE mode)
 {
-
-	// カメラの初期設定
-	SetDefault();
+	if(mode == MODE::TARGET_ROCKE){
+		// カメラの初期設定
+		SetDefault();
+	}
 
 	// カメラモードの変更
 	mode_ = mode;
@@ -225,39 +233,59 @@ void Camera::SyncFollow(void)
 void Camera::SynLockOn(void)
 {
 	const float ROT_SPEED = 0.1f;
-	const float MOVE_SPEED = 0.05f;
 
-	// 同期先の位置
-	VECTOR followPos = followTransform_->pos;
-	VECTOR TargetPos = *targetTransform_;
-	VECTOR toTarget = VSub(TargetPos, followPos);
+	// 1. 各位置の取得
+	VECTOR followPos = followTransform_->pos; // プレイヤー位置
+	VECTOR TargetPos = *targetTransform_;     // ドラゴンの位置
 
-	float distanceSq = (toTarget.x * toTarget.x) + (toTarget.z * toTarget.z);
-	if (distanceSq > 200.0f){
+	// ドラゴンなどの巨体対策：注視対象の高さを少し上げて「頭/胸部」付近を見るようにする
+	VECTOR targetCenterPos = TargetPos;
+	targetCenterPos.y += 30.0f;
 
-		angleY = atan2f(toTarget.x, toTarget.z);
-		angles_.y = angleY;
+	// 2. プレイヤーとドラゴンの距離を計算
+	VECTOR toEnemy = VSub(targetCenterPos, followPos);
+	float distance = VSize(toEnemy);
 
-		Quaternion targetRotY = Quaternion::AngleAxis(angleY, AsoUtility::AXIS_Y);
-		rotY_ = Quaternion::Slerp(rotY_, targetRotY, ROT_SPEED);
-	}
+	// 1. 距離に応じたダイナミックズーム
+	float baseDist = 100.0f;
+	float dynamicDist = baseDist + (distance * 0.5f);
+	dynamicDist = fminf(dynamicDist, 400.0f);
 
-	// Y軸 + X軸
+	float baseHeight = 30.0f;
+	float dynamicHeight = baseHeight + (distance * 0.2f);
+
+	// 2. 注視点（中間点）
+	VECTOR lookAtPoint = AsoUtility::Lerp(followPos, targetCenterPos, 0.4f);
+
+	// 3. カメラから見た目標の向き（水平方向）
+	VECTOR toTargetDir = VNorm(VSub(lookAtPoint, followPos));
+
+	float angleY = atan2f(toTargetDir.x, toTargetDir.z);
+
+	Quaternion targetRotY = Quaternion::AngleAxis(angleY, AsoUtility::AXIS_Y);
+	rotY_ = Quaternion::Slerp(rotY_, targetRotY, ROT_SPEED);
+
+	// 見下ろし角度（ angles_.x ）を合成
 	Quaternion targetQuaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
-	// クォータニオン補間
+
+	// クオータニオン補間
 	transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetQuaRot, ROT_SPEED);
 
-	VECTOR localPos;
-	// 注視点
-	localPos = transform_.quaRot.PosAxis(LOCKON_TARGET_LOCAL_POS);
-	VECTOR nextTargetPos = VAdd(TargetPos, localPos);
-	targetPos_ = AsoUtility::Lerp(transform_.pos, nextTargetPos, MOVE_SPEED);
+	// 4. 動的な距離と高さを使ってカメラ位置と注視点を確定
+	VECTOR backVec = transform_.quaRot.PosAxis(VGet(0.0f, 0.0f, -1.0f));
 
-	// カメラ位置
-	localPos = transform_.quaRot.PosAxis(LOCKON_CAMERA_LOCAL_POS);
-	VECTOR nextCameraPos = VAdd(followPos, localPos);
-	transform_.pos = AsoUtility::Lerp(transform_.pos, nextCameraPos, MOVE_SPEED);
+	transform_.pos = VAdd(followPos, VScale(backVec, dynamicDist));
+	transform_.pos.y += dynamicHeight;
 
+	targetPos_ = lookAtPoint;
+
+	VECTOR forward = transform_.quaRot.PosAxis(VGet(0.0f, 0.0f, 1.0f));
+	angles_.y = atan2f(forward.x, forward.z);
+	float horizontalLen = sqrtf(forward.x * forward.x + forward.z * forward.z);
+	angles_.x = atan2f(-forward.y, horizontalLen);
+
+	// もし Lerp 前の直近位置を記憶する変数がある場合も同期
+	prePos_ = transform_.pos;
 }
 
 void Camera::ProcessRot(bool isLimit)
@@ -367,12 +395,6 @@ void Camera::SetBeforeDrawTargetLockeOn(void)
 
 	// 衝突判定
 	Collision();
-
-	// カメラ位置の補間
-	if (isCameraLope_) {
-		transform_.pos =
-			AsoUtility::Lerp(prePos_, transform_.pos, LERP_RATE_MOVE);
-	}
 }
 
 void Camera::Collision(void)

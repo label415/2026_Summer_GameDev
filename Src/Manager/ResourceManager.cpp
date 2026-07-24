@@ -110,6 +110,9 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::GAME_OVER, res);
 
 
+	res = new RES(RES_T::IMG, PATH_IMG + L"LockOnImg.png");
+	resourcesMap_.emplace(SRC::LOCKON_IMG, res);
+
 	//ƒtƒHƒ“ƒg
 	res = new RES(RES_T::FONT, PATH_FONT + L"KazukiReiwa.ttf");
 	resourcesMap_.emplace(SRC::FONT, res);

@@ -1099,7 +1099,7 @@ void EnemyDragon::HitDamage(bool isHit)
 					colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius()))
 				{
 					if (!isInvincible_) {
-						uiHp_->SetHp(10.0f);
+						uiHp_->SetHp(8.0f);
 						isInvincible_ = true;
 						invincibleTimer_ = INVINCIBLE_TIME;
 						effect_->Play(static_cast<int>(EFFECT::BLOOD));
