@@ -49,7 +49,7 @@ void GameScene::Load(void)
 	enemys_->Load();
 	targetEnemy_ = nullptr;
 	//シャドーマップ読み込み
-	shadowMap_ = new ShadowMap(1024, 1024);
+	shadowMap_ = new ShadowMap(2048, 2048);
 	pauseScene_ = new PauseScene();
 	//カメラモード変更
 	camera_->SetFollow(&player_->GetTransform());
