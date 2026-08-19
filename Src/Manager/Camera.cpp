@@ -158,10 +158,6 @@ VECTOR Camera::GetForward(void) const
 
 void Camera::ChangeMode(MODE mode)
 {
-	if(mode == MODE::TARGET_ROCKE){
-		// カメラの初期設定
-		SetDefault();
-	}
 
 	// カメラモードの変更
 	mode_ = mode;
@@ -170,8 +166,10 @@ void Camera::ChangeMode(MODE mode)
 	switch (mode_)
 	{
 	case Camera::MODE::FIXED_POINT:
+		SetDefault();
 		break;
 	case Camera::MODE::FREE:
+		SetDefault();
 		break;
 	case Camera::MODE::FOLLOW:
 		break;
@@ -234,46 +232,52 @@ void Camera::SynLockOn(void)
 {
 	const float ROT_SPEED = 0.1f;
 
-	// 1. 各位置の取得
-	VECTOR followPos = followTransform_->pos; // プレイヤー位置
-	VECTOR TargetPos = *targetTransform_;     // ドラゴンの位置
+	// ---- 追加パラメータ ----
+	const float PLAYER_HEIGHT = 180.0f;              // ★プレイヤーの身長に合わせて調整
+	const float PLAYER_MARGIN = 40.0f;                // 頭上・足元の余白
+	const float FOV_Y = AsoUtility::Deg2RadF(60.0f);  // ★SetupCamera_Perspectiveに渡している画角と合わせる
 
-	// ドラゴンなどの巨体対策：注視対象の高さを少し上げて「頭/胸部」付近を見るようにする
+	// 1. 各位置の取得
+	VECTOR followPos = followTransform_->pos; // プレイヤー位置(足元)
+	VECTOR TargetPos = *targetTransform_;     // ボスの位置
+
 	VECTOR targetCenterPos = TargetPos;
 	targetCenterPos.y += 30.0f;
 
-	// 2. プレイヤーとドラゴンの距離を計算
+	// 2. プレイヤーとボスの距離
 	VECTOR toEnemy = VSub(targetCenterPos, followPos);
 	float distance = VSize(toEnemy);
 
-	// 1. 距離に応じたダイナミックズーム
+	// 3. ボス側基準のズーム（従来通り）
 	float baseDist = 100.0f;
-	float dynamicDist = baseDist + (distance * 0.5f);
-	dynamicDist = fminf(dynamicDist, 400.0f);
+	float bossFitDist = baseDist + (distance * 0.5f);
+
+	// 4. ★プレイヤー全身が画角に収まる最低距離を算出
+	//    半分の身長 / tan(半分の縦画角)
+	float halfHeight = PLAYER_HEIGHT * 0.5f + PLAYER_MARGIN;
+	float playerFitDist = halfHeight / tanf(FOV_Y * 0.5f);
+
+	// 5. 両方満たす距離を採用（大きい方）
+	float dynamicDist = fmaxf(bossFitDist, playerFitDist);
+	dynamicDist = fminf(dynamicDist, 500.0f); // 遠すぎ防止
 
 	float baseHeight = 30.0f;
 	float dynamicHeight = baseHeight + (distance * 0.2f);
 
-	// 2. 注視点（中間点）
+	// 6. 注視点（中間点）
 	VECTOR lookAtPoint = AsoUtility::Lerp(followPos, targetCenterPos, 0.4f);
 
-	// 3. カメラから見た目標の向き（水平方向）
+	// 7. カメラから見た目標の向き（水平方向）
 	VECTOR toTargetDir = VNorm(VSub(lookAtPoint, followPos));
-
 	float angleY = atan2f(toTargetDir.x, toTargetDir.z);
-
 	Quaternion targetRotY = Quaternion::AngleAxis(angleY, AsoUtility::AXIS_Y);
 	rotY_ = Quaternion::Slerp(rotY_, targetRotY, ROT_SPEED);
 
-	// 見下ろし角度（ angles_.x ）を合成
 	Quaternion targetQuaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
-
-	// クオータニオン補間
 	transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetQuaRot, ROT_SPEED);
 
-	// 4. 動的な距離と高さを使ってカメラ位置と注視点を確定
+	// 8. 動的な距離と高さを使ってカメラ位置と注視点を確定
 	VECTOR backVec = transform_.quaRot.PosAxis(VGet(0.0f, 0.0f, -1.0f));
-
 	transform_.pos = VAdd(followPos, VScale(backVec, dynamicDist));
 	transform_.pos.y += dynamicHeight;
 
@@ -284,7 +288,6 @@ void Camera::SynLockOn(void)
 	float horizontalLen = sqrtf(forward.x * forward.x + forward.z * forward.z);
 	angles_.x = atan2f(-forward.y, horizontalLen);
 
-	// もし Lerp 前の直近位置を記憶する変数がある場合も同期
 	prePos_ = transform_.pos;
 }
 

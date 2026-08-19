@@ -35,6 +35,7 @@ void GameScene::Load(void)
 {
 
 	camera_ = SceneManager::GetInstance().GetCamera();
+	camera_->ChangeMode(Camera::MODE::FIXED_POINT);
 	//スカイドーム読み込み
 	skydome_ = new SkyDome();
 	skydome_->Load();
