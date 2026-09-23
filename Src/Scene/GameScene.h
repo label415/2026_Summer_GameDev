@@ -40,7 +40,7 @@ public:
 private:
 
 	//ロックオン対象範囲
-	static constexpr float MAX_LOCKON_DIFF = 1500.0f;
+	static constexpr float MAX_LOCKON_DIFF = 2000.0f;
 
 	//ロックオン角度
 	static constexpr float VIEW_ANGLE = 80.0f;
@@ -72,6 +72,8 @@ private:
 
 	//シャドウマップ
 	ShadowMap* shadowMap_;
+
+
 
 	//コライダー登録
 	void AddCollider(void);

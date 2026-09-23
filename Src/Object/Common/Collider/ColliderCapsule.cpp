@@ -134,10 +134,10 @@ void ColliderCapsule::PushBackAlongNormal(const ColliderCapsule* colliderCapsule
 	if (tryCnt < maxTryCnt) {
 
 		// プレイヤーの軸上で、敵の中心に一番近い点(p1)を求める
-		VECTOR p1 = AsoUtility::GetMinHitPos(GetPosTop(), GetPosDown(), colliderCapsule->GetFollow()->pos);
+		VECTOR p1 = AsoUtility::GetNearestPointOnSegment(GetPosTop(), GetPosDown(), colliderCapsule->GetFollow()->pos);
 
 		// 敵の軸上で、上記で求めたp1に一番近い点(p2)を求める（※ここをp1基準にすると精度が上がります）
-		VECTOR p2 = AsoUtility::GetMinHitPos(colliderCapsule->GetPosTop(), colliderCapsule->GetPosDown(), p1);
+		VECTOR p2 = AsoUtility::GetNearestPointOnSegment(colliderCapsule->GetPosTop(), colliderCapsule->GetPosDown(), p1);
 
 		// 敵(p2)からプレイヤー(p1)へ向かうベクトルにする
 		VECTOR vBA = VSub(p1, p2);

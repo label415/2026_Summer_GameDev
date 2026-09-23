@@ -233,9 +233,9 @@ void Camera::SynLockOn(void)
 	const float ROT_SPEED = 0.1f;
 
 	// ---- 追加パラメータ ----
-	const float PLAYER_HEIGHT = 180.0f;              // ★プレイヤーの身長に合わせて調整
-	const float PLAYER_MARGIN = 40.0f;                // 頭上・足元の余白
-	const float FOV_Y = AsoUtility::Deg2RadF(60.0f);  // ★SetupCamera_Perspectiveに渡している画角と合わせる
+	const float PLAYER_HEIGHT = 180.0f;
+	const float PLAYER_MARGIN = 40.0f;
+	const float FOV_Y = AsoUtility::Deg2RadF(60.0f);
 
 	// 1. 各位置の取得
 	VECTOR followPos = followTransform_->pos; // プレイヤー位置(足元)

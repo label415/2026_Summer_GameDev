@@ -44,7 +44,7 @@ public:
 
 	// カメラのX回転上限度角
 	static constexpr float LIMIT_X_UP_RAD = 60.0f * (DX_PI_F / 180.0f);
-	static constexpr float LIMIT_X_DW_RAD = 20.0f * (DX_PI_F / 180.0f);
+	static constexpr float LIMIT_X_DW_RAD = 40.0f * (DX_PI_F / 180.0f);
 	
 	// カメラモード
 	enum class MODE

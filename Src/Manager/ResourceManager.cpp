@@ -64,7 +64,7 @@ void ResourceManager::Init(void)
 	resourcesMap_.emplace(SRC::ANIM_PLAYER_DOWN, res);
 	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Up.mv1");
 	resourcesMap_.emplace(SRC::ANIM_PLAYER_UP, res);
-	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Recovery.mv1");
+	res = new RES(RES_T::MODEL, PATH_MDL + L"Player/Player_Drinking.mv1");
 	resourcesMap_.emplace(SRC::ANIM_PLAYER_RECOVERY, res);
 
 	//ïêäÌ

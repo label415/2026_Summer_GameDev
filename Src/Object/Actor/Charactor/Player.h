@@ -121,21 +121,22 @@ public:
 	static constexpr float AVOIDANCE_ANGLE_AXIS_Y = 100.0f;
 
 	// 移動速度(通常)
-	static constexpr float SPEED_MOVE = 4.0f;
+	static constexpr float SPEED_MOVE = 6.0f;
+
 	// 移動速度(ダッシュ)
-	static constexpr float SPEED_DASH = 8.0f;
+	static constexpr float SPEED_DASH = 12.0f;
 
 	//スタミナ回復速度
 	static constexpr float RECOVERY_ST_SPEED = 20.0f;
 
 	//ダッシュ時スタミナ消費量
-	static constexpr float CONSUMPTION_ST_FAST_RUN = 25.0f;
+	static constexpr float CONSUMPTION_ST_FAST_RUN = 20.0f;
 
 	//回避時スタミナ消費量
 	static constexpr float CONSUMPTION_ST_AVOIDANCE = 40.0f;
 
 	//回避時スタミナ消費量
-	static constexpr float CONSUMPTION_ST_ATTACK = 25.0f;
+	static constexpr float CONSUMPTION_ST_ATTACK = 23.0f;
 
 	//攻撃判定発生時間
 	static constexpr float STATE_ATTACK_CILLIDER = 18.0f;
@@ -248,6 +249,9 @@ private:
 	// 衝突判定用カプセル球体半径
 	static constexpr float COL_CAPSULE_RADIUS = 20.0f;
 
+	//無敵時間
+	static constexpr float INVINCIBLE_TIME = 10.0f;
+
 	// 操作
 	void ProcessMove(void);
 	void ProcessAttack(void);
@@ -261,6 +265,7 @@ private:
 
 	//無敵
 	bool isV_;
+	float invincibleTimer_;
 
 	float ct_;
 

@@ -96,7 +96,7 @@ void Player::HitDamage(bool isHit)
 						if (isHit && !isV_) {
 							anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 							state_ = STATE::DOWN;
-							uiHp_->SetHp(30.0f);
+							uiHp_->SetHp(20.0f);
 							effType_ = EFFECT::BLOOD;
 							effect_->Play(static_cast<int>(effType_));
 							effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), VGet(5.0f, 5.0f, 5.0f));
@@ -151,7 +151,7 @@ void Player::HitDamage(bool isHit)
 					if (hits) {
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
-						uiHp_->SetHp(40.0f);
+						uiHp_->SetHp(35.0f);
 						int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_DMAGE).handleId_;
 						int volume_ = 50;
 						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, volume_);
@@ -173,7 +173,7 @@ void Player::HitDamage(bool isHit)
 					if (hits) {
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
-						uiHp_->SetHp(40.0f);
+						uiHp_->SetHp(35.0f);
 						int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_DMAGE).handleId_;
 						int volume_ = 50;
 						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, volume_);
@@ -205,7 +205,7 @@ void Player::InitLoad(void)
 	wepon_ = new WeponBlade(transform_, 48);
 	wepon_->Load();
 
-	uiRecovery_ = new UIRecovery(5);
+	uiRecovery_ = new UIRecovery(6);
 	uiRecovery_->Load();
 
 	uiHp_ = new UIHp(
@@ -306,6 +306,8 @@ void Player::InitPost(void)
 
 	i_ = 0.0f;
 
+	invincibleTimer_ = 0.0f;
+
 	uiRecovery_->Init();
 
 	effType_ = EFFECT::NONE;
@@ -322,7 +324,7 @@ void Player::InitPost(void)
 	// コンボ受付開始、衝突判定開始
 	data = {
 		ANIM_TYPE::ATTACK_1,
-		20.0f, 50.0f, 24.0f, 38.0f, 55.0f, 8.0f,
+		20.0f, 50.0f, 15.0f, 38.0f, 55.0f, 8.0f,
 		STATE_ATTACK_COMBO::COMBO_2, [this](void) { return false; }, false,
 		false,
 		nullptr, nullptr, nullptr, nullptr,
@@ -624,7 +626,6 @@ void Player::ProcessDownUp(void)
 
 	if(state_ == STATE::UP)
 	{
-		isV_ = true;
 		state_ = STATE::UP;
 		if (anim_->IsEnd()) {
 			state_ = STATE::IDLE;
@@ -763,7 +764,15 @@ void Player::UpdateProcess(void)
 
 	effect_->SetEffectPos(static_cast<int>(effType_), transform_.pos);
 
-	isV_ = false;
+	if (isV_ && invincibleTimer_ >= 0.0f)
+	{
+		invincibleTimer_ -= 1.0f * SceneManager::GetInstance().GetDeltaTime();
+	}
+	else {
+		isV_ = false;
+	}
+
+
 	if (uiSt_->GetSt() <= UISt::MIN_ST) {
 		ct_ = CT;
 	}

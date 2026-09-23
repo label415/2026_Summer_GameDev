@@ -15,6 +15,7 @@ public:
 		SPHERE,
 		CAPSULE,
 		MODEL,
+		BOX
 	};
 	// П’УЋОнХ 
 	enum class TAG

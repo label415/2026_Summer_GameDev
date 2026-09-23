@@ -8,167 +8,112 @@
 #include "../Manager/FontManager.h"
 #include "TitleScene.h"
 
-TitleScene::TitleScene(void)
-	:
-	SceneBase()
-{
-}
-
-TitleScene::~TitleScene(void)
-{
-}
+TitleScene::TitleScene(void) : SceneBase() {}
+TitleScene::~TitleScene(void) {}
 
 void TitleScene::Load(void)
 {
-	bgm_ = resMng_.Load(ResourceManager::SRC::TITLE_BGM).handleId_;
-	volume_ = 50;
-	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
+    bgm_ = resMng_.Load(ResourceManager::SRC::TITLE_BGM).handleId_;
+    SoundManager::GetInstance().PlayBGM(bgm_, 50);
 
-	// フォントハンドルの作成
-	resMng_.Load(ResourceManager::SRC::FONT);
-	pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", 30, 30);
+    resMng_.Load(ResourceManager::SRC::FONT);
+    pauseFont_ = fontMng_.GetInstance().CreateMyFont(L"KazukiReiwa", FONT_SIZE, FONT_THICKNESS);
+    titleImg_ = resMng_.Load(ResourceManager::SRC::TITLE_IMG).handleId_;
+    selectImg_ = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
 
-	titleImg_ = resMng_.Load(ResourceManager::SRC::TITLE_IMG).handleId_;
-	selectImg_ = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
+    selectIndex_ = 0;
+    isHovered = true;
 
-	selectIndex_ = 0;
-	selectImgX_ = 0.0f;
-	selectImgY_ = 0.0f;
-	isHovered = true;
+    // UIコライダー生成
+    for (int i = 0; i < LIST_MAX; ++i)
+    {
+        float posY = (Application::SCREEN_SIZE_Y / 1.65f + 70.0f * i);
+        uiBoxs_[i] = std::make_unique<ColliderBox2D>(
+            ColliderBase2D::TAG::UI,
+            Vector2F(Application::SCREEN_SIZE_X / 2 - 150.0f, posY),
+            300.0f, 60.0f);
+    }
 }
 
-void TitleScene::LoadEnd(void)
-{
-}
+void TitleScene::LoadEnd(void) {}
 
 void TitleScene::Update(void)
 {
-	auto& ins = InputManager::GetInstance();
+    auto& ins = InputManager::GetInstance();
 
-	InputManager::JOYPAD_IN_STATE padState =
-		ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+    // マウス判定
+    Vector2 mPos = ins.GetMousePos();
+    for (int i = 0; i < LIST_MAX; ++i)
+    {
+        if (uiBoxs_[i] && uiBoxs_[i]->Contains(mPos.x,mPos.y))
+        {
+            ins.SetMouseFlage(true);
+            selectIndex_ = i;
+            isHovered = true;
+            break;
+        }
+    }
 
-	VECTOR dir = AsoUtility::VECTOR_ZERO;
-	dir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
+    // 2. パッド入力（上下でインデックス増減）
+    auto pad = ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+    float stickZ = ins.GetDirectionXZAKey(pad.AKeyLX, pad.AKeyLY).z;
+    int dirY = (stickZ > 0.5f) ? -1 : (stickZ < -0.5f) ? 1 : 0;
 
-	constexpr float STICK_DEAD_ZONE = 0.5f;
+    if (dirY != 0)
+    {
+        ins.SetMouseFlage(false);
+        if (!isStickInput_)
+        {
+            selectIndex_ = (selectIndex_ + dirY + LIST_MAX) % LIST_MAX;
+            isStickInput_ = isHovered = true;
+        }
+    }
+    else
+    {
+        isStickInput_ = false;
+    }
 
-	bool isUp = (dir.z > STICK_DEAD_ZONE);
-	bool isDown = (dir.z < -STICK_DEAD_ZONE);
+    // 3. ボックスの選択状態更新
+    for (int i = 0; i < LIST_MAX; ++i)
+    {
+        if (uiBoxs_[i]) uiBoxs_[i]->SetValid(isHovered && (selectIndex_ == i));
+    }
 
-
-	if (isUp)
-	{
-		InputManager::GetInstance().SetMouseFlage(false);
-		if (!isStickInput_)
-		{
-			selectIndex_--;
-			if (selectIndex_ < 0)
-			{
-				selectIndex_ = LIST_MAX - 1;
-			}
-			isStickInput_ = true;
-			isHovered = true;
-		}
-	}
-	else if (isDown)
-	{
-		InputManager::GetInstance().SetMouseFlage(false);
-		if (!isStickInput_)
-		{
-			selectIndex_++;
-			if (selectIndex_ >= LIST_MAX)
-			{
-				selectIndex_ = 0;
-			}
-			isStickInput_ = true;
-			isHovered = true;
-		}
-	}
-	else
-	{
-		isStickInput_ = false;
-	}
-
-	bool nextSene = ins.IsTrgMouseLeft()
-		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
-
-	if (nextSene && isHovered)
-	{
-		if (selectIndex_ == static_cast<int>(LIST::始める))
-		{
-			sceMng_.ChangeScene(SceneManager::SCENE_ID::GAME);
-		}
-		else if (selectIndex_ == static_cast<int>(LIST::ゲーム終了))
-		{
-			Application::GetInstance().SetIsEnd(true);
-		}
-	}
+    // 4. シーン遷移
+    bool isDecide = ins.IsTrgMouseLeft() || ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
+    if (isDecide && isHovered)
+    {
+        if (selectIndex_ == static_cast<int>(LIST::始める))   sceMng_.ChangeScene(SceneManager::SCENE_ID::GAME);
+        if (selectIndex_ == static_cast<int>(LIST::ゲーム終了)) Application::GetInstance().SetIsEnd(true);
+    }
 }
 
 void TitleScene::Draw(void)
 {
-	DrawRotaGraph(
-		Application::SCREEN_SIZE_X / 2,
-		Application::SCREEN_SIZE_Y / 2 - 100,
-		0.8f, 0.0f,
-		titleImg_, true);
+    // タイトル画像
+    DrawRotaGraph(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2 - 100, 0.8f, 0.0f, titleImg_, true);
 
-	Vector2 mousePos = InputManager::GetInstance().GetMousePos();
+    // カーソル画像
+    if (isHovered && uiBoxs_[selectIndex_])
+    {
+        float centerY = uiBoxs_[selectIndex_]->Top() + (uiBoxs_[selectIndex_]->Bottom() - uiBoxs_[selectIndex_]->Top()) * 0.5f;
+            DrawRotaGraph(Application::SCREEN_SIZE_X / 2, static_cast<int>(centerY), 0.2f, 0.0f, selectImg_, true);
+    }
 
-	// マウスが動いた場合のみ、マウスでホバー中の項目に切り替える
-	for (int i = 0; i < LIST_MAX; ++i)
-	{
-		int itemPosY = static_cast<int>(Application::SCREEN_SIZE_Y / 1.6f) + (70 * i);
+    // 文字とコライダー描画（1つのループに統合）
+    for (int i = 0; i < LIST_MAX; ++i)
+    {
+        int strW = GetDrawStringWidthToHandle(pasueList_[i].c_str(), -1, pauseFont_);
+        int posX = (Application::SCREEN_SIZE_X - strW) / 2;
+        int posY = static_cast<int>(Application::SCREEN_SIZE_Y / 1.6f) + (70 * i);
 
-		if (mousePos.y >= itemPosY && mousePos.y < itemPosY + 50)
-		{
-			InputManager::GetInstance().SetMouseFlage(true);
-			isHovered = true;
-			selectIndex_ = i;
-			break;
-		}
-	}
+        DrawFormatStringToHandle(posX, posY, 0xffffff, pauseFont_, pasueList_[i].c_str());
 
-	// 選択中の項目のY座標を算出
-	float selectImgY = Application::SCREEN_SIZE_Y / 2 + 105.0f;
-	if (selectIndex_ >= 0 && selectIndex_ < LIST_MAX)
-	{
-		int itemPosY = static_cast<int>(Application::SCREEN_SIZE_Y / 1.6f) + (70 * selectIndex_);
-		selectImgY = static_cast<float>(itemPosY + 15);
-	}
-
-	// 選択画像（カーソル）の描画
-	if (isHovered && selectIndex_ >= 0)
-	{
-		DrawRotaGraph(
-			Application::SCREEN_SIZE_X / 2,
-			static_cast<int>(selectImgY),
-			0.2f, 0.0f,
-			selectImg_, true);
-	}
-
-	// メニュー文字の描画
-	for (int i = 0; i < LIST_MAX; ++i)
-	{
-		int stringWidth = GetDrawStringWidthToHandle(
-			pasueList_[i].c_str(),
-			-1,
-			pauseFont_);
-
-		int posX = (Application::SCREEN_SIZE_X / 2) - (stringWidth / 2);
-		int posY = static_cast<int>(Application::SCREEN_SIZE_Y / 1.6f) + (70 * i);
-
-		DrawFormatStringToHandle(
-			posX,
-			posY,
-			0xffffff,
-			pauseFont_,
-			pasueList_[i].c_str());
-	}
+        if (uiBoxs_[i]) uiBoxs_[i]->Draw();
+    }
 }
 
 void TitleScene::Release(void)
 {
-	DeleteFontToHandle(pauseFont_);
+    DeleteFontToHandle(pauseFont_);
 }

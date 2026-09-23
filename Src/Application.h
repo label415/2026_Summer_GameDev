@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <memory>
 
 class FpsController;
 
@@ -12,6 +13,10 @@ public:
 	static constexpr int SCREEN_SIZE_X = 1280;
 	static constexpr int SCREEN_SIZE_Y = 720;
 
+	// カラービット数
+	static constexpr int COLOR_BIT = 32;
+
+	//FPSレート
 	static constexpr int FRAME_RATE = 60;
 
 	// データパス関連
@@ -60,6 +65,7 @@ public:
 	// エフェクシアの初期化
 	void InitEffekseer(void);
 
+	// ゲーム終了フラグ設定
 	void SetIsEnd(bool isEnd);
 
 private:
@@ -68,7 +74,7 @@ private:
 	static Application* instance_;
 
 	// FPSコントローラー
-	FpsController* fpsController_;
+	std::unique_ptr<FpsController> fpsController_;
 
 	// 初期化失敗
 	bool isInitFail_;
@@ -76,6 +82,7 @@ private:
 	// 解放失敗
 	bool isReleaseFail_;
 
+	// ゲーム終了フラグ
 	bool isEnd_;
 
 	// デフォルトコンストラクタをprivateにして、

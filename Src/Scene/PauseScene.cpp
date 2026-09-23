@@ -32,8 +32,6 @@ void PauseScene::LoadEnd(void)
 	isAlive_ = false;
 }
 
-// PauseScene.cpp
-
 void PauseScene::Update(void)
 {
 	auto& ins = InputManager::GetInstance();

@@ -65,6 +65,17 @@ public:
 
 private:
 
+	enum class TransitionPhase
+	{
+		NONE,
+		FADE_OUT_OLD,   // 暗転:今のシーンを隠す
+		FADE_IN_LOAD,   // 明転:ロード画面を見せる
+		WAIT_LOAD,      // ロード完了待ち
+		FADE_OUT_LOAD,  // 暗転:ロード画面を隠す
+		FADE_IN_NEW     // 明転:新シーンを見せる
+	};
+	TransitionPhase transitionPhase_;
+
 	// 静的インスタンス
 	static SceneManager* instance_;
 
@@ -79,6 +90,9 @@ private:
 
 	// ロード画面
 	Loading* load_;
+
+	// フェード
+	Fader* fader_;
 
 	// シーン遷移中判定
 	bool isSceneChanging_;
@@ -103,9 +117,6 @@ private:
 	// シーン遷移
 	void DoChangeScene(SCENE_ID sceneId);
 
-	// タイトルへ戻る際にゲームクリア/ゲームオーバーからの遷移で
-	// タイトル読み込みを長くするための遅延（秒）
-	static constexpr float TITLE_RETURN_DELAY = 2.0f;
-	// 遷移待ちタイマー（秒）
-	float sceneChangeDelayTimer_;
+	// フェード
+	void Fade(void);
 };

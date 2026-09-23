@@ -1,9 +1,6 @@
 #pragma once
 #include <map>
 
-
-
-
 class SoundManager
 {
 public:

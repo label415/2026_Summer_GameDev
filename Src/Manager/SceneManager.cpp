@@ -40,14 +40,20 @@ void SceneManager::Init(void)
 	// フォント管理クラス生成
 	FontManager::CreateInstance();
 
+	// フェード機能の初期化
+	fader_ = new Fader();
+	fader_->Init();
+
 	// ロード画面生成
 	load_ = new Loading();
-	load_->Init();
 	load_->Load();
 
 	// カメラ
 	camera_ = new Camera();
 	camera_->Init();
+
+	// 画面遷移中判定
+	isSceneChanging_ = false;
 
 	// デルタタイム
 	preTime_ = std::chrono::system_clock::now();
@@ -55,13 +61,10 @@ void SceneManager::Init(void)
 	// 3D用の設定
 	Init3D();
 
-	isSceneChanging_ = false;
-
-	// 遷移待ちタイマー初期化
-	sceneChangeDelayTimer_ = 0.0f;
-
 	// 初期シーンの設定
 	DoChangeScene(SCENE_ID::TITLE);
+
+	transitionPhase_ = TransitionPhase::NONE;
 }
 
 void SceneManager::Init3D(void)
@@ -105,73 +108,57 @@ void SceneManager::Update(void)
 		std::chrono::duration_cast<std::chrono::nanoseconds>(nowTime - preTime_).count() / 1000000000.0);
 	preTime_ = nowTime;
 
-	// ロード中
-	if (isSceneChanging_){
-		// タイトルへ戻る際に、直前が GAMEOVER/GAMECLEAR の場合は遅延を入れる
-		if (sceneChangeDelayTimer_ > 0.0f)
-		{
-			sceneChangeDelayTimer_ -= deltaTime_;
-			// 遅延中もロード画面は更新して表示を保つ
-			load_->Update();
-			// タイマーがまだ残っていれば遷移はまだ行わない
-			if (sceneChangeDelayTimer_ > 0.0f)
-			{
-				return;
-			}
-		}
+	fader_->Update();
+	load_->Update();
 
-		// 遅延が終わった（または遅延不要）ので実際にシーン変更処理を行う
-		load_->Update();
-		DoChangeScene(waitSceneId_);
-		if (load_->IsLoading())
+	if (isSceneChanging_)
+	{
+		Fade();
+
+		if (transitionPhase_ == TransitionPhase::FADE_OUT_OLD ||
+			transitionPhase_ == TransitionPhase::FADE_IN_NEW)
 		{
-			isSceneChanging_ = false;
+			scene_->Update();
 		}
 	}
-	// 通常の更新処理
-	else{
-		// 現在のシーンの更新
-		scene_->Update();
+	else
+	{
+			scene_->Update();
 	}
 
-	// カメラ更新
 	camera_->Update();
 }
 
 void SceneManager::Draw(void)
 {
-	
-	// 描画先グラフィック領域の指定
-	// (３Ｄ描画で使用するカメラの設定などがリセットされる)
 	SetDrawScreen(DX_SCREEN_BACK);
-
-	// 画面を初期化
 	ClearDrawScreen();
 
-	// カメラ設定
-	camera_->SetBeforeDraw();
+	// ロード画面を表示するフェーズ(明転?ロード完了待ち?暗転)
+	bool showLoad =
+		(transitionPhase_ == TransitionPhase::FADE_IN_LOAD) ||
+		(transitionPhase_ == TransitionPhase::WAIT_LOAD) ||
+		(transitionPhase_ == TransitionPhase::FADE_OUT_LOAD);
 
-	// Effekseerにより再生中のエフェクトを更新する。
-	/*UpdateEffekseer3D();*/
+	// シーンを表示するフェーズ(通常時 / 暗転前 / 明転後)
+	bool showScene =
+		(transitionPhase_ == TransitionPhase::NONE) ||
+		(transitionPhase_ == TransitionPhase::FADE_OUT_OLD) ||
+		(transitionPhase_ == TransitionPhase::FADE_IN_NEW);
 
-	// ロード中ならロード画面を描画
-	if (isSceneChanging_)
+	if (showLoad)
 	{
-		// ロードの描画
 		load_->Draw();
 	}
-	// 通常の更新
-	else
+
+	if (showScene)
 	{
-		// 各シーンの描画処理
+		camera_->SetBeforeDraw();
 		scene_->Draw();
-
-		// カメラ描画
-		camera_->DrawDebug();
-
-		// Effekseerにより再生中のエフェクトを描画する。
-		/*DrawEffekseer3D();*/
 	}
+
+	camera_->DrawDebug();
+	fader_->Draw();
 }
 
 void SceneManager::Destroy(void)
@@ -192,6 +179,9 @@ void SceneManager::Destroy(void)
 
 	FontManager::GetInstance().Destroy();
 
+	// フェード機能の解放
+	delete fader_;
+
 	// インスタンスのメモリ解放
 	delete instance_;
 
@@ -200,27 +190,15 @@ void SceneManager::Destroy(void)
 void SceneManager::ChangeScene(SCENE_ID nextId)
 {
 
-	// 遷移先シーンを保持
 	waitSceneId_ = nextId;
+
+	// まず今のシーンを暗転で隠すところから開始
+	transitionPhase_ = TransitionPhase::FADE_OUT_OLD;
+	fader_->SetFade(Fader::STATE::FADE_OUT);
+	isSceneChanging_ = true;
 
 	SoundManager::GetInstance().StopBGM();
 	SoundManager::GetInstance().AllStopSE();
-
-	// タイトルへ戻る場合で、現在が GAMEOVER または GAMECLEAR のときは
-	// 読み込みを長く見せるための遅延を設定する
-	if (
-		(nextId == SCENE_ID::TITLE &&(sceneId_ == SCENE_ID::GAMEOVER || sceneId_ == SCENE_ID::GAMECLEAR))
-		|| ((nextId == SCENE_ID::GAMEOVER || nextId == SCENE_ID::GAMECLEAR) && sceneId_ == SCENE_ID::GAME)
-		)
-	{
-		sceneChangeDelayTimer_ = TITLE_RETURN_DELAY;
-	}
-	else
-	{
-		sceneChangeDelayTimer_ = 0.0f;
-	}
-
-	isSceneChanging_ = true;
 
 }
 
@@ -247,14 +225,12 @@ SceneManager::SceneManager(void)
 
 	scene_ = nullptr;
 
-	isSceneChanging_ = false;
-
 	// デルタタイム
 	deltaTime_ = 1.0f / 60.0f;
 
 	camera_ = nullptr;
 	load_ = nullptr;
-	sceneChangeDelayTimer_ = 0.0f;
+	fader_ = nullptr;
 
 }
 
@@ -303,11 +279,72 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 	// 各シーンの初期化
 	load_->StartAsyncLoad();
 	scene_->Load();
-	load_->EndAsyncLoad();
-	scene_->LoadEnd();
 	
 	ResetDeltaTime();
 
 	waitSceneId_ = SCENE_ID::NONE;
 
+}
+
+void SceneManager::Fade(void)
+{
+	switch (transitionPhase_)
+	{
+	case TransitionPhase::FADE_OUT_OLD:
+		// 暗転中:今のシーンを隠している
+		if (fader_->IsEnd())
+		{
+			// 真っ暗になったので、ここでシーンを差し替え+ロード開始
+			DoChangeScene(waitSceneId_);
+
+			// ロード画面を明転で見せる
+			transitionPhase_ = TransitionPhase::FADE_IN_LOAD;
+			fader_->SetFade(Fader::STATE::FADE_IN);
+		}
+		break;
+
+	case TransitionPhase::FADE_IN_LOAD:
+		// 明転中:ロード画面が見えてくる
+		if (fader_->IsEnd())
+		{
+			// 完全に見えたので、ロード完了待ちへ
+			transitionPhase_ = TransitionPhase::WAIT_LOAD;
+		}
+		break;
+
+	case TransitionPhase::WAIT_LOAD:
+		// ロード画面表示中:ロード完了を待つ
+		if (load_->IsEnd())
+		{
+			// ロード完了したので、ロード画面を暗転で隠す
+			transitionPhase_ = TransitionPhase::FADE_OUT_LOAD;
+			fader_->SetFade(Fader::STATE::FADE_OUT);
+			load_->EndAsyncLoad();
+		}
+		break;
+
+	case TransitionPhase::FADE_OUT_LOAD:
+		// 暗転中:ロード画面を隠している
+		if (fader_->IsEnd())
+		{
+			// 真っ暗になったので、新シーンを明転で見せる
+			transitionPhase_ = TransitionPhase::FADE_IN_NEW;
+			fader_->SetFade(Fader::STATE::FADE_IN);
+			scene_->LoadEnd();
+		}
+		break;
+
+	case TransitionPhase::FADE_IN_NEW:
+		// 明転中:新シーンが見えてくる
+		if (fader_->IsEnd())
+		{
+			// 遷移完了
+			transitionPhase_ = TransitionPhase::NONE;
+			isSceneChanging_ = false;
+		}
+		break;
+
+	default:
+		break;
+	}
 }

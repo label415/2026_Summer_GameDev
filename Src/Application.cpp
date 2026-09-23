@@ -38,10 +38,10 @@ void Application::Init(void)
 	SetWindowText(L"HOT SOULS");
 
 	// ウィンドウサイズ
-	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, 32);
-	ChangeWindowMode(false);
+	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, COLOR_BIT);
+	ChangeWindowMode(true);
 	// FPS制御初期化
-	fpsController_ = new FpsController(FRAME_RATE);
+	fpsController_ = std::make_unique<FpsController>(FRAME_RATE);
 	// DxLibの初期化
 	SetUseDirect3DVersion(DX_DIRECT3D_11);
 	isInitFail_ = false;
@@ -79,12 +79,11 @@ void Application::Init(void)
 	ImGuiWrapper::CreateInstance();
 
 	isEnd_ = false;
-
 }
 
 void Application::Run(void)
 {
-
+	//インスタンス取得
 	InputManager& inputManager = InputManager::GetInstance();
 	ImGuiWrapper& imGuiWrapper = ImGuiWrapper::GetInstance();
 	SceneManager& sceneManager = SceneManager::GetInstance();
@@ -92,15 +91,21 @@ void Application::Run(void)
 	// ゲームループ
 	while (ProcessMessage() == 0 && !isEnd_)
 	{
-
+		// 入力更新処理
 		inputManager.Update();
+
+		//GUI更新処理
 		imGuiWrapper.Update();
+
+		// シーン更新処理
 		sceneManager.Update();
 
+		// シーン描画処理
 		sceneManager.Draw();
 
 		RenderVertex();
 
+		// GUI描画処理
 		imGuiWrapper.Draw();
 
 		ScreenFlip();
@@ -113,11 +118,9 @@ void Application::Run(void)
 
 void Application::Destroy(void)
 {
-
+	//インスタンス破棄
 	InputManager::GetInstance().Destroy();
 	ResourceManager::GetInstance().Destroy();
-	
-	// シーン管理解放
 	SceneManager::GetInstance().Destroy();
 	ImGuiWrapper::GetInstance().Destroy();
 
