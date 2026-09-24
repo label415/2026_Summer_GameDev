@@ -13,6 +13,10 @@ public:
 	static constexpr int SCREEN_SIZE_X = 1280;
 	static constexpr int SCREEN_SIZE_Y = 720;
 
+	//ハーフスクリーンサイズ
+	static constexpr int HALF_SCREEN_SIZE_X = SCREEN_SIZE_X / 2;
+	static constexpr int HALF_SCREEN_SIZE_Y = SCREEN_SIZE_Y / 2;
+
 	// カラービット数
 	static constexpr int COLOR_BIT = 32;
 

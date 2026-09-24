@@ -9,7 +9,6 @@ class SkyDome;
 
 class TitleScene : public SceneBase
 {
-
 public:
 
 	enum class LIST
@@ -18,9 +17,6 @@ public:
 		ゲーム終了, // ゲームの終了  
 		MAX
 	};
-
-	//リスト  
-	static constexpr int LIST_MAX = static_cast<int>(LIST::MAX);
 
 	// コンストラクタ  
 	TitleScene(void);
@@ -45,12 +41,16 @@ public:
 
 private:
 
+	//リスト  
+	static constexpr int LIST_MAX = static_cast<int>(LIST::MAX);
+	//BGMの音量
+	static constexpr int BGM_VOLUME = 50;
 	//フォントのサイズ
 	static constexpr float FONT_SIZE = 30.0f;
-
 	//フォントの太さ
 	static constexpr float FONT_THICKNESS = 30.0f;
 
+	//ボックスコライダーの配列
 	std::unique_ptr<ColliderBox2D> uiBoxs_[LIST_MAX];
 
 	//ポーズフォント  
@@ -59,22 +59,23 @@ private:
 	//ポーズリストの選択  
 	int selectIndex_;
 
+	//タイトル画像
 	int titleImg_;
 
+	//選択画像
 	int selectImg_;
 
-	float selectImgX_;
-	float selectImgY_;
-
+	//選択されているかの判定
 	bool isHovered;
 
+	//スティック入力の判定
 	bool isStickInput_;
 
 	//選択リスト  
 	std::wstring pasueList_[LIST_MAX] =
 	{
-		L"GAME START",// 続ける  
-		L"QUIT",   // ゲームの終了  
+		L"GAME START",	// 続ける  
+		L"QUIT",		// ゲームの終了  
 	};
 
 };

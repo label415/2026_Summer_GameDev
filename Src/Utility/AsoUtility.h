@@ -29,6 +29,7 @@ public:
 	static constexpr VECTOR DIR_U = { 0.0f, 1.0f, 0.0f };
 	static constexpr VECTOR DIR_D = { 0.0f, -1.0f, 0.0f };
 
+	// ³‹K‰»‚ÌÛ‚Ìƒ[ƒœZ‰ñ”ğ—p
 	static constexpr float kEpsilonNormalSqrt = 1e-15F;
 
 	// ’l‚ğ”ÍˆÍ‚Éû‚ß‚é

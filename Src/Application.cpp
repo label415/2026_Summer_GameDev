@@ -78,6 +78,7 @@ void Application::Init(void)
 	// デバッグ描画初期化
 	ImGuiWrapper::CreateInstance();
 
+	// ゲーム終了フラグ初期化
 	isEnd_ = false;
 }
 
@@ -157,13 +158,12 @@ Application::Application(void)
 
 void Application::InitEffekseer(void)
 {
+	// Effekseerの初期化
 	if (Effekseer_Init(8000) == -1)
 	{
 		DxLib_End();
 	}
-
 	SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
-
 	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
 }
 

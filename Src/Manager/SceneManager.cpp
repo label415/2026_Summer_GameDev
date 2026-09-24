@@ -123,7 +123,7 @@ void SceneManager::Update(void)
 	}
 	else
 	{
-			scene_->Update();
+		scene_->Update();
 	}
 
 	camera_->Update();
