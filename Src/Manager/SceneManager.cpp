@@ -63,6 +63,7 @@ void SceneManager::Init(void)
 
 	// 初期シーンの設定
 	DoChangeScene(SCENE_ID::TITLE);
+	scene_->LoadEnd();
 
 	transitionPhase_ = TransitionPhase::NONE;
 }
@@ -189,7 +190,6 @@ void SceneManager::Destroy(void)
 
 void SceneManager::ChangeScene(SCENE_ID nextId)
 {
-
 	waitSceneId_ = nextId;
 
 	// まず今のシーンを暗転で隠すところから開始
@@ -199,7 +199,6 @@ void SceneManager::ChangeScene(SCENE_ID nextId)
 
 	SoundManager::GetInstance().StopBGM();
 	SoundManager::GetInstance().AllStopSE();
-
 }
 
 SceneManager::SCENE_ID SceneManager::GetSceneID(void)
@@ -298,8 +297,8 @@ void SceneManager::Fade(void)
 			DoChangeScene(waitSceneId_);
 
 			// ロード画面を明転で見せる
-			transitionPhase_ = TransitionPhase::FADE_IN_LOAD;
 			fader_->SetFade(Fader::STATE::FADE_IN);
+			transitionPhase_ = TransitionPhase::FADE_IN_LOAD;
 		}
 		break;
 

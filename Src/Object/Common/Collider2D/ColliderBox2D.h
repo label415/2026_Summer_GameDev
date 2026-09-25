@@ -18,17 +18,15 @@ public:
 	~ColliderBox2D(void) override;
 
 	// 境界座標の取得
-	float Left(void)   const { return pos_.x; }
-	float Right(void)  const { return pos_.x + width_; }
-	float Top(void)    const { return pos_.y; }
-	float Bottom(void) const { return pos_.y + height_; }
+	float Left(void)   const { return boxPos_.x; }
+	float Right(void)  const { return boxPos_.x + boxWidth_; }
+	float Top(void)    const { return boxPos_.y; }
+	float Bottom(void) const { return boxPos_.y + boxHeight_; }
 
-	/// <summary>
-	/// 点が含まれているか判定
-	/// </summary>
+	// 点が含まれているか判定
 	bool Contains(float px, float py) const
 	{
-		return (px >= pos_.x && px <= Right() && py >= pos_.y && py <= Bottom());
+		return (px >= boxPos_.x && px <= Right() && py >= boxPos_.y && py <= Bottom());
 	}
 
 protected:
@@ -39,8 +37,8 @@ protected:
 private:
 
 	//ボックスの上下の座標
-	Vector2F pos_;
-	float width_;
-	float height_;
+	Vector2F boxPos_;
+	float boxWidth_;
+	float boxHeight_;
 };
 

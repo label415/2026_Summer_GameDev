@@ -4,11 +4,10 @@
 #include <DxLib.h>
 #include "../Common/Vector2.h"
 #include "../Common/Quaternion.h"
+
 class AsoUtility
 {
-
 public:
-
 	// ラジアン(rad)・度(deg)変換用
 	static constexpr float RAD2DEG = (180.0f / DX_PI_F);
 	static constexpr float DEG2RAD = (DX_PI_F / 180.0f);
@@ -28,6 +27,10 @@ public:
 	static constexpr VECTOR DIR_L = { -1.0f, 0.0f, 0.0f };
 	static constexpr VECTOR DIR_U = { 0.0f, 1.0f, 0.0f };
 	static constexpr VECTOR DIR_D = { 0.0f, -1.0f, 0.0f };
+
+	// 360度・180度
+	static constexpr float DEG_360 = 360.0f;
+	static constexpr float DEG_180 = DEG_360 / 2;
 
 	// 正規化の際のゼロ除算回避用
 	static constexpr float kEpsilonNormalSqrt = 1e-15F;
@@ -56,10 +59,10 @@ public:
 
 	// 回転が少ない方の回転向きを取得する(時計回り:1、反時計回り:-1)
 	static int DirNearAroundRad(float from, float to);
-	
+
 	// 回転が少ない方の回転向きを取得する(時計回り:1、反時計回り:-1)
 	static int DirNearAroundDeg(float from, float to);
-	
+
 	// 線形補間
 	static int Lerp(int start, int end, float t);
 	static float Lerp(float start, float end, float t);
@@ -76,7 +79,7 @@ public:
 	// ベジェ曲線
 	static Vector2 Bezier(const Vector2& p1, const Vector2& p2, const Vector2& p3, float t);
 	static VECTOR Bezier(const VECTOR& p1, const VECTOR& p2, const VECTOR& p3, float t);
-	
+
 	// Y軸回転
 	static VECTOR RotXZPos(const VECTOR& centerPos, const VECTOR& radiusPos, float rad);
 
@@ -97,7 +100,7 @@ public:
 
 	// 球体とカプセルの衝突判定
 	static bool IsHitSphereCapsule(
-		const VECTOR& sphPos, float sphRadius, 
+		const VECTOR& sphPos, float sphRadius,
 		const VECTOR& capPos1, const VECTOR& capPos2, float capRadius);
 
 	// 比較
@@ -122,6 +125,5 @@ public:
 	// 線分上の最近接点を取得
 	static VECTOR GetNearestPointOnSegment(const VECTOR& statePos,
 		const VECTOR& endPos, const VECTOR& targetPos);
-
 };
 

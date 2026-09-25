@@ -3,8 +3,8 @@
 #include "Manager/InputManager.h"
 #include "Manager/ResourceManager.h"
 #include "Manager/SceneManager.h"
-#include "Common/FpsController.h"
 #include "Manager/SoundManager.h"
+#include "Common/FpsController.h"
 #include "Libs/ImGuiWrapper.h"
 #include "Application.h"
 
@@ -41,7 +41,7 @@ void Application::Init(void)
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, COLOR_BIT);
 	ChangeWindowMode(true);
 	// FPS制御初期化
-	fpsController_ = std::make_unique<FpsController>(FRAME_RATE);
+	fpsController_ = new FpsController(FRAME_RATE);
 	// DxLibの初期化
 	SetUseDirect3DVersion(DX_DIRECT3D_11);
 	isInitFail_ = false;
@@ -79,7 +79,7 @@ void Application::Init(void)
 	ImGuiWrapper::CreateInstance();
 
 	// ゲーム終了フラグ初期化
-	isEnd_ = false;
+	isGameEnd_ = false;
 }
 
 void Application::Run(void)
@@ -90,7 +90,7 @@ void Application::Run(void)
 	SceneManager& sceneManager = SceneManager::GetInstance();
 
 	// ゲームループ
-	while (ProcessMessage() == 0 && !isEnd_)
+	while (ProcessMessage() == 0 && !isGameEnd_)
 	{
 		// 入力更新処理
 		inputManager.Update();
@@ -114,7 +114,6 @@ void Application::Run(void)
 		// 理想FPS経過待ち
 		fpsController_->Wait();
 	}
-
 }
 
 void Application::Destroy(void)
@@ -136,7 +135,6 @@ void Application::Destroy(void)
 
 	// インスタンスのメモリ解放
 	delete instance_;
-
 }
 
 bool Application::IsInitFail(void) const
@@ -163,12 +161,13 @@ void Application::InitEffekseer(void)
 	{
 		DxLib_End();
 	}
+
 	SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
 	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
 }
 
 void Application::SetIsEnd(bool isEnd)
 {
-	isEnd_ = isEnd;
+	isGameEnd_ = isEnd;
 }
 

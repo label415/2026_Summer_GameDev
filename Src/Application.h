@@ -1,14 +1,11 @@
 #pragma once
 #include <string>
-#include <memory>
 
 class FpsController;
 
 class Application
 {
-
 public:
-
 	// スクリーンサイズ
 	static constexpr int SCREEN_SIZE_X = 1280;
 	static constexpr int SCREEN_SIZE_Y = 720;
@@ -71,14 +68,12 @@ public:
 
 	// ゲーム終了フラグ設定
 	void SetIsEnd(bool isEnd);
-
 private:
-
 	// 静的インスタンス
 	static Application* instance_;
 
 	// FPSコントローラー
-	std::unique_ptr<FpsController> fpsController_;
+	FpsController* fpsController_;
 
 	// 初期化失敗
 	bool isInitFail_;
@@ -87,7 +82,7 @@ private:
 	bool isReleaseFail_;
 
 	// ゲーム終了フラグ
-	bool isEnd_;
+	bool isGameEnd_;
 
 	// デフォルトコンストラクタをprivateにして、
 	// 外部から生成できない様にする
@@ -98,5 +93,4 @@ private:
 
 	// デストラクタも同様
 	~Application(void) = default;
-
 };

@@ -434,9 +434,6 @@
     <ClInclude Include="Src\Scene\PauseScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Template\Singleton.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Object\Common\Collider2D\ColliderBox2D.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

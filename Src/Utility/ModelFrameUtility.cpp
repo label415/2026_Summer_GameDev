@@ -1,6 +1,6 @@
+#include "../Object/Common/Transform.h"
 #include "AsoUtility.h"
 #include "MatrixUtility.h"
-#include "../Object/Common/Transform.h"
 #include "ModelFrameUtility.h"
 
 void ModelFrameUtility::GetFrameWorldMatrix(
@@ -21,8 +21,8 @@ void ModelFrameUtility::GetFrameWorldMatrix(
 }
 
 void ModelFrameUtility::SetFrameWorldMatrix(
-	const Transform & follow, int followFrameIdx,
-	Transform & target, VECTOR localPos, VECTOR localRot)
+	const Transform& follow, int followFrameIdx,
+	Transform& target, VECTOR localPos, VECTOR localRot)
 {
 	// 親フレームのワールド合成行列を取得
 	MATRIX parentWorldMat = MV1GetFrameLocalWorldMatrix(follow.modelId, followFrameIdx);
@@ -32,7 +32,11 @@ void ModelFrameUtility::SetFrameWorldMatrix(
 
 	// 親の行列から「回転成分」のみを取得
 	VECTOR parentScl = MGetSize(parentWorldMat);
-	if (parentScl.x == 0.0f || parentScl.y == 0.0f || parentScl.z == 0.0f) { parentScl = AsoUtility::VECTOR_ONE; }
+	if (parentScl.x == 0.0f || parentScl.y == 0.0f || parentScl.z == 0.0f)
+	{
+		parentScl = AsoUtility::VECTOR_ONE;
+
+	}
 	MATRIX parentRotMat = MGetRotElem(parentWorldMat);
 	auto revParentScl = VGet(1.0f / parentScl.x, 1.0f / parentScl.y, 1.0f / parentScl.z);
 	parentRotMat = MMult(parentRotMat, MGetScale(revParentScl));
@@ -49,7 +53,8 @@ void ModelFrameUtility::SetFrameWorldMatrix(
 	worldMat = MMult(worldMat, finalRotMat);
 	worldMat = MMult(worldMat, MGetTranslate(parentWorldPos));
 
-	if (VSize(localPos) > 0.0f) {
+	if (VSize(localPos) > 0.0f)
+	{
 		VECTOR offsetPos = VTransform(localPos, parentRotMat);
 		worldMat = MMult(worldMat, MGetTranslate(offsetPos));
 	}
