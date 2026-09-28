@@ -556,7 +556,7 @@ void Player::ProcessAttack(void)
 	}
 }
 
-void Player::ProcessAvoidance(void)
+void Player::ProcessEvasion(void)
 {
 
 	bool isP = false;
@@ -572,22 +572,22 @@ void Player::ProcessAvoidance(void)
 		|| state_ == STATE::RUN
 		|| state_ == STATE::FAST_RUN))
 	{
-		state_ = STATE::AVOIDANCE;
+		state_ = STATE::EVASION;
 		lastQrot_ = transform_.quaRotLocal;
 		transform_.quaRotLocal =
 			Quaternion::Mult(transform_.quaRotLocal,
 				Quaternion::AngleAxis(AsoUtility::Deg2RadF(100.0f), AsoUtility::AXIS_Y));
-		uiSt_->SetSt(CONSUMPTION_ST_AVOIDANCE);
+		uiSt_->SetSt(CONSUMPTION_ST_EVASION);
 		int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_AVE).handleId_;
 		int volume_ = 50;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_AVE, bgm_, volume_);
 
 	}
 
-	if (state_ != STATE::AVOIDANCE) return;
+	if (state_ != STATE::EVASION) return;
 
 	anim_->Play(
-		static_cast<int>(ANIM_TYPE::AVOIDANCE), false);
+		static_cast<int>(ANIM_TYPE::EVASION), false);
 
 	moveSpeed_ = 10.0f;
 	movePow_ = VScale(moveDir_, moveSpeed_);
@@ -803,7 +803,7 @@ void Player::UpdateProcess(void)
 	ProcessMove();
 
 	//âÒîèàóù
-	ProcessAvoidance();
+	ProcessEvasion();
 
 	ProcessDownUp();
 

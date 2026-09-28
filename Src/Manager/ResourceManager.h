@@ -5,78 +5,75 @@
 
 class ResourceManager
 {
-
 public:
-
 	// リソース名
 	enum class SRC
 	{
-		TITLE_IMG,
-
-		LOADING,
-		PIT_FALL_PLANET,
-		SPHERE_PLANET,
+		// タイトル画像
+		IMG_TITLE,
+		// ゲームクリア画像
+		IMG_GAMECLEAR,
+		// ゲームオーバー画像
+		IMG_GAMEOVER,
 
 		//プレイヤー
-		PLAYER,
+		MODEL_PLAYER,
+		MODEL_WEAPON_BLADE,
 		ANIM_PLAYER_IDLE,
 		ANIM_PLAYER_RUN,
 		ANIM_PLSYER_ATTACK_1,
 		ANIM_PLSYER_ATTACK_2,
 		ANIM_PLSYER_ATTACK_3,
-		ANIM_PLAYER_AVOIDANCE,
+		ANIM_PLAYER_EVASION,
 		ANIM_PLAYER_DOWN,
 		ANIM_PLAYER_UP,
 		ANIM_PLAYER_RECOVERY,
 
-		//ステージ
-		MAIN_STAGE,
-		STAGE_LOCK,
+		// ステージモデル
+		MODEL_MAIN_STAGE,
+		// スカイドーム
+		MODEL_SKY_DOME,
 
-		SKY_DOME,
-		PLAYER_SHADOW,
-		ENEMY_RAT,
-		ENEMY_ROBOT,
-		ENEMY_DRAGON,
-		VIEW_RANGE,
-		UI_SURPRISE,
-		WEAPON_BLADE,
-		FONT,
-		L_FONT,
+		// エネミードラゴンモデル
+		MODEL_ENEMY_DRAGON,
 
-		LOCKON_IMG,
-
-		TITLE_SELECT,
-		HP_1,
-		HP_2,
-		ST,
-
-		UI_BOX,
+		// ロックオンUI
+		UI_LOCKON,
+		// 選択カーソルUI
+		UI_SELECTION_CURSOR,
+		// バーの枠UI
+		UI_BAR_FRAME,
+		// HPバーUI
+		UI_HP_BAR,
+		// STバーUI
+		UI_ST_BAR,
+		// アイテムボックスUI
+		UI_ITEMBOX,
+		// 回復瓶UI
 		UI_RECOVERY_BOTTLE,
-		TITLE_BGM,
-		GAME_BGM,
 
-		PLAYER_WEPON_SE1,
-		PLAYER_WEPON_SE2,
-		PLAYER_WAKE,
-		PLAYER_RAN,
-		PLAYER_HER,
-		PLAYER_AVE,
-		PLAYER_DMAGE,
+		// BGM
+		BGM_TITLE,
+		BGM_GAME,
 
-		ENEMY_ROAR,
-		ENEMY_WAKE,
-		ENEMY_ATTCEK,
-		ENEMY_BREASE1,
-		ENEMY_BREASE2,
-		ENEMY_FALL,
-		ENEMY_ARE,
-		ENEMY_ARE_ENEMY_BREASE1,
-		ENEMY_ARE_ENEMY_BREASE2,
+		// プレイヤーSE
+		SE_PLAYER_WEAPON_1,
+		SE_PLAYER_WAKE,
+		SE_PLAYER_RUN,
+		SE_PLAYER_RECOVERY,
+		SE_PLAYER_EVASION,
+		SE_PLAYER_DAMAGE,
 
-		GAME_CLEAR,
-		GAME_OVER,
-
+		// エネミーSE
+		SE_ENEMY_ROAR,
+		SE_ENEMY_WAKE,
+		SE_ENEMY_ATTCEK,
+		SE_ENEMY_BREASE_1,
+		SE_ENEMY_BREASE_2,
+		SE_ENEMY_FALL,
+		SE_ENEMY_FLAP,
+		SE_ENEMY_ARE_BREASE_1,
+		SE_ENEMY_ARE_BREASE_2,
 	};
 
 	// 明示的にインステンスを生成する
@@ -99,9 +96,7 @@ public:
 
 	// リソースの複製ロード(モデル用)
 	int LoadModelDuplicate(SRC src);
-
 private:
-
 	// 静的インスタンス
 	static ResourceManager* instance_;
 
@@ -111,6 +106,7 @@ private:
 	// 読み込み済みリソース
 	std::map<SRC, Resource&> loadedMap_;
 
+	// リソース
 	Resource dummy_;
 
 	// デフォルトコンストラクタをprivateにして、

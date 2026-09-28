@@ -13,10 +13,10 @@ public:
 	// デストラクタ
 	virtual ~SceneBase(void) = 0;
 
-	//読み込み
+	// 読み込み
 	virtual void Load(void) = 0;
 
-	//読み込み後の初期化
+	// 読み込み後の初期化
 	virtual void LoadEnd(void) = 0;
 
 	// 更新

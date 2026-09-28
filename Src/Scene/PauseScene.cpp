@@ -15,9 +15,7 @@ PauseScene::PauseScene(void)
 {
 }
 
-PauseScene::~PauseScene(void)
-{
-}
+PauseScene::~PauseScene(void){}
 
 void PauseScene::LoadEnd(void)
 {
@@ -35,89 +33,48 @@ void PauseScene::LoadEnd(void)
 			ColliderBase2D::TAG::UI,
 			Vector2F(
 				Application::HALF_SCREEN_SIZE_X - BOX_ADJUST_X,
-				(Application::HALF_SCREEN_SIZE_Y + BOX_ADJUST_Y) + (BOX_Y_INTERVAL * i)),
+				(Application::HALF_SCREEN_SIZE_Y - BOX_ADJUST_Y) + (BOX_Y_INTERVAL * i)),
 			BOX_WIDTH, BOX_HEIGHT);
 	}
 }
 
 void PauseScene::Update(void)
 {
+	// 入力管理インスタンスを取得
 	auto& ins = InputManager::GetInstance();
 
-	// === 1. パッド / キーボードの操作判定 ===
-	InputManager::JOYPAD_IN_STATE padState =
-		ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
-
-	VECTOR dir = AsoUtility::VECTOR_ZERO;
-	dir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
-
-	constexpr float STICK_DEAD_ZONE = 0.35f;
-
-	bool isUp = (dir.z > STICK_DEAD_ZONE);
-	bool isDown = (dir.z < -STICK_DEAD_ZONE);
-
-	if (isUp)
+	// マウス判定
+	Vector2 mPos = ins.GetMousePos();
+	for (int i = 0; i < LIST_MAX; ++i)
 	{
-		InputManager::GetInstance().SetMouseFlage(false);
-		if (!isStickInput_)
+		if (uiBoxs_[i] && uiBoxs_[i]->Contains(mPos.x, mPos.y))
 		{
-			selectIndex_--;
-			if (selectIndex_ < 0)
-			{
-				selectIndex_ = LIST_MAX - 1;
-			}
-			isStickInput_ = true;
-			// スティック操作があったらホバー状態にする
+			ins.SetMouseFlage(true);
+			selectIndex_ = i;
 			isHovered = true;
+			break;
 		}
 	}
-	else if (isDown)
+
+	// パッド入力
+	auto pad = ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+	float stickZ = ins.GetDirectionXZAKey(pad.AKeyLX, pad.AKeyLY).z;
+	int dirY = (stickZ > STICK_DEAD_ZONE) ? -1 : (stickZ < -STICK_DEAD_ZONE) ? 1 : 0;
+
+	// スティック入力があった場合、選択インデックスを更新
+	if (dirY != 0)
 	{
-		InputManager::GetInstance().SetMouseFlage(false);
+		ins.SetMouseFlage(false);
+
 		if (!isStickInput_)
 		{
-			selectIndex_++;
-			if (selectIndex_ >= LIST_MAX)
-			{
-				selectIndex_ = 0;
-			}
-			isStickInput_ = true;
-			// スティック操作があったらホバー状態にする
-			isHovered = true;
+			selectIndex_ = (selectIndex_ + dirY + LIST_MAX) % LIST_MAX;
+			isStickInput_ = isHovered = true;
 		}
 	}
 	else
 	{
 		isStickInput_ = false;
-	}
-
-	// === 2. マウスの操作判定（★ここに追加） ===
-	Vector2 mousePos = ins.GetMousePos();
-
-	// ★重要：マウスが実際に動いた場合のみ、選択インデックスを更新する
-	if (mousePos.x != prevMousePos_.x || mousePos.y != prevMousePos_.y)
-	{
-		for (int i = 0; i < LIST_MAX; ++i)
-		{
-			// PauseSceneのY座標計算式
-			int itemPosY = static_cast<int>(Application::SCREEN_SIZE_Y / 2.0f - 90) + (70 * i);
-
-			if (mousePos.y >= itemPosY && mousePos.y < itemPosY + 50)
-			{
-				InputManager::GetInstance().SetMouseFlage(true);
-				isHovered = true;
-				selectIndex_ = i;
-				// 項目に乗ったらループを抜ける
-				break;
-			}
-			else
-			{
-				// どの項目にも乗っていない場合はホバーをオフにする（オプション）
-				// isHovered = false; 
-			}
-		}
-		// 今のマウス位置を記憶
-		prevMousePos_ = mousePos;
 	}
 
 	// 決定入力があり、かつ選択中のUIが表示されている時
@@ -143,65 +100,67 @@ void PauseScene::Update(void)
 
 void PauseScene::Draw(void)
 {
-	const auto centerY = Application::SCREEN_SIZE_Y / 2;
-	auto height = 200;
-
-	// 背景の半透明黒（セロファン）
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 168);
+	// ポーズ画面半透明黒
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, PAUSE_BLENDPARAM);
 	DrawBoxAA(
-		height, centerY - height * 1.0f,
-		Application::SCREEN_SIZE_X - height, centerY + height * 1.0f,
-		0x000000,
-		true, 1.0f
+		PAUSE_HEIGHT,
+		Application::HALF_SCREEN_SIZE_Y - PAUSE_HEIGHT,
+		Application::SCREEN_SIZE_X - PAUSE_HEIGHT,
+		Application::HALF_SCREEN_SIZE_Y + PAUSE_HEIGHT,
+		PAUSE_COLOR,
+		true, PAUSE_SIZE
 	);
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	// 白枠
+	// ポーズ画面枠
 	DrawBoxAA(
-		height, centerY - height * 1.0f,
-		Application::SCREEN_SIZE_X - height, centerY + height * 1.0f,
-		0xffffff,
+		PAUSE_HEIGHT,
+		Application::HALF_SCREEN_SIZE_Y - PAUSE_HEIGHT,
+		Application::SCREEN_SIZE_X - PAUSE_HEIGHT,
+		Application::HALF_SCREEN_SIZE_Y + PAUSE_HEIGHT,
+		PAUSE_FRAME_COLOR,
 		false,
-		3.0f);
+		PAUSE_FRAME_SIZE);
 
-	// 選択中の項目のY座標を算出
-	float selectImgY = Application::SCREEN_SIZE_Y / 2 + 105.0f;
-	if (selectIndex_ >= 0 && selectIndex_ < LIST_MAX)
+	// カーソル画像
+	if (isHovered && uiBoxs_[selectIndex_])
 	{
-		int itemPosY = static_cast<int>(Application::SCREEN_SIZE_Y / 2.0f - 90) + (70 * selectIndex_);
-		selectImgY = static_cast<float>(itemPosY + 15);
-	}
+		float centerY =
+			uiBoxs_[selectIndex_]->Top()
+			+ (uiBoxs_[selectIndex_]->Bottom()
+				- uiBoxs_[selectIndex_]->Top()) * SELECT_IMG_ADJUST_Y;
 
-	// 選択画像（カーソル）の描画
-	if (isHovered && selectIndex_ >= 0)
-	{
 		DrawRotaGraph(
-			Application::SCREEN_SIZE_X / 2,
-			static_cast<int>(selectImgY),
-			0.2f, 0.0f,
-			selectImg_, true);
+			Application::HALF_SCREEN_SIZE_X,
+			static_cast<int>(centerY),
+			SELECT_IMG_SIZE, 0.0f, selectImg_, true
+		);
 	}
 
-	// メニュー文字の描画
+	// 文字とコライダー描画
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
-		int stringWidth = GetDrawStringWidthToHandle(
-			pasueList_[i].c_str(),
-			-1,
-			pauseFont_);
-
-		int posX = (Application::SCREEN_SIZE_X / 2) - (stringWidth / 2);
-		int posY = static_cast<int>(Application::SCREEN_SIZE_Y / 2.0f - 90) + (70 * i);
+		// 文字描画
+		int strW = GetDrawStringWidthToHandle(pasueList_[i].c_str(), -1, pauseFont_);
+		int posX = static_cast<int>(Application::SCREEN_SIZE_X - strW) / FONT_ADJUST_X;
+		int posY = static_cast<int>(
+			(Application::HALF_SCREEN_SIZE_Y - FONT_ADJUST_Y) + (FONT_INTERVAL * i));
 
 		DrawFormatStringToHandle(
-			posX,
-			posY,
-			0xffffff,
+			posX, posY,
+			FONT_COLOR,
 			pauseFont_,
 			pasueList_[i].c_str());
+
+#ifdef _DEBUG
+		// ボックスコライダー描画
+		if (uiBoxs_[i])
+		{
+			uiBoxs_[i]->Draw();
+			uiBoxs_[i]->SetValid(isHovered && (selectIndex_ == i));
+		}
+#endif
 	}
 }
 
-void PauseScene::Release(void)
-{
-}
+void PauseScene::Release(void){}

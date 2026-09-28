@@ -20,7 +20,7 @@ public:
 		ATTACK_1,
 		ATTACK_2,
 		ATTACK_3,
-		AVOIDANCE,
+		EVASION,
 		DOWN,
 		UP,
 		RECOVERY,
@@ -32,7 +32,7 @@ public:
 		RUN,
 		FAST_RUN,
 		ATTACK,
-		AVOIDANCE,
+		EVASION,
 		DOWN,
 		UP,
 		RECOVERY,
@@ -133,7 +133,7 @@ public:
 	static constexpr float CONSUMPTION_ST_FAST_RUN = 20.0f;
 
 	//回避時スタミナ消費量
-	static constexpr float CONSUMPTION_ST_AVOIDANCE = 40.0f;
+	static constexpr float CONSUMPTION_ST_EVASION = 40.0f;
 
 	//回避時スタミナ消費量
 	static constexpr float CONSUMPTION_ST_ATTACK = 23.0f;
@@ -255,7 +255,7 @@ private:
 	// 操作
 	void ProcessMove(void);
 	void ProcessAttack(void);
-	void ProcessAvoidance(void);
+	void ProcessEvasion(void);
 	void ProcessDownUp(void);
 	void ProcessRecovery(void);
 	void ProcessDie(void);

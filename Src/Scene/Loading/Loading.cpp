@@ -20,13 +20,9 @@ Loading::~Loading()
 // 読み込み
 void Loading::Load(void)
 {
-	auto& res = ResourceManager::GetInstance();
-	res.Load(ResourceManager::SRC::L_FONT);
-
 	// フォントハンドルの作成
 	auto& font = FontManager::GetInstance();
 	pauseFont_ = font.CreateMyFont(L"KazukiReiwa", 56, 20);
-
 }
 
 // 更新

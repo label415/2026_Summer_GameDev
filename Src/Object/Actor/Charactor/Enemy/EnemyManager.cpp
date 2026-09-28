@@ -3,8 +3,6 @@
 #include "../../../../Application.h"
 #include "../../../../Utility/AsoUtility.h"
 #include "../../../Common/Collider/ColliderBase.h"
-#include "EnemyRat.h"
-#include "EnemyRobot.h"
 #include "EnemyDragon.h"
 #include "EnemyManager.h"
 
@@ -125,12 +123,6 @@ EnemyBase* EnemyManager::Create(const EnemyBase::EnemyData& data)
 
 	switch (data.type)
 	{
-	case EnemyBase::TYPE::RAT:
-		/*enemy = new EnemyRat(data);*/
-		break;
-	case EnemyBase::TYPE::ROBOT:
-		/*enemy = new EnemyRobot(data);*/
-		break;
 	case EnemyBase::TYPE::DRAGON:
 		enemy = new EnemyDragon(data);
 		break;
@@ -143,7 +135,6 @@ EnemyBase* EnemyManager::Create(const EnemyBase::EnemyData& data)
 		enemy->Load();
 		enemys_.push_back(enemy);
 	}
-
 
 	return enemy;
 }

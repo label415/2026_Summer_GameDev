@@ -22,10 +22,10 @@ public:
 	// デストラクタ  
 	~TitleScene(void) override;
 
-	//読み込み  
+	// 読み込み  
 	void Load(void)override;
 
-	//読み込み後の初期化  
+	// 読み込み後の初期化  
 	void LoadEnd(void)override;
 
 	// 更新  
@@ -70,6 +70,8 @@ private:
 
 	// UIカーソル画像サイズ
 	static constexpr float SELECT_IMG_SIZE = 0.2f;
+	//UIカーソル画像Y座標調整値
+	static constexpr float SELECT_IMG_ADJUST_Y = 0.5f;
 
 	// コントローラのデットゾーン
 	static constexpr float STICK_DEAD_ZONE = 0.5f;

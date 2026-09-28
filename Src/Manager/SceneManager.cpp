@@ -2,16 +2,13 @@
 #include <DxLib.h>
 #include <EffekseerForDXLib.h>
 #include "../Common/Fader.h"
+#include "../Manager/SoundManager.h"
 #include "../Scene/TitleScene.h"
 #include "../Scene/GameScene.h"
-#include "../Scene/GameClearScene.h"
-#include "../Scene/GameOverScene.h"
 #include "../Scene/Loading/Loading.h"
-#include "../Manager/SoundManager.h"
-#include "Camera.h"
 #include "../Application.h"
+#include "Camera.h"
 #include "ResourceManager.h"
-#include "../Scene/DebugScene.h"
 #include "FontManager.h"
 #include "SceneManager.h"
 
@@ -263,15 +260,6 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 		break;
 	case SCENE_ID::GAME:
 		scene_ = new GameScene();
-		break;
-	case SCENE_ID::GAMEOVER:
-		scene_ = new GameOverScene();
-		break;
-	case SCENE_ID::GAMECLEAR:
-		scene_ = new GameClearScene();
-		break;
-	case SCENE_ID::DEBUG:
-		scene_ = new DebugScene();
 		break;
 	}
 

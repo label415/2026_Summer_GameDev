@@ -23,80 +23,105 @@
 
 GameScene::GameScene(void)
 	:
-	SceneBase()
+	SceneBase(),
+	isResultUI_(false),
+	resultAlpha_(0.0f),
+	resultImg_(-1),
+	gameClearImg_(-1),
+	gameOverImg_(-1),
+	lockOnImg_(-1)
 {
 }
 
-GameScene::~GameScene(void)
-{
-}
+GameScene::~GameScene(void) {}
 
 void GameScene::Load(void)
 {
-
+	// カメラのインスタンス取得
 	camera_ = SceneManager::GetInstance().GetCamera();
 	camera_->ChangeMode(Camera::MODE::FIXED_POINT);
-	//スカイドーム読み込み
+
+	// スカイドーム読み込み
 	skydome_ = new SkyDome();
 	skydome_->Load();
-	//ステージ初期化
+
+	// ステージ初期化
 	stage_ = new Stage();
 	stage_->Load();
-	//プレイヤー読み込み
+
+	// プレイヤー読み込み
 	player_ = new Player();
 	player_->Load();
-	//エネミー読み込み
+
+	// エネミー読み込み
 	enemys_ = new EnemyManager();
 	enemys_->Load();
 	targetEnemy_ = nullptr;
-	//シャドーマップ読み込み
-	shadowMap_ = new ShadowMap(2048, 2048);
+
+	// シャドーマップ読み込み
+	shadowMap_ = new ShadowMap(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
 	pauseScene_ = new PauseScene();
-	//カメラモード変更
+
+	// カメラモード変更
 	camera_->SetFollow(&player_->GetTransform());
 	camera_->ChangeMode(Camera::MODE::FOLLOW);
 
+	// 入力管理のインスタンス取得
 	InputManager::GetInstance().SetMouseFlage(false);
 
-	gameClear_ = resMng_.Load(ResourceManager::SRC::GAME_CLEAR).handleId_;
-	gameOver_ = resMng_.Load(ResourceManager::SRC::GAME_OVER).handleId_;
-
-	lockOnImg_ = resMng_.Load(ResourceManager::SRC::LOCKON_IMG).handleId_;	
+	// ゲームクリア画像ロード
+	gameClearImg_ = resMng_.Load(ResourceManager::SRC::GAMECLEAR_IMG).handleId_;
+	// ゲームオーバー画像ロード
+	gameOverImg_ = resMng_.Load(ResourceManager::SRC::GAME_OVER).handleId_;
+	// ロックオン画像ロード
+	lockOnImg_ = resMng_.Load(ResourceManager::SRC::LOCKON_IMG).handleId_;
 }
 
 void GameScene::LoadEnd(void)
 {
+	// BGM再生
 	bgm_ = resMng_.Load(ResourceManager::SRC::GAME_BGM).handleId_;
-	volume_ = 40;
+	volume_ = BGM_VOLUME;
 	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
 
-	//スカイドーム初期化
+	// スカイドーム初期化
 	skydome_->Init();
-	//ステージ初期化
+	// ステージ初期化
 	stage_->Init();
-	//プレイヤー初期化
+	// プレイヤー初期化
 	player_->Init();
-	//エネミー初期化
+	// エネミー初期化
 	enemys_->Init();
-	//シャドーマップ初期化
+
+	// シャドーマップ初期化
 	shadowMap_->AddShadowMapLight(GetLightDirection());
 	VECTOR playerPos = player_->GetTransform().pos;
-	float shadowDiff = 1000.0f;
 	shadowMap_->AddShadowMapDrawArea(
-		VGet((playerPos.x - shadowDiff), -1.0f, (playerPos.z - shadowDiff)),
-		VGet((playerPos.x + shadowDiff), shadowDiff * 1.5f, (playerPos.z + shadowDiff)));
+		VGet((playerPos.x - SHADOW_MAP_DIFF),
+			SHADOW_MAP_MIN_DRAW,
+			(playerPos.z - SHADOW_MAP_DIFF)),
+		VGet(
+			(playerPos.x + SHADOW_MAP_DIFF),
+			SHADOW_MAP_DIFF * SHADOW_MAP_MAX_DRAW,
+			(playerPos.z + SHADOW_MAP_DIFF))
+	);
+
+	// ポーズメニュー読み取り後の処理
 	pauseScene_->LoadEnd();
+
 	// コライダ登録
 	AddCollider();
 }
 
 void GameScene::Update(void)
 {
+	// プレイヤーが死亡していた時,タイトルシーンに遷移
 	if (player_->GetState() == Player::STATE::END) {
 		sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
 		return;
 	}
 
+	// エネミーが死亡していた時,タイトルシーンに遷移
 	for (const auto& enemy : enemys_->GetEnemys())
 	{
 		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::END)) {
@@ -105,14 +130,16 @@ void GameScene::Update(void)
 		}
 	}
 
+	// ポーズメニューの表示切り替え
 	bool isSelect = InputManager::GetInstance().IsTrgDown(KEY_INPUT_ESCAPE)
-	|| InputManager::GetInstance().IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::START);
-
+		|| InputManager::GetInstance().IsPadBtnTrgDown(
+			InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::START);
 	if (isSelect) {
 		bool currentStatus = pauseScene_->GetIsAlive();
 		pauseScene_->SetIsAlive(!currentStatus);
 	}
 
+	// ポーズメニューが表示されている時は,ポーズメニューの更新を行う
 	if (pauseScene_->GetIsAlive()) {
 		pauseScene_->Update();
 		camera_->SetIsMouseInput(false);
@@ -128,142 +155,180 @@ void GameScene::Update(void)
 	// Effekseerにより再生中のエフェクトを更新する。
 	UpdateEffekseer3D();
 
+	// スカイドーム更新
 	skydome_->Update();
-
 	//ステージ更新
 	stage_->Update();
 
+	// 自動ロックオン対象選別
 	UpdateAutoLockOn();
 
+	// エネミー更新
 	enemys_->Update();
+	// プレイヤー更新
 	player_->Update();
 
+	// コライダー更新
 	UpdateCollider();
 
+	// プレイヤーのダメージ判定
 	for (const auto& enemy : enemys_->GetEnemys()) {
 		player_->HitDamage(enemy->GetIsAttack());
 	}
+	// エネミーのダメージ判定
 	enemys_->HitDamegr(player_->GetIsAttack());
 
+	// シャドーマップ更新
+	shadowMap_->AddShadowMapLight(GetLightDirection());
 	VECTOR playerPos = player_->GetTransform().pos;
-	float shadowDiff = 1000.0f;
 	shadowMap_->AddShadowMapDrawArea(
-		VGet((playerPos.x - shadowDiff), -1.0f, (playerPos.z - shadowDiff)),
-		VGet((playerPos.x + shadowDiff), shadowDiff * 1.5f, (playerPos.z + shadowDiff)));
+		VGet((playerPos.x - SHADOW_MAP_DIFF),
+			SHADOW_MAP_MIN_DRAW,
+			(playerPos.z - SHADOW_MAP_DIFF)),
+		VGet((playerPos.x + SHADOW_MAP_DIFF),
+			SHADOW_MAP_DIFF * SHADOW_MAP_MAX_DRAW,
+			(playerPos.z + SHADOW_MAP_DIFF))
+	);
 }
 
 void GameScene::Draw(void)
 {
+	// スカイドーム描画
 	skydome_->Draw();
-
+	// シャドウ描画のセットアップ
 	shadowMap_->DrawSetup();
+	// プレイヤー描画
 	player_->Draw();
+	// エネミー描画
 	enemys_->Draw();
+	// ステージ描画
 	stage_->Draw();
+	// シャドウ描画の終了
 	shadowMap_->DrawEnd();
 
+	// シャドウマップを使用して描画する
 	shadowMap_->SetShadow();
+	// プレイヤー描画
 	player_->Draw();
+	// エネミー描画
 	enemys_->Draw();
+	// ステージ描画
 	stage_->Draw();
+	// シャドウマップの使用を終了する
 	shadowMap_->EndShadow();
 
 	// Effekseerにより再生中のエフェクトを描画する。
 	DrawEffekseer3D();
 
+	// プレイヤーとエネミーのHP描画
 	player_->DrawHp();
 	for (const auto& enemy : enemys_->GetEnemys()) {
 		enemy->DrawHp();
 	}
 
-	if(targetEnemy_ != nullptr){
+	// ロックオンUI描画
+	if (targetEnemy_ != nullptr) {
 		VECTOR enemyTransform = targetEnemy_->GetCenter();
 		SetUseZBuffer3D(FALSE);
 		DrawBillboard3D(
 			enemyTransform,
 			0.5f, 0.5f,
-			50.0f, 0.0f, lockOnImg_, true);
+			LOCON_UI_SIZE, 0.0f,
+			lockOnImg_, true);
 		SetUseZBuffer3D(TRUE);
 	}
 
+	// ポーズメニューが表示されている時は,ポーズメニューの描画を行う
 	if (pauseScene_->GetIsAlive()) {
 		pauseScene_->Draw();
 	}
 
+	// すべての敵が死亡した時、ゲームクリアUIを表示する
 	for (const auto& enemy : enemys_->GetEnemys())
 	{
-		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::DEAD)) {
-
-			int alpha = static_cast<int>(enemy->Geti() * 255.0f);
-			SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
-			DrawRotaGraph(
-				Application::SCREEN_SIZE_X / 2,
-				Application::SCREEN_SIZE_Y / 2,
-				1.0f,
-				0.0f,
-				gameClear_,
-				true);
-
-			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::DEAD))
+		{
+			resultAlpha_ = static_cast<int>(
+				enemy->Geti() * RESULT_UI_ALPHA_MAGNIFICATION);
+			resultImg_ = gameClearImg_;
+			isResultUI_ = true;
 		}
 	}
 
-	if (player_->GetState() == Player::STATE::DIE) {
+	// プレイヤーが死亡した時、ゲームオーバーUIを表示する
+	if (player_->GetState() == Player::STATE::DIE)
+	{
+		resultAlpha_ = static_cast<int>(
+			player_->Geti() * RESULT_UI_ALPHA_MAGNIFICATION);
+		resultImg_ = gameOverImg_;
+		isResultUI_ = true;
+	}
 
-		int alpha = static_cast<int>(player_->Geti() * 255.0f);
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
+	// リザルトフラグがtrueの時、UIを表示する
+	if (isResultUI_)
+	{
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, resultAlpha_);
 		DrawRotaGraph(
-			Application::SCREEN_SIZE_X / 2,
-			Application::SCREEN_SIZE_Y / 2,
-			1.0f,
+			Application::HALF_SCREEN_SIZE_X,
+			Application::HALF_SCREEN_SIZE_Y,
+			RESULT_UI_SIZE,
 			0.0f,
-			gameOver_,
+			resultImg_,
 			true);
-
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 	}
 }
 
 void GameScene::Release(void)
 {
+	// スカイドーム解放
 	skydome_->Release();
 	delete skydome_;
 
-	//ステージ解放
+	// ステージ解放
 	stage_->Release();
 	delete stage_;
 
+	//プレイヤー解放
 	player_->Release();
 	delete player_;
 
+	//各エネミー解放
 	enemys_->Release();
 	delete enemys_;
 	delete targetEnemy_;
 
+	//シャドウマップ解放
 	shadowMap_->Release();
 	delete shadowMap_;
-
 }
 
 void GameScene::AddCollider(void)
 {
-
 	// 各クラスにステージコライダーを初期化時に登録
 	const std::vector<ColliderBase*> stageCollider =
-		stage_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::MODEL));
-	player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
-	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
-	camera_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
+		stage_->GetOwnCollider(
+			static_cast<int>(ColliderBase::SHAPE::MODEL));
+	player_->AddHitCollider(
+		static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
+	enemys_->AddHitCollider(
+		static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
+	camera_->AddHitCollider(
+		static_cast<int>(ColliderBase::SHAPE::MODEL), stageCollider);
 
 	// 各クラスにプレイヤーコライダーを初期化時に登録
 	const std::vector<ColliderBase*> pColliders =
-		player_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), pColliders);
+		player_->GetOwnCollider(
+			static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+	enemys_->AddHitCollider(
+		static_cast<int>(ColliderBase::SHAPE::CAPSULE), pColliders);
 
 	// 各クラスにカメラコライダーを初期化時に登録
 	const std::vector<ColliderBase*> cameraCollider =
-		camera_->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
-	stage_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE), cameraCollider);
+		camera_->GetOwnCollider(
+			static_cast<int>(ColliderBase::SHAPE::SPHERE));
+	stage_->AddHitCollider(
+		static_cast<int>(ColliderBase::SHAPE::SPHERE), cameraCollider);
 
 	//各クラスにエネミーコライダーを初期化時に登録
 	const auto& enemys = enemys_->GetEnemys();
@@ -272,9 +337,11 @@ void GameScene::AddCollider(void)
 		if (enemy == nullptr)continue;
 
 		const std::vector<ColliderBase*> enemyColliders =
-			enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+			enemy->GetOwnCollider(
+				static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 
-		player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), enemyColliders);
+		player_->AddHitCollider(
+			static_cast<int>(ColliderBase::SHAPE::CAPSULE), enemyColliders);
 	}
 }
 
@@ -283,9 +350,12 @@ void GameScene::UpdateCollider(void)
 	// 各クラスに武器コライダーを更新に登録
 	const WeponBase* wepon = player_->GetWepon();
 	const std::vector<ColliderBase*> weponColliders =
-		wepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-	enemys_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColliders);
+		wepon->GetOwnCollider(
+			static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+	enemys_->AddHitCollider(
+		static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponColliders);
 
+	// プレイヤーと各エネミーにコライダーを更新
 	const auto& enemys = enemys_->GetEnemys();
 	for (auto& enemy : enemys)
 	{
@@ -295,24 +365,31 @@ void GameScene::UpdateCollider(void)
 		if (enemyWepon != nullptr) {
 
 			const std::vector<ColliderBase*> weponCollider1 =
-				enemyWepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-			player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponCollider1);
+				enemyWepon->GetOwnCollider(
+					static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+			player_->AddHitCollider(
+				static_cast<int>(ColliderBase::SHAPE::CAPSULE), weponCollider1);
 
 			const std::vector<ColliderBase*> weponCollider2 =
-				enemyWepon->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE));
-			player_->AddHitCollider(static_cast<int>(ColliderBase::SHAPE::SPHERE), weponCollider2);
+				enemyWepon->GetOwnCollider(
+					static_cast<int>(ColliderBase::SHAPE::SPHERE));
+			player_->AddHitCollider(
+				static_cast<int>(ColliderBase::SHAPE::SPHERE), weponCollider2);
 
 		}
-		else{
-			player_->RemoveHitColliderByShapeAndTag(ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::ENEMY_WEPON);
-			player_->RemoveHitColliderByShapeAndTag(ColliderBase::SHAPE::SPHERE, ColliderBase::TAG::ENEMY_WEPON);
+		else {
+			player_->RemoveHitColliderByShapeAndTag(
+				ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::ENEMY_WEPON);
+			player_->RemoveHitColliderByShapeAndTag(
+				ColliderBase::SHAPE::SPHERE, ColliderBase::TAG::ENEMY_WEPON);
 		}
 	}
 
 	// 生存していない時は削除
 	if (!wepon->GetIsAlive())
 	{
-		enemys_->RemoveCollider(ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::PLAYER_WEPON);
+		enemys_->RemoveCollider(
+			ColliderBase::SHAPE::CAPSULE, ColliderBase::TAG::PLAYER_WEPON);
 	}
 }
 
@@ -330,36 +407,43 @@ void GameScene::UpdateAutoLockOn(void)
 	}
 
 	bool isLockOn = inp.IsTrgMouseMiddle()
-		|| inp.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
+		|| inp.IsPadBtnTrgDown(
+			InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
 
-	if(camera_->GetCameraMode() == Camera::MODE::TARGET_ROCKE){
+	if (camera_->GetCameraMode() == Camera::MODE::TARGET_ROCKE) {
 
 		VECTOR dir = AsoUtility::VECTOR_ZERO;
-			InputManager::JOYPAD_IN_STATE padState =
-				inp.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+		InputManager::JOYPAD_IN_STATE padState =
+			inp.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
-			// アナログスティック方向
-			dir = inp.GetDirectionXZAKey(padState.AKeyRX, padState.AKeyRY);
+		// アナログスティック方向
+		dir = inp.GetDirectionXZAKey(padState.AKeyRX, padState.AKeyRY);
 
-			static float prevStickX = 0.0f;
-			static float prevStickZ = 0.0f;
-			const float stickThreshold = InputManager::THRESHOLD;
+		static float prevStickX = 0.0f;
+		static float prevStickZ = 0.0f;
+		const float stickThreshold = InputManager::THRESHOLD;
 
-			bool isNextUp = (dir.z > stickThreshold) && (prevStickZ <= stickThreshold);
-			bool isNextDown = (dir.z < -stickThreshold) && (prevStickZ >= -stickThreshold);
-			bool isNextRight = (dir.x > stickThreshold) && (prevStickX <= stickThreshold) || inp.GetMouseWheelRot() > 0.0f;
-			bool isNextLeft = (dir.x < -stickThreshold) && (prevStickX >= -stickThreshold) || inp.GetMouseWheelRot() < 0.0f;
+		// ロックオン対象選択フラグ
+		bool isNextUp = (dir.z > stickThreshold)
+			&& (prevStickZ <= stickThreshold);
+		bool isNextDown = (dir.z < -stickThreshold)
+			&& (prevStickZ >= -stickThreshold);
+		bool isNextRight = (dir.x > stickThreshold)
+			&& (prevStickX <= stickThreshold)
+			|| inp.GetMouseWheelRot() > 0.0f;
+		bool isNextLeft = (dir.x < -stickThreshold)
+			&& (prevStickX >= -stickThreshold)
+			|| inp.GetMouseWheelRot() < 0.0f;
 
-			prevStickX = dir.x;
-			prevStickZ = dir.z;
-
+		prevStickX = dir.x;
+		prevStickZ = dir.z;
 
 		ColliderCapsule* lastTagerEnemy = targetEnemy_;
 
 		VECTOR targetPos = targetEnemy_->GetCenter();
 		float diff = VSize(VSub(targetPos, playerPos));
 
-		if (diff >= MAX_LOCKON_DIFF || isLockOn){
+		if (diff >= MAX_LOCKON_DIFF || isLockOn) {
 			camera_->ChangeMode(Camera::MODE::FOLLOW);
 			targetEnemy_ = nullptr;
 			isChanger = true;
@@ -388,7 +472,7 @@ void GameScene::UpdateAutoLockOn(void)
 
 					float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
 					float angle = acosf(dot);
-					float a = AsoUtility::Deg2RadF(VIEW_ANGLE);
+					float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
 					if (angle >= a) continue;
 
 					diffMin = lockonDiff;
@@ -420,7 +504,7 @@ void GameScene::UpdateAutoLockOn(void)
 
 					float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
 					float angle = acosf(dot);
-					float a = AsoUtility::Deg2RadF(VIEW_ANGLE);
+					float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
 					if (angle >= a)continue;
 
 					diffMin = lockonDiff;
@@ -452,7 +536,7 @@ void GameScene::UpdateAutoLockOn(void)
 
 					float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
 					float angle = acosf(dot);
-					float a = AsoUtility::Deg2RadF(VIEW_ANGLE);
+					float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
 					if (angle >= a)continue;
 
 					VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
@@ -487,7 +571,7 @@ void GameScene::UpdateAutoLockOn(void)
 
 					float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
 					float angle = acosf(dot);
-					float a = AsoUtility::Deg2RadF(VIEW_ANGLE);
+					float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
 					if (angle >= a)continue;
 
 					VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
@@ -524,7 +608,7 @@ void GameScene::UpdateAutoLockOn(void)
 
 				float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
 				float angle = acosf(dot);
-				float a = AsoUtility::Deg2RadF(VIEW_ANGLE);
+				float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
 				if (angle >= a)continue;
 
 				diffMin = lockonDiff;

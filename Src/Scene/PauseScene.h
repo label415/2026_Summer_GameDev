@@ -22,10 +22,10 @@ public:
 	// デストラクタ
 	~PauseScene(void) override;
 
-	//読み込み
+	// 読み込み
 	void Load(void)override {}
 
-	//読み込み後の初期化
+	// 読み込み後の初期化
 	void LoadEnd(void)override;
 
 	// 更新
@@ -59,9 +59,23 @@ private:
 	// フォントの色
 	static constexpr int FONT_COLOR = 0xffffff;
 
+	// ポーズ画面の高さ
+	static constexpr float PAUSE_HEIGHT = 200.0f;
+	// ポーズ画面のブレンドパラメータ
+	static constexpr int PAUSE_BLENDPARAM = 168;
+	// ポーズ画面の大きさ
+	static constexpr float PAUSE_SIZE = 1.0f;
+	// ポーズ画面の色
+	static constexpr int PAUSE_COLOR = 0x000000;
+
+	//ポーズ画面枠大きさ
+	static constexpr float PAUSE_FRAME_SIZE = 3.0f;
+	// ポーズ画面枠色
+	static constexpr int PAUSE_FRAME_COLOR = 0xffffff;
+
 	// ボックスコライダ-座標調整値
 	static constexpr float BOX_ADJUST_X = 150.0f;
-	static constexpr float BOX_ADJUST_Y = 75.0f;
+	static constexpr float BOX_ADJUST_Y = 105.0f;
 	// ボックスコライダーの高さ
 	static constexpr float BOX_HEIGHT = 60.0f;
 	// ボックスコライダーの幅
@@ -71,6 +85,8 @@ private:
 
 	// UIカーソル画像サイズ
 	static constexpr float SELECT_IMG_SIZE = 0.2f;
+	// UIカーソル画像Y座標調整値
+	static constexpr float SELECT_IMG_ADJUST_Y = 0.5f;
 
 	// コントローラのデットゾーン
 	static constexpr float STICK_DEAD_ZONE = 0.5f;
@@ -80,8 +96,6 @@ private:
 
 	// ボックスコライダーの配列
 	ColliderBox2D* uiBoxs_[LIST_MAX];
-
-	Vector2 prevMousePos_;
 
 	// フォントハンドル
 	int pauseFont_;
@@ -101,7 +115,7 @@ private:
 	// ポーズシーンの生存フラグ
 	bool isPauseScene_;
 
-	//選択リスト
+	// 選択リスト
 	std::wstring pasueList_[LIST_MAX] =
 	{
 		L"ゲームに戻る",

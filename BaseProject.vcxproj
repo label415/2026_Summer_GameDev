@@ -19,16 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Object\Actor\UI\UIBase.cpp" />
+    <ClCompile Include="Src\Object\Actor\UI\UIHp.cpp" />
+    <ClCompile Include="Src\Object\Actor\UI\UIRecovery.cpp" />
+    <ClCompile Include="Src\Object\Actor\UI\UISt.cpp" />
     <ClCompile Include="Src\Object\Common\Collider2D\ColliderBase2D.cpp" />
     <ClCompile Include="Src\Object\Common\Collider2D\ColliderBox2D.cpp" />
     <ClCompile Include="Src\Scene\PauseScene.cpp" />
     <ClCompile Include="Src\Common\ShadowMap.cpp" />
     <ClCompile Include="Src\Manager\SoundManager.cpp" />
-    <ClCompile Include="Src\Object\Actor\UI\UIRecovery.cpp" />
     <ClCompile Include="Src\Object\Common\EffectController.cpp" />
-    <ClCompile Include="Src\Scene\GameClearScene.cpp" />
-    <ClCompile Include="Src\Scene\GameOverScene.cpp" />
-    <ClCompile Include="Src\Manager\CollisionManager.cpp" />
     <ClCompile Include="Src\Libs\ImGuiWrapper.cpp" />
     <ClCompile Include="Src\Libs\ImGui\backends\imgui_impl_dx11.cpp" />
     <ClCompile Include="Src\Libs\ImGui\backends\imgui_impl_win32.cpp" />
@@ -41,10 +41,7 @@
     <ClCompile Include="Src\Scene\Loading\Loading.cpp" />
     <ClCompile Include="Src\Manager\FontManager.cpp" />
     <ClCompile Include="Src\Utility\ModelFrameUtility.cpp" />
-    <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyRobot.cpp" />
-    <ClCompile Include="Src\Scene\DebugScene.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyManager.cpp" />
-    <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyRat.cpp" />
     <ClCompile Include="Src\Object\Actor\Charactor\Enemy\EnemyBase.cpp" />
     <ClCompile Include="Src\Object\Common\Collider\ColliderSphere.cpp" />
     <ClCompile Include="Src\Object\Common\Collider\ColliderCapsule.cpp" />
@@ -74,26 +71,22 @@
     <ClCompile Include="Src\Scene\TitleScene.cpp" />
     <ClCompile Include="Src\Utility\AsoUtility.cpp" />
     <ClCompile Include="Src\Utility\MatrixUtility.cpp" />
-    <ClCompile Include="Src\Object\Actor\UI\UIBase.cpp" />
-    <ClCompile Include="Src\Object\Actor\UI\UISurprise.cpp" />
     <ClCompile Include="Src\Object\Actor\Wepon\WeponBase.cpp" />
     <ClCompile Include="Src\Object\Actor\Wepon\WeponBlade.cpp" />
     <ClCompile Include="Src\Object\Actor\Wepon\WeponBracelet.cpp" />
-    <ClCompile Include="Src\Object\Actor\UI\UIHp.cpp" />
-    <ClCompile Include="Src\Object\Actor\UI\UISt.cpp" />
     <ClCompile Include="Src\Object\Actor\Wepon\WeponFlameThrower.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Object\Actor\UI\UIBase.h" />
+    <ClInclude Include="Src\Object\Actor\UI\UIHp.h" />
+    <ClInclude Include="Src\Object\Actor\UI\UIRecovery.h" />
+    <ClInclude Include="Src\Object\Actor\UI\UISt.h" />
     <ClInclude Include="Src\Object\Common\Collider2D\ColliderBase2D.h" />
     <ClInclude Include="Src\Object\Common\Collider2D\ColliderBox2D.h" />
     <ClInclude Include="Src\Scene\PauseScene.h" />
     <ClInclude Include="Src\Common\ShadowMap.h" />
     <ClInclude Include="Src\Manager\SoundManager.h" />
-    <ClInclude Include="Src\Object\Actor\UI\UIRecovery.h" />
     <ClInclude Include="Src\Object\Common\EffectController.h" />
-    <ClInclude Include="Src\Scene\GameClearScene.h" />
-    <ClInclude Include="Src\Scene\GameOverScene.h" />
-    <ClInclude Include="Src\Manager\CollisionManager.h" />
     <ClInclude Include="Src\Libs\ImGuiWrapper.h" />
     <ClInclude Include="Src\Libs\ImGui\backends\imgui_impl_dx11.h" />
     <ClInclude Include="Src\Libs\ImGui\backends\imgui_impl_win32.h" />
@@ -107,10 +100,7 @@
     <ClInclude Include="Src\Scene\Loading\Loading.h" />
     <ClInclude Include="Src\Manager\FontManager.h" />
     <ClInclude Include="Src\Utility\ModelFrameUtility.h" />
-    <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyRobot.h" />
-    <ClInclude Include="Src\Scene\DebugScene.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyManager.h" />
-    <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyRat.h" />
     <ClInclude Include="Src\Object\Actor\Charactor\Enemy\EnemyBase.h" />
     <ClInclude Include="Src\Object\Common\Collider\ColliderSphere.h" />
     <ClInclude Include="Src\Object\Common\Collider\ColliderCapsule.h" />
@@ -140,13 +130,9 @@
     <ClInclude Include="Src\Scene\TitleScene.h" />
     <ClInclude Include="Src\Utility\AsoUtility.h" />
     <ClInclude Include="Src\Utility\MatrixUtility.h" />
-    <ClInclude Include="Src\Object\Actor\UI\UIBase.h" />
-    <ClInclude Include="Src\Object\Actor\UI\UISurprise.h" />
     <ClInclude Include="Src\Object\Actor\Wepon\WeponBase.h" />
     <ClInclude Include="Src\Object\Actor\Wepon\WeponBlade.h" />
     <ClInclude Include="Src\Object\Actor\Wepon\WeponBracelet.h" />
-    <ClInclude Include="Src\Object\Actor\UI\UIHp.h" />
-    <ClInclude Include="Src\Object\Actor\UI\UISt.h" />
     <ClInclude Include="Src\Object\Actor\Wepon\WeponFlameThrower.h" />
     <ClInclude Include="Src\Common\Vector2F.h" />
   </ItemGroup>
