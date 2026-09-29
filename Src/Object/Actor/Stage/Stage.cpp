@@ -40,7 +40,7 @@ void Stage::Draw(void)
 void Stage::InitLoad(void)
 {
 	transform_.SetModel(resMng_.LoadModelDuplicate(
-		ResourceManager::SRC::MAIN_STAGE));
+		ResourceManager::SRC::MODEL_MAIN_STAGE));
 }
 
 void Stage::InitTransform(void)

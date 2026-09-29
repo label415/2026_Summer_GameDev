@@ -69,8 +69,8 @@ void UISt::SetHpAbsolute(float hp)
 
 void UISt::InitLoad(void)
 {
-	stUi1_ = resMng_.Load(ResourceManager::SRC::HP_1).handleId_;
-	stUi2_ = resMng_.Load(ResourceManager::SRC::ST).handleId_;
+	stUi1_ = resMng_.Load(ResourceManager::SRC::UI_BAR_FRAME).handleId_;
+	stUi2_ = resMng_.Load(ResourceManager::SRC::UI_ST_BAR).handleId_;
 }
 
 void UISt::InitTransform(void)

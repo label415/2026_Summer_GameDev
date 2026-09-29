@@ -70,8 +70,8 @@ void UIHp::SetHpAbsolute(float hp)
 
 void UIHp::InitLoad(void)
 {
-	hpUi1_ = resMng_.Load(ResourceManager::SRC::HP_1).handleId_;
-	hpUi2_ = resMng_.Load(ResourceManager::SRC::HP_2).handleId_;
+	hpUi1_ = resMng_.Load(ResourceManager::SRC::UI_BAR_FRAME).handleId_;
+	hpUi2_ = resMng_.Load(ResourceManager::SRC::UI_HP_BAR).handleId_;
 }
 
 void UIHp::InitTransform(void)

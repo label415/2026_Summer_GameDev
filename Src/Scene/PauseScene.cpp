@@ -24,7 +24,7 @@ void PauseScene::LoadEnd(void)
 	pauseFont_ = fontMng_.GetInstance().CreateMyFont(fontName_, FONT_SIZE, FONT_THICKNESS);
 
 	// 画像のロード
-	selectImg_ = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
+	selectImg_ = resMng_.Load(ResourceManager::SRC::UI_SELECTION_CURSOR).handleId_;
 
 	// 各UIコライダー生成
 	for (int i = 0; i < LIST_MAX; ++i)

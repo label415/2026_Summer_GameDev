@@ -23,8 +23,8 @@ void TitleScene::Load(void)
 	pauseFont_ = fontMng_.GetInstance().CreateMyFont(fontName_, FONT_SIZE, FONT_THICKNESS);
 
 	// 画像のロード
-	titleImg_ = resMng_.Load(ResourceManager::SRC::TITLE_IMG).handleId_;
-	selectImg_ = resMng_.Load(ResourceManager::SRC::TITLE_SELECT).handleId_;
+	titleImg_ = resMng_.Load(ResourceManager::SRC::IMG_TITLE).handleId_;
+	selectImg_ = resMng_.Load(ResourceManager::SRC::UI_SELECTION_CURSOR).handleId_;
 
 	// 各UIコライダー生成
 	for (int i = 0; i < LIST_MAX; ++i)
@@ -41,7 +41,7 @@ void TitleScene::Load(void)
 void TitleScene::LoadEnd(void)
 {
 	// BGM再生
-	bgm_ = resMng_.Load(ResourceManager::SRC::TITLE_BGM).handleId_;
+	bgm_ = resMng_.Load(ResourceManager::SRC::BGM_TITLE).handleId_;
 	volume_ = BGM_VOLUME;
 	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
 }

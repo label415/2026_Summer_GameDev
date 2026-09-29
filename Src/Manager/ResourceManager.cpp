@@ -102,6 +102,10 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::IMG, PATH_IMG + L"RecoveryBottle.png");
 	resourcesMap_.emplace(SRC::UI_RECOVERY_BOTTLE, res);
 
+	// フォント
+	res = new RES(RES_T::FONT, PATH_FONT + L"KazukiReiwa.ttf");
+	resourcesMap_.emplace(SRC::FONT, res);
+
 	// BGM
 	res = new RES(RES_T::SOUND, PATH_SND + L"BGM/TitleBgm.mp3");
 	resourcesMap_.emplace(SRC::BGM_TITLE, res);
@@ -125,9 +129,9 @@ void ResourceManager::Init(void)
 	// エネミーSE
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonRoarSE.mp3");
 	resourcesMap_.emplace(SRC::SE_ENEMY_ROAR, res);
-	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragomBreath1.mp3");
+	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonBreathSE1.mp3");
 	resourcesMap_.emplace(SRC::SE_ENEMY_BREASE_1, res);
-	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragomBreath2.mp3");
+	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonBreathSE2.mp3");
 	resourcesMap_.emplace(SRC::SE_ENEMY_BREASE_2, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonFlapSE.mp3");
 	resourcesMap_.emplace(SRC::SE_ENEMY_FLAP, res);
@@ -140,7 +144,9 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonFliyerAttSE2.mp3");
 	resourcesMap_.emplace(SRC::SE_ENEMY_ARE_BREASE_2, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonFallSE.mp3");
-	resourcesMap_.emplace(SRC::SE_ENEMY_FALL , res);
+	resourcesMap_.emplace(SRC::SE_ENEMY_FALL, res);
+	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/EnemyHItDamageSE.mp3");
+	resourcesMap_.emplace(SRC::SE_ENEMY_HIT_DAMAGE, res);
 }
 
 void ResourceManager::Release(void)

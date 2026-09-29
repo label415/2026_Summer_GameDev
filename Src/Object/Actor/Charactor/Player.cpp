@@ -100,7 +100,7 @@ void Player::HitDamage(bool isHit)
 							effType_ = EFFECT::BLOOD;
 							effect_->Play(static_cast<int>(effType_));
 							effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), VGet(5.0f, 5.0f, 5.0f));
-							int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_DMAGE).handleId_;
+							int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
 							int volume_ = 50;
 							SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, volume_);
 							return;
@@ -152,7 +152,7 @@ void Player::HitDamage(bool isHit)
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
 						uiHp_->SetHp(35.0f);
-						int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_DMAGE).handleId_;
+						int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
 						int volume_ = 50;
 						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, volume_);
 						return;
@@ -174,7 +174,7 @@ void Player::HitDamage(bool isHit)
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
 						uiHp_->SetHp(35.0f);
-						int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_DMAGE).handleId_;
+						int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
 						int volume_ = 50;
 						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, volume_);
 						return;
@@ -200,7 +200,7 @@ void Player::InitLoad(void)
 
 	//プレイヤー
 	transform_.SetModel(resMng_.LoadModelDuplicate(
-		ResourceManager::SRC::PLAYER));
+		ResourceManager::SRC::MODEL_PLAYER));
 
 	wepon_ = new WeponBlade(transform_, 48);
 	wepon_->Load();
@@ -271,8 +271,8 @@ void Player::InitAnimation(void)
 		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_2));
 	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK_3),
 		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_3));
-	anim_->Add(static_cast<int>(ANIM_TYPE::AVOIDANCE),
-		80.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_AVOIDANCE));
+	anim_->Add(static_cast<int>(ANIM_TYPE::EVASION),
+		80.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_EVASION));
 	anim_->Add(static_cast<int>(ANIM_TYPE::DOWN),
 		50.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_DOWN));
 	anim_->Add(static_cast<int>(ANIM_TYPE::UP),
@@ -400,7 +400,7 @@ void Player::ProcessMove(void)
 			uiSt_->SetSt(CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
 			anim_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
 			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WAKE);
-			int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_RAN).handleId_;
+			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_RUN).handleId_;
 			int volume_ = 50;
 			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_RAN, bgm_, volume_);
 		}
@@ -408,7 +408,7 @@ void Player::ProcessMove(void)
 			moveSpeed_ = SPEED_MOVE;
 			anim_->Play(static_cast<int>(ANIM_TYPE::RUN));
 			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
-			int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_WAKE).handleId_;
+			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_WAKE).handleId_;
 			int volume_ = 50;
 			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_WAKE, bgm_, volume_);
 		}
@@ -512,7 +512,7 @@ void Player::ProcessAttack(void)
 
 	// 6. SE再生処理（例：ステップ固定または必要に応じて条件化）
 	if (currentStep == 10.0f) {
-		int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_WEPON_SE1).handleId_;
+		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_WEAPON_1).handleId_;
 		int volume_ = 30;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEPON_SE1, bgm_, volume_);
 	}
@@ -578,7 +578,7 @@ void Player::ProcessEvasion(void)
 			Quaternion::Mult(transform_.quaRotLocal,
 				Quaternion::AngleAxis(AsoUtility::Deg2RadF(100.0f), AsoUtility::AXIS_Y));
 		uiSt_->SetSt(CONSUMPTION_ST_EVASION);
-		int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_AVE).handleId_;
+		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_EVASION).handleId_;
 		int volume_ = 50;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_AVE, bgm_, volume_);
 
@@ -667,7 +667,7 @@ void Player::ProcessRecovery(void)
 	if (anim_->GetPlayAnim().step == 10.0f) {
 		uiHp_->SetHpAbsolute(40.0f);
 		uiRecovery_->SetBottleCnt(1);
-		int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_HER).handleId_;
+		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_RECOVERY).handleId_;
 		int volume_ = 50;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_HER, bgm_, volume_);
 	}
@@ -693,7 +693,7 @@ void Player::ProcessDie(void)
 void Player::CollisionReserve(void)
 {
 	
-	if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::AVOIDANCE)
+	if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::EVASION)
 		|| anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::DOWN))
 	{
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)

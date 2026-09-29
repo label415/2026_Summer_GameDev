@@ -70,17 +70,17 @@ void GameScene::Load(void)
 	InputManager::GetInstance().SetMouseFlage(false);
 
 	// ゲームクリア画像ロード
-	gameClearImg_ = resMng_.Load(ResourceManager::SRC::GAMECLEAR_IMG).handleId_;
+	gameClearImg_ = resMng_.Load(ResourceManager::SRC::IMG_GAMECLEAR).handleId_;
 	// ゲームオーバー画像ロード
-	gameOverImg_ = resMng_.Load(ResourceManager::SRC::GAME_OVER).handleId_;
+	gameOverImg_ = resMng_.Load(ResourceManager::SRC::IMG_GAMEOVER).handleId_;
 	// ロックオン画像ロード
-	lockOnImg_ = resMng_.Load(ResourceManager::SRC::LOCKON_IMG).handleId_;
+	lockOnImg_ = resMng_.Load(ResourceManager::SRC::UI_LOCKON).handleId_;
 }
 
 void GameScene::LoadEnd(void)
 {
 	// BGM再生
-	bgm_ = resMng_.Load(ResourceManager::SRC::GAME_BGM).handleId_;
+	bgm_ = resMng_.Load(ResourceManager::SRC::BGM_GAME).handleId_;
 	volume_ = BGM_VOLUME;
 	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
 

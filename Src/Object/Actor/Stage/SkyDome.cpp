@@ -28,7 +28,7 @@ void SkyDome::Draw(void)
 void SkyDome::InitLoad(void)
 {
 	transform_.SetModel(resMng_.LoadModelDuplicate(
-		ResourceManager::SRC::SKY_DOME));
+		ResourceManager::SRC::MODEL_SKY_DOME));
 }
 
 void SkyDome::InitTransform(void)

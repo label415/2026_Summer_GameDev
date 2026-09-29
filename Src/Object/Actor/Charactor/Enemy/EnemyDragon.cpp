@@ -113,7 +113,7 @@ void EnemyDragon::InitLoad(void)
 	CharactorBase::InitLoad();
 	// モデルのロード
 	transform_.SetModel(
-		resMng_.LoadModelDuplicate(ResourceManager::SRC::ENEMY_DRAGON));
+		resMng_.LoadModelDuplicate(ResourceManager::SRC::MODEL_ENEMY_DRAGON));
 
 	uiHp_ = new UIHp(
 		Application::SCREEN_SIZE_X / 2,
@@ -518,7 +518,7 @@ void EnemyDragon::ChangeStateRoar(void)
 	effect_->SetEffectScl(static_cast<int>(effectType_), VGet(250.0f, 250.0f, 250.0f));
 
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_ROAR).handleId_;
+	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ROAR).handleId_;
 	int volume_ = 50;
 	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ROAR, bgm_, volume_);
 
@@ -537,7 +537,7 @@ void EnemyDragon::ChangeStateCharge(void)
 	// ランダムな待機時間
 	step_ = 2.0f + static_cast<float>(GetRand(2));
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_ROAR).handleId_;
+	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ROAR).handleId_;
 	int volume_ = 50;
 	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ROAR, bgm_, volume_);
 
@@ -553,7 +553,7 @@ void EnemyDragon::ChangeStatePatrol(void)
 	// 移動量ゼロ
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_WAKE).handleId_;
+	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_WAKE).handleId_;
 	int volume_ = 80;
 	SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_WAKE, bgm_, volume_);
 	SoundManager::GetInstance().SetSESpeed(SoundManager::SeId::ENEMY_WAKE, 1.2f);
@@ -590,7 +590,7 @@ void EnemyDragon::ChangeStateFlyingAttack(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateFlyingAttack, this);
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_ARE_ENEMY_BREASE1).handleId_;
+	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ARE_BREASE_1).handleId_;
 	int volume_ = 50;
 	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ARE_ENEMY_BREASE1, bgm_, volume_);
 
@@ -626,7 +626,7 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 		}
 	}
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_BREASE1).handleId_;
+	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_BREASE_1).handleId_;
 	int volume_ = 50;
 	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREASE1, bgm_, volume_);
 
@@ -663,7 +663,7 @@ void EnemyDragon::ChangeStateTakeOff(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateTakeOff, this);
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_ARE).handleId_;
+	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_FLAP).handleId_;
 	int volume_ = 70;
 	SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_ARE, bgm_, volume_);
 
@@ -753,7 +753,7 @@ void EnemyDragon::UpdateCharge(void)
 
 	if (anim_->GetPlayAnim().step >= 107.0f
 		&& anim_->GetPlayAnim().step <= 109.0f) {
-		int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_WAKE).handleId_;
+		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_WAKE).handleId_;
 		int volume_ = 80;
 		SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_WAKE, bgm_, volume_);
 		SoundManager::GetInstance().SetSESpeed(SoundManager::SeId::ENEMY_WAKE, 1.2f);
@@ -819,7 +819,7 @@ void EnemyDragon::UpdateFallingAttack(void)
 		isAttack_ = true;
 		anim_->SetSpecificTime(15.0f,20.0f, true);
 
-		int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_FALL).handleId_;
+		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_FALL).handleId_;
 		int volume_ = 100;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_FALL, bgm_, volume_);
 	}
@@ -915,7 +915,7 @@ void EnemyDragon::UpdateBreathAttack(void)
 	{
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_BREASE1);
 
-		int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_BREASE2).handleId_;
+		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_BREASE_2).handleId_;
 		int volume_ = 50;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREASE2, bgm_, volume_);
 	}
@@ -954,7 +954,7 @@ void EnemyDragon::UpdateMeleeAttack(void)
 
 	if (anim_->GetPlayAnim().step >= 20.0f 
 		&& anim_->GetPlayAnim().step <= MELEE_ATTACK_CILLIDER) {
-		int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_ATTCEK).handleId_;
+		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ATTCEK).handleId_;
 		int volume_ = 50;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ATTCEK, bgm_, volume_);
 	}
@@ -1109,7 +1109,7 @@ void EnemyDragon::HitDamage(bool isHit)
 						VECTOR center = VAdd(colliderCapsule1->GetPosDown(), VScale(diff, 0.5f));
 						effect_->SetEffectPos(static_cast<int>(EFFECT::BLOOD), center);
 
-						int bgm_ = resMng_.Load(ResourceManager::SRC::PLAYER_WEPON_SE2).handleId_;
+						int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_HIT_DAMAGE).handleId_;
 						int volume_ = 50;
 						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEPON_SE2,bgm_, volume_);
 

@@ -85,7 +85,7 @@ void WeponFlameThrower::Move(void)
 
 	if (colliderCapsule1->GetHitSpher_Model(ColMod_, false, false)) {
 
-		int bgm_ = resMng_.Load(ResourceManager::SRC::ENEMY_ARE_ENEMY_BREASE2).handleId_;
+		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ARE_BREASE_2).handleId_;
 		int volume_ = 100;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ARE_ENEMY_BREASE2, bgm_, volume_);
 

@@ -19,7 +19,7 @@ void WeponBlade::InitLoad(void)
 {
 	// ƒ‚ƒfƒ‹‚Ìƒ[ƒh
 	transform_.SetModel(
-		resMng_.Load(ResourceManager::SRC::WEAPON_BLADE).handleId_);
+		resMng_.Load(ResourceManager::SRC::MODEL_WEAPON_BLADE).handleId_);
 }
 void WeponBlade::InitTransform(void)
 {

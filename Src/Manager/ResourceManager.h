@@ -74,6 +74,10 @@ public:
 		SE_ENEMY_FLAP,
 		SE_ENEMY_ARE_BREASE_1,
 		SE_ENEMY_ARE_BREASE_2,
+		SE_ENEMY_HIT_DAMAGE,
+
+		// フォント
+		FONT,
 	};
 
 	// 明示的にインステンスを生成する
