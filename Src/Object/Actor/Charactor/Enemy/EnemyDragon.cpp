@@ -41,65 +41,12 @@ void EnemyDragon::Draw(void)
 	if (wepon_ != nullptr) {
 		wepon_->Draw();
 	}
-
-#ifdef _DEBUG
-
-	VECTOR pos = MV1GetFramePosition(transform_.modelId, 1);
-
-	DrawFormatString(0, 20, 0xffffff, L"モデルフレーム座標 %.1f, %.1f, %.1f", pos.x, pos.y, pos.z);
-
-	std::wstring stateName[] = {
-		L"NONE",L"THINK",L"IDLE",L"ROAR",L"CHARGE",L"PATROL",L"FLYING",
-		L"FALLING＿ATTACK",L"FLYING_ATTACK",L"BRACELET_ATTACK",
-		L"MELEE_ATTACK",L"HOVER",L"TAKEOFF",L"LANDS",L"DEAD",L"END"
-	};
-
-	std::wstring attributeName[] = { L"NONE",L"ABOVE_GROUND",L"AIR" };
-
-	DrawFormatString(0, 40, 0xffffff, L"Enemy State: %s", stateName[static_cast<int>(state_)].c_str());
-	DrawFormatString(0, 60, 0xffffff, L"Enemy Attribute: %s", attributeName[static_cast<int>(attribute_)].c_str());
-
-
-	std::wstring hit;
-	if (isDamage_) {
-		hit = L"当たっている";
-	}
-	else {
-		hit = L"当たっていない";
-	}
-	DrawString(0, 100, hit.c_str(), 0xffffff);
-
-	const auto& cols = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-	int cnt = 0;
-	for (const auto& col : cols) {
-		if (col->GetTag() != ColliderBase::TAG::ENEMY) continue;
-		ColliderCapsule* colliderCapsule = dynamic_cast<ColliderCapsule*>(col);
-		if (colliderCapsule){
-			if (cnt < std::size(ENEMY_CAPSULE_FRAMES)){
-				if(isAttack_){
-					colliderCapsule->SetValid(true);
-				}
-				else {
-					colliderCapsule->SetValid(false);
-				}
-			}
-			cnt++;
-		}
-	}
-
-	if (targetTrans_ != nullptr)
-	{
-		float diff = VSize(VSub(*targetTrans_, transform_.pos));
-		DrawFormatString(0, 120, 0xffffff, L"diff:%.1f", diff);
-	}
-
-#endif
 }
 
 void EnemyDragon::Release(void)
 {
 	CharactorBase::Release();
-	if (wepon_ != nullptr){
+	if (wepon_ != nullptr) {
 		wepon_->Release();
 		delete wepon_;
 	}
@@ -117,8 +64,8 @@ void EnemyDragon::InitLoad(void)
 
 	uiHp_ = new UIHp(
 		Application::SCREEN_SIZE_X / 2,
-		Application::SCREEN_SIZE_Y - 75.0f,
-		1.3f, 1.57f, 2.0f);
+		Application::SCREEN_SIZE_Y - UI_HP_OFFSET_Y,
+		UI_HP_SCALE_X, UI_HP_SCALE_Y, UI_HP_SCALE_Z);
 	uiHp_->Load();
 }
 
@@ -174,40 +121,40 @@ void EnemyDragon::InitAnimation(void)
 	int type = -1;
 
 	type = static_cast<int>(ANIM_TYPE::IDLE);
-	anim_->AddInFbx(type, 30.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_IDLE, type);
 
 	type = static_cast<int>(ANIM_TYPE::WALK);
-	anim_->AddInFbx(type, 30.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_WALK, type);
 
 	type = static_cast<int>(ANIM_TYPE::CHARGE);
-	anim_->AddInFbx(type, 50.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_CHARGE, type);
 
 	type = static_cast<int>(ANIM_TYPE::FLYING);
-	anim_->AddInFbx(type, 30.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_FLYING, type);
 
 	type = static_cast<int>(ANIM_TYPE::BRACELET_ATTACK);
-	anim_->AddInFbx(type, 17.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_BRACELET_ATTACK, type);
 
 	type = static_cast<int>(ANIM_TYPE::HOVER);
-	anim_->AddInFbx(type, 30.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_HOVER, type);
 
 	type = static_cast<int>(ANIM_TYPE::TAKEOFF);
-	anim_->AddInFbx(type, 30.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_TAKEOFF, type);
 
 	type = static_cast<int>(ANIM_TYPE::LANDS);
-	anim_->AddInFbx(type, 30.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_LANDS, type);
 
 	type = static_cast<int>(ANIM_TYPE::DIE);
-	anim_->AddInFbx(type, 30.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_DIE, type);
 
 	type = static_cast<int>(ANIM_TYPE::FLYING_ATTACK);
-	anim_->AddInFbx(type, 15.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_FLYING_ATTACK, type);
 
 	type = static_cast<int>(ANIM_TYPE::ROAR);
-	anim_->AddInFbx(type, 30.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_ROAR, type);
 
 	type = static_cast<int>(ANIM_TYPE::MELEE_ATTACK);
-	anim_->AddInFbx(type, 20.0f, type);
+	anim_->AddInFbx(type, ANIM_SPEED_MELEE_ATTACK, type);
 
 	// 初期アニメーション再生
 	anim_->Play(static_cast<int>(ANIM_TYPE::IDLE), true);
@@ -230,7 +177,7 @@ void EnemyDragon::InitPost(void)
 		std::bind(&EnemyDragon::ChangeStateCharge, this));
 	stateChanges_.emplace(static_cast<int>(STATE::FLYING),
 		std::bind(&EnemyDragon::ChangeStateFlying, this));
-	stateChanges_.emplace(static_cast<int>(STATE::FALLING＿ATTACK),
+	stateChanges_.emplace(static_cast<int>(STATE::FALLING_ATTACK),
 		std::bind(&EnemyDragon::ChangeStateFallingAttack, this));
 	stateChanges_.emplace(static_cast<int>(STATE::BRACELET_ATTACK),
 		std::bind(&EnemyDragon::ChangeStateBreathAttack, this));
@@ -269,12 +216,11 @@ void EnemyDragon::InitPost(void)
 
 	// 初期状態設定
 	ChangeState(STATE::ROAR);
-
 }
 
 void EnemyDragon::UpdateProcess(void)
 {
-	effect_->SetEffectPos(7, transform_.pos);
+	effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
 	preMoverDir_ = moveDir_;
 	//ターゲットの方向更新
 	moveDir_ = GetTargetDir();
@@ -285,7 +231,6 @@ void EnemyDragon::UpdateProcess(void)
 		if (invincibleTimer_ <= 0.0f) {
 			isInvincible_ = false;
 			invincibleTimer_ = 0.0f;
-			
 		}
 	}
 
@@ -314,14 +259,14 @@ void EnemyDragon::UpdateProcess(void)
 
 				if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::BODY)) {
 					colliderCapsule->SetRadius(BODY_RADIUS);
-					tFramePos.y -= 90.0f;
-					dFramePos.y -= 90.0f;
+					tFramePos.y += BODY_COL_OFFSET_Y;
+					dFramePos.y += BODY_COL_OFFSET_Y;
 				}
 				else if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::NECK)
 					|| colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::TAIL)) {
-					colliderCapsule->SetRadius(80.0f);
-					tFramePos.y -= 50.0f;
-					dFramePos.y -= 50.0f;
+					colliderCapsule->SetRadius(NECK_TAIL_RADIUS);
+					tFramePos.y += NECK_TAIL_COL_OFFSET_Y;
+					dFramePos.y += NECK_TAIL_COL_OFFSET_Y;
 				}
 
 				colliderCapsule->SetLocalPosTop(tFramePos);
@@ -367,7 +312,7 @@ void EnemyDragon::CollisionCapsule(void)
 	const auto& vecs = ownColliders_.at(capsuleType);
 	for (const auto& vec : vecs)
 	{
-		if (vec->GetTag() != ColliderBase::TAG::GROUND)continue;
+		if (vec->GetTag() != ColliderBase::TAG::GROUND) continue;
 
 		// カプセルコライダ情報  
 		ColliderCapsule* colliderCapsule =
@@ -414,25 +359,24 @@ void EnemyDragon::ChangeStateNone(void)
 
 void EnemyDragon::ChangeStateThink(void)
 {
-
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateThink, this);
 
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::IDLE), true);
 
 	float diff = VSize(VSub(*targetTrans_, transform_.pos));
-	if(attribute_ == ATTRIBUTE::ABOVE_GROUND)
+	if (attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
 		// 思考
-		int rand = GetRand(100);
-		if(rand < 30){
+		int rand = GetRand(STATE_RAND);
+		if (rand < AI_PROB_TAKEOFF) {
 			ChangeState(STATE::TAKEOFF);
 			return;
 		}
 
-		if (diff < 800.0f) {
-			rand = GetRand(100);
-			if (rand < 40)
+		if (diff < AI_DIST_NEAR) {
+			rand = GetRand(STATE_RAND);
+			if (rand < AI_PROB_MELEE_IN_NEAR)
 			{
 				ChangeState(STATE::MELEE_ATTACK);
 				return;
@@ -442,17 +386,15 @@ void EnemyDragon::ChangeStateThink(void)
 				return;
 			}
 		}
-		else if(diff >= 800.0f
-			&&  diff <= 2000.0f){
+		else if (diff >= AI_DIST_NEAR && diff <= AI_DIST_FAR) {
 			// 思考
-			rand = GetRand(100);
-			if (rand < 20)
+			rand = GetRand(STATE_RAND);
+			if (rand < AI_PROB_PATROL_IN_MID)
 			{
 				ChangeState(STATE::PATROL);
 				return;
 			}
-			else if (rand >= 20
-				&& rand < 60) {
+			else if (rand >= AI_PROB_PATROL_IN_MID && rand < AI_PROB_CHARGE_IN_MID) {
 				ChangeState(STATE::CHARGE);
 				return;
 			}
@@ -465,22 +407,20 @@ void EnemyDragon::ChangeStateThink(void)
 			ChangeState(STATE::PATROL);
 			return;
 		}
-
 	}
-	if (attribute_ == ATTRIBUTE::AIR) 
+	if (attribute_ == ATTRIBUTE::AIR)
 	{
 		// 思考
-		int rand = GetRand(100);
-		if (rand < 20) {
+		int rand = GetRand(STATE_RAND);
+		if (rand < AI_PROB_LANDS) {
 			ChangeState(STATE::LANDS);
 		}
 		else {
-			if (diff < 1000.0f) {
-				ChangeState(STATE::FALLING＿ATTACK);
+			if (diff < AI_DIST_MID) {
+				ChangeState(STATE::FALLING_ATTACK);
 				return;
 			}
-			else if (diff >= 1000.0f
-				&& diff <= 2000.0f) {
+			else if (diff >= AI_DIST_MID && diff <= AI_DIST_FAR) {
 				ChangeState(STATE::FLYING_ATTACK);
 				return;
 			}
@@ -494,10 +434,9 @@ void EnemyDragon::ChangeStateThink(void)
 
 void EnemyDragon::ChangeStateIdle(void)
 {
-
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateIdle, this);
-	// ランダムな待機時間
-	step_ = 1.0f + static_cast<float>(GetRand(2));
+	// ランダムな待機時間 (1.0f ? 3.0f)
+	step_ = 1.0f + static_cast<float>(GetRand(STATE_END_RAND));
 	// 移動量ゼロ
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
@@ -515,12 +454,10 @@ void EnemyDragon::ChangeStateRoar(void)
 
 	effectType_ = EFFECT::ROAT;
 	effect_->Play(static_cast<int>(effectType_));
-	effect_->SetEffectScl(static_cast<int>(effectType_), VGet(250.0f, 250.0f, 250.0f));
-
+	effect_->SetEffectScl(static_cast<int>(effectType_), EFFECT_ROAR_SCALE);
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ROAR).handleId_;
-	int volume_ = 50;
-	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ROAR, bgm_, volume_);
+	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ROAR, bgm_, SE_VOLUME_DEFAULT);
 
 	// 待機アニメーション再生
 	anim_->Play(
@@ -534,12 +471,11 @@ void EnemyDragon::ChangeStateCharge(void)
 	// 移動量ゼロ
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	// ランダムな待機時間
-	step_ = 2.0f + static_cast<float>(GetRand(2));
+	// ランダムな待機時間 (2.0f ? 4.0f)
+	step_ = 1.0f + static_cast<float>(GetRand(STATE_END_RAND));
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ROAR).handleId_;
-	int volume_ = 50;
-	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ROAR, bgm_, volume_);
+	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ROAR, bgm_, SE_VOLUME_DEFAULT);
 
 	// 歩きアニメーション再生
 	anim_->Play(
@@ -554,9 +490,8 @@ void EnemyDragon::ChangeStatePatrol(void)
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_WAKE).handleId_;
-	int volume_ = 80;
-	SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_WAKE, bgm_, volume_);
-	SoundManager::GetInstance().SetSESpeed(SoundManager::SeId::ENEMY_WAKE, 1.2f);
+	SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_WAKE, bgm_, SE_VOLUME_PATROL);
+	SoundManager::GetInstance().SetSESpeed(SoundManager::SeId::ENEMY_WAKE, SE_SPEED_PATROL);
 	// 歩きアニメーション再生
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::WALK), true);
@@ -582,8 +517,7 @@ void EnemyDragon::ChangeStateFallingAttack(void)
 
 	// アニメーション再生
 	anim_->Play(
-		static_cast<int>(ANIM_TYPE::FALLING＿ATTACK), false);
-
+		static_cast<int>(ANIM_TYPE::FALLING_ATTACK), false);
 }
 
 void EnemyDragon::ChangeStateFlyingAttack(void)
@@ -591,14 +525,13 @@ void EnemyDragon::ChangeStateFlyingAttack(void)
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateFlyingAttack, this);
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ARE_BREASE_1).handleId_;
-	int volume_ = 50;
-	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ARE_ENEMY_BREASE1, bgm_, volume_);
+	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ARE_ENEMY_BREASE1, bgm_, SE_VOLUME_DEFAULT);
 
 	// 歩きアニメーション再生
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::FLYING_ATTACK), false);
 
-	anim_->SetStateTime(90.0f);
+	anim_->SetStateTime(FLYING_ATTACK_ANIM_STATE_TIME);
 }
 
 void EnemyDragon::ChangeStateBreathAttack(void)
@@ -621,14 +554,13 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 			const ColliderModel* colliderModel =
 				dynamic_cast<const ColliderModel*>(i);
 
-			wepon_ = new WeponBracelet(transform_, colliderModel, dir, 28);
+			wepon_ = new WeponBracelet(transform_, colliderModel, dir, FRAME_NO_MOUTH);
 			wepon_->Init();
 		}
 	}
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_BREASE_1).handleId_;
-	int volume_ = 50;
-	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREASE1, bgm_, volume_);
+	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREASE1, bgm_, SE_VOLUME_DEFAULT);
 
 	// 歩きアニメーション再生
 	anim_->Play(
@@ -648,8 +580,8 @@ void EnemyDragon::ChangeStateHover(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateHover, this);
 
-	// ランダムな待機時間
-	step_ = 1.0f + static_cast<float>(GetRand(2));
+	// ランダムな待機時間 (1.0f ? 3.0f)
+	step_ = 1.0f + static_cast<float>(GetRand(STATE_END_RAND));
 
 	// 移動量ゼロ
 	movePow_ = AsoUtility::VECTOR_ZERO;
@@ -664,8 +596,7 @@ void EnemyDragon::ChangeStateTakeOff(void)
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateTakeOff, this);
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_FLAP).handleId_;
-	int volume_ = 70;
-	SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_ARE, bgm_, volume_);
+	SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_ARE, bgm_, SE_VOLUME_TAKEOFF);
 
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::TAKEOFF), false);
@@ -726,7 +657,7 @@ void EnemyDragon::UpdateRoar(void)
 		ChangeState(STATE::DEAD);
 	}
 
-	effect_->SetEffectPos(static_cast<int>(effectType_), MV1GetFramePosition(transform_.modelId, 28));
+	effect_->SetEffectPos(static_cast<int>(effectType_), MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH));
 	effect_->Update(static_cast<int>(effectType_));
 
 	if (anim_->IsEnd()) {
@@ -744,22 +675,22 @@ void EnemyDragon::UpdateCharge(void)
 	}
 
 	if (step_ < 0.0f)
-	{		effect_->Stop(static_cast<int>(effectType_));
+	{
+		effect_->Stop(static_cast<int>(effectType_));
 		isAttack_ = false;
 		ChangeState(STATE::IDLE);
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_WAKE);
 		return;
 	}
 
-	if (anim_->GetPlayAnim().step >= 107.0f
-		&& anim_->GetPlayAnim().step <= 109.0f) {
+	if (anim_->GetPlayAnim().step >= CHARGE_SE_START_STEP
+		&& anim_->GetPlayAnim().step <= CHARGE_SE_END_STEP) {
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_WAKE).handleId_;
-		int volume_ = 80;
-		SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_WAKE, bgm_, volume_);
-		SoundManager::GetInstance().SetSESpeed(SoundManager::SeId::ENEMY_WAKE, 1.2f);
+		SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_WAKE, bgm_, SE_VOLUME_PATROL);
+		SoundManager::GetInstance().SetSESpeed(SoundManager::SeId::ENEMY_WAKE, SE_SPEED_PATROL);
 	}
 
-	if (anim_->GetPlayAnim().step >= 109.0f
+	if (anim_->GetPlayAnim().step >= CHARGE_TRANS_STEP
 		&& anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::ROAR))
 	{
 		anim_->Play(
@@ -768,20 +699,20 @@ void EnemyDragon::UpdateCharge(void)
 		float yaw = atan2f(moveDir_.x, moveDir_.z);
 		float pitch = -asinf(moveDir_.y);
 		VECTOR euler = { pitch, yaw, 0.0f };
-		euler = VAdd(euler, VGet(0.0f, 00.0f * DX_PI_F / 180.0f, 0.0f));
+		euler = VAdd(euler, VGet(0.0f, 0.0f * DX_PI_F / 180.0f, 0.0f));
 		effect_->Play(
 			static_cast<int>(effectType_),
-			MV1GetFramePosition(transform_.modelId, 28),
-			euler, VGet(150.0f, 150.0f, 150.0f));
+			MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH),
+			euler, EFFECT_CHARGE_SCALE);
 	}
-	else if(anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::CHARGE)){
+	else if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::CHARGE)) {
 		moveDir_ = preMoverDir_;
 		step_ -= scnMng_.GetDeltaTime();
 		isAttack_ = true;
 		moveSpeed_ = SPEED_DASH;
 		movePow_ = VScale(moveDir_, moveSpeed_);
 
-		effect_->SetEffectPos(static_cast<int>(effectType_), MV1GetFramePosition(transform_.modelId, 28));
+		effect_->SetEffectPos(static_cast<int>(effectType_), MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH));
 		effect_->Update(static_cast<int>(effectType_), true);
 	}
 }
@@ -797,7 +728,7 @@ void EnemyDragon::UpdatePatrol(void)
 	movePow_ = VScale(moveDir_, moveSpeed_);
 
 	// 思考
-	int rand = GetRand(2);
+	int rand = GetRand(STATE_END_RAND);
 	float diff = VSize(VSub(*targetTrans_, transform_.pos));
 	if (diff <= ENEMY_ATTACK[rand])
 	{
@@ -815,19 +746,18 @@ void EnemyDragon::UpdateFallingAttack(void)
 
 	moveDir_ = preMoverDir_;
 	if (isJump_) {
-		jumpPow_ = VAdd(jumpPow_, VScale(moveDir_, 5.0f));
+		jumpPow_ = VAdd(jumpPow_, VScale(moveDir_, FALLING_JUMP_SPEED));
 		isAttack_ = true;
-		anim_->SetSpecificTime(15.0f,20.0f, true);
+		anim_->SetSpecificTime(FALLING_ANIM_LOOP_START, FALLING_ANIM_LOOP_END, true);
 
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_FALL).handleId_;
-		int volume_ = 100;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_FALL, bgm_, volume_);
+		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_FALL, bgm_, SE_VOLUME_FALLING);
 	}
 	else {
 		if (attribute_ == ATTRIBUTE::AIR) {
 			effectType_ = EFFECT::FALLING_ATTACK;
 			effect_->Play(static_cast<int>(effectType_));
-			effect_->SetEffectScl(static_cast<int>(effectType_), VGet(150.0f, 150.0f, 150.0f));
+			effect_->SetEffectScl(static_cast<int>(effectType_), EFFECT_FALLING_SCALE);
 			effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
 			effect_->Update(static_cast<int>(effectType_));
 		}
@@ -836,7 +766,7 @@ void EnemyDragon::UpdateFallingAttack(void)
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_ARE);
 	}
 
-	if(anim_->IsEnd()){
+	if (anim_->IsEnd()) {
 		ChangeState(STATE::IDLE);
 		return;
 	}
@@ -855,7 +785,7 @@ void EnemyDragon::UpdateFlying(void)
 	movePow_ = VScale(moveDir_, moveSpeed_);
 
 	// 思考
-	int rand = GetRand(2);
+	int rand = GetRand(STATE_END_RAND);
 	float diff = VSize(VSub(*targetTrans_, transform_.pos));
 	if (diff <= ENEMY_ATTACK[rand])
 	{
@@ -874,9 +804,9 @@ void EnemyDragon::UpdateFlyingAttack(void)
 	transform_.pos.y = MAX_TAKE;
 	moveDir_ = preMoverDir_;
 
-	if (anim_->GetPlayAnim().step == 120.0f)
+	if (anim_->GetPlayAnim().step == FLYING_ATTACK_FIRE_STEP)
 	{
-		VECTOR dir = VNorm(VSub(*targetTrans_, MV1GetFramePosition(transform_.modelId, 28)));
+		VECTOR dir = VNorm(VSub(*targetTrans_, MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH)));
 		// 登録されている衝突物を全てチェック  
 		for (const auto& hitCol : hitColliders_)
 		{
@@ -890,13 +820,13 @@ void EnemyDragon::UpdateFlyingAttack(void)
 				const ColliderModel* colliderModel =
 					dynamic_cast<const ColliderModel*>(i);
 
-				wepon_ = new WeponFlameThrower(transform_, colliderModel, dir, 28);
+				wepon_ = new WeponFlameThrower(transform_, colliderModel, dir, FRAME_NO_MOUTH);
 				wepon_->Init();
 			}
 		}
 	}
 
-	if (anim_->GetPlayAnim().step >= 180.0f)
+	if (anim_->GetPlayAnim().step >= FLYING_ATTACK_END_STEP)
 	{
 		ChangeState(STATE::HOVER);
 	}
@@ -910,20 +840,19 @@ void EnemyDragon::UpdateBreathAttack(void)
 
 	moveDir_ = preMoverDir_;
 
-	if (anim_->GetPlayAnim().step >= 24.0f
-		&& anim_->GetPlayAnim().step <= 26.0f)
+	if (anim_->GetPlayAnim().step >= BREATH_SE2_START_STEP
+		&& anim_->GetPlayAnim().step <= BREATH_SE2_END_STEP)
 	{
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_BREASE1);
 
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_BREASE_2).handleId_;
-		int volume_ = 50;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREASE2, bgm_, volume_);
+		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREASE2, bgm_, SE_VOLUME_DEFAULT);
 	}
 
-	if(anim_->GetPlayAnim().step >= 27.0f)
+	if (anim_->GetPlayAnim().step >= BREATH_ATTACK_START_STEP)
 	{
-		if (attackCnt_ <= 2.0f) {
-			anim_->SetSpecificTime(27.0f, 30.0f, true);
+		if (attackCnt_ <= BREATH_ATTACK_DURATION) {
+			anim_->SetSpecificTime(BREATH_ANIM_LOOP_START, BREATH_ANIM_LOOP_END, true);
 			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
 			wepon_->SetIsAttack(true);
 		}
@@ -931,15 +860,15 @@ void EnemyDragon::UpdateBreathAttack(void)
 			anim_->SetSpecificTime(0.0f, 0.0f, false);
 		}
 	}
-	if (anim_->GetPlayAnim().step >= 40.0f)
+	if (anim_->GetPlayAnim().step >= BREATH_WEAPON_END_STEP)
 	{
-		if(wepon_ != nullptr)
+		if (wepon_ != nullptr)
 		{
 			wepon_->SetIsEnd(true);
 		}
 	}
 
-	if (anim_->GetPlayAnim().step >= 60.0f)
+	if (anim_->GetPlayAnim().step >= BREATH_ATTACK_END_STEP)
 	{
 		ChangeState(STATE::IDLE);
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_BREASE2);
@@ -952,18 +881,17 @@ void EnemyDragon::UpdateMeleeAttack(void)
 		ChangeState(STATE::DEAD);
 	}
 
-	if (anim_->GetPlayAnim().step >= 20.0f 
+	if (anim_->GetPlayAnim().step >= MELEE_ATTACK_SE_START_STEP
 		&& anim_->GetPlayAnim().step <= MELEE_ATTACK_CILLIDER) {
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ATTCEK).handleId_;
-		int volume_ = 50;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ATTCEK, bgm_, volume_);
+		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ATTCEK, bgm_, SE_VOLUME_DEFAULT);
 	}
 
 	if (anim_->GetPlayAnim().step >= MELEE_ATTACK_CILLIDER) {
 		isAttack_ = true;
 	}
 
-	if (anim_->GetPlayAnim().step >= 20.0f)
+	if (anim_->GetPlayAnim().step >= MELEE_MOVE_DIR_LOCK_STEP)
 	{
 		moveDir_ = preMoverDir_;
 	}
@@ -998,9 +926,9 @@ void EnemyDragon::UpdateTakeOff(void)
 	}
 
 	isJump_ = true;
-	if(transform_.pos.y <= MAX_TAKE)
+	if (transform_.pos.y <= MAX_TAKE)
 	{
-		float jumpSpeed = 690.0f * scnMng_.GetDeltaTime();
+		float jumpSpeed = TAKEOFF_SPEED * scnMng_.GetDeltaTime();
 		jumpPow_ = VAdd(jumpPow_, VScale(AsoUtility::DIR_U, jumpSpeed));
 	}
 	else {
@@ -1029,9 +957,9 @@ void EnemyDragon::UpdateDead(void)
 
 	if (anim_->IsEnd())
 	{
-		deathAnimationTime_ += 0.3 * SceneManager::GetInstance().GetDeltaTime();
-		if (deathAnimationTime_ > 1.8f) {
-			deathAnimationTime_ = 1.8f;
+		deathAnimationTime_ += DIE_FADE_SPEED * SceneManager::GetInstance().GetDeltaTime();
+		if (deathAnimationTime_ > DIE_END_THRESHOLD) {
+			deathAnimationTime_ = DIE_END_THRESHOLD;
 			ChangeState(STATE::END);
 		}
 	}
@@ -1055,7 +983,7 @@ void EnemyDragon::SetTargetCollider(void)
 			const ColliderCapsule* colliderCapsule =
 				dynamic_cast<const ColliderCapsule*>(i);
 
-			if (colliderCapsule == nullptr)continue;
+			if (colliderCapsule == nullptr) continue;
 
 			targetCollider_ = colliderCapsule;
 		}
@@ -1099,19 +1027,18 @@ void EnemyDragon::HitDamage(bool isHit)
 					colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius()))
 				{
 					if (!isInvincible_) {
-						uiHp_->SetHp(8.0f);
+						uiHp_->SetHp(DAMAGE_HIT_PLAYER_WEAPON);
 						isInvincible_ = true;
 						invincibleTimer_ = INVINCIBLE_TIME;
 						effect_->Play(static_cast<int>(EFFECT::BLOOD));
-						effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), VGet(7.5f, 7.5f, 7.5f));
+						effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
 
 						VECTOR diff = VSub(colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown());
 						VECTOR center = VAdd(colliderCapsule1->GetPosDown(), VScale(diff, 0.5f));
 						effect_->SetEffectPos(static_cast<int>(EFFECT::BLOOD), center);
 
 						int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_HIT_DAMAGE).handleId_;
-						int volume_ = 50;
-						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEPON_SE2,bgm_, volume_);
+						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEPON_SE2, bgm_, SE_VOLUME_DEFAULT);
 
 						return;
 					}

@@ -290,7 +290,7 @@ protected:
 	// 状態
 	STATE state_;
 
-	// プレイヤー関連のリソース（モデル・UI・エフェクト等）をロード
+	// プレイヤーリソースロード
 	void InitLoad(void) override;
 
 	// 大きさ、回転、座標のトランスフォーム初期化
