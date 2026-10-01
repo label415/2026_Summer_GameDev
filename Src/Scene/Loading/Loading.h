@@ -1,47 +1,42 @@
 #pragma once
-#include <string>
 #include "../../Common/Vector2.h"
 
 class Loading
 {
 private:
-	// 最低でもロード画面を表示する時間の範囲
-	int loadTimer_;
-public:
-
 	// 最低でもロード画面を表示する時間
-	static constexpr int MIN_LOAD_TIME = 300;
+	static constexpr int MIN_LOAD_TIME = 60;	// 60fps(1秒) * x
 
+public:
 	// デフォルトコンストラクタをprivateにして、
 	// 外部から生成できない様にする
 	Loading();
 	~Loading();
 
-	// 読み込み
-	void Load(void);
+	void Init(void);		// 初期化
+	void Load(void);		// 読み込み
+	void Update(void);		// 更新
+	void Draw(void);		// 描画
+	void Release(void);		// 解放
 
-	// 更新
-	void Update(void);
-
-	// 描画
-	void Draw(void);
-
-	// 解放
-	void Release(void);
-
-	// 非同期ロードの開始
-	void StartAsyncLoad(void);
-
-	// 非同期ロードの終了
-	void EndAsyncLoad(void);
+	void StartAsyncLoad(void);	// 非同期ロードの開始
+	void EndAsyncLoad(void);	// 非同期ロードの終了
 
 	// ロード中かを返す。
-	bool IsEnd(void) const { return (GetASyncLoadNum() == 0 && loadTimer_ >= MIN_LOAD_TIME); }
+	bool IsLoading(void) { return isLoading_; }
+
 private:
+
+	// 座標
+	Vector2 pos_;
+
+	// ロード中の判定用
+	bool isLoading_;
+
+	// 最低でもロード画面を表示する時間の範囲
+	int loadTimer_;
+
 	//ポーズフォント
 	int pauseFont_;
-
-	//ドットの文字列
-	std::wstring dots;
 };
 

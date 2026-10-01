@@ -8,7 +8,9 @@ class Loading;
 
 class SceneManager
 {
+
 public:
+
 	// 背景色
 	static constexpr int BACKGROUND_COLOR_R = 0;
 	static constexpr int BACKGROUND_COLOR_G = 0;
@@ -23,6 +25,9 @@ public:
 		NONE,
 		TITLE,
 		GAME,
+		GAMEOVER,
+		GAMECLEAR,
+		DEBUG,
 	};
 	
 	// インスタンスの生成
@@ -57,25 +62,8 @@ public:
 
 	// カメラの取得
 	Camera* GetCamera(void) const;
+
 private:
-	enum class TransitionPhase
-	{
-		NONE,
-		FADE_OUT_OLD,   // 暗転:今のシーンを隠す
-		FADE_IN_LOAD,   // 明転:ロード画面を見せる
-		WAIT_LOAD,      // ロード完了待ち
-		FADE_OUT_LOAD,  // 暗転:ロード画面を隠す
-		FADE_IN_NEW     // 明転:新シーンを見せる
-	};
-
-	// デルタタイム
-	static constexpr float DELTA_TIME = 1.0f / 60.0f;
-
-	// デルタタイムリセット値
-	static constexpr float DELTA_TIME_RESET = 0.016f;
-
-	// 遷移フェーズ
-	TransitionPhase transitionPhase_;
 
 	// 静的インスタンス
 	static SceneManager* instance_;
@@ -91,9 +79,6 @@ private:
 
 	// ロード画面
 	Loading* load_;
-
-	// フェード
-	Fader* fader_;
 
 	// シーン遷移中判定
 	bool isSceneChanging_;
@@ -118,6 +103,9 @@ private:
 	// シーン遷移
 	void DoChangeScene(SCENE_ID sceneId);
 
-	// フェード
-	void Fade(void);
+	// タイトルへ戻る際にゲームクリア/ゲームオーバーからの遷移で
+	// タイトル読み込みを長くするための遅延（秒）
+	static constexpr float TITLE_RETURN_DELAY = 2.0f;
+	// 遷移待ちタイマー（秒）
+	float sceneChangeDelayTimer_;
 };
