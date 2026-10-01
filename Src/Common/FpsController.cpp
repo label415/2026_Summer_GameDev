@@ -13,21 +13,16 @@ FpsController::FpsController(int fixedFps)
     timeList_(),
     prevTime_()
 {
-
     prevTime_ = std::chrono::high_resolution_clock::now();
 
     // DxLib‚Ì‚’¼“¯Šú‘Ò‚¿‚ğ–³Œø‰»
     SetWaitVSyncFlag(false);
-
 }
 
-FpsController::~FpsController(void)
-{
-}
+FpsController::~FpsController(void){}
 
 void FpsController::Wait()
 {
-
     // Œ»İŠÔ
     auto nowTime = std::chrono::high_resolution_clock::now();
 
@@ -82,7 +77,6 @@ void FpsController::Wait()
 
     // •½‹ÏFPS
     fps_ = static_cast<float>(timeList_.size() / total);
-
 }
 
 void FpsController::Draw()

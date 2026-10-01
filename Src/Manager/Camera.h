@@ -3,13 +3,12 @@
 #include <vector>
 #include "../Common/Quaternion.h"
 #include "../Object/Actor/ActorBase.h"
+
 class Transform;
 
 class Camera : public ActorBase
 {
-
 public:
-
 	// カメラの初期座標
 	static constexpr VECTOR DERFAULT_POS = { 0.0f, 200.0f, -500.0f };
 	
@@ -105,23 +104,35 @@ public:
 	// 衝突対象となるコライダを登録
     void AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider);
 
+	// マウス入力の有効無効設定
 	void SetIsMouseInput(bool isMouseInput) { isMouseInput_ = isMouseInput; }
 
+	// マウス入力の有効無効取得
 	bool GetIsMouseInput(void) { return isMouseInput_; }
-
 protected:
 	// リソースロード
 	void InitLoad(void) override{}
+
 	// 大きさ、回転、座標の初期化
 	void InitTransform(void) override{}
+
 	// 衝突判定の初期化
 	void InitCollider(void) override;
+
 	// アニメーションの初期化
 	void InitAnimation(void) override{}
+
 	// 初期化後の個別処理
 	void InitPost(void) override;
-
 private:
+	// カメラの回転スピード
+	static constexpr float ROT_SPEED = 0.1f;
+	// ロックオンカメラの高さ
+	static constexpr float PLAYER_HEIGHT = 180.0f;
+	// ロックオンカメラのプレイヤーとの距離
+	static constexpr float PLAYER_MARGIN = 40.0f;
+	// ロックオンカメラの視野角
+	static constexpr float FOV_Y = 60.0f;
 
 	// カメラが追従対象とするTransform
 	const Transform* followTransform_;
@@ -129,14 +140,32 @@ private:
 	//ロックオン対象のTransform
 	const VECTOR* targetTransform_;
 
+	// ロックオン時のボスズーム
+	static constexpr float LOCKON_BOSS_ZOOM = 100.0f;
+	// ロックオン時のボスズームの最大値
+	static constexpr float LOCKON_BOSS_ZOOM_MAX = 500.0f;
+	// ロックオン時の高さ補正
+	static constexpr float LOCKON_BOSS_HEIGHT_ADJUST = 30.0f;
+	// ロックオン時の高さ調整値
+	static constexpr float LOCKON_BOSS_HEIGHT_LERP_RATE = 0.2f;
+	// ロックオン時のボスズームの補間率
+	static constexpr float LOCKON_BOSS_ZOOM_LERP_RATE = 0.5f;
+
+	//注視点の補間率
+	static constexpr float LOCKON_TARGET_LERP_RATE = 0.4f;
+
+	// ターゲットの中心位置
+	static constexpr float TARGET_CENTER_POS = 30.0f;
+
 	// 衝突時の押し戻し試行回数
 	static constexpr int CNT_TRY_COLLISION_CAMERA = 10;
-
 	// 衝突時の押し戻し量
 	static constexpr float COLLISION_BACK_DIS = 2.0f;
-
 	// 衝突判定用球体半径
 	static constexpr float COL_CAPSULE_SPHERE = 50.0f;
+
+	//カメラ速度
+	static constexpr float MOVE_SPEED = 0.5f;
 
 	// カメラ補間フラグ
 	bool isCameraLope_;
@@ -189,11 +218,14 @@ private:
 	// カメラの更新前位置
 	VECTOR prePos_;
 
+	// マウス入力の有効無効
 	float mouseX;
 	float mouseY;
+
+	// マウス入力の前回位置
 	float preMouseX;
 	float preMouseY;
 
+	// マウス入力の有効無効フラグ
 	bool isMouseInput_;
-
 };

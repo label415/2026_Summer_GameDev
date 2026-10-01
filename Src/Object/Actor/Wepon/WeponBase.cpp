@@ -2,17 +2,17 @@
 #include "../../../Utility/ModelFrameUtility.h"
 #include "../../Common/Transform.h"
 #include "WeponBase.h"
+
 WeponBase::WeponBase(const Transform& followTransform, int followFrameId)
 	:
 	followTransform_(followTransform),
 	followFrameId_(followFrameId),
 	localPos_(AsoUtility::VECTOR_ZERO),
 	localRot_(AsoUtility::VECTOR_ZERO)
-{
-}
-WeponBase::~WeponBase(void)
-{
-}
+{}
+
+WeponBase::~WeponBase(void){}
+
 void WeponBase::Update(void)
 {
 	// 対象フレームの位置にtargetを配置し、

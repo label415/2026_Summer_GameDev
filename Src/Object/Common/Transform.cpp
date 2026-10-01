@@ -18,13 +18,10 @@ Transform::Transform(void)
 {
 }
 
-Transform::~Transform(void)
-{
-}
+Transform::~Transform(void){}
 
 void Transform::Update(void)
 {
-
 	// ‘å‚«‚³
 	matScl = MGetScale(scl);
 
@@ -47,12 +44,9 @@ void Transform::Update(void)
 	{
 		MV1SetMatrix(modelId, mat);
 	}
-
 }
 
-void Transform::Release(void)
-{
-}
+void Transform::Release(void){}
 
 void Transform::SetModel(int model)
 {

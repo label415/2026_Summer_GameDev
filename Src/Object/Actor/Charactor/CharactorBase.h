@@ -1,7 +1,7 @@
 #pragma once
-#include "../ActorBase.h"
 #include "../../Common/AnimationController.h"
 #include "../../Common/EffectController.h"
+#include "../ActorBase.h"
 
 class UIHp;
 
@@ -9,16 +9,18 @@ class CharactorBase :
     public ActorBase
 {
 public:
-
     // コンストラクタ
     CharactorBase(void);
+
     // デストラクタ
     virtual ~CharactorBase(void) override;
 
     // 更新
     virtual void Update(void) override;
+
     // 描画
     virtual void Draw(void) override;
+
     // 解放
     virtual void Release(void) override;
 
@@ -39,9 +41,7 @@ public:
 
     //HP情報取得
     const UIHp* GetHP(void)const { return uiHp_; }
-
 protected:
-
     // 最大落下速度
     static constexpr float MAX_FALL_SPEED = -30.0f;
 
@@ -53,6 +53,7 @@ protected:
     //ロックオン対象Transform
     const VECTOR* targetTrans_;
 
+	//HP UI
 	UIHp* uiHp_;
 
     //アニメーションコントローラ
@@ -98,6 +99,5 @@ protected:
 
     //攻撃フラグ
     bool isAttack_;
-
 };
 

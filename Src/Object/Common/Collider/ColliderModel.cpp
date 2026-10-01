@@ -3,12 +3,9 @@
 ColliderModel::ColliderModel(TAG tag, const Transform* follow, int patrTag)
 	:
 	ColliderBase(SHAPE::MODEL, tag, follow, patrTag)
-{
-}
+{}
 
-ColliderModel::~ColliderModel(void)
-{
-}
+ColliderModel::~ColliderModel(void){}
 
 void ColliderModel::AddExcludeFrameIds(const std::wstring& name)
 {

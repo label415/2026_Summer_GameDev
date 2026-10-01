@@ -7,38 +7,36 @@
 UIHp::UIHp(float posX, float posY,
 	float flameScl, float hpSclX, float hpSclY, float hp)
 	:
-	pos_(posX, posY),
-	hp_(hp),
+	uiPos_(posX, posY),
+	hpCurrent_(hp),
 	flameScl_(flameScl),
 	hpSclX_(hpSclX),
 	hpSclY_(hpSclY)
 {
+	// 初期化
 	active_ = true;
 }
 
-UIHp::~UIHp(void)
-{
-}
+UIHp::~UIHp(void){}
 
-void UIHp::Update(void)
-{
-}
+void UIHp::Update(void){}
 
 void UIHp::Draw(void)
 {
 	// 背景バーの描画
 	DrawRotaGraph(
-		pos_.x,
-		pos_.y,
-		flameScl_, 0.0f, hpUi1_, true);
+		uiPos_.x,
+		uiPos_.y,
+		flameScl_, 0.0f, flameImg_, true);
 
-	float hpRate = hp_ / 100.0f;
+	// HPバーの描画
+	float hpRate = hpCurrent_ / MAX_HP;
 	float realHalfWidth  = IMG_SIZE_X / hpSclX_;
 	float realHalfHeight = IMG_SIZE_Y / hpSclY_;
 
-	float left   = pos_.x - realHalfWidth;
-	float top    = pos_.y - realHalfHeight;
-	float bottom = pos_.y + realHalfHeight;
+	float left   = uiPos_.x - realHalfWidth;
+	float top    = uiPos_.y - realHalfHeight;
+	float bottom = uiPos_.y + realHalfHeight;
 
 	int srcWidth = static_cast<int>(IMG_SIZE_X * hpRate);
 	float currentBarRight = left + (realHalfWidth * 2.0f * hpRate);
@@ -49,35 +47,34 @@ void UIHp::Draw(void)
 		currentBarRight, bottom, 
 		0, 0, srcWidth, 
 		static_cast<int>(IMG_SIZE_Y),
-		hpUi2_, true);
+		hpImg_, true);
 }
 
 void UIHp::SetHp(float delta)
 {
-	hp_ -= delta;
-	if (hp_ <= 0.0f)
+	// HPを減少させる
+	hpCurrent_ -= delta;
+	if (hpCurrent_ <= 0.0f)
 	{
-		hp_ = 0.0f;
+		hpCurrent_ = 0.0f;
 		active_ = false;
 	}
 }
 
 void UIHp::SetHpAbsolute(float hp)
 {
-	hp_ += hp;
-	if (hp_ >= MAX_HP) hp_ = MAX_HP;
+	// HPを回復させる
+	hpCurrent_ += hp;
+	if (hpCurrent_ >= MAX_HP) hpCurrent_ = MAX_HP;
 }
 
 void UIHp::InitLoad(void)
 {
-	hpUi1_ = resMng_.Load(ResourceManager::SRC::UI_BAR_FRAME).handleId_;
-	hpUi2_ = resMng_.Load(ResourceManager::SRC::UI_HP_BAR).handleId_;
+	// リソースのロード
+	flameImg_ = resMng_.Load(ResourceManager::SRC::UI_BAR_FRAME).handleId_;
+	hpImg_ = resMng_.Load(ResourceManager::SRC::UI_HP_BAR).handleId_;
 }
 
-void UIHp::InitTransform(void)
-{
-}
+void UIHp::InitTransform(void){}
 
-void UIHp::InitPost(void)
-{
-}
+void UIHp::InitPost(void){}

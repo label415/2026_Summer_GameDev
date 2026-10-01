@@ -41,7 +41,7 @@ private:
 	// シャドウマップ解像度
 	static constexpr int SHADOW_MAP_RESOLUTION = 2048;
 	// シャドウマップ範囲
-	static constexpr float SHADOW_MAP_DIFF = 100.0f;
+	static constexpr float SHADOW_MAP_DIFF = 1000.0f;
 	// シャドウマップ最大描画倍率
 	static constexpr float SHADOW_MAP_MAX_DRAW = 1.5f;
 	// シャドウマップ最低描画倍率

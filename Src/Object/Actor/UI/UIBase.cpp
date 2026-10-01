@@ -8,17 +8,19 @@ UIBase::UIBase(void)
 	step_(0.0f)
 {
 }
-UIBase::~UIBase(void)
-{
-}
+
+UIBase::~UIBase(void){}
+
 bool UIBase::IsActive(void) const
 {
 	return active_;
 }
+
 void UIBase::SetActive(bool active)
 {
 	active_ = active;
 }
+
 float UIBase::GetStep(void) const
 {
 	return step_;

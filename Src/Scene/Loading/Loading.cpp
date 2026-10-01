@@ -13,9 +13,7 @@ Loading::Loading()
 }
 
 // デストラクタ
-Loading::~Loading()
-{
-}
+Loading::~Loading(){}
 
 // 読み込み
 void Loading::Load(void)
@@ -36,10 +34,11 @@ void Loading::Update(void)
 // 描画
 void Loading::Draw(void)
 {
-
+	// ロード中のドットの数を計算
 	int dotCount = (loadTimer_ / 20) % 4;
 	std::wstring dots(dotCount, L'.');
 
+	// ロード中の文字列を描画
 	DrawFormatStringToHandle(
 		Application::SCREEN_SIZE_X - 200,
 		Application::SCREEN_SIZE_Y - 70,
@@ -52,12 +51,14 @@ void Loading::Draw(void)
 // 解放
 void Loading::Release(void)
 {
+	// フォントハンドルの解放
 	DeleteFontToHandle(pauseFont_);
 }
 
 // 非同期読み込みに切り替える
 void Loading::StartAsyncLoad(void)
 {
+	// ロードタイマーをリセット
 	loadTimer_ = 0;
 	// 非同期読み込み開始
 	SetUseASyncLoadFlag(true);

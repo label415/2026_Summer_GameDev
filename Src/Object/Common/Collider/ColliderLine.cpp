@@ -1,7 +1,8 @@
-#include "../../Common/Transform.h"
 #include "../../../Utility/AsoUtility.h"
+#include "../../Common/Transform.h"
 #include "ColliderModel.h"
 #include "ColliderLine.h"
+
 ColliderLine::ColliderLine(
 	TAG tag, const Transform* follow,
 	const VECTOR& localPosStart, const VECTOR& localPosEnd, int patrTag)
@@ -11,35 +12,42 @@ ColliderLine::ColliderLine(
 	localPosEnd_(localPosEnd)
 {
 }
-ColliderLine::~ColliderLine(void)
-{
-}
+
+ColliderLine::~ColliderLine(void){}
+
 void ColliderLine::SetLocalPosStart(const VECTOR& pos)
 {
 	localPosStart_ = pos;
 }
+
 void ColliderLine::SetLocalPosEnd(const VECTOR& pos)
 {
 	localPosEnd_ = pos;
 }
+
 const VECTOR& ColliderLine::GetLocalPosStart(void) const
 {
 	return localPosStart_;
 }
+
 const VECTOR& ColliderLine::GetLocalPosEnd(void) const
 {
 	return localPosEnd_;
 }
+
 VECTOR ColliderLine::GetPosStart(void) const
 {
 	return GetRotPos(localPosStart_);
 }
+
 VECTOR ColliderLine::GetPosEnd(void) const
 {
 	return GetRotPos(localPosEnd_);
 }
 
-bool ColliderLine::PushBackUp(const ColliderModel* colliderModel, Transform& transform, float pushDistance, bool isExclude, bool isTarget) const
+bool ColliderLine::PushBackUp(
+	const ColliderModel* colliderModel, Transform& transform,
+	float pushDistance, bool isExclude, bool isTarget) const
 {
 	// ステージモデル(地面)との衝突
 	auto hits = MV1CollCheck_LineDim(

@@ -2,27 +2,33 @@
 #include "../../../Manager/ResourceManager.h"
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "WeponBlade.h"
+
 WeponBlade::WeponBlade(const Transform& followTransform, int followFrameId)
 	:
 	WeponBase(followTransform, followFrameId)
 {
+	// 生存フラグを無効にする
 	isAlive_ = false;
 }
-WeponBlade::~WeponBlade(void)
-{
-}
+
+WeponBlade::~WeponBlade(void){}
+
 void WeponBlade::Update(void)
 {
+	// 基底クラスを更新
 	WeponBase::Update();
 }
+
 void WeponBlade::InitLoad(void)
 {
 	// モデルのロード
 	transform_.SetModel(
 		resMng_.Load(ResourceManager::SRC::MODEL_WEAPON_BLADE).handleId_);
 }
+
 void WeponBlade::InitTransform(void)
 {
+	// モデルの大きさ、回転、座標の初期化
 	transform_.scl = VScale(AsoUtility::VECTOR_ONE, SCALE);
 	transform_.quaRot = Quaternion();
 	transform_.quaRotLocal = Quaternion();
@@ -34,21 +40,18 @@ void WeponBlade::InitTransform(void)
 	AsoUtility::Deg2RadF(-90.0f)
 	};
 }
-void WeponBlade::InitCollider(void)
-{
-}
 
-void WeponBlade::InitAnimation(void)
-{
-}
+void WeponBlade::InitCollider(void){}
 
-void WeponBlade::InitPost(void)
-{
-}
+void WeponBlade::InitAnimation(void){}
+
+void WeponBlade::InitPost(void){}
 
 void WeponBlade::SetCollider(void)
 {
+	// 生存フラグを有効にする
 	isAlive_ = true;
+	// 衝突判定用カプセルコライダを作成し、ownColliders_に登録
 	ColliderCapsule* colCapsule = new ColliderCapsule(
 		ColliderBase::TAG::PLAYER_WEPON, &transform_,
 		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
@@ -61,6 +64,8 @@ void WeponBlade::SetCollider(void)
 
 void WeponBlade::ClearCollider(void)
 {
+	// 生存フラグを無効にする
 	isAlive_ = false;
+	// 衝突判定用カプセルコライダを削除し、ownColliders_から削除
 	ownColliders_.erase(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 }

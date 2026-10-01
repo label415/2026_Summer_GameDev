@@ -18,25 +18,16 @@ Camera::Camera(void)
 	rotY_(Quaternion::Identity()),
 	targetPos_(AsoUtility::VECTOR_ZERO)
 {
-	// DxLibの初期設定では、
-	// カメラの位置が x = 320.0f, y = 240.0f, z = (画面のサイズによって変化)、
-	// 注視点の位置は x = 320.0f, y = 240.0f, z = 1.0f
-	// カメラの上方向は x = 0.0f, y = 1.0f, z = 0.0f
-	// 右上位置からZ軸のプラス方向を見るようなカメラ
+	// カメラの初期設定
 	angleY = 0.0f;
 }
 
-Camera::~Camera(void)
-{
-}
+Camera::~Camera(void){}
 
-void Camera::Update(void)
-{
-}
+void Camera::Update(void){}
 
 void Camera::SetBeforeDraw(void)
 {
-
 	// クリップ距離を設定する(SetDrawScreenでリセットされる)
 	SetCameraNearFar(VIEW_NEAR, VIEW_FAR);
 
@@ -76,19 +67,15 @@ void Camera::SetBeforeDraw(void)
 
 	// DXライブラリのカメラとEffekseerのカメラを同期する。
 	Effekseer_Sync3DSetting();
-
 }
 
-void Camera::DrawDebug(void)
-{
-}
+void Camera::DrawDebug(void){}
 
-void Camera::Release(void)
-{
-}
+void Camera::Release(void){}
 
 void Camera::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
 {
+	// すでに登録されている場合は追加しない
 	for (const auto& c : hitColliders_)
 	{
 		if (c.second == hitCollider)
@@ -116,6 +103,7 @@ void Camera::InitCollider(void)
 
 void Camera::InitPost(void)
 {
+	// カメラモードの初期化
 	ChangeMode(MODE::FIXED_POINT);
 	auto& ins = InputManager::GetInstance();
 	mouseX = ins.GetMousePos().x;
@@ -158,7 +146,6 @@ VECTOR Camera::GetForward(void) const
 
 void Camera::ChangeMode(MODE mode)
 {
-
 	// カメラモードの変更
 	mode_ = mode;
 
@@ -176,7 +163,6 @@ void Camera::ChangeMode(MODE mode)
 	case Camera::MODE::TARGET_ROCKE:
 		break;
 	}
-
 }
 
 const Camera::MODE& Camera::GetCameraMode(void) const
@@ -186,7 +172,6 @@ const Camera::MODE& Camera::GetCameraMode(void) const
 
 void Camera::SetDefault(void)
 {
-
 	// カメラの初期設定
 	transform_.pos = DERFAULT_POS;
 
@@ -200,7 +185,6 @@ void Camera::SetDefault(void)
 
 void Camera::SyncFollow(void)
 {
-
 	// 同期先の位置
 	VECTOR pos = followTransform_->pos;
 
@@ -215,7 +199,6 @@ void Camera::SyncFollow(void)
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
 	VECTOR localPos;
-	const float MOVE_SPEED = 0.5f;
 	// 注視点
 	localPos = transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS);
 	VECTOR nextTargetPos = VAdd(pos, localPos);
@@ -225,49 +208,41 @@ void Camera::SyncFollow(void)
 	localPos = transform_.quaRot.PosAxis(FOLLOW_CAMERA_LOCAL_POS);
 	VECTOR nextCameraPos = VAdd(pos, localPos);
 	transform_.pos = AsoUtility::Lerp(transform_.pos, nextCameraPos, MOVE_SPEED);
-
 }
 
 void Camera::SynLockOn(void)
 {
-	const float ROT_SPEED = 0.1f;
+	// 各位置の取得
+	VECTOR followPos = followTransform_->pos; 
+	VECTOR TargetPos = *targetTransform_;
 
-	// ---- 追加パラメータ ----
-	const float PLAYER_HEIGHT = 180.0f;
-	const float PLAYER_MARGIN = 40.0f;
-	const float FOV_Y = AsoUtility::Deg2RadF(60.0f);
-
-	// 1. 各位置の取得
-	VECTOR followPos = followTransform_->pos; // プレイヤー位置(足元)
-	VECTOR TargetPos = *targetTransform_;     // ボスの位置
-
+	// 注視点の高さを調整
 	VECTOR targetCenterPos = TargetPos;
-	targetCenterPos.y += 30.0f;
+	targetCenterPos.y += TARGET_CENTER_POS;
 
-	// 2. プレイヤーとボスの距離
+	// プレイヤーとボスの距離
 	VECTOR toEnemy = VSub(targetCenterPos, followPos);
 	float distance = VSize(toEnemy);
 
-	// 3. ボス側基準のズーム（従来通り）
-	float baseDist = 100.0f;
-	float bossFitDist = baseDist + (distance * 0.5f);
+	// ボス側基準のズーム
+	float baseDist = LOCKON_BOSS_ZOOM;
+	float bossFitDist = baseDist + (distance * LOCKON_BOSS_ZOOM_LERP_RATE);
 
-	// 4. ★プレイヤー全身が画角に収まる最低距離を算出
-	//    半分の身長 / tan(半分の縦画角)
-	float halfHeight = PLAYER_HEIGHT * 0.5f + PLAYER_MARGIN;
-	float playerFitDist = halfHeight / tanf(FOV_Y * 0.5f);
+	// プレイヤー側基準のズーム
+	float halfHeight = PLAYER_HEIGHT * LOCKON_BOSS_ZOOM_LERP_RATE + PLAYER_MARGIN;
+	float playerFitDist = halfHeight / tanf(AsoUtility::Deg2RadF(FOV_Y) * LOCKON_BOSS_ZOOM_LERP_RATE);
 
-	// 5. 両方満たす距離を採用（大きい方）
+	// 両方満たす距離を採用
 	float dynamicDist = fmaxf(bossFitDist, playerFitDist);
-	dynamicDist = fminf(dynamicDist, 500.0f); // 遠すぎ防止
+	dynamicDist = fminf(dynamicDist, LOCKON_BOSS_ZOOM_MAX);
 
-	float baseHeight = 30.0f;
-	float dynamicHeight = baseHeight + (distance * 0.2f);
+	float baseHeight = LOCKON_BOSS_HEIGHT_ADJUST;
+	float dynamicHeight = baseHeight + (distance * LOCKON_BOSS_HEIGHT_LERP_RATE);
 
-	// 6. 注視点（中間点）
-	VECTOR lookAtPoint = AsoUtility::Lerp(followPos, targetCenterPos, 0.4f);
+	// 注視点
+	VECTOR lookAtPoint = AsoUtility::Lerp(followPos, targetCenterPos, LOCKON_TARGET_LERP_RATE);
 
-	// 7. カメラから見た目標の向き（水平方向）
+	// カメラから見た目標の向き
 	VECTOR toTargetDir = VNorm(VSub(lookAtPoint, followPos));
 	float angleY = atan2f(toTargetDir.x, toTargetDir.z);
 	Quaternion targetRotY = Quaternion::AngleAxis(angleY, AsoUtility::AXIS_Y);
@@ -276,13 +251,14 @@ void Camera::SynLockOn(void)
 	Quaternion targetQuaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 	transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetQuaRot, ROT_SPEED);
 
-	// 8. 動的な距離と高さを使ってカメラ位置と注視点を確定
+	// 動的な距離と高さを使ってカメラ位置と注視点を確定
 	VECTOR backVec = transform_.quaRot.PosAxis(VGet(0.0f, 0.0f, -1.0f));
 	transform_.pos = VAdd(followPos, VScale(backVec, dynamicDist));
 	transform_.pos.y += dynamicHeight;
 
 	targetPos_ = lookAtPoint;
 
+	// カメラの角度を更新
 	VECTOR forward = transform_.quaRot.PosAxis(VGet(0.0f, 0.0f, 1.0f));
 	angles_.y = atan2f(forward.x, forward.z);
 	float horizontalLen = sqrtf(forward.x * forward.x + forward.z * forward.z);
@@ -293,17 +269,14 @@ void Camera::SynLockOn(void)
 
 void Camera::ProcessRot(bool isLimit)
 {
-
 	// 方向回転によるXYZの移動(キーボード)
 	RotKeyboard(isLimit);
 	// 方向回転によるXYZの移動(ゲームパッド)
 	RotGamePad(isLimit);
-
 }
 
 void Camera::ProcessMove(void)
 {
-
 	auto& ins = InputManager::GetInstance();
 
 	VECTOR moveDir = AsoUtility::VECTOR_ZERO;
@@ -343,17 +316,12 @@ void Camera::ProcessMove(void)
 		targetPos_ = VAdd(targetPos_, movePow);
 
 	}
-
 }
 
-void Camera::SetBeforeDrawFixedPoint(void)
-{
-	// 何もしない
-}
+void Camera::SetBeforeDrawFixedPoint(void){}
 
 void Camera::SetBeforeDrawFree(void)
 {
-
 	// カメラ操作(回転)
 	ProcessRot(false);
 	
@@ -388,7 +356,6 @@ void Camera::SetBeforeDrawFollow(void)
 		transform_.pos =
 			AsoUtility::Lerp(prePos_, transform_.pos, LERP_RATE_MOVE);
 	}
-
 }
 
 void Camera::SetBeforeDrawTargetLockeOn(void)

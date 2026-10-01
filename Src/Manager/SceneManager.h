@@ -8,9 +8,7 @@ class Loading;
 
 class SceneManager
 {
-
 public:
-
 	// 背景色
 	static constexpr int BACKGROUND_COLOR_R = 0;
 	static constexpr int BACKGROUND_COLOR_G = 0;
@@ -59,9 +57,7 @@ public:
 
 	// カメラの取得
 	Camera* GetCamera(void) const;
-
 private:
-
 	enum class TransitionPhase
 	{
 		NONE,
@@ -71,6 +67,14 @@ private:
 		FADE_OUT_LOAD,  // 暗転:ロード画面を隠す
 		FADE_IN_NEW     // 明転:新シーンを見せる
 	};
+
+	// デルタタイム
+	static constexpr float DELTA_TIME = 1.0f / 60.0f;
+
+	// デルタタイムリセット値
+	static constexpr float DELTA_TIME_RESET = 0.016f;
+
+	// 遷移フェーズ
 	TransitionPhase transitionPhase_;
 
 	// 静的インスタンス

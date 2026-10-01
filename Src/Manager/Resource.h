@@ -4,9 +4,7 @@
 
 class Resource
 {
-
 public:
-	
 	// リソースタイプ
 	enum class TYPE
 	{
@@ -21,8 +19,10 @@ public:
 
 	// コンストラクタ
 	Resource(void);
+
 	// コンストラクタ
 	Resource(TYPE type, const std::wstring& path);
+
 	// コンストラクタ(IMGS用)
 	Resource(TYPE type, const std::wstring& path, int numX, int numY, int sizeX, int sizeY);
 
@@ -52,12 +52,15 @@ public:
 
 	// IMGS::LoadDivGraph用
 	int* handleIds_;
+
+	// IMGS::LoadDivGraph用
 	int numX_;
 	int numY_;
+
+	// IMGS::LoadDivGraph用
 	int sizeX_;
 	int sizeY_;
 
 	// モデル複製用
 	std::vector<int> duplicateModelIds_;
-
 };

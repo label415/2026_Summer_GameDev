@@ -30,7 +30,7 @@ SceneManager& SceneManager::GetInstance(void)
 
 void SceneManager::Init(void)
 {
-
+	// シーンIDの初期化
 	sceneId_ = SCENE_ID::TITLE;
 	waitSceneId_ = SCENE_ID::NONE;
 
@@ -67,7 +67,6 @@ void SceneManager::Init(void)
 
 void SceneManager::Init3D(void)
 {
-
 	// 背景色設定
 	SetBackgroundColor(
 		BACKGROUND_COLOR_R, 
@@ -93,11 +92,11 @@ void SceneManager::Init3D(void)
 	SetFogEnable(true);
 	SetFogColor(5, 5, 5);
 	SetFogStartEnd(10000.0f, 20000.0f);
-
 }
 
 void SceneManager::Update(void)
 {
+	// シーンが存在しない場合は更新しない
 	if (scene_ == nullptr){return;}
 
 	// デルタタイム
@@ -106,13 +105,17 @@ void SceneManager::Update(void)
 		std::chrono::duration_cast<std::chrono::nanoseconds>(nowTime - preTime_).count() / 1000000000.0);
 	preTime_ = nowTime;
 
+	// フェードとロード画面の更新
 	fader_->Update();
 	load_->Update();
 
+	// シーンの更新
 	if (isSceneChanging_)
 	{
+		// シーン遷移中はフェード処理を行う
 		Fade();
 
+		// シーンの更新は暗転中と明転中のみ行う
 		if (transitionPhase_ == TransitionPhase::FADE_OUT_OLD ||
 			transitionPhase_ == TransitionPhase::FADE_IN_NEW)
 		{
@@ -121,53 +124,62 @@ void SceneManager::Update(void)
 	}
 	else
 	{
+		// 通常時はシーンを更新する
 		scene_->Update();
 	}
 
+	// カメラの更新
 	camera_->Update();
 }
 
 void SceneManager::Draw(void)
 {
+	// 描画先を裏画面に設定して、裏画面をクリアする
 	SetDrawScreen(DX_SCREEN_BACK);
 	ClearDrawScreen();
 
-	// ロード画面を表示するフェーズ(明転?ロード完了待ち?暗転)
+	// ロード画面を表示するフェーズ
 	bool showLoad =
 		(transitionPhase_ == TransitionPhase::FADE_IN_LOAD) ||
 		(transitionPhase_ == TransitionPhase::WAIT_LOAD) ||
 		(transitionPhase_ == TransitionPhase::FADE_OUT_LOAD);
 
-	// シーンを表示するフェーズ(通常時 / 暗転前 / 明転後)
+	// シーンを表示するフェーズ
 	bool showScene =
 		(transitionPhase_ == TransitionPhase::NONE) ||
 		(transitionPhase_ == TransitionPhase::FADE_OUT_OLD) ||
 		(transitionPhase_ == TransitionPhase::FADE_IN_NEW);
 
+
 	if (showLoad)
 	{
+		// ロード画面の描画
 		load_->Draw();
 	}
 
 	if (showScene)
 	{
+		// シーンの描画
 		camera_->SetBeforeDraw();
 		scene_->Draw();
 	}
 
+	// デバッグ用描画
 	camera_->DrawDebug();
+
+	// フェード描画
 	fader_->Draw();
 }
 
 void SceneManager::Destroy(void)
 {
-
 	// シーンの解放
 	if (scene_ != nullptr)
 	{
 		delete scene_;
 	}
 
+	// カメラの解放
 	camera_->Release();
 	delete camera_;
 
@@ -175,6 +187,7 @@ void SceneManager::Destroy(void)
 	load_->Release();
 	delete load_;
 
+	// フォント管理クラスの解放
 	FontManager::GetInstance().Destroy();
 
 	// フェード機能の解放
@@ -182,11 +195,11 @@ void SceneManager::Destroy(void)
 
 	// インスタンスのメモリ解放
 	delete instance_;
-
 }
 
 void SceneManager::ChangeScene(SCENE_ID nextId)
 {
+	// シーン遷移中は変更しない
 	waitSceneId_ = nextId;
 
 	// まず今のシーンを暗転で隠すところから開始
@@ -194,6 +207,7 @@ void SceneManager::ChangeScene(SCENE_ID nextId)
 	fader_->SetFade(Fader::STATE::FADE_OUT);
 	isSceneChanging_ = true;
 
+	// BGMとSEを停止
 	SoundManager::GetInstance().StopBGM();
 	SoundManager::GetInstance().AllStopSE();
 }
@@ -205,7 +219,7 @@ SceneManager::SCENE_ID SceneManager::GetSceneID(void)
 
 float SceneManager::GetDeltaTime(void) const
 {
-	return 1.0f / 60.0f;
+	return DELTA_TIME;
 }
 
 Camera* SceneManager::GetCamera(void) const
@@ -215,33 +229,33 @@ Camera* SceneManager::GetCamera(void) const
 
 SceneManager::SceneManager(void)
 {
-
+	// シーンIDの初期化
 	sceneId_ = SCENE_ID::NONE;
 	waitSceneId_ = SCENE_ID::NONE;
 
-	scene_ = nullptr;
-
 	// デルタタイム
-	deltaTime_ = 1.0f / 60.0f;
+	deltaTime_ = DELTA_TIME;
 
+	// 各ポインタ変数初期化
+	scene_ = nullptr;
 	camera_ = nullptr;
 	load_ = nullptr;
 	fader_ = nullptr;
-
 }
 
 void SceneManager::ResetDeltaTime(void)
 {
-	deltaTime_ = 0.016f;
+	// デルタタイムを初期化する
+	deltaTime_ = DELTA_TIME_RESET;
 	preTime_ = std::chrono::system_clock::now();
 }
 
 void SceneManager::DoChangeScene(SCENE_ID sceneId)
 {
-
 	// リソースの解放
 	ResourceManager::GetInstance().Release();
 
+	// エフェクシアの初期化
 	Application::GetInstance().InitEffekseer();
 
 	// シーンを変更する
@@ -253,6 +267,7 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 		delete scene_;
 	}
 
+	// 新しいシーンを生成
 	switch (sceneId_)
 	{
 	case SCENE_ID::TITLE:
@@ -267,14 +282,16 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 	load_->StartAsyncLoad();
 	scene_->Load();
 	
+	// デルタタイムをリセット
 	ResetDeltaTime();
 
+	// 待機シーンIDを初期化
 	waitSceneId_ = SCENE_ID::NONE;
-
 }
 
 void SceneManager::Fade(void)
 {
+	// フェード処理の状態に応じて処理を分岐
 	switch (transitionPhase_)
 	{
 	case TransitionPhase::FADE_OUT_OLD:

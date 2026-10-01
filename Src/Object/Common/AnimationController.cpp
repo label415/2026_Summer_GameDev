@@ -18,6 +18,7 @@ AnimationController::~AnimationController(void)
 
 void AnimationController::Add(int type, float speed, const std::wstring path)
 {
+	// 外部FBXからアニメーションを追加する
 	Animation animation;
 	animation.model = MV1LoadModel(path.c_str());
 	animation.animIndex = -1;
@@ -27,6 +28,7 @@ void AnimationController::Add(int type, float speed, const std::wstring path)
 
 void AnimationController::Add(int type, float speed, int handlId)
 {
+	// ハンドルIDからアニメーションを追加する
 	Animation animation;
 	animation.model = handlId;
 	animation.animIndex = -1;
@@ -36,6 +38,7 @@ void AnimationController::Add(int type, float speed, int handlId)
 
 void AnimationController::AddInFbx(int type, float speed, int animIndex)
 {
+	// 同じFBX内のアニメーションを準備
 	Animation animation;
 	animation.model = -1;
 	animation.animIndex = animIndex;
@@ -45,7 +48,7 @@ void AnimationController::AddInFbx(int type, float speed, int animIndex)
 
 void AnimationController::Play(int type, bool isLoop)
 {
-
+	// 指定されたアニメーションが存在しない場合は処理しない
 	if (playType_ == type)
 	{
 		// 同じアニメーションだったら再生を継続する
@@ -84,7 +87,6 @@ void AnimationController::Play(int type, bool isLoop)
 
 	// アニメーションループ
 	isLoop_ = isLoop;
-
 }
 
 void AnimationController::Update(void)
@@ -140,12 +142,10 @@ void AnimationController::Update(void)
 
 	// アニメーション設定
 	MV1SetAttachAnimTime(modelId_, playAnim_.attachNo, playAnim_.step);
-
 }
 
 void AnimationController::Release(void)
 {
-
 	// 外部FBXのモデル(アニメーション)解放
 	for (const std::pair<int, Animation>& pair : animations_)
 	{
@@ -157,7 +157,6 @@ void AnimationController::Release(void)
 	
 	// 可変長配列をクリアする
 	animations_.clear();
-	
 }
 
 int AnimationController::GetPlayType(void) const
@@ -193,7 +192,6 @@ bool AnimationController::IsEnd(void) const
 	}
 
 	return ret;
-
 }
 
 bool AnimationController::IsEnd(int type) const
@@ -229,6 +227,7 @@ const AnimationController::Animation& AnimationController::GetPlayAnim(void) con
 
 const AnimationController::Animation& AnimationController::GetPlayAnim(int type) const
 {
+	// 指定されたアニメーションが存在しない場合は処理しない
 	auto it = animations_.find(type);
 	if (it == animations_.end()) {
 		return Animation();
@@ -238,6 +237,7 @@ const AnimationController::Animation& AnimationController::GetPlayAnim(int type)
 
 void AnimationController::SetSpecificTime(float state, float end, bool SpecificLoop)
 {
+	// 特定の時間をループするアニメーションを再生
 	SpState_ = state;
 	SpEnd_ = end;
 	SpecificLoop_ = SpecificLoop;
@@ -245,16 +245,19 @@ void AnimationController::SetSpecificTime(float state, float end, bool SpecificL
 
 void AnimationController::SetStateTime(float state)
 {
+	// アニメーションを始める時間を設定
 	playAnim_.step = state;
 }
 
 void AnimationController::SetIsStopFlager(bool isStop)
 {
+	// アニメーションを止めるフラグを設定
 	isStop_ = isStop;
 }
 
 void AnimationController::Add(int type, float speed, Animation& animation)
 {
+	// アニメーション追加の共通処理
 	animation.speed = speed;
 
 	if (animations_.count(type) == 0)

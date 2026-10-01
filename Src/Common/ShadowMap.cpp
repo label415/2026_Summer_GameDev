@@ -7,22 +7,23 @@ ShadowMap::ShadowMap(int x, int y)
 	shadowId_ = MakeShadowMap(x, y);
 }
 
-ShadowMap::~ShadowMap(void)
-{
-}
+ShadowMap::~ShadowMap(void){}
 
 void ShadowMap::AddShadowMapLight(VECTOR lightPos)
 {
+	// シャドウマップの光源を設定
 	SetShadowMapLightDirection(shadowId_, lightPos);
 }
 
 void ShadowMap::AddShadowMapDrawArea(VECTOR minPos, VECTOR maxPos)
 {
+	// シャドウマップの描画範囲を設定
 	SetShadowMapDrawArea(shadowId_, minPos, maxPos);
 }
 
 void ShadowMap::AddShadowMapAdjustDepth(float depth)
 {
+	// シャドウマップの深度を調整
 	SetShadowMapAdjustDepth(shadowId_, depth);
 }
 
@@ -53,6 +54,7 @@ void ShadowMap::EndShadow(void)
 
 void ShadowMap::TestDraw(void)
 {
+	// シャドウマップのテスト描画
 	TestDrawShadowMap(shadowId_,
 		0,
 		Application::SCREEN_SIZE_Y / 2,
@@ -62,5 +64,6 @@ void ShadowMap::TestDraw(void)
 
 void ShadowMap::Release(void)
 {
+	// シャドウマップの解放
 	DeleteShadowMap(shadowId_);
 }

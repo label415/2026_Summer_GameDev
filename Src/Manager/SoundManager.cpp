@@ -30,11 +30,9 @@ void SoundManager::Init(void)
     seMap_.clear();
 }
 
-// --- BGM機能の実装 ---
-
 void SoundManager::PlayBGM(int handle, int volume)
 {
-   
+	// 既存のBGMを停止して解放
     StopBGM();
     //ハンドルの複製
     bgm_ = DuplicateSoundMem(handle);
@@ -70,6 +68,7 @@ void SoundManager::ResumeBGM()
 
 void SoundManager::StopBGM()
 {
+	// BGMが再生中の場合のみ停止処理を行う
     if (bgm_ != -1)
     {
         StopSoundMem(bgm_);     
@@ -81,6 +80,7 @@ void SoundManager::StopBGM()
 
 void SoundManager::SetBGMVolume(int volume)
 {
+	//  BGMが再生中の場合のみ音量変更を行う
     if (bgm_ != -1) {
         
         ChangeVolumeSoundMem(CalcVolume(volume), bgm_);
@@ -89,6 +89,7 @@ void SoundManager::SetBGMVolume(int volume)
 
 void SoundManager::PlaySlowBGM(int handle,int slow)
 {
+	// 既存のBGMを停止して解放
     StopBGM();
     bgm_ = DuplicateSoundMem(handle);
     if (bgm_ != -1)
@@ -99,8 +100,6 @@ void SoundManager::PlaySlowBGM(int handle,int slow)
         PlaySoundMem(bgm_, DX_PLAYTYPE_LOOP, TRUE);
     }
 }
-
-// --- SE機能の実装 ---
 
 void SoundManager::PlaySE(SeId id, int handle, int volume)
 {
@@ -154,12 +153,14 @@ void SoundManager::AllStopSE()
 
 void SoundManager::SetSESpeed(SeId id, float speed)
 {
+	// SEが再生中であることを確認
     int freq = GetFrequencySoundMem(seMap_[id]);
     SetFrequencySoundMem(static_cast<int>(freq * speed), seMap_[id]);
 }
 
 void SoundManager::PlaySlowSE(SeId id, int handle, int volume,int slow)
 {
+	// 既存のSEを停止して解放
     StopSE(id);
     int newSe = DuplicateSoundMem(handle);
     if (newSe != -1)

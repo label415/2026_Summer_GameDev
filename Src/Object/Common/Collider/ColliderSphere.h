@@ -1,9 +1,10 @@
 #pragma once
 #include <DxLib.h>
 #include "ColliderBase.h"
+
 class ColliderModel;
-class ColliderSphere :
-    public ColliderBase
+
+class ColliderSphere : public ColliderBase
 {
 public:
     // コンストラクタ
@@ -32,14 +33,10 @@ public:
 
     //球体とモデルの衝突判定
     bool GetHitSpher_Model(const ColliderModel* colliderModel,bool isExclude = false, bool isTarget = false) const;
-
 protected:
-
     // デバッグ用描画
     void DrawDebug(int color) override;
-
 private:
-
     // デバッグ表示の球体ポリゴン分割数
     static constexpr int DIV_NUM = 6;
 

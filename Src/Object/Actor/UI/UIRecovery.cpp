@@ -6,7 +6,7 @@
 
 UIRecovery::UIRecovery(int cnt)
 	:
-	cnt_(cnt)
+	bottleCount_(cnt)
 {
 }
 
@@ -20,48 +20,50 @@ void UIRecovery::Update(void)
 
 void UIRecovery::Draw(void)
 {
+	// アイテムボックスを描画
 	DrawRotaGraph(
-		Application::SCREEN_SIZE_X / 8,
-		Application::SCREEN_SIZE_Y / 1.5f,
-		0.8f, 0.0f, imgBox_, true);
+		Application::SCREEN_SIZE_X / UI_POS_ADJ_X,
+		Application::SCREEN_SIZE_Y / UI_POS_ADJ_Y,
+		BOX_SIZE, 0.0f, imgBox_, true);
 
+	// 回復瓶を描画
 	DrawRotaGraph(
-		Application::SCREEN_SIZE_X / 8,
-		Application::SCREEN_SIZE_Y / 1.5f,
-		0.4f, 0.0f, imgBottle_, true);
+		Application::SCREEN_SIZE_X / UI_POS_ADJ_X,
+		Application::SCREEN_SIZE_Y / UI_POS_ADJ_Y,
+		BOTTLE_SIZE, 0.0f, imgBottle_, true);
 
+	// 回復瓶の数を描画
 	DrawFormatStringToHandle(
-		Application::SCREEN_SIZE_X / 6.5f,
-		Application::SCREEN_SIZE_Y / 1.5f,
-		0xffffff,
-		titleFont_,
+		Application::SCREEN_SIZE_X / FONT_POS_ADJ_X,
+		Application::SCREEN_SIZE_Y / FONT_POS_ADJ_Y,
+		FONT_COLOR,
+		font_,
 		cntfont_.c_str());
-
-
 }
 
 void UIRecovery::InitLoad(void)
 {
 	// フォントハンドルの作成
 	resMng_.Load(ResourceManager::SRC::FONT);
-	titleFont_ = FontManager::GetInstance().CreateMyFont(L"KazukiReiwa", 50, 50);
+	font_ = FontManager::GetInstance().CreateMyFont(fontName_, FONT_SIZE, FONT_SIZE);
 
+	// アイテムボックスと回復瓶の画像ハンドルを取得
 	imgBox_ = resMng_.Load(ResourceManager::SRC::UI_ITEMBOX).handleId_;
 	imgBottle_ = resMng_.Load(ResourceManager::SRC::UI_RECOVERY_BOTTLE).handleId_;
 }
 
-void UIRecovery::InitTransform(void)
-{
-}
+void UIRecovery::InitTransform(void){}
 
 void UIRecovery::InitPost(void)
 {
-	cntfont_ = std::to_wstring(cnt_);
+	// 回復瓶の数を文字列に変換
+	cntfont_ = std::to_wstring(bottleCount_);
 }
 
 void UIRecovery::SetBottleCnt(int cnt)
 {
-	if (cnt_ <= 0)return; 
-	cnt_ -= cnt;
-	cntfont_ = std::to_wstring(cnt_);
+	// 回復瓶の数を減らす
+	if (bottleCount_ <= 0)return; 
+	bottleCount_ -= cnt;
+	cntfont_ = std::to_wstring(bottleCount_);
 }

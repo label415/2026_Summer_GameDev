@@ -5,9 +5,7 @@
 
 class FpsController
 {
-
 public:
-
     // コンストラクタ
     // ( DxLib_Init前に呼ぶこと )
     FpsController(int fixedFps);
@@ -24,9 +22,7 @@ public:
 
     // 現在のFPSを取得
     float GetFPS(void) const { return fps_; }
-
 private:
-
     // 最大FPS
     static constexpr int MAX_FPS = 1200;
 
@@ -54,5 +50,4 @@ private:
 
     // 前フレームの時間
     std::chrono::high_resolution_clock::time_point prevTime_;
-
 };

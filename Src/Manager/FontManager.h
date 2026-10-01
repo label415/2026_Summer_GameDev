@@ -5,7 +5,6 @@
 class FontManager 
 {
 public:
-
 	// インスタンスを明示的に生成
 	static void CreateInstance(void);
 
@@ -23,9 +22,7 @@ public:
 
 	// リソースの破棄
 	void Destroy(void);
-
 private:
-
 	// 静的インスタンス
 	static FontManager* instance_;
 

@@ -8,12 +8,9 @@ Fader::Fader(void)
 	alpha_(0.0f),
 	isPreEnd_(true),
 	isEnd_(true)
-{
-}
+{}
 
-Fader::~Fader(void)
-{
-}
+Fader::~Fader(void){}
 
 Fader::STATE Fader::GetState(void) const
 {
@@ -35,13 +32,10 @@ void Fader::SetFade(STATE state)
 	}
 }
 
-void Fader::Init(void)
-{
-}
+void Fader::Init(void){}
 
 void Fader::Update(void)
 {
-
 	if (isEnd_)
 	{
 		return;
@@ -54,10 +48,10 @@ void Fader::Update(void)
 
 	case STATE::FADE_OUT:
 		alpha_ += SPEED_ALPHA;
-		if (alpha_ > 255)
+		if (alpha_ > MAX_ALPHA)
 		{
 			// フェード終了
-			alpha_ = 255;
+			alpha_ = MAX_ALPHA;
 			if (isPreEnd_)
 			{
 				// 1フレーム後(Draw後)に終了とする
@@ -86,12 +80,10 @@ void Fader::Update(void)
 	default:
 		return;
 	}
-
 }
 
 void Fader::Draw(void)
 {
-
 	switch (state_)
 	{
 	case STATE::NONE:
@@ -107,5 +99,4 @@ void Fader::Draw(void)
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 		break;
 	}
-
 }

@@ -1,14 +1,13 @@
 #pragma once
 #include <DxLib.h>
-#include "ColliderBase2D.h"
 #include "../../../Common/Vector2F.h"
+#include "ColliderBase2D.h"
 
 class Transform;
 
 class ColliderBox2D : public ColliderBase2D
 {
 public:
-
 	// コンストラクタ
 	ColliderBox2D(
 		TAG tag, const Vector2F& pos,
@@ -28,14 +27,10 @@ public:
 	{
 		return (px >= boxPos_.x && px <= Right() && py >= boxPos_.y && py <= Bottom());
 	}
-
 protected:
-
 	// デバッグ用描画
 	void DrawDebug(int color) override;
-
 private:
-
 	//ボックスの上下の座標
 	Vector2F boxPos_;
 	float boxWidth_;

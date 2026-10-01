@@ -1,9 +1,8 @@
 #include <DxLib.h>
-#include "../../Common/Transform.h"
 #include "../../../Utility/AsoUtility.h"
+#include "../../Common/Transform.h"
 #include "ColliderCapsule.h"
 #include "ColliderModel.h"
-
 
 ColliderCapsule::ColliderCapsule(
 	TAG tag, const Transform * follow,
@@ -14,44 +13,50 @@ ColliderCapsule::ColliderCapsule(
 	localPosDown_(localPosDown),
 	radius_(radius),
 	center_(AsoUtility::VECTOR_ZERO)
-{
-}
+{}
 
-ColliderCapsule::~ColliderCapsule(void)
-{
-}
+ColliderCapsule::~ColliderCapsule(void){}
+
 const VECTOR& ColliderCapsule::GetLocalPosTop(void) const
 {
 	return localPosTop_;
 }
+
 const VECTOR& ColliderCapsule::GetLocalPosDown(void) const
 {
 	return localPosDown_;
 }
+
 void ColliderCapsule::SetLocalPosTop(const VECTOR& pos)
 {
 	localPosTop_ = pos;
 }
+
 void ColliderCapsule::SetLocalPosDown(const VECTOR& pos)
 {
 	localPosDown_ = pos;
 }
+
 VECTOR ColliderCapsule::GetPosTop(void) const
 {
 	return GetRotPos(localPosTop_);
 }
+
 VECTOR ColliderCapsule::GetPosDown(void) const
 {
 	return GetRotPos(localPosDown_);
 }
+
 float ColliderCapsule::GetRadius(void) const
 {
 	return radius_;
 }
+
 void ColliderCapsule::SetRadius(float radius)
 {
 	radius_ = radius;
 }
+
 float ColliderCapsule::GetHeight(void) const
 {
 	return localPosTop_.y;
@@ -59,6 +64,7 @@ float ColliderCapsule::GetHeight(void) const
 
 VECTOR& ColliderCapsule::GetCenter(void)
 {
+	// 上下の座標から中心座標を計算
 	VECTOR top = GetPosTop();
 	VECTOR down = GetPosDown();
 	VECTOR diff = VSub(top, down);
@@ -162,7 +168,6 @@ void ColliderCapsule::PushBackAlongNormal(const ColliderCapsule* colliderCapsule
 			transform.pos = VAdd(transform.pos, VScale(pushDir, overlap));
 		}
 	}
-
 }
 
 bool ColliderCapsule::IsHit(const ColliderModel* colliderModel, bool isExclude, bool isTarget) const
@@ -198,16 +203,17 @@ bool ColliderCapsule::IsHit(const ColliderModel* colliderModel, bool isExclude, 
 	return ret;
 }
 
-
-
 void ColliderCapsule::DrawDebug(int color)
 {
 	// 上の球体
 	VECTOR pos1 = GetPosTop();
 	DrawSphere3D(pos1, radius_, 5, color, color, false);
+
 	// 下の球体
 	VECTOR pos2 = GetPosDown();
 	DrawSphere3D(pos2, radius_, 5, color, color, false);
+
+	// 球体を繋ぐ線
 	VECTOR dir;
 	VECTOR s;
 	VECTOR e;
@@ -216,21 +222,25 @@ void ColliderCapsule::DrawDebug(int color)
 	s = VAdd(pos1, VScale(dir, radius_));
 	e = VAdd(pos2, VScale(dir, radius_));
 	DrawLine3D(s, e, color);
+
 	// 球体を繋ぐ線(X-)
 	dir = follow_->GetLeft();
 	s = VAdd(pos1, VScale(dir, radius_));
 	e = VAdd(pos2, VScale(dir, radius_));
 	DrawLine3D(s, e, color);
+
 	// 球体を繋ぐ線(Z+)
 	dir = follow_->GetForward();
 	s = VAdd(pos1, VScale(dir, radius_));
 	e = VAdd(pos2, VScale(dir, radius_));
 	DrawLine3D(s, e, color);
+
 	// 球体を繋ぐ線(Z-)
 	dir = follow_->GetBack();
 	s = VAdd(pos1, VScale(dir, radius_));
 	e = VAdd(pos2, VScale(dir, radius_));
 	DrawLine3D(s, e, color);
+
 	// カプセルの中心
 	DrawSphere3D(GetCenter(), 5.0f, 10, color, color, true);
 }

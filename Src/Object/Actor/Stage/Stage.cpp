@@ -4,16 +4,13 @@
 #include "../../Common/Collider/ColliderSphere.h"
 #include "Stage.h"
 
-Stage::Stage(void)
-{
-}
+Stage::Stage(void){}
 
-Stage::~Stage(void)
-{
-}
+Stage::~Stage(void){}
 
 void Stage::Update(void)
 {
+	// 衝突判定
 	Collision();
 }
 
@@ -31,6 +28,7 @@ void Stage::Draw(void)
 	}
 #endif // _DEBUG
 
+	// モデル描画
 	if (transform_.modelId != -1)
 	{
 		MV1DrawModel(transform_.modelId);
@@ -39,14 +37,16 @@ void Stage::Draw(void)
 
 void Stage::InitLoad(void)
 {
+	// モデルのロード
 	transform_.SetModel(resMng_.LoadModelDuplicate(
 		ResourceManager::SRC::MODEL_MAIN_STAGE));
 }
 
 void Stage::InitTransform(void)
 {
-	transform_.scl = { 1.0f, 1.0f, 1.0f };
-	transform_.pos = { 0.0f, -100.0f, 0.0f };
+	// 大きさ、回転、座標の初期化
+	transform_.scl = STAGE_SCALE;
+	transform_.pos = STAGE_POS;
 	transform_.Update();
 }
 
@@ -71,27 +71,27 @@ void Stage::InitCollider(void)
 		colModel->AddTargetFrameIds(name);
 	}
 
+	// 自身のコライダに登録
 	std::vector<ColliderBase*> colModels;
 	colModels.push_back(colModel);
 	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::MODEL), colModels);
 }
 
-void Stage::InitAnimation(void)
-{
-}
+void Stage::InitAnimation(void){}
 
-void Stage::InitPost(void)
-{
-}
+void Stage::InitPost(void){}
 
 void Stage::Collision(void)
 {
+	// 対象フレームの不透明度率をリセット
 	for (auto& frameIdx : frameOpacityRate_) {
 		MV1SetFrameOpacityRate(transform_.modelId, frameIdx, 1.0f);
 	}
 
+	// 対象フレームの不透明度率をクリア
 	frameOpacityRate_.clear();
 
+	// 衝突判定
 	for (const auto& hitCol : hitColliders_)
 	{
 		for(const auto& i : hitCol.second)
@@ -111,6 +111,7 @@ void Stage::Collision(void)
 				colliderSphere->GetPos(),
 				colliderSphere->GetRadius());
 
+			// 検出した地面ポリゴン情報の数だけループ
 			for (int i = 0; i < hits.HitNum; i++)
 			{
 				const auto& hit = hits.Dim[i];

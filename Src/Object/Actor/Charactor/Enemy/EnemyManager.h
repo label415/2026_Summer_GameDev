@@ -8,7 +8,6 @@ class ColliderBase;
 class EnemyManager
 {
 public:
-
 	// コンストラクタ
 	EnemyManager(void);
 
@@ -45,6 +44,7 @@ public:
 	// エネミー生成
 	EnemyBase* Create(const EnemyBase::EnemyData& data);
 
+	// 衝突対象となるコライダを削除
 	void RemoveCollider(ColliderBase::SHAPE shape, ColliderBase::TAG tag);
 private:
 	// エネミー

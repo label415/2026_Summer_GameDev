@@ -7,8 +7,8 @@
 UISt::UISt(float posX, float posY, float flameScl,
 	float stSclX, float stSclY, float st)
 	:
-	pos_(posX, posY),
-	st_(st),
+	stPos_(posX, posY),
+	stCurrent_(st),
 	flameScl_(flameScl),
 	stSclX_(stSclX),
 	stSclY_(stSclY)
@@ -16,29 +16,26 @@ UISt::UISt(float posX, float posY, float flameScl,
 	active_ = true;
 }
 
-UISt::~UISt(void)
-{
-}
+UISt::~UISt(void){}
 
-void UISt::Update(void)
-{
-}
+void UISt::Update(void){}
 
 void UISt::Draw(void)
 {
 	// 背景バーの描画
 	DrawRotaGraph(
-		pos_.x,
-		pos_.y,
-		flameScl_, 0.0f, stUi1_, true);
+		stPos_.x,
+		stPos_.y,
+		flameScl_, 0.0f, flameImg_, true);
 
-	float hpRate = st_ / 100.0f;
+	// 現在のスタミナ値に応じたバーの描画
+	float hpRate = stCurrent_ / MAX_ST;
 	float realHalfWidth = IMG_SIZE_X / stSclX_;
 	float realHalfHeight = IMG_SIZE_Y / stSclY_;
 
-	float left = pos_.x - realHalfWidth;
-	float top = pos_.y - realHalfHeight;
-	float bottom = pos_.y + realHalfHeight;
+	float left = stPos_.x - realHalfWidth;
+	float top = stPos_.y - realHalfHeight;
+	float bottom = stPos_.y + realHalfHeight;
 
 	int srcWidth = static_cast<int>(IMG_SIZE_X * hpRate);
 	float currentBarRight = left + (realHalfWidth * 2.0f * hpRate);
@@ -49,34 +46,33 @@ void UISt::Draw(void)
 		currentBarRight, bottom,
 		0, 0, srcWidth,
 		static_cast<int>(IMG_SIZE_Y),
-		stUi2_, true);
+		suUiImg_, true);
 }
 
 void UISt::SetSt(float delta)
 {
-	st_ -= delta;
-	if (st_ < MIN_ST)
+	// スタミナの増減
+	stCurrent_ -= delta;
+	if (stCurrent_ < MIN_ST)
 	{
-		st_ = MIN_ST;
+		stCurrent_ = MIN_ST;
 	}
 }
 
 void UISt::SetHpAbsolute(float hp)
 {
-	st_ += hp;
-	if (st_ > MAX_ST) st_ = MAX_ST;
+	// スタミナの絶対値設定
+	stCurrent_ += hp;
+	if (stCurrent_ > MAX_ST) stCurrent_ = MAX_ST;
 }
 
 void UISt::InitLoad(void)
 {
-	stUi1_ = resMng_.Load(ResourceManager::SRC::UI_BAR_FRAME).handleId_;
-	stUi2_ = resMng_.Load(ResourceManager::SRC::UI_ST_BAR).handleId_;
+	// リソースのロード
+	flameImg_ = resMng_.Load(ResourceManager::SRC::UI_BAR_FRAME).handleId_;
+	suUiImg_ = resMng_.Load(ResourceManager::SRC::UI_ST_BAR).handleId_;
 }
 
-void UISt::InitTransform(void)
-{
-}
+void UISt::InitTransform(void){}
 
-void UISt::InitPost(void)
-{
-}
+void UISt::InitPost(void){}

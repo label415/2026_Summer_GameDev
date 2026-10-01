@@ -1029,9 +1029,9 @@ void EnemyDragon::UpdateDead(void)
 
 	if (anim_->IsEnd())
 	{
-		i_ += 0.3 * SceneManager::GetInstance().GetDeltaTime();
-		if (i_ > 1.8f) {
-			i_ = 1.8f;
+		deathAnimationTime_ += 0.3 * SceneManager::GetInstance().GetDeltaTime();
+		if (deathAnimationTime_ > 1.8f) {
+			deathAnimationTime_ = 1.8f;
 			ChangeState(STATE::END);
 		}
 	}

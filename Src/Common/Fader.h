@@ -2,9 +2,7 @@
 
 class Fader
 {
-
 public:
-
 	// フェードが進む速さ
 	static constexpr float SPEED_ALPHA = 15.0f;
 
@@ -39,8 +37,9 @@ public:
 
 	// 描画
 	void Draw(void);
-
 private:
+	//透明度最大値
+	static constexpr float MAX_ALPHA = 255.0f;
 
 	// 状態
 	STATE state_;
@@ -54,5 +53,4 @@ private:
 
 	// フェード処理の終了判定
 	bool isEnd_;
-
 };

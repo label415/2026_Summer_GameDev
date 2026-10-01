@@ -20,27 +20,43 @@
 #include "Player.h"
 
 Player::Player(void)
+    : animLockPos_(AsoUtility::VECTOR_ZERO)
+    , stRecoverTime_(0.0f)
+    , effType_(EFFECT::NONE)
+    , deathAnimationTime_(0.0f)
+    , invincibleTimer_(0.0f)
+    , isComboNext_(false)
+    , isVinclible_(false)
+    , stateAtkCombo_(STATE_ATTACK_COMBO::COMBO_1)
+    , state_(STATE::IDLE)
+    , uiRecovery_(nullptr)
+    , wepon_(nullptr)
+    , uiSt_(nullptr)
 {
-	wepon_ = nullptr;
-	uiSt_ = nullptr;
 }
 
-Player::~Player(void)
-{
-}
+Player::~Player(void){}
 
 void Player::Draw(void)
 {
+	// 基底クラスの描画処理
 	CharactorBase::Draw();
 
-	wepon_->Draw();
+	// 武器描画
+	if (wepon_) {
+		wepon_->Draw();
+	}
 }
 
 void Player::Release(void)
 {
-	transform_.Release();
+	// 基底クラスの解放処理
+	CharactorBase::Release();
 
+	// 武器の解放処理
 	wepon_->Release();
+
+	// 各ポインタ変数開放
 	delete wepon_;
 	delete uiHp_;
 	delete uiRecovery_;
@@ -52,6 +68,7 @@ void Player::Release(void)
 
 void Player::HitDamage(bool isHit)
 {
+	// プレイヤーと敵の座標を取得
 	VECTOR playerPos = transform_.pos;
 	VECTOR enemyPos = AsoUtility::VECTOR_ZERO;
 	if (targetTrans_ != nullptr)
@@ -80,7 +97,7 @@ void Player::HitDamage(bool isHit)
 		{
 			for (const auto& i : hitCol.second)
 			{
-
+				// 敵本体との当たり判定
 				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY) {
 
@@ -89,32 +106,39 @@ void Player::HitDamage(bool isHit)
 					if (colliderCapsule2 == nullptr) continue;
 
 					auto hits = HitCheck_Capsule_Capsule(
-						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
-						colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius());
+						colliderCapsule1->GetPosTop(),
+						colliderCapsule1->GetPosDown(),
+						colliderCapsule1->GetRadius(),
+						colliderCapsule2->GetPosTop(),
+						colliderCapsule2->GetPosDown(),
+						colliderCapsule2->GetRadius());
 
 					if (hits) {
-						if (isHit && !isV_) {
+						if (isHit && !isVinclible_) {
 							anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 							state_ = STATE::DOWN;
-							uiHp_->SetHp(20.0f);
+							uiHp_->SetHp(DAMAGE_ENEMY_BODY);
 							effType_ = EFFECT::BLOOD;
 							effect_->Play(static_cast<int>(effType_));
-							effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), VGet(5.0f, 5.0f, 5.0f));
+							effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
 							int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
-							int volume_ = 50;
-							SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, volume_);
+							SoundManager::GetInstance().PlaySE(
+								SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
 							return;
 						}
 						else {
-							colliderCapsule1->PushBackAlongNormal(colliderCapsule2, transform_, 20, false, false);
+							colliderCapsule1->PushBackAlongNormal(
+								colliderCapsule2, transform_, PUSH_BACK_POWER, false, false);
 						}
 					}
 				}
 
-				if (isV_) continue;
+				// 無敵状態なら当たり判定を無視
+				if (isVinclible_) continue;
 
 				bool isBlockedByWall = false;
-
+				
+				// 壁による遮蔽判定
 				for (const auto& stageColPair : hitColliders_)
 				{
 					for (const auto& stageCol : stageColPair.second)
@@ -135,8 +159,10 @@ void Player::HitDamage(bool isHit)
 					if (isBlockedByWall) break;
 				}
 
+				// 壁による遮蔽がある場合は当たり判定を無視
 				if (isBlockedByWall) continue;
 
+				// 敵カプセルコライダーとの当たり判定
 				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
 
@@ -145,20 +171,26 @@ void Player::HitDamage(bool isHit)
 					if (colliderCapsule2 == nullptr) continue;
 
 					auto hits = HitCheck_Capsule_Capsule(
-						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
-						colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius());
+						colliderCapsule1->GetPosTop(),
+						colliderCapsule1->GetPosDown(),
+						colliderCapsule1->GetRadius(),
+						colliderCapsule2->GetPosTop(),
+						colliderCapsule2->GetPosDown(),
+						colliderCapsule2->GetRadius());
 
 					if (hits) {
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
-						uiHp_->SetHp(35.0f);
-						int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
-						int volume_ = 50;
-						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, volume_);
+						uiHp_->SetHp(DAMAGE_ENEMY_WEAPON);
+						int bgm_ = resMng_.Load(
+							ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
+						SoundManager::GetInstance().PlaySE(
+							SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
 						return;
 					}
 				}
 
+				// 敵球体コライダーとの当たり判定
 				if (i->GetShape() == ColliderBase::SHAPE::SPHERE
 					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
 
@@ -167,16 +199,19 @@ void Player::HitDamage(bool isHit)
 					if (colliderSphere == nullptr) continue;
 
 					auto hits = HitCheck_Sphere_Capsule(
-						colliderSphere->GetPos(), colliderSphere->GetRadius(),
-						colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius());
+						colliderSphere->GetPos(),
+						colliderSphere->GetRadius(),
+						colliderCapsule1->GetPosTop(),
+						colliderCapsule1->GetPosDown(),
+						colliderCapsule1->GetRadius());
 
 					if (hits) {
 						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 						state_ = STATE::DOWN;
-						uiHp_->SetHp(35.0f);
+						uiHp_->SetHp(DAMAGE_ENEMY_WEAPON);
 						int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
-						int volume_ = 50;
-						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, volume_);
+						SoundManager::GetInstance().PlaySE(
+							SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
 						return;
 					}
 				}
@@ -187,9 +222,11 @@ void Player::HitDamage(bool isHit)
 
 void Player::DrawHp(void)
 {
+	// HPとスタミナのUI描画
 	if (uiHp_) { uiHp_->Draw(); }
 	if (uiSt_) { uiSt_->Draw(); }
 
+	// 回復瓶のUI描画
 	if (uiRecovery_) { uiRecovery_->Draw(); }
 }
 
@@ -202,33 +239,37 @@ void Player::InitLoad(void)
 	transform_.SetModel(resMng_.LoadModelDuplicate(
 		ResourceManager::SRC::MODEL_PLAYER));
 
-	wepon_ = new WeponBlade(transform_, 48);
+	// 武器
+	wepon_ = new WeponBlade(transform_, WEAPON_ATTACH_FRAME_NO);
 	wepon_->Load();
 
-	uiRecovery_ = new UIRecovery(6);
+	// 回復瓶UI
+	uiRecovery_ = new UIRecovery(INITIAL_RECOVERY_BOTTLE_COUNT);
 	uiRecovery_->Load();
 
+	// HP UI を画面左上に表示
 	uiHp_ = new UIHp(
-		Application::SCREEN_SIZE_X / 4, 20,
-		0.7f, 2.9f, 4.0f);
+		Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV, UI_HP_POS_Y,
+		UI_SCALE_X, UI_SCALE_Y, UI_SCALE_Z);
 	uiHp_->Load();
 
 	// スタミナUIを HP の下に表示
 	uiSt_ = new UISt(
-		Application::SCREEN_SIZE_X / 4, 60,
-		0.7f, 2.9f, 4.0f);
+		Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV, UI_ST_POS_Y,
+		UI_SCALE_X, UI_SCALE_Y, UI_SCALE_Z);
 	uiSt_->Load();
 }
 
 void Player::InitTransform(void)
 {
-	transform_.scl = { 1.0f, 1.0f, 1.0f };
+	// トランスフォームの初期化
+	transform_.scl = AsoUtility::VECTOR_ONE;
 	transform_.quaRot = Quaternion::Identity();
 	transform_.quaRotLocal = Quaternion::Identity();
 	transform_.quaRotLocal =
-		Quaternion::Mult(transform_.quaRotLocal,   
-			Quaternion::AngleAxis(AsoUtility::Deg2RadF(180.0f), AsoUtility::AXIS_Y));
-	transform_.pos = { 0.0f, 0.0f, -500.0f };
+		Quaternion::Mult(transform_.quaRotLocal,
+			Quaternion::AngleAxis(AsoUtility::Deg2RadF(ANGLE_AXIS_Y), AsoUtility::AXIS_Y));
+	transform_.pos = INITIAL_POS;
 	transform_.Update();
 }
 
@@ -242,7 +283,6 @@ void Player::InitCollider(void)
 	std::vector<ColliderBase*> colLines;
 	colLines.push_back(colLine);
 	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::LINE), colLines);
-
 
 	// カプセルコライダ
 	ColliderCapsule* colCapsule = new ColliderCapsule(
@@ -260,25 +300,25 @@ void Player::InitAnimation(void)
 	anim_ = new AnimationController(transform_.modelId);
 
 	anim_->Add(static_cast<int>(ANIM_TYPE::IDLE),
-		30.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_IDLE));
+		ANIM_SPEED_IDLE, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_IDLE));
 	anim_->Add(static_cast<int>(ANIM_TYPE::RUN),
-		25.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
+		ANIM_SPEED_RUN, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
 	anim_->Add(static_cast<int>(ANIM_TYPE::FAST_RUN),
-		30.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
+		ANIM_SPEED_FAST_RUN, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
 	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK_1),
-		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_1));
+		ANIM_SPEED_ATTACK_1, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_1));
 	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK_2),
-		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_2));
+		ANIM_SPEED_ATTACK_2, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_2));
 	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK_3),
-		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_3));
+		ANIM_SPEED_ATTACK_3, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_3));
 	anim_->Add(static_cast<int>(ANIM_TYPE::EVASION),
-		80.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_EVASION));
+		ANIM_SPEED_EVASION, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_EVASION));
 	anim_->Add(static_cast<int>(ANIM_TYPE::DOWN),
-		50.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_DOWN));
+		ANIM_SPEED_DOWN, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_DOWN));
 	anim_->Add(static_cast<int>(ANIM_TYPE::UP),
-		100.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_UP));
+		ANIM_SPEED_UP, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_UP));
 	anim_->Add(static_cast<int>(ANIM_TYPE::RECOVERY),
-		40.0f, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RECOVERY));
+		ANIM_SPEED_RECOVERY, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RECOVERY));
 	anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 }
 
@@ -291,25 +331,31 @@ void Player::InitPost(void)
 	// 移動量
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	//状態
+	// 状態
 	state_ = STATE::IDLE;
 
-	//武器
+	// 武器
 	wepon_->Init();
 
+	// HPUI
 	uiHp_->Init();
 
+	// スタミナUI
 	uiSt_->Init();
 
-	//クールタイム
-	ct_ = 0.0f;
+	// クールタイム
+	stRecoverTime_ = 0.0f;
 
-	i_ = 0.0f;
+	// 死亡アニメーション再生時間
+	deathAnimationTime_ = 0.0f;
 
+	// 無敵時間
 	invincibleTimer_ = 0.0f;
 
+	// 回復瓶UI
 	uiRecovery_->Init();
 
+	// エフェクト
 	effType_ = EFFECT::NONE;
 	effect_ = new EffectController();
 	effect_->Add(
@@ -319,25 +365,38 @@ void Player::InitPost(void)
 		static_cast<int>(EFFECT::HP_ABSOLUTE),
 		(Application::PATH_EFFECT + L"Absolute.efkefc"));
 
+	// 攻撃コンボデータの初期化
 	ATTACK_COMBO data;
-	// 横切り攻撃(アニメーション時間：0.0～72.0)
-	// コンボ受付開始、衝突判定開始
+	// 横切り攻撃
 	data = {
 		ANIM_TYPE::ATTACK_1,
-		20.0f, 50.0f, 15.0f, 38.0f, 55.0f, 8.0f,
-		STATE_ATTACK_COMBO::COMBO_2, [this](void) { return false; }, false,
+		COMBO1_STEP_INPUT_START,
+		COMBO1_STEP_INPUT_END,
+		COMBO1_STEP_COL_START,
+		COMBO1_STEP_COL_END,
+		COMBO1_STEP_INTERRUPT,
+		COMBO1_MOVE_SPEED,
+		STATE_ATTACK_COMBO::COMBO_2,
+		[this](void) { return false; },
+		false,
 		false,
 		nullptr, nullptr, nullptr, nullptr,
 	};
 	atkComboData_.emplace(
 		STATE_ATTACK_COMBO::COMBO_1, data);
 
-	// 縦切り攻撃(アニメーション時間：0.0～68.0)
-	// コンボ受付開始、衝突判定開始
+	// 縦切り攻撃
 	data = {
 		ANIM_TYPE::ATTACK_2,
-		15.0f, 40.0f, 18.0f, 32.0f, 50.0f, 5.0f,
-		STATE_ATTACK_COMBO::COMBO_3, [this](void) { return false; }, false,
+		COMBO2_STEP_INPUT_START,
+		COMBO2_STEP_INPUT_END,
+		COMBO2_STEP_COL_START,
+		COMBO2_STEP_COL_END,
+		COMBO2_STEP_INTERRUPT,
+		COMBO2_MOVE_SPEED,
+		STATE_ATTACK_COMBO::COMBO_3,
+		[this](void) { return false; },
+		false,
 		false,
 		nullptr, nullptr, nullptr, nullptr,
 	};
@@ -345,26 +404,36 @@ void Player::InitPost(void)
 		STATE_ATTACK_COMBO::COMBO_2, data);
 
 	// 回転攻撃
-	// コンボ受付開始、衝突判定開始
 	data = {
 		ANIM_TYPE::ATTACK_3,
-		0.0f, 0.0f, 26.0f, 34.0f, 95.0f, 12.0f,
-		STATE_ATTACK_COMBO::MAX, [this]() { return false; }, false,
+		COMBO3_STEP_INPUT_START,
+		COMBO3_STEP_INPUT_END,
+		COMBO3_STEP_COL_START,
+		COMBO3_STEP_COL_END,
+		COMBO3_STEP_INTERRUPT,
+		COMBO3_MOVE_SPEED,
+		STATE_ATTACK_COMBO::MAX,
+		[this]() { return false; },
+		false,
 		true,
 		nullptr, nullptr, nullptr, nullptr,
 	};
 	atkComboData_.emplace(
 		STATE_ATTACK_COMBO::COMBO_3, data);
 
+	// 攻撃コンボ状態の初期化
 	stateAtkCombo_ = STATE_ATTACK_COMBO::COMBO_1;
+	// 攻撃コンボの次の攻撃を受け付けるかどうかのフラグを初期化
 	isComboNext_ = false;
 }
 
 void Player::ProcessMove(void)
 {
+	// 移動量の初期化
 	moveSpeed_ = 0.0f;
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
+	// 移動状態以外ではSEを停止
 	if (state_ != STATE::IDLE
 		&& state_ != STATE::RUN
 		&& state_ != STATE::FAST_RUN) {
@@ -373,7 +442,7 @@ void Player::ProcessMove(void)
 		return;
 	}
 
-	// ★ 共通化した関数から方向（カメラ/ターゲット変換済み）を取得
+	// 共通化した関数から方向（カメラ/ターゲット変換済み）を取得
 	VECTOR inputDir = GetInputDirection();
 
 	if (!AsoUtility::EqualsVZero(inputDir))
@@ -387,30 +456,30 @@ void Player::ProcessMove(void)
 			VECTOR targetDir = GetTargetDir();
 			float targetAngleY = atan2f(targetDir.x, targetDir.z);
 			Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
-			transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetRot, 0.1f);
+			transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetRot, ROT_TARGET_SLERP_RATE);
 		}
-
+		
+		// ダッシュ入力判定
 		auto& ins = InputManager::GetInstance();
 		bool isR = ins.IsNew(KEY_INPUT_LSHIFT)
 			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 
-		if (isR && ct_ <= 0.0f) {
+		// スタミナが回復中で、かつスタミナが残っている場合はダッシュ可能
+		if (isR && stRecoverTime_ <= 0.0f) {
 			moveSpeed_ = SPEED_DASH;
 			state_ = STATE::FAST_RUN;
 			uiSt_->SetSt(CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
 			anim_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
 			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WAKE);
 			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_RUN).handleId_;
-			int volume_ = 50;
-			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_RAN, bgm_, volume_);
+			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_RAN, bgm_, SE_VOLUME_RUN);
 		}
 		else {
 			moveSpeed_ = SPEED_MOVE;
 			anim_->Play(static_cast<int>(ANIM_TYPE::RUN));
 			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
 			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_WAKE).handleId_;
-			int volume_ = 50;
-			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_WAKE, bgm_, volume_);
+			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_WAKE, bgm_, SE_VOLUME_WALK);
 		}
 
 		movePow_ = VScale(moveDir_, moveSpeed_);
@@ -425,25 +494,27 @@ void Player::ProcessMove(void)
 
 void Player::ProcessAttack(void)
 {
+	// 攻撃入力判定
 	auto& ins = InputManager::GetInstance();
 	bool isAttackInput = false;
 
-	// 1. 攻撃入力判定
+	// 攻撃入力判定
 	if (uiSt_->GetSt() >= 0) {
 		isAttackInput = ins.IsClickMouseLeft()
 			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
 	}
 
-	// 2. 通常状態（移動中など）からの新規攻撃開始
+	// 通常状態（移動中など）からの新規攻撃開始
 	if (isAttackInput && !isJump_
 		&& (state_ == STATE::IDLE || state_ == STATE::RUN || state_ == STATE::FAST_RUN))
 	{
+		// 攻撃状態に遷移
 		state_ = STATE::ATTACK;
-		stateAtkCombo_ = STATE_ATTACK_COMBO::COMBO_1; // 最初からスタート
+		stateAtkCombo_ = STATE_ATTACK_COMBO::COMBO_1;
 
 		// データの参照と初期設定
 		auto& comboData = atkComboData_.at(stateAtkCombo_);
-		comboData.isNextCombo = false; // 次コンボフラグをリセット
+		comboData.isNextCombo = false;
 
 		uiSt_->SetSt(CONSUMPTION_ST_ATTACK);
 
@@ -459,40 +530,37 @@ void Player::ProcessAttack(void)
 	// 攻撃状態でなければ処理終了
 	if (state_ != STATE::ATTACK) return;
 
-	// --- ここから STATE::ATTACK の更新処理 ---
-
+	// 現在のコンボデータを取得
 	auto& comboData = atkComboData_.at(stateAtkCombo_);
 	float currentStep = anim_->GetPlayAnim().step;
 
 	if (comboData.moveSpeed > 0.0f && currentStep < comboData.stepCollisionStart)
 	{
-		// 1. 入力方向を取得
+		// 入力方向を取得
 		VECTOR inputDir = GetInputDirection();
 
-		// 2. 「入力がある場合」のみ回転と踏み込み移動を行う
-		// （攻撃開始直後や入力がない状態では移動・回転させない）
+		// 入力方向がゼロベクトルでない場合のみ処理
 		if (!AsoUtility::EqualsVZero(inputDir))
 		{
-			// ① 入力方向へ回転（Y軸）
+			// 入力方向へ回転
 			float targetAngleY = atan2f(inputDir.x, inputDir.z);
 			Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
 			transform_.quaRot = targetRot;
 
-			// ② 向いた正面方向へ向かって踏み込み移動（Lerp補間）
+			// 向いた正面方向へ向かって踏み込み移動
 			VECTOR forward = transform_.GetForward();
 			VECTOR targetPos = VAdd(transform_.pos, VScale(forward, comboData.moveSpeed));
 
-			transform_.pos = AsoUtility::Lerp(transform_.pos, targetPos, 0.2f);
+			transform_.pos = AsoUtility::Lerp(transform_.pos, targetPos, ATTACK_STEP_LERP_RATE);
 		}
 	}
 
-	// 3. 追加更新処理（ガードキャンセルや特殊効果など）
+	// 追加更新処理
 	if (comboData.extraUpdate) {
 		comboData.extraUpdate();
 	}
 
-	// 4. コンボ入力受付判定
-	// 構造体の IsValidCombo() を使用
+	// コンボ入力受付判定
 	if (comboData.IsValidCombo(currentStep)) {
 		// 通常の攻撃入力、または固有の条件（actionNextCombo）を満たした場合
 		bool isCustomAction = comboData.actionNextCombo ? comboData.actionNextCombo() : false;
@@ -501,8 +569,7 @@ void Player::ProcessAttack(void)
 		}
 	}
 
-	// 5. 衝突判定（Hitbox）の処理
-	// 構造体の IsValidCollsion() を使用
+	// 衝突判定（Hitbox）の処理
 	if (comboData.IsValidCollsion(currentStep)) {
 		wepon_->SetCollider();
 	}
@@ -510,14 +577,14 @@ void Player::ProcessAttack(void)
 		wepon_->ClearCollider();
 	}
 
-	// 6. SE再生処理（例：ステップ固定または必要に応じて条件化）
-	if (currentStep == 10.0f) {
+	// SE再生処理
+	if (currentStep == ATTACK_SE_TRIGGER_STEP) {
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_WEAPON_1).handleId_;
-		int volume_ = 30;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEPON_SE1, bgm_, volume_);
+		SoundManager::GetInstance().PlaySE(
+			SoundManager::SeId::PLAYER_WEPON_SE1, bgm_, SE_VOLUME_ATTACK);
 	}
 
-	// 7. コンボ遷移チェック（割り込みタイミング or アニメーション終了時）
+	// コンボ遷移チェック
 	bool canInterrupt = comboData.IsValidInterrupt(currentStep);
 	bool isAnimEnd = anim_->IsEnd();
 
@@ -526,7 +593,7 @@ void Player::ProcessAttack(void)
 		canInterrupt = true;
 	}
 
-	// 「割り込み可能ステップに達している」かつ「入力済み（isNextCombo）」または「アニメーション終了」の時にチェック
+	// 次のコンボへ繋ぐ場合、またはアニメーションが終了した場合に処理
 	if ((canInterrupt && comboData.isNextCombo) || isAnimEnd) {
 		// 次のコンボへ繋ぐ場合
 		if (comboData.isNextCombo && comboData.nextCombo != STATE_ATTACK_COMBO::MAX) {
@@ -536,7 +603,7 @@ void Player::ProcessAttack(void)
 
 			// 新しいコンボデータのセットアップ
 			auto& nextData = atkComboData_.at(stateAtkCombo_);
-			nextData.isNextCombo = false; // フラグ初期化
+			nextData.isNextCombo = false;
 
 			uiSt_->SetSt(CONSUMPTION_ST_ATTACK);
 
@@ -546,8 +613,9 @@ void Player::ProcessAttack(void)
 
 			anim_->Play(static_cast<int>(nextData.animType), false);
 		}
-		// コンボを継続しない / 最終段が終わった場合（かつアニメーションが終了している場合）
-		else if (isAnimEnd || (comboData.isExtraEnd && comboData.isExtraEnd())) {
+		// アニメーションが終了した場合、または追加終了条件を満たした場合
+		else if (isAnimEnd || (comboData.isExtraEnd && comboData.isExtraEnd()))
+		{
 			state_ = STATE::IDLE;
 			stateAtkCombo_ = STATE_ATTACK_COMBO::COMBO_1;
 			comboData.isNextCombo = false;
@@ -558,56 +626,63 @@ void Player::ProcessAttack(void)
 
 void Player::ProcessEvasion(void)
 {
-
+	// 回避入力判定
 	bool isP = false;
 	auto& ins = InputManager::GetInstance();
 
+	// スタミナが残っている場合のみ回避可能
 	if (uiSt_->GetSt() >= 0) {
 		isP = ins.IsTrgDown(KEY_INPUT_SPACE)
 			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT);
 	}
 
+	// 回避入力があり、かつ回避状態でない場合、かつ通常状態の場合に回避開始
 	if (isP && !isJump_
 		&& (state_ == STATE::IDLE
-		|| state_ == STATE::RUN
-		|| state_ == STATE::FAST_RUN))
+			|| state_ == STATE::RUN
+			|| state_ == STATE::FAST_RUN))
 	{
+		// 回避状態に遷移
 		state_ = STATE::EVASION;
 		lastQrot_ = transform_.quaRotLocal;
 		transform_.quaRotLocal =
 			Quaternion::Mult(transform_.quaRotLocal,
-				Quaternion::AngleAxis(AsoUtility::Deg2RadF(100.0f), AsoUtility::AXIS_Y));
+				Quaternion::AngleAxis(AsoUtility::Deg2RadF(AVOIDANCE_ANGLE_AXIS_Y), AsoUtility::AXIS_Y));
 		uiSt_->SetSt(CONSUMPTION_ST_EVASION);
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_EVASION).handleId_;
-		int volume_ = 50;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_AVE, bgm_, volume_);
-
+		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_AVE, bgm_, SE_VOLUME_EVASION);
 	}
 
+	// 回避状態でなければ処理終了
 	if (state_ != STATE::EVASION) return;
 
+	// 回避アニメーション再生
 	anim_->Play(
 		static_cast<int>(ANIM_TYPE::EVASION), false);
 
-	moveSpeed_ = 10.0f;
+	// 回避中は無敵状態
+	moveSpeed_ = SPEED_EVASION;
 	movePow_ = VScale(moveDir_, moveSpeed_);
-	isV_ = true;
+	isVinclible_ = true;
 
+	// 回避アニメーションが終了したら元の回転に戻して通常状態に遷移
 	if (anim_->IsEnd()) {
 		transform_.quaRotLocal = lastQrot_;
 		state_ = STATE::IDLE;
 	}
-
 }
 
 void Player::ProcessDownUp(void)
 {
+	// ダウン状態の処理
 	if (state_ == STATE::DOWN)
 	{
-		isV_ = true;
+		isVinclible_ = true;
 		state_ = STATE::DOWN;
 
-		effect_->SetEffectPos(static_cast<int>(effType_), MV1GetFramePosition(transform_.modelId, 2));
+		effect_->SetEffectPos(
+			static_cast<int>(effType_),
+			MV1GetFramePosition(transform_.modelId, HIT_EFFECT_FRAME_NO));
 
 		if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::DOWN)
 			&& anim_->IsEnd()) {
@@ -623,19 +698,20 @@ void Player::ProcessDownUp(void)
 			}
 		}
 	}
-
-	if(state_ == STATE::UP)
+	
+	// アップ状態の処理
+	if (state_ == STATE::UP)
 	{
 		state_ = STATE::UP;
 		if (anim_->IsEnd()) {
 			state_ = STATE::IDLE;
 		}
 	}
-
 }
 
 void Player::ProcessRecovery(void)
 {
+	// 回復入力判定
 	bool isP = false;
 	auto& ins = InputManager::GetInstance();
 	if (state_ != STATE::IDLE
@@ -645,54 +721,57 @@ void Player::ProcessRecovery(void)
 		return;
 	}
 
+	// 回復入力判定
 	isP = ins.IsTrgDown(KEY_INPUT_R)
 		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
 
+	// 回復入力があり、かつ回復瓶が残っている場合、かつ回復アニメーションが再生されていない場合に回復開始
 	if (isP && uiRecovery_->GetBottlcCnt() > 0
-		&& anim_ ->GetPlayType() != static_cast<int>(EFFECT::HP_ABSOLUTE)
+		&& anim_->GetPlayType() != static_cast<int>(EFFECT::HP_ABSOLUTE)
 		&& state_ != STATE::RECOVERY) {
 
 		state_ = STATE::RECOVERY;
 		effect_->Play(
 			static_cast<int>(EFFECT::HP_ABSOLUTE),
-			VGet(transform_.pos.x, transform_.pos.y + 100.0f, transform_.pos.z),
+			VGet(transform_.pos.x, transform_.pos.y + EFFECT_RECOVERY_OFFSET_Y, transform_.pos.z),
 			AsoUtility::VECTOR_ZERO,
-			VScale(AsoUtility::VECTOR_ONE, 10.0f));
+			VScale(AsoUtility::VECTOR_ONE, EFFECT_RECOVERY_SCALE));
 	}
 
+	// 回復状態でなければ処理終了
 	if (state_ != STATE::RECOVERY) return;
 
+	// 回復アニメーション再生
 	anim_->Play(static_cast<int>(ANIM_TYPE::RECOVERY), false);
 
-	if (anim_->GetPlayAnim().step == 10.0f) {
-		uiHp_->SetHpAbsolute(40.0f);
-		uiRecovery_->SetBottleCnt(1);
+	// 回復アニメーションの特定のステップで回復処理を実行
+	if (anim_->GetPlayAnim().step == RECOVERY_TRIGGER_STEP) {
+		uiHp_->SetHpAbsolute(HEAL_HP_AMOUNT);
+		uiRecovery_->SetBottleCnt(CONSUME_RECOVERY_BOTTLE_COUNT);
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_RECOVERY).handleId_;
-		int volume_ = 50;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_HER, bgm_, volume_);
+		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_HER, bgm_, SE_VOLUME_RECOVERY);
 	}
 
+	// 回復アニメーションが終了したら通常状態に遷移
 	if (anim_->IsEnd()) {
 		state_ = STATE::IDLE;
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_HER);
 	}
-
-
 }
 
 void Player::ProcessDie(void)
 {
-	i_ += 0.3 * SceneManager::GetInstance().GetDeltaTime();
-	if (i_ > 1.8f) {
-		i_ = 1.8f;
+	// 死亡アニメーション再生
+	deathAnimationTime_ += DIE_FADE_SPEED * SceneManager::GetInstance().GetDeltaTime();
+	if (deathAnimationTime_ > DIE_END_THRESHOLD) {
+		deathAnimationTime_ = DIE_END_THRESHOLD;
 		state_ = STATE::END;
 	}
-	//MV1SetOpacityRate(transform_.modelId, 1.0f - i_);
 }
 
 void Player::CollisionReserve(void)
 {
-	
+	// 回避中またはダウン中のアニメーション再生時にコライダーの位置を変更
 	if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::EVASION)
 		|| anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::DOWN))
 	{
@@ -709,6 +788,7 @@ void Player::CollisionReserve(void)
 				}
 			}
 		}
+		// カプセルコライダの位置を変更
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE)) != 0)
 		{
 			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
@@ -725,6 +805,7 @@ void Player::CollisionReserve(void)
 	}
 	else
 	{
+		// 通常時のコライダーの位置に戻す
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)
 		{
 			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE));
@@ -738,6 +819,7 @@ void Player::CollisionReserve(void)
 				}
 			}
 		}
+		// カプセルコライダの位置を通常時に戻す
 		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE)) != 0)
 		{
 			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
@@ -756,44 +838,52 @@ void Player::CollisionReserve(void)
 
 void Player::UpdateProcess(void)
 {
+	// 死亡状態の処理
 	if (state_ == STATE::DIE)
 	{
 		ProcessDie();
 		return;
 	}
 
+	// エフェクトの位置をプレイヤーの位置に設定
 	effect_->SetEffectPos(static_cast<int>(effType_), transform_.pos);
 
-	if (isV_ && invincibleTimer_ >= 0.0f)
+	// 無敵時間の処理
+	if (isVinclible_ && invincibleTimer_ >= 0.0f)
 	{
 		invincibleTimer_ -= 1.0f * SceneManager::GetInstance().GetDeltaTime();
 	}
 	else {
-		isV_ = false;
+		// 無敵時間が終了したら無敵状態を解除
+		isVinclible_ = false;
 	}
 
-
+	// スタミナ回復処理
 	if (uiSt_->GetSt() <= UISt::MIN_ST) {
-		ct_ = CT;
+		stRecoverTime_ = CT;
 	}
 
-	if (state_ == STATE::IDLE 
-		|| state_ == STATE::RUN 
-		|| state_ == STATE::DOWN 
+	// スタミナ回復処理
+	if (state_ == STATE::IDLE
+		|| state_ == STATE::RUN
+		|| state_ == STATE::DOWN
 		|| state_ == STATE::UP
 		|| state_ == STATE::RECOVERY) {
 		uiSt_->SetHpAbsolute(RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
 	}
 
-	if (ct_ > 0.0f) {
-		ct_ -= 1.0f * SceneManager::GetInstance().GetDeltaTime();
+	// スタミナ回復クールタイムの処理
+	if (stRecoverTime_	 > 0.0f) {
+		stRecoverTime_ -= 1.0f * SceneManager::GetInstance().GetDeltaTime();
 	}
 
-	if(wepon_ != nullptr && state_ != STATE::ATTACK)
+	// 武器のコライダーを攻撃中以外では無効化
+	if (wepon_ != nullptr && state_ != STATE::ATTACK)
 	{
 		wepon_->ClearCollider();
 	}
 
+	// 回復処理
 	ProcessRecovery();
 
 	//攻撃処理
@@ -805,45 +895,43 @@ void Player::UpdateProcess(void)
 	//回避処理
 	ProcessEvasion();
 
+	// ダウン・アップ処理
 	ProcessDownUp();
 
-
 	// 武器処理
-	if (wepon_){
+	if (wepon_) {
 		wepon_->Update();
 	}
 
-	if(STATE::DOWN == state_)
+	// コライダーの位置をアニメーションに合わせて変更
+	if (STATE::DOWN == state_)
 	{
-		LockPos = LOCK_POS2;
+		animLockPos_ = LOCK_POS2;
 	}
 	else if (STATE::DIE == state_) {
-		LockPos = LOCK_POS4;
+		animLockPos_ = LOCK_POS4;
 	}
 	else if (STATE::UP == state_)
 	{
-		LockPos.y += 0.7f;
+		animLockPos_.y += UP_LOCK_POS_Y_ADD;
 	}
 	else
 	{
-		LockPos = LOCK_POS1;
+		animLockPos_ = LOCK_POS1;
 	}
 
 	//アニメーションの移動量を無効
-	SetFrameUserLocalPos(LockPos, LOCK_FRAME_NO);
-
+	SetFrameUserLocalPos(animLockPos_, LOCK_FRAME_NO);
 }
 
-void Player::UpdateProcessPost(void)
-{
-}
+void Player::UpdateProcessPost(void){}
 
 VECTOR Player::GetInputDirection(void)
 {
 	VECTOR dir = AsoUtility::VECTOR_ZERO;
 	auto& ins = InputManager::GetInstance();
 
-	// 1. ゲームパッドの入力を取得
+	// ゲームパッドの入力を取得
 	InputManager::JOYPAD_IN_STATE padState =
 		ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 	VECTOR padDir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
@@ -871,7 +959,7 @@ VECTOR Player::GetInputDirection(void)
 		if (isDown && isLeft) { dir = VAdd(AsoUtility::DIR_B, AsoUtility::DIR_L); }
 		if (isDown && isRight) { dir = VAdd(AsoUtility::DIR_B, AsoUtility::DIR_R); }
 
-		// 斜め入力の正規化（必要に応じて）
+		// 斜め入力の正規化
 		if (!AsoUtility::EqualsVZero(dir)) {
 			dir = VNorm(dir);
 		}
@@ -883,7 +971,7 @@ VECTOR Player::GetInputDirection(void)
 		return AsoUtility::VECTOR_ZERO;
 	}
 
-	// 2. ターゲットまたはカメラ基準のワールド方向に変換
+	// ターゲットまたはカメラ基準のワールド方向に変換
 	VECTOR worldDir = AsoUtility::VECTOR_ZERO;
 
 	if (targetTrans_ != nullptr)
@@ -900,6 +988,5 @@ VECTOR Player::GetInputDirection(void)
 		Quaternion cameraRot = scnMng_.GetCamera()->GetQuaRotY();
 		worldDir = Quaternion::PosAxis(cameraRot, dir);
 	}
-
 	return worldDir;
 }

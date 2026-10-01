@@ -52,10 +52,13 @@ public:
 	const Animation& GetPlayAnim(void) const;
 	const Animation& GetPlayAnim(int type) const;
 
+	// 特定の時間をループするアニメーションを再生
 	void SetSpecificTime(float state, float end, bool SpecificLoop);
 
+	// アニメーションを始める時間を設定
 	void SetStateTime(float state);
 
+	// アニメーションを止めるフラグを設定
 	void SetIsStopFlager(bool isStop);
 private:
 
@@ -84,8 +87,10 @@ private:
 	// アニメーション追加の共通処理
 	void Add(int type, float speed, Animation& animation);
 
+	// アニメーションの再生を開始する共通処理
 	bool isReversing_;
 
+	// アニメーションを止めるフラグ
 	bool isStop_;
 
 };

@@ -26,8 +26,6 @@ public:
 	bool IsTargetFrame(int frameIdx) const;
 
 	bool IsHit(VECTOR pos1, VECTOR pos2, bool isExclude = false, bool isTarget = false)const;
-
-
 protected:
 	// Õ“Ë”»’è‚©‚çœŠO‚·‚éƒtƒŒ[ƒ€”Ô†
 	std::vector<int> excludeFrameIds_;

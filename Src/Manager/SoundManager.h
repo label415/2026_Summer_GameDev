@@ -4,7 +4,7 @@
 class SoundManager
 {
 public:
-
+	// SEのID（名前）を定義するenum
     enum class SeId
     {
         PLAYER_WEPON_SE1,
@@ -27,8 +27,10 @@ public:
         Max,
     };
 
-    
+	// シングルトンインスタンスの作成
     static void CreateInstance(void);  
+
+	// シングルトンインスタンスの取得
     static SoundManager& GetInstance(void); 
 
     void Init(void); // 内部変数の初期化
@@ -52,8 +54,8 @@ public:
     void StopSE(SeId id);                                               // 特定のSEを停止
     void AllStopSE();                                                   // 全てのSEを停止
     void SetSESpeed(SeId id, float speed);
-
 private:
+	// シングルトンインスタンス
     SoundManager() = default;
     ~SoundManager() = default;
     static SoundManager* instance_;

@@ -249,7 +249,7 @@ void GameScene::Draw(void)
 		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::DEAD))
 		{
 			resultAlpha_ = static_cast<int>(
-				enemy->Geti() * RESULT_UI_ALPHA_MAGNIFICATION);
+				enemy->GetDesath() * RESULT_UI_ALPHA_MAGNIFICATION);
 			resultImg_ = gameClearImg_;
 			isResultUI_ = true;
 		}
@@ -259,7 +259,7 @@ void GameScene::Draw(void)
 	if (player_->GetState() == Player::STATE::DIE)
 	{
 		resultAlpha_ = static_cast<int>(
-			player_->Geti() * RESULT_UI_ALPHA_MAGNIFICATION);
+			player_->GetDesath() * RESULT_UI_ALPHA_MAGNIFICATION);
 		resultImg_ = gameOverImg_;
 		isResultUI_ = true;
 	}

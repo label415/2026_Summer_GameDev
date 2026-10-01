@@ -121,5 +121,4 @@ private:
 
 	// “à•”ƒ[ƒh
 	Resource& _Load(SRC src);
-
 };

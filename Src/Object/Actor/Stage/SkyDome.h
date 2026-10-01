@@ -1,11 +1,10 @@
 #pragma once
-#include "../ActorBase.h"
 #include "../../Common/Transform.h"
-class SkyDome :
-    public ActorBase
+#include "../ActorBase.h"
+
+class SkyDome :public ActorBase
 {
 public:
-
 	// コンストラクタ
 	SkyDome(void);
 
@@ -17,9 +16,7 @@ public:
 
 	// 描画
 	void Draw(void)override;
-
 protected:
-
 	// リソースロード
 	void InitLoad(void)override;
 

@@ -6,13 +6,9 @@
 #include "EnemyDragon.h"
 #include "EnemyManager.h"
 
-EnemyManager::EnemyManager(void)
-{
-}
+EnemyManager::EnemyManager(void){}
 
-EnemyManager::~EnemyManager(void)
-{
-}
+EnemyManager::~EnemyManager(void){}
 
 void EnemyManager::Load(void)
 {
@@ -22,6 +18,7 @@ void EnemyManager::Load(void)
 
 void EnemyManager::Init(void)
 {
+	// エネミーの初期化
 	for (auto& enemy : enemys_)
 	{
 		enemy->Init();
@@ -30,6 +27,7 @@ void EnemyManager::Init(void)
 
 void EnemyManager::Update(void)
 {
+	// エネミーの更新
 	for (auto& enemy : enemys_)
 	{
 		enemy->Update();
@@ -38,6 +36,7 @@ void EnemyManager::Update(void)
 
 void EnemyManager::Draw(void)
 {
+	// エネミーの描画
 	for (auto& enemy : enemys_)
 	{
 		enemy->Draw();
@@ -46,6 +45,7 @@ void EnemyManager::Draw(void)
 
 void EnemyManager::Release(void)
 {
+	// エネミーの解放
 	for (auto& enemy : enemys_)
 	{
 		enemy->Release();
@@ -54,6 +54,7 @@ void EnemyManager::Release(void)
 
 void EnemyManager::HitDamegr(bool isHit)
 {
+	// エネミーのダメージ判定
 	for (auto& enemy : enemys_)
 	{
 		enemy->HitDamage(isHit);
@@ -62,6 +63,7 @@ void EnemyManager::HitDamegr(bool isHit)
 
 void EnemyManager::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
 {
+	// エネミーに衝突対象となるコライダを登録
 	for (auto& enemy : enemys_)
 	{
 		enemy->AddHitCollider(shape, hitCollider);
@@ -119,6 +121,7 @@ void EnemyManager::LoadCsvData(void)
 
 EnemyBase* EnemyManager::Create(const EnemyBase::EnemyData& data)
 {
+	// エネミー生成
 	EnemyBase* enemy = nullptr;
 
 	switch (data.type)
@@ -141,6 +144,7 @@ EnemyBase* EnemyManager::Create(const EnemyBase::EnemyData& data)
 
 void EnemyManager::RemoveCollider(ColliderBase::SHAPE shape, ColliderBase::TAG tag)
 {
+	// エネミーに衝突対象となるコライダを削除
 	for (auto& enemy : enemys_)
 	{
 		enemy->RemoveHitColliderByShapeAndTag(shape, tag);

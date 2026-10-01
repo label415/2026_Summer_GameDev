@@ -7,6 +7,7 @@ ResourceManager* ResourceManager::instance_ = nullptr;
 
 void ResourceManager::CreateInstance(void)
 {
+	// 静的インスタンスが生成されていなければ生成する
 	if (instance_ == nullptr)
 	{
 		instance_ = new ResourceManager();
@@ -21,8 +22,7 @@ ResourceManager& ResourceManager::GetInstance(void)
 
 void ResourceManager::Init(void)
 {
-
-	// 推奨しませんが、どうしても使いたい方は
+	// リソースの初期化
 	using RES = Resource;
 	using RES_T = RES::TYPE;
 	static std::wstring PATH_IMG = Application::PATH_IMAGE;
@@ -31,6 +31,7 @@ void ResourceManager::Init(void)
 	static std::wstring PATH_EFF = Application::PATH_EFFECT;
 	static std::wstring PATH_SND = Application::PATH_SOUND;
 
+	// リソースの登録
 	Resource* res;
 
 	// プレイヤーモデル
@@ -195,13 +196,10 @@ int ResourceManager::LoadModelDuplicate(SRC src)
 	return duId;
 }
 
-ResourceManager::ResourceManager(void)
-{
-}
+ResourceManager::ResourceManager(void){}
 
 Resource& ResourceManager::_Load(SRC src)
 {
-
 	// ロード済みチェック
 	const auto& lPair = loadedMap_.find(src);
 	if (lPair != loadedMap_.end())
@@ -224,5 +222,4 @@ Resource& ResourceManager::_Load(SRC src)
 	loadedMap_.emplace(src, *rPair->second);
 
 	return *rPair->second;
-
 }

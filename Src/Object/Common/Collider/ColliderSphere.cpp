@@ -2,7 +2,8 @@
 #include "ColliderModel.h"
 #include "ColliderSphere.h"
 
-ColliderSphere::ColliderSphere(TAG tag, const Transform* follow, const VECTOR& localPos, float radius, int patrTag)
+ColliderSphere::ColliderSphere(
+	TAG tag, const Transform* follow, const VECTOR& localPos, float radius, int patrTag)
 	:
 	ColliderBase(SHAPE::SPHERE, tag, follow, patrTag),
 	localPos_(localPos),
@@ -10,11 +11,10 @@ ColliderSphere::ColliderSphere(TAG tag, const Transform* follow, const VECTOR& l
 {
 }
 
-ColliderSphere::~ColliderSphere(void)
-{
-}
+ColliderSphere::~ColliderSphere(void){}
 
-VECTOR ColliderSphere::GetPosPushBackAlongNormal(const MV1_COLL_RESULT_POLY& hitColPoly, int maxTryCnt, float pushDistance) const
+VECTOR ColliderSphere::GetPosPushBackAlongNormal(
+	const MV1_COLL_RESULT_POLY& hitColPoly, int maxTryCnt, float pushDistance) const
 {
 	// コピー生成
 	Transform tmpTransform = *follow_;
@@ -41,7 +41,8 @@ VECTOR ColliderSphere::GetPosPushBackAlongNormal(const MV1_COLL_RESULT_POLY& hit
 	return tmpTransform.pos;
 }
 
-bool ColliderSphere::GetHitSpher_Model(const ColliderModel* colliderModel, bool isExclude, bool isTarget) const
+bool ColliderSphere::GetHitSpher_Model(
+	const ColliderModel* colliderModel, bool isExclude, bool isTarget) const
 {
 	bool ret = false;
 
@@ -76,5 +77,6 @@ bool ColliderSphere::GetHitSpher_Model(const ColliderModel* colliderModel, bool 
 
 void ColliderSphere::DrawDebug(int color)
 {
+	// デバッグ用に球体を描画
 	DrawSphere3D(GetPos(), GetRadius(), DIV_NUM, color, color, false);
 }

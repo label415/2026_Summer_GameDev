@@ -6,9 +6,7 @@
 
 class InputManager
 {
-
 public:
-
 	// アナログキーの最大値
 	static constexpr float AKEY_VAL_MAX = 1000.0f;
 
@@ -135,14 +133,15 @@ public:
 	// アナログキーの入力値から方向(正規化済み)を取得
 	VECTOR GetDirectionXZAKey(int aKeyX, int aKeyY) const;
 
+	// マウスカーソルの位置を設定する
 	void SetMousePos(int posX, int posY);
 
+	// マウスカーソルの移動量を取得する
 	Vector2 GetMousePosDistance(void) const;
 
+	// マウスカーソルの入力状態を設定する
 	void SetMouseFlage(bool isFlage);
-
 private:
-
 	// キー情報
 	struct Info
 	{

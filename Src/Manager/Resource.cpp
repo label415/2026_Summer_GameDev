@@ -12,8 +12,7 @@ Resource::Resource(void)
 	sizeY_(-1),
 	handleId_(-1),
 	handleIds_(nullptr)
-{
-}
+{}
 
 Resource::Resource(TYPE type, const std::wstring& path)
 	:
@@ -25,8 +24,7 @@ Resource::Resource(TYPE type, const std::wstring& path)
 	sizeY_(-1),
 	handleId_(-1),
 	handleIds_(nullptr)
-{
-}
+{}
 
 Resource::Resource(TYPE type, const std::wstring& path, int numX, int numY, int sizeX, int sizeY)
 	:
@@ -38,16 +36,13 @@ Resource::Resource(TYPE type, const std::wstring& path, int numX, int numY, int 
 	sizeY_(sizeY),
 	handleId_(-1),
 	handleIds_(nullptr)
-{
-}
+{}
 
-Resource::~Resource(void)
-{
-}
+Resource::~Resource(void){}
 
 void Resource::Load(void)
 {
-
+	// リソースの読み込み
 	switch (type_)
 	{
 	case Resource::TYPE::IMG:
@@ -92,12 +87,10 @@ void Resource::Load(void)
 		handleId_ = LoadSoundMem(path_.c_str());
 		break;
 	}
-
 }
 
 void Resource::Release(void)
 {
-
 	switch (type_)
 	{
 	case Resource::TYPE::IMG:
@@ -149,12 +142,11 @@ void Resource::Release(void)
 		break;
 
 	}
-
 }
 
 void Resource::CopyHandle(int* imgs) const
 {
-
+	// 複数画像ハンドルを別配列にコピー
 	if (handleIds_ == nullptr)
 	{
 		return;
@@ -165,5 +157,4 @@ void Resource::CopyHandle(int* imgs) const
 	{
 		imgs[i] = handleIds_[i];
 	}
-
 }

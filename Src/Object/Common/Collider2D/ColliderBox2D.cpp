@@ -10,12 +10,11 @@ ColliderBox2D::ColliderBox2D(TAG tag, const Vector2F& pos, float width, float he
 {
 }
 
-ColliderBox2D::~ColliderBox2D(void)
-{
-}
+ColliderBox2D::~ColliderBox2D(void){}
 
 void ColliderBox2D::DrawDebug(int color)
 {
+	// デバッグ用のボックス描画
     DrawLineBox(
         static_cast<int>(boxPos_.x),
         static_cast<int>(boxPos_.y),

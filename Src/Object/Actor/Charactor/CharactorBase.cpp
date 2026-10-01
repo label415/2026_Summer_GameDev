@@ -11,15 +11,13 @@
 CharactorBase::CharactorBase(void)
 	:
 	ActorBase()
-{
-}
+{}
 
-CharactorBase::~CharactorBase(void)
-{
-}
+CharactorBase::~CharactorBase(void){}
 
 void CharactorBase::Update(void)
 {
+	// 生存していなければ更新しない
 	if (!isAlive_)return;
 
 	// 移動前座標を更新
@@ -60,8 +58,10 @@ void CharactorBase::Draw(void)
 
 void CharactorBase::Release(void)
 {
+	// 基底クラスの解放処理
 	transform_.Release();
 
+	// 各ポインタ変数開放
 	anim_->Release();
 	delete anim_;
 	delete effect_;
@@ -79,9 +79,7 @@ VECTOR CharactorBase::GetTargetDir(void)
 	return targetdir;
 }
 
-void CharactorBase::InitLoad(void)
-{
-}
+void CharactorBase::InitLoad(void){}
 
 void CharactorBase::DelayRotate(void)
 {

@@ -3,15 +3,14 @@
 #include <vector>
 #include "../Common/Transform.h"
 #include "../Common/Collider/ColliderBase.h"
+
 class ResourceManager;
 class SceneManager;
 class EffectController;
 
 class ActorBase
 {
-
 public:
-
 	// コンストラクタ
 	ActorBase(void);
 
@@ -54,9 +53,8 @@ public:
 
 	//生存フラグ取得
 	const bool GetIsAlive(void)const { return isAlive_; }
-
 protected:
-
+	// 生存フラグ
 	bool isAlive_;
 
 	// シングルトン参照

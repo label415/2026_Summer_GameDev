@@ -1,13 +1,12 @@
 #pragma once
 #include<vector>
 #include <string>
-#include "../ActorBase.h"
 #include "../../Common/Transform.h"
-class Stage :
-    public ActorBase
+#include "../ActorBase.h"
+
+class Stage :public ActorBase
 {
 public:
-
 	// コンストラクタ
 	Stage(void);
 
@@ -19,9 +18,7 @@ public:
 
 	//描画処理
 	void Draw(void)override;
-
 protected:
-
 	// リソースロード
 	void InitLoad(void)override;
 
@@ -36,8 +33,11 @@ protected:
 
 	// 初期化後の個別処理
 	void InitPost(void)override;
-
 private:
+	// ステージモデル座標
+	static constexpr VECTOR STAGE_POS = { 0.0f, -100.0f, 0.0f };
+	// ステージモデル大きさ
+	static constexpr VECTOR STAGE_SCALE = { 1.0f, 1.0f, 1.0f };
 
 	// 除外フレーム名称
 	const std::vector<std::wstring> EXCLUDE_FRAME_NAMES = { L"Ground", };
@@ -45,13 +45,16 @@ private:
 	// 対象フレーム
 	const std::vector<std::wstring> TARGET_FRAME_NAMES = { L"Ground", L"Rocka" };
 
+	// 対象フレームの不透明度率
 	std::vector<int> frameOpacityRate_;
 
 	// 衝突判定
 	void Collision(void);
 
+	// 対象フレームの不透明度率を設定
 	void RateFrameIds(const std::wstring& name);
 
+	// 対象フレームかどうかを判定
 	bool IsRateFrame(int frameIdx) const;
 };
 
