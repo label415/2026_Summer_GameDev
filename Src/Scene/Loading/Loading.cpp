@@ -7,75 +7,59 @@
 // コンストラクタ
 Loading::Loading()
 	: pauseFont_(-1)
-	, pos_(0, 0)
-	, isLoading_(false)
 	, loadTimer_(0)
-{
-}
+{}
 
 // デストラクタ
-Loading::~Loading()
-{
-}
-
-// 初期化
-void Loading::Init(void)
-{
-	loadTimer_ = 0;
-	isLoading_ = false;
-	pos_ = Vector2(0.0f, 0.0f);
-}
+Loading::~Loading(){}
 
 // 読み込み
 void Loading::Load(void)
 {
+	// リソース取得
 	auto& res = ResourceManager::GetInstance();
 	res.Load(ResourceManager::SRC::FONT);
 
 	// フォントハンドルの作成
 	auto& font = FontManager::GetInstance();
-	pauseFont_ = font.CreateMyFont(L"KazukiReiwa", 56, 20);
+	pauseFont_ = font.CreateMyFont(FONT_NAME, FONT_SIZE, FONT_THICKNESS);
 }
 
 // 更新
 void Loading::Update(void)
 {
+	// ロード時間更新
 	loadTimer_++;
-
-	// 読込中のものがなくなったら or 最低ロード時間経過
-	if (GetASyncLoadNum() == 0 && loadTimer_ >= MIN_LOAD_TIME)
-	{
-		// ロード終了
-		Init();
-	}
-	// 読み込み中
-	else
-	{
-		// ロード画面を動作させるならここに記述
-	}
 }
 
 // 描画
 void Loading::Draw(void)
 {
+	int dotCount = (loadTimer_ / 20) % 4;
+    std::wstring dots(dotCount, L'.');
+
 	DrawFormatStringToHandle(
-		Application::SCREEN_SIZE_X - 200,
-		Application::SCREEN_SIZE_Y - 70,
-		0xffffff,
+		Application::SCREEN_SIZE_X - FONT_ADJUST_X,
+		Application::SCREEN_SIZE_Y - FONT_ADJUST_Y,
+		FONT_COLOR,
 		pauseFont_,
-		L"Loading...");
+		(LOADING + dots_).c_str()
+	);
 }
 
 // 解放
 void Loading::Release(void)
 {
+	// フォントのハンドル解放
 	DeleteFontToHandle(pauseFont_);
 }
 
 // 非同期読み込みに切り替える
 void Loading::StartAsyncLoad(void)
 {
-	isLoading_ = true;
+	// ロード時間リセット
+	loadTimer_ = 0;
+
 	// 非同期読み込み開始
 	SetUseASyncLoadFlag(true);
 }

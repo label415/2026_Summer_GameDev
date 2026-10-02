@@ -1,6 +1,7 @@
 #include <chrono>
 #include <DxLib.h>
 #include <EffekseerForDXLib.h>
+#include "../Scene/Loading/Loading.h"
 #include "../Common/Fader.h"
 #include "../Scene/TitleScene.h"
 #include "../Scene/GameScene.h"
@@ -38,7 +39,6 @@ void SceneManager::Init(void)
 
 	// ロード画面生成
 	load_ = new Loading();
-	load_->Init();
 	load_->Load();
 
 	// カメラ
@@ -51,18 +51,12 @@ void SceneManager::Init(void)
 	// 3D用の設定
 	Init3D();
 
-	isSceneChanging_ = false;
-
-	// 遷移待ちタイマー初期化
-	sceneChangeDelayTimer_ = 0.0f;
-
 	// 初期シーンの設定
 	DoChangeScene(SCENE_ID::TITLE);
 }
 
 void SceneManager::Init3D(void)
 {
-
 	// 背景色設定
 	SetBackgroundColor(
 		BACKGROUND_COLOR_R, 
@@ -101,32 +95,9 @@ void SceneManager::Update(void)
 		std::chrono::duration_cast<std::chrono::nanoseconds>(nowTime - preTime_).count() / 1000000000.0);
 	preTime_ = nowTime;
 
-	// ロード中
-	if (isSceneChanging_){
-		// タイトルへ戻る際に、直前が GAMEOVER/GAMECLEAR の場合は遅延を入れる
-		if (sceneChangeDelayTimer_ > 0.0f)
-		{
-			sceneChangeDelayTimer_ -= deltaTime_;
-			// 遅延中もロード画面は更新して表示を保つ
-			load_->Update();
-			// タイマーがまだ残っていれば遷移はまだ行わない
-			if (sceneChangeDelayTimer_ > 0.0f)
-			{
-				return;
-			}
-		}
-
-		// 遅延が終わった（または遅延不要）ので実際にシーン変更処理を行う
-		load_->Update();
-		DoChangeScene(waitSceneId_);
-		if (load_->IsLoading())
-		{
-			isSceneChanging_ = false;
-		}
-	}
-	// 通常の更新処理
-	else{
-		// 現在のシーンの更新
+	load_->Update();
+	if(!load_->IsLoading())
+	{
 		scene_->Update();
 	}
 
@@ -136,7 +107,6 @@ void SceneManager::Update(void)
 
 void SceneManager::Draw(void)
 {
-	
 	// 描画先グラフィック領域の指定
 	// (３Ｄ描画で使用するカメラの設定などがリセットされる)
 	SetDrawScreen(DX_SCREEN_BACK);
@@ -144,35 +114,25 @@ void SceneManager::Draw(void)
 	// 画面を初期化
 	ClearDrawScreen();
 
-	// カメラ設定
-	camera_->SetBeforeDraw();
+	// ロードの描画
+	load_->Draw();
 
-	// Effekseerにより再生中のエフェクトを更新する。
-	/*UpdateEffekseer3D();*/
-
-	// ロード中ならロード画面を描画
-	if (isSceneChanging_)
-	{
-		// ロードの描画
-		load_->Draw();
-	}
 	// 通常の更新
-	else
+	if(!load_->IsLoading())
 	{
+		// カメラ設定
+		camera_->SetBeforeDraw();
+
 		// 各シーンの描画処理
 		scene_->Draw();
 
 		// カメラ描画
 		camera_->DrawDebug();
-
-		// Effekseerにより再生中のエフェクトを描画する。
-		/*DrawEffekseer3D();*/
 	}
 }
 
 void SceneManager::Destroy(void)
 {
-
 	// シーンの解放
 	if (scene_ != nullptr)
 	{
@@ -190,34 +150,16 @@ void SceneManager::Destroy(void)
 
 	// インスタンスのメモリ解放
 	delete instance_;
-
 }
 
 void SceneManager::ChangeScene(SCENE_ID nextId)
 {
-
-	// 遷移先シーンを保持
 	waitSceneId_ = nextId;
 
 	SoundManager::GetInstance().StopBGM();
 	SoundManager::GetInstance().AllStopSE();
 
-	// タイトルへ戻る場合で、現在が GAMEOVER または GAMECLEAR のときは
-	// 読み込みを長く見せるための遅延を設定する
-	if (
-		(nextId == SCENE_ID::TITLE &&(sceneId_ == SCENE_ID::GAMEOVER || sceneId_ == SCENE_ID::GAMECLEAR))
-		|| ((nextId == SCENE_ID::GAMEOVER || nextId == SCENE_ID::GAMECLEAR) && sceneId_ == SCENE_ID::GAME)
-		)
-	{
-		sceneChangeDelayTimer_ = TITLE_RETURN_DELAY;
-	}
-	else
-	{
-		sceneChangeDelayTimer_ = 0.0f;
-	}
-
 	isSceneChanging_ = true;
-
 }
 
 SceneManager::SCENE_ID SceneManager::GetSceneID(void)
@@ -237,21 +179,18 @@ Camera* SceneManager::GetCamera(void) const
 
 SceneManager::SceneManager(void)
 {
-
 	sceneId_ = SCENE_ID::NONE;
 	waitSceneId_ = SCENE_ID::NONE;
 
 	scene_ = nullptr;
-
-	isSceneChanging_ = false;
 
 	// デルタタイム
 	deltaTime_ = 1.0f / 60.0f;
 
 	camera_ = nullptr;
 	load_ = nullptr;
-	sceneChangeDelayTimer_ = 0.0f;
 
+	isSceneChanging_ = false;
 }
 
 void SceneManager::ResetDeltaTime(void)
@@ -262,10 +201,8 @@ void SceneManager::ResetDeltaTime(void)
 
 void SceneManager::DoChangeScene(SCENE_ID sceneId)
 {
-
 	// リソースの解放
 	ResourceManager::GetInstance().Release();
-
 	Application::GetInstance().InitEffekseer();
 
 	// シーンを変更する
@@ -296,5 +233,4 @@ void SceneManager::DoChangeScene(SCENE_ID sceneId)
 	ResetDeltaTime();
 
 	waitSceneId_ = SCENE_ID::NONE;
-
 }
