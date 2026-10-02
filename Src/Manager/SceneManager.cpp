@@ -5,7 +5,9 @@
 #include "../Common/Fader.h"
 #include "../Scene/TitleScene.h"
 #include "../Scene/GameScene.h"
+#include "../Scene/PauseScene.h"
 #include "../Manager/SoundManager.h"
+#include "../Manager/InputManager.h"
 #include "../Application.h"
 #include "Camera.h"
 #include "ResourceManager.h"
@@ -30,10 +32,6 @@ SceneManager& SceneManager::GetInstance(void)
 
 void SceneManager::Init(void)
 {
-
-	sceneId_ = SCENE_ID::TITLE;
-	waitSceneId_ = SCENE_ID::NONE;
-
 	// フォント管理クラス生成
 	FontManager::CreateInstance();
 
@@ -51,16 +49,16 @@ void SceneManager::Init(void)
 	// 3D用の設定
 	Init3D();
 
-	// 初期シーンの設定
-	DoChangeScene(SCENE_ID::TITLE);
+	//初期シーンをプッシュ
+	PushScene(SCENE_ID::TITLE);
 }
 
 void SceneManager::Init3D(void)
 {
 	// 背景色設定
 	SetBackgroundColor(
-		BACKGROUND_COLOR_R, 
-		BACKGROUND_COLOR_G, 
+		BACKGROUND_COLOR_R,
+		BACKGROUND_COLOR_G,
 		BACKGROUND_COLOR_B);
 
 	// Zバッファを有効にする
@@ -76,7 +74,7 @@ void SceneManager::Init3D(void)
 	SetUseLighting(true);
 	ChangeLightTypeDir(VGet(-0.5f, -1.0f, -0.5f));
 	SetLightDifColor(GetColorF(1.0f, 1.0f, 0.95f, 1.0f));
-	SetLightAmbColor(GetColorF(0.4f, 0.4f, 0.45f, 1.0f)); 
+	SetLightAmbColor(GetColorF(0.4f, 0.4f, 0.45f, 1.0f));
 
 	// フォグ設定
 	SetFogEnable(true);
@@ -85,21 +83,55 @@ void SceneManager::Init3D(void)
 
 }
 
+void SceneManager::ChangeScene(SCENE_ID sceneId)
+{
+	if (scenes_.empty()) {
+		scenes_.push_back(CreateScene(sceneId));
+		return;
+	}
+	scenes_.back() = CreateScene(sceneId);
+
+	scenes_.back()->Load();
+	scenes_.back()->LoadEnd();
+	camera_->SetIsMouseInput(false);
+	InputManager::GetInstance().SetMouseFlage(true);
+}
+
+void SceneManager::PushScene(SCENE_ID sceneId)
+{
+	//末尾にシーンを追加する
+	scenes_.push_back(CreateScene(sceneId));
+
+	scenes_.back()->Load();
+	scenes_.back()->LoadEnd();
+	camera_->SetIsMouseInput(false);
+	InputManager::GetInstance().SetMouseFlage(true);
+}
+
+void SceneManager::PopScene()
+{
+	//末尾のシーンを削除する
+	if (scenes_.size() > 1)
+	{
+		scenes_.pop_back();
+	}
+}
+
+void SceneManager::ResetScene(SCENE_ID sceneId)
+{
+	scenes_.clear();
+	scenes_.push_back(CreateScene(sceneId));
+
+	scenes_.back()->Load();
+	scenes_.back()->LoadEnd();
+	camera_->SetIsMouseInput(false);
+	InputManager::GetInstance().SetMouseFlage(true);
+}
+
 void SceneManager::Update(void)
 {
-	if (scene_ == nullptr){return;}
-
-	// デルタタイム
-	auto nowTime = std::chrono::system_clock::now();
-	deltaTime_ = static_cast<float>(
-		std::chrono::duration_cast<std::chrono::nanoseconds>(nowTime - preTime_).count() / 1000000000.0);
-	preTime_ = nowTime;
-
-	load_->Update();
-	if(!load_->IsLoading())
-	{
-		scene_->Update();
-	}
+	//末尾のやつだけUpdate
+	scenes_.back()->Update();
 
 	// カメラ更新
 	camera_->Update();
@@ -114,31 +146,21 @@ void SceneManager::Draw(void)
 	// 画面を初期化
 	ClearDrawScreen();
 
-	// ロードの描画
-	load_->Draw();
+	// カメラ設定
+	camera_->SetBeforeDraw();
 
-	// 通常の更新
-	if(!load_->IsLoading())
+	//乗ってるシーンをすべてDraw
+	for (auto& scene : scenes_)
 	{
-		// カメラ設定
-		camera_->SetBeforeDraw();
-
-		// 各シーンの描画処理
-		scene_->Draw();
-
-		// カメラ描画
-		camera_->DrawDebug();
+		scene->Draw();
 	}
+
+	// カメラ描画
+	camera_->DrawDebug();
 }
 
 void SceneManager::Destroy(void)
 {
-	// シーンの解放
-	if (scene_ != nullptr)
-	{
-		delete scene_;
-	}
-
 	camera_->Release();
 	delete camera_;
 
@@ -152,85 +174,20 @@ void SceneManager::Destroy(void)
 	delete instance_;
 }
 
-void SceneManager::ChangeScene(SCENE_ID nextId)
+std::unique_ptr<SceneBase> SceneManager::CreateScene(SCENE_ID sceneId)
 {
-	waitSceneId_ = nextId;
-
-	SoundManager::GetInstance().StopBGM();
-	SoundManager::GetInstance().AllStopSE();
-
-	isSceneChanging_ = true;
-}
-
-SceneManager::SCENE_ID SceneManager::GetSceneID(void)
-{
-	return sceneId_;
-}
-
-float SceneManager::GetDeltaTime(void) const
-{
-	return 1.0f / 60.0f;
-}
-
-Camera* SceneManager::GetCamera(void) const
-{
-	return camera_;
-}
-
-SceneManager::SceneManager(void)
-{
-	sceneId_ = SCENE_ID::NONE;
-	waitSceneId_ = SCENE_ID::NONE;
-
-	scene_ = nullptr;
-
-	// デルタタイム
-	deltaTime_ = 1.0f / 60.0f;
-
-	camera_ = nullptr;
-	load_ = nullptr;
-
-	isSceneChanging_ = false;
-}
-
-void SceneManager::ResetDeltaTime(void)
-{
-	deltaTime_ = 0.016f;
-	preTime_ = std::chrono::system_clock::now();
-}
-
-void SceneManager::DoChangeScene(SCENE_ID sceneId)
-{
-	// リソースの解放
-	ResourceManager::GetInstance().Release();
-	Application::GetInstance().InitEffekseer();
-
-	// シーンを変更する
+	// シーンIDを更新
 	sceneId_ = sceneId;
 
-	// 現在のシーンを解放
-	if (scene_ != nullptr)
-	{
-		delete scene_;
-	}
-
-	switch (sceneId_)
-	{
+	// インスタンス生成
+	switch (sceneId_) {
 	case SCENE_ID::TITLE:
-		scene_ = new TitleScene();
-		break;
+		return std::make_unique<TitleScene>();
 	case SCENE_ID::GAME:
-		scene_ = new GameScene();
-		break;
+		return std::make_unique<GameScene>();
+	case SCENE_ID::PAUSE:
+		return std::make_unique<PauseScene>();
+	default:
+		return nullptr;
 	}
-
-	// 各シーンの初期化
-	load_->StartAsyncLoad();
-	scene_->Load();
-	load_->EndAsyncLoad();
-	scene_->LoadEnd();
-	
-	ResetDeltaTime();
-
-	waitSceneId_ = SCENE_ID::NONE;
 }

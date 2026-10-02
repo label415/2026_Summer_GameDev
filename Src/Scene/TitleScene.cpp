@@ -99,7 +99,7 @@ void TitleScene::Update(void)
 		}
 		else if (selectIndex_ == static_cast<int>(LIST::ゲーム終了))
 		{
-			Application::GetInstance().SetIsEnd(true);
+			Application::GetInstance().SetIsEnd();
 		}
 	}
 }
@@ -142,14 +142,6 @@ void TitleScene::Draw(void)
 			pauseFont_,
 			pasueList_[i].c_str());
 
-#ifdef _DEBUG
-		// ボックスコライダー描画
-		if (uiBoxs_[i])
-		{
-			uiBoxs_[i]->Draw();
-			uiBoxs_[i]->SetValid(isHovered && (selectIndex_ == i));
-		}
-#endif
 	}
 }
 

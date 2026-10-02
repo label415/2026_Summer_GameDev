@@ -40,6 +40,9 @@ void PauseScene::LoadEnd(void)
 
 void PauseScene::Update(void)
 {
+	//ポーズシーン中は、SEを停止する
+	SoundManager::GetInstance().AllStopSE();
+
 	// 入力管理インスタンスを取得
 	auto& ins = InputManager::GetInstance();
 
@@ -85,15 +88,15 @@ void PauseScene::Update(void)
 		// 選択肢に応じてシーン遷移またはアプリ終了
 		if (selectIndex_ == static_cast<int>(LIST::ゲームに戻る))
 		{
-			isPauseScene_ = false;
+			sceMng_.PopScene();
 		}
 		else if (selectIndex_ == static_cast<int>(LIST::タイトルに戻る))
 		{
-			sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
+			sceMng_.ResetScene(SceneManager::SCENE_ID::TITLE);
 		}
 		else if (selectIndex_ == static_cast<int>(LIST::ゲーム終了))
 		{
-			Application::GetInstance().SetIsEnd(true);
+			Application::GetInstance().SetIsEnd();
 		}
 	}
 }
@@ -151,15 +154,6 @@ void PauseScene::Draw(void)
 			FONT_COLOR,
 			pauseFont_,
 			pasueList_[i].c_str());
-
-#ifdef _DEBUG
-		// ボックスコライダー描画
-		if (uiBoxs_[i])
-		{
-			uiBoxs_[i]->Draw();
-			uiBoxs_[i]->SetValid(isHovered && (selectIndex_ == i));
-		}
-#endif
 	}
 }
 

@@ -75,9 +75,6 @@ private:
 	// ロックオンUIハンドル
 	int lockOnImg_;
 
-	// ポーズシーン
-	PauseScene* pauseScene_;
-
 	// スカイドーム
 	SkyDome* skydome_;
 

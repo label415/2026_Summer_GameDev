@@ -25,6 +25,8 @@ InputManager& InputManager::GetInstance(void)
 
 void InputManager::Init(void)
 {
+	SetUseDirectInputFlag(true);
+
 	// ゲームで使用したいキーを、
 	// 事前にここで登録しておいてください
 	InputManager::GetInstance().Add(KEY_INPUT_SPACE);

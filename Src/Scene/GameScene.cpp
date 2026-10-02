@@ -60,7 +60,6 @@ void GameScene::Load(void)
 
 	// シャドーマップ読み込み
 	shadowMap_ = new ShadowMap(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
-	pauseScene_ = new PauseScene();
 
 	// カメラモード変更
 	camera_->SetFollow(&player_->GetTransform());
@@ -106,18 +105,18 @@ void GameScene::LoadEnd(void)
 			(playerPos.z + SHADOW_MAP_DIFF))
 	);
 
-	// ポーズメニュー読み取り後の処理
-	pauseScene_->LoadEnd();
-
 	// コライダ登録
 	AddCollider();
 }
 
 void GameScene::Update(void)
 {
+	camera_->SetIsMouseInput(true);
+	InputManager::GetInstance().SetMouseFlage(false);
+
 	// プレイヤーが死亡していた時,タイトルシーンに遷移
 	if (player_->GetState() == Player::STATE::END) {
-		sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
+		/*sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);*/
 		return;
 	}
 
@@ -125,7 +124,7 @@ void GameScene::Update(void)
 	for (const auto& enemy : enemys_->GetEnemys())
 	{
 		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::END)) {
-			sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
+			/*sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);*/
 			return;
 		}
 	}
@@ -135,21 +134,7 @@ void GameScene::Update(void)
 		|| InputManager::GetInstance().IsPadBtnTrgDown(
 			InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::START);
 	if (isSelect) {
-		bool currentStatus = pauseScene_->GetIsAlive();
-		pauseScene_->SetIsAlive(!currentStatus);
-	}
-
-	// ポーズメニューが表示されている時は,ポーズメニューの更新を行う
-	if (pauseScene_->GetIsAlive()) {
-		pauseScene_->Update();
-		camera_->SetIsMouseInput(false);
-		InputManager::GetInstance().SetMouseFlage(true);
-		SoundManager::GetInstance().AllStopSE();
-		return;
-	}
-	else {
-		camera_->SetIsMouseInput(true);
-		InputManager::GetInstance().SetMouseFlage(false);
+		sceMng_.PushScene(SceneManager::SCENE_ID::PAUSE);
 	}
 
 	// Effekseerにより再生中のエフェクトを更新する。
@@ -236,11 +221,6 @@ void GameScene::Draw(void)
 			LOCON_UI_SIZE, 0.0f,
 			lockOnImg_, true);
 		SetUseZBuffer3D(TRUE);
-	}
-
-	// ポーズメニューが表示されている時は,ポーズメニューの描画を行う
-	if (pauseScene_->GetIsAlive()) {
-		pauseScene_->Draw();
 	}
 
 	// すべての敵が死亡した時、ゲームクリアUIを表示する

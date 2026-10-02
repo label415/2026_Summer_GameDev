@@ -1,6 +1,9 @@
 #pragma once
 #include <chrono>
+#include <vector>
+#include <memory>
 #include <DxLib.h>
+
 class SceneBase;
 class Fader;
 class Camera;
@@ -8,8 +11,14 @@ class Loading;
 
 class SceneManager
 {
-
 public:
+	// シーン名
+	enum class SCENE_ID
+	{
+		TITLE,
+		GAME,
+		PAUSE,
+	};
 
 	// 背景色
 	static constexpr int BACKGROUND_COLOR_R = 0;
@@ -18,17 +27,6 @@ public:
 
 	// ディレクショナルライトの方向
 	static constexpr VECTOR LIGHT_DIRECTION = { 1.0f, -1.0f, 1.0f };
-
-	// シーン管理用
-	enum class SCENE_ID
-	{
-		NONE,
-		TITLE,
-		GAME,
-		GAMEOVER,
-		GAMECLEAR,
-		DEBUG,
-	};
 	
 	// インスタンスの生成
 	static void CreateInstance(void);
@@ -42,6 +40,11 @@ public:
 	// 3Dの初期化
 	void Init3D(void);
 
+	void ChangeScene(SCENE_ID sceneId);
+	void PushScene(SCENE_ID sceneId);
+	void PopScene();
+	void ResetScene(SCENE_ID sceneIde);
+
 	// 更新
 	void Update(void);
 
@@ -51,28 +54,23 @@ public:
 	// リソースの破棄
 	void Destroy(void);
 
-	// 状態遷移
-	void ChangeScene(SCENE_ID nextId);
-
-	// シーンIDの取得
-	SCENE_ID GetSceneID(void);
-
 	// デルタタイムの取得
-	float GetDeltaTime(void) const;
+	float GetDeltaTime(void) const { return 1.0f / 60.0f; }
 
 	// カメラの取得
-	Camera* GetCamera(void) const;
+	Camera* GetCamera(void) const { return camera_; }
 
+	//現在のシーンID
+	const SCENE_ID GetSceneID(void)const { return sceneId_; }
 private:
-
 	// 静的インスタンス
 	static SceneManager* instance_;
 
+	// 現在のシーン
 	SCENE_ID sceneId_;
-	SCENE_ID waitSceneId_;
 
 	// 各種シーン
-	SceneBase* scene_;
+	std::vector<std::unique_ptr<SceneBase>> scenes_;
 
 	// カメラ
 	Camera* camera_;
@@ -86,7 +84,7 @@ private:
 	
 	// デフォルトコンストラクタをprivateにして、
 	// 外部から生成できない様にする
-	SceneManager(void);
+	SceneManager(void) = default;
 
 	// コピーコンストラクタも同様
 	SceneManager(const SceneManager& instance) = default;
@@ -94,11 +92,6 @@ private:
 	// デストラクタも同様
 	~SceneManager(void) = default;
 
-	// デルタタイムをリセットする
-	void ResetDeltaTime(void);
-
-	// シーン遷移
-	void DoChangeScene(SCENE_ID sceneId);
-
-	bool isSceneChanging_;
+	// 特定のシーンインスタンスを生成する
+	std::unique_ptr<SceneBase> CreateScene(SCENE_ID sceneId);
 };

@@ -28,6 +28,8 @@ void Loading::Load(void)
 // 更新
 void Loading::Update(void)
 {
+	if (!IsLoading())return;
+
 	// ロード時間更新
 	loadTimer_++;
 }
@@ -35,6 +37,8 @@ void Loading::Update(void)
 // 描画
 void Loading::Draw(void)
 {
+	if (!IsLoading())return;
+
 	int dotCount = (loadTimer_ / 20) % 4;
     std::wstring dots(dotCount, L'.');
 

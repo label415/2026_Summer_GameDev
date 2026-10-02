@@ -16,7 +16,8 @@ int WINAPI WinMain(
 	// インスタンスの取得
 	Application& instance = Application::GetInstance();
 
-	if (instance.IsInitFail())
+	// 初期化
+	if (!instance.Init())
 	{
 		// 初期化失敗
 		return -1;
@@ -25,14 +26,15 @@ int WINAPI WinMain(
 	// 実行
 	instance.Run();
 
-	// 解放
-	instance.Destroy();
-
-	if (instance.IsReleaseFail())
+	// リソースの破棄
+	if (!instance.Release())
 	{
-		// 解放失敗
+		// 初期化失敗
 		return -1;
 	}
+
+	// インスタンスの破棄
+	instance.Destroy();
 
 	return 0;
 }

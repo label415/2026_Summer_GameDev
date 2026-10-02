@@ -1,10 +1,13 @@
 #pragma once
 #include <string>
+#include <memory>
+#include "Template/Singleton.h"
 
 class FpsController;
 
-class Application
+class Application : public Singleton<Application>
 {
+	friend class Singleton<Application>;
 public:
 	// スクリーンサイズ
 	static constexpr int SCREEN_SIZE_X = 1280;
@@ -39,26 +42,14 @@ public:
 	static constexpr float GRAVITY = 9.81f * 100.0f;
 	static constexpr float GRAVITY_SCALE = 0.7f;
 
-	// インスタンスを明示的に生成
-	static void CreateInstance(void);
-
-	// インスタンスの取得
-	static Application& GetInstance(void);
-
 	// 初期化
-	void Init(void);
+	bool Init(void);
 
 	// ゲームループの開始
 	void Run(void);
 
 	// リソースの破棄
-	void Destroy(void);
-
-	// 初期化成功／失敗の判定
-	bool IsInitFail(void) const;
-
-	// 解放成功／失敗の判定
-	bool IsReleaseFail(void) const;
+	bool Release(void);
 
 	// 重力の取得
 	float GetGravityPow(void) const { return GRAVITY * GRAVITY_SCALE; }
@@ -67,19 +58,13 @@ public:
 	void InitEffekseer(void);
 
 	// ゲーム終了フラグ設定
-	void SetIsEnd(bool isEnd);
+	void SetIsEnd(void);
 private:
 	// 静的インスタンス
 	static Application* instance_;
 
 	// FPSコントローラー
-	FpsController* fpsController_;
-
-	// 初期化失敗
-	bool isInitFail_;
-
-	// 解放失敗
-	bool isReleaseFail_;
+	std::unique_ptr<FpsController> fpsController_;
 
 	// ゲーム終了フラグ
 	bool isGameEnd_;

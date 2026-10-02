@@ -10,6 +10,7 @@
 
 Application* Application::instance_ = nullptr;
 
+// ファイルパス
 const std::wstring Application::PATH_IMAGE = L"Data/Image/";
 const std::wstring Application::PATH_MODEL = L"Data/Model/";
 const std::wstring Application::PATH_EFFECT = L"Data/Effect/";
@@ -17,22 +18,7 @@ const std::wstring Application::PATH_FONT = L"Data/Font/";
 const std::wstring Application::PATH_CSV = L"Data/Csv/";
 const std::wstring Application::PATH_SOUND = L"Data/Sound/";
 
-
-void Application::CreateInstance(void)
-{
-	if (instance_ == nullptr)
-	{
-		instance_ = new Application();
-	}
-	instance_->Init();
-}
-
-Application& Application::GetInstance(void)
-{
-	return *instance_;
-}
-
-void Application::Init(void)
+bool Application::Init(void)
 {
 	// アプリケーションの初期設定
 	SetWindowText(L"HOT SOULS");
@@ -40,15 +26,15 @@ void Application::Init(void)
 	// ウィンドウサイズ
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, COLOR_BIT);
 	ChangeWindowMode(true);
+
 	// FPS制御初期化
-	fpsController_ = new FpsController(FRAME_RATE);
+	fpsController_ = std::make_unique<FpsController>(FRAME_RATE);
+
 	// DxLibの初期化
 	SetUseDirect3DVersion(DX_DIRECT3D_11);
-	isInitFail_ = false;
 	if (DxLib_Init() == -1)
 	{
-		isInitFail_ = true;
-		return;
+		return false;
 	}
 
 	// Effekseerの初期化
@@ -65,7 +51,6 @@ void Application::Init(void)
 	SRand(date.Year + date.Mon + date.Day + date.Hour + date.Min + date.Sec);
 
 	// 入力制御初期化
-	SetUseDirectInputFlag(true);
 	InputManager::CreateInstance();
 
 	// リソース管理初期化
@@ -73,13 +58,14 @@ void Application::Init(void)
 
 	// シーン管理初期化
 	SceneManager::CreateInstance();
+
+	// サウンド管理初期化
 	SoundManager::CreateInstance();
 
 	// デバッグ描画初期化
 	ImGuiWrapper::CreateInstance();
 
-	// ゲーム終了フラグ初期化
-	isGameEnd_ = false;
+	return true;
 }
 
 void Application::Run(void)
@@ -116,7 +102,7 @@ void Application::Run(void)
 	}
 }
 
-void Application::Destroy(void)
+bool Application::Release(void)
 {
 	//インスタンス破棄
 	InputManager::GetInstance().Destroy();
@@ -127,30 +113,21 @@ void Application::Destroy(void)
 	// Effekseerを終了する。
 	Effkseer_End();
 
+	// インスタンスのメモリ解放
+	delete instance_;
+
 	// DxLib終了
 	if (DxLib_End() == -1)
 	{
-		isReleaseFail_ = true;
+		return false;
 	}
 
-	// インスタンスのメモリ解放
-	delete instance_;
-}
-
-bool Application::IsInitFail(void) const
-{
-	return isInitFail_;
-}
-
-bool Application::IsReleaseFail(void) const
-{
-	return isReleaseFail_;
+	return true;
 }
 
 Application::Application(void)
 	:
-	isInitFail_(false),
-	isReleaseFail_(false)
+	isGameEnd_(false)
 {
 }
 
@@ -166,8 +143,9 @@ void Application::InitEffekseer(void)
 	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
 }
 
-void Application::SetIsEnd(bool isEnd)
+void Application::SetIsEnd(void)
 {
-	isGameEnd_ = isEnd;
+	//ゲーム終了
+	isGameEnd_ = true;
 }
 
