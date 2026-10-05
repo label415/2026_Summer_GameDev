@@ -7,7 +7,6 @@ template <typename T>
 class Singleton
 {
 public:
-
     /// <summary>
     /// インスタンスの生成
     /// </summary>
@@ -29,7 +28,6 @@ public:
         return *instance_;
     }
 
-
 	/// <summary>
 	/// 解放処理
 	/// </summary>
@@ -37,8 +35,8 @@ public:
 	{
 		if (instance_)
 		{
-			delete instance_;
-			instance_ = nullptr;
+            delete instance_;
+            instance_ = nullptr;
 		}
 	}   
 
@@ -54,9 +52,7 @@ public:
     /// <param name=""></param>
     /// <returns></returns>
     Singleton& operator=(const Singleton&) = delete;
-
 protected:
-
     /// <summary>
     /// デフォルトコンストラクタは protected にして外部生成を防止
     /// </summary>
@@ -66,11 +62,8 @@ protected:
     /// デストラクタも protected
     /// </summary>
     virtual ~Singleton() = default;
-
 private:
-
     //静的メンバ初期化
-    inline static T* instance_ = nullptr; 
-
+    inline static T* instance_ = nullptr;
 };
 

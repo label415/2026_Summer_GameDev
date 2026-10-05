@@ -29,7 +29,7 @@ void TitleScene::Load(void)
 	// 各UIコライダー生成
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
-		uiBoxs_[i] = new ColliderBox2D(
+		uiBoxs_[i] = std::make_unique<ColliderBox2D>(
 			ColliderBase2D::TAG::UI,
 			Vector2F(
 				Application::HALF_SCREEN_SIZE_X - BOX_ADJUST_X,

@@ -12,16 +12,6 @@ Fader::Fader(void)
 
 Fader::~Fader(void){}
 
-Fader::STATE Fader::GetState(void) const
-{
-	return state_;
-}
-
-bool Fader::IsEnd(void) const
-{
-	return isEnd_;
-}
-
 void Fader::SetFade(STATE state)
 {
 	state_ = state;
@@ -36,16 +26,13 @@ void Fader::Init(void){}
 
 void Fader::Update(void)
 {
-	if (isEnd_)
-	{
-		return;
-	}
+	// フェード中でなければ更新しない
+	if (isEnd_)return;
 
 	switch (state_)
 	{
 	case STATE::NONE:
 		return;
-
 	case STATE::FADE_OUT:
 		alpha_ += SPEED_ALPHA;
 		if (alpha_ > MAX_ALPHA)
@@ -59,9 +46,7 @@ void Fader::Update(void)
 			}
 			isPreEnd_ = true;
 		}
-
 		break;
-
 	case STATE::FADE_IN:
 		alpha_ -= SPEED_ALPHA;
 		if (alpha_ < 0)
@@ -76,7 +61,6 @@ void Fader::Update(void)
 			isPreEnd_ = true;
 		}
 		break;
-
 	default:
 		return;
 	}
@@ -84,19 +68,15 @@ void Fader::Update(void)
 
 void Fader::Draw(void)
 {
-	switch (state_)
-	{
-	case STATE::NONE:
-		return;
-	case STATE::FADE_OUT:
-	case STATE::FADE_IN:
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, (int)alpha_);
-		DrawBox(
-			0, 0,
-			Application::SCREEN_SIZE_X,
-			Application::SCREEN_SIZE_Y,
-			0x000000, true);
-		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-		break;
-	}
+	// フェード中でなければ描画しない
+	if (state_ == STATE::NONE)return;
+
+	// フェード画面暗転
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, (int)alpha_);
+	DrawBox(
+		0, 0,
+		Application::SCREEN_SIZE_X,
+		Application::SCREEN_SIZE_Y,
+		0x000000, true);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }

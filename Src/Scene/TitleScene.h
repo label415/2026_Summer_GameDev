@@ -80,7 +80,7 @@ private:
 	static constexpr int BGM_VOLUME = 50;
 
 	// ボックスコライダーの配列
-	ColliderBox2D* uiBoxs_[LIST_MAX];
+	std::unique_ptr<ColliderBox2D> uiBoxs_[LIST_MAX];
 
 	// フォントハンドル
 	int pauseFont_;

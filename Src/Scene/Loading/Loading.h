@@ -1,5 +1,5 @@
 #pragma once
-#include "../../Common/Vector2.h"
+#include "../../Template/Vector2Template.h"
 
 class Loading
 {

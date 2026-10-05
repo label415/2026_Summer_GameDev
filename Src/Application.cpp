@@ -1,14 +1,13 @@
 #include <DxLib.h>
 #include <EffekseerForDXLib.h>
 #include "Manager/InputManager.h"
+#include "Manager/SoundManager.h"
 #include "Manager/ResourceManager.h"
 #include "Manager/SceneManager.h"
-#include "Manager/SoundManager.h"
+#include "Manager/FontManager.h"
 #include "Common/FpsController.h"
 #include "Libs/ImGuiWrapper.h"
 #include "Application.h"
-
-Application* Application::instance_ = nullptr;
 
 // ファイルパス
 const std::wstring Application::PATH_IMAGE = L"Data/Image/";
@@ -65,6 +64,9 @@ bool Application::Init(void)
 	// デバッグ描画初期化
 	ImGuiWrapper::CreateInstance();
 
+	// フォント管理クラス生成
+	FontManager::CreateInstance();
+
 	return true;
 }
 
@@ -106,15 +108,15 @@ bool Application::Release(void)
 {
 	//インスタンス破棄
 	InputManager::GetInstance().Destroy();
-	ResourceManager::GetInstance().Destroy();
+	SceneManager::GetInstance().Release();
 	SceneManager::GetInstance().Destroy();
+	SoundManager::GetInstance().Destroy();
+	ResourceManager::GetInstance().Destroy();
+	FontManager::GetInstance().Destroy();
 	ImGuiWrapper::GetInstance().Destroy();
 
 	// Effekseerを終了する。
 	Effkseer_End();
-
-	// インスタンスのメモリ解放
-	delete instance_;
 
 	// DxLib終了
 	if (DxLib_End() == -1)

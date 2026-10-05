@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "SceneBase.h"
 
 class SkyDome;
@@ -9,7 +10,6 @@ class EnemyManager;
 class EnemyBase;
 class ColliderCapsule;
 class ShadowMap;
-class PauseScene;
 
 class GameScene : public SceneBase
 {
@@ -76,28 +76,29 @@ private:
 	int lockOnImg_;
 
 	// スカイドーム
-	SkyDome* skydome_;
+	std::unique_ptr<SkyDome> skydome_;
 
 	// ステージ
-	Stage* stage_;
+	std::unique_ptr<Stage> stage_;
 
 	// プレイヤー
-	Player* player_;
+	std::shared_ptr<Player> player_;
 
 	// エネミー
-	EnemyManager* enemys_;
+	std::shared_ptr<EnemyManager> enemys_;
 
 	// ロックオン対象のエネミー
-	ColliderCapsule* targetEnemy_;
+	std::shared_ptr<ColliderCapsule> targetColliderCapsule_;
 
 	// カメラ
-	Camera* camera_;
+	std::shared_ptr<Camera> camera_;
 
 	// シャドウマップ
-	ShadowMap* shadowMap_;
+	std::unique_ptr<ShadowMap> shadowMap_;
 
 	// コライダー登録
 	void AddCollider(void);
+
 	// コライダー更新
 	void UpdateCollider(void);
 

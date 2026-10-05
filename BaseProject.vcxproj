@@ -56,7 +56,6 @@
     <ClCompile Include="Src\Application.cpp" />
     <ClCompile Include="Src\Common\Fader.cpp" />
     <ClCompile Include="Src\Common\Quaternion.cpp" />
-    <ClCompile Include="Src\Common\Vector2.cpp" />
     <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\Manager\Camera.cpp" />
     <ClCompile Include="Src\Manager\InputManager.cpp" />
@@ -116,7 +115,6 @@
     <ClInclude Include="Src\Application.h" />
     <ClInclude Include="Src\Common\Fader.h" />
     <ClInclude Include="Src\Common\Quaternion.h" />
-    <ClInclude Include="Src\Common\Vector2.h" />
     <ClInclude Include="Src\main.h" />
     <ClInclude Include="Src\Manager\Camera.h" />
     <ClInclude Include="Src\Manager\InputManager.h" />
@@ -135,7 +133,7 @@
     <ClInclude Include="Src\Object\Actor\Wepon\WeponBlade.h" />
     <ClInclude Include="Src\Object\Actor\Wepon\WeponBracelet.h" />
     <ClInclude Include="Src\Object\Actor\Wepon\WeponFlameThrower.h" />
-    <ClInclude Include="Src\Common\Vector2F.h" />
+    <ClInclude Include="Src\Template\Vector2Template.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -2,7 +2,7 @@
 #include <vector>
 #include <map>
 #include <Dxlib.h>
-#include "../Common/Vector2.h"
+#include "../Template/Vector2Template.h"
 
 class InputManager
 {
@@ -119,7 +119,7 @@ public:
 	// マウスが中央クリックされたか(押しっぱなしはNG)
 	bool IsTrgMouseMiddle(void) const;
 
-	// マウスが中央クリックされたか(押しっぱなしはNG)
+	// マウス回転量取得
 	float GetMouseWheelRot(void) const;
 
 	// コントローラの入力情報を取得する

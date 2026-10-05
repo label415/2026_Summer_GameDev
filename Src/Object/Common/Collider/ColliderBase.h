@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <DxLib.h>
 #include "../../../Utility/AsoUtility.h"
 
@@ -31,7 +32,7 @@ public:
 	};
 
 	// コンストラクタ
-	ColliderBase(SHAPE shape, TAG tag, const Transform* follow, int patrTag);
+	ColliderBase(SHAPE shape, TAG tag, std::weak_ptr<const Transform> follow, int patrTag);
 
 	// デストラクタ
 	virtual ~ColliderBase(void);
@@ -40,10 +41,10 @@ public:
 	void Draw(void);
 
 	// 追従先の取得
-	const Transform* GetFollow(void) const { return follow_; }
+	std::weak_ptr<const Transform> GetFollow(void) const { return follow_; }
 
 	// 追従先の再設定
-	void SetFollow(Transform* follow);
+	void SetFollow(std::weak_ptr<const Transform> follow);
 
 	// 形状
 	SHAPE GetShape(void) const { return shape_; }
@@ -77,7 +78,7 @@ protected:
 	int patrTag_;
 
 	// 追従先
-	const Transform* follow_;
+	std::weak_ptr<const Transform> follow_;
 
 	// 有効フラグ
 	bool isValid_;

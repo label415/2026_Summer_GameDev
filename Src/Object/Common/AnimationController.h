@@ -4,9 +4,7 @@
 
 class AnimationController
 {
-
 public:
-
 	// アニメーションデータ
 	struct Animation
 	{
@@ -61,7 +59,6 @@ public:
 	// アニメーションを止めるフラグを設定
 	void SetIsStopFlager(bool isStop);
 private:
-
 	// アニメーションするモデルのハンドルID
 	int modelId_;
 
@@ -92,5 +89,4 @@ private:
 
 	// アニメーションを止めるフラグ
 	bool isStop_;
-
 };

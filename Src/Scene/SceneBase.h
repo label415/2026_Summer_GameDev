@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+
 class ResourceManager;
 class SceneManager;
 class FontManager;	

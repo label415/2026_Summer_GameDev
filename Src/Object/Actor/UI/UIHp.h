@@ -1,7 +1,6 @@
 #pragma once
+#include "../../../Template/Vector2Template.h"
 #include "UIBase.h"
-
-class Vector2;
 
 class UIHp : public UIBase
 {

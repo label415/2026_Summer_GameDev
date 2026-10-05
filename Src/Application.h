@@ -60,9 +60,6 @@ public:
 	// ゲーム終了フラグ設定
 	void SetIsEnd(void);
 private:
-	// 静的インスタンス
-	static Application* instance_;
-
 	// FPSコントローラー
 	std::unique_ptr<FpsController> fpsController_;
 

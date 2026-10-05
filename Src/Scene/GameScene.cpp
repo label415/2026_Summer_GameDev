@@ -1,24 +1,21 @@
 #include <DxLib.h>
+#include "../Object/Actor/Charactor/Player.h"
+#include "../Object/Actor/Charactor/Enemy/EnemyManager.h"
+#include "../Object/Actor/Charactor/Enemy/EnemyDragon.h"
+#include "../Object/Actor/Stage/Stage.h"
+#include "../Object/Actor/Stage/SkyDome.h"
+#include "../Object/Actor/Wepon/WeponBase.h"
+#include "../Object/Actor/Wepon/WeponBracelet.h"
+#include "../Object/Actor/Wepon/WeponFlameThrower.h"
+#include "../Object/Common/Collider/ColliderCapsule.h"
+#include "../Common/ShadowMap.h"
 #include "../Manager/Camera.h"
 #include "../Manager/SceneManager.h"
 #include "../Manager/InputManager.h"
 #include "../Manager/FontManager.h"
-#include "../Object/Actor/Wepon/WeponBase.h"
-#include "../Object/Actor/Wepon/WeponBracelet.h"
-#include "../Object/Actor/Wepon/WeponFlameThrower.h"
-#include "../Object/Actor/Stage/Stage.h"
-#include "../Object/Actor/Stage/SkyDome.h"
-#include "../Object/Actor/Charactor/Player.h"
-#include "../Object/Actor/Charactor/Enemy/EnemyManager.h"
-#include "../Object/Actor/Charactor/Enemy/EnemyDragon.h"
-#include "../Object/Common/Collider/ColliderCapsule.h"
 #include "../Manager/ResourceManager.h"
 #include "../Manager/SoundManager.h"
 #include "../Application.h"
-#include "../Utility/MatrixUtility.h"
-#include "../Object/Actor/UI/UIHp.h"
-#include "../Common/ShadowMap.h"
-#include "PauseScene.h"
 #include "GameScene.h"
 
 GameScene::GameScene(void)
@@ -42,24 +39,24 @@ void GameScene::Load(void)
 	camera_->ChangeMode(Camera::MODE::FIXED_POINT);
 
 	// スカイドーム読み込み
-	skydome_ = new SkyDome();
+	skydome_ = std::make_unique<SkyDome>();
 	skydome_->Load();
 
 	// ステージ初期化
-	stage_ = new Stage();
+	stage_ = std::make_unique<Stage>();
 	stage_->Load();
 
 	// プレイヤー読み込み
-	player_ = new Player();
+	player_ = std::make_shared<Player>();
 	player_->Load();
 
 	// エネミー読み込み
-	enemys_ = new EnemyManager();
+	enemys_ = std::make_shared<EnemyManager>();
 	enemys_->Load();
-	targetEnemy_ = nullptr;
+	targetColliderCapsule_ = nullptr;
 
 	// シャドーマップ読み込み
-	shadowMap_ = new ShadowMap(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+	shadowMap_ = std::make_unique<ShadowMap>(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
 
 	// カメラモード変更
 	camera_->SetFollow(&player_->GetTransform());
@@ -142,6 +139,7 @@ void GameScene::Update(void)
 
 	// スカイドーム更新
 	skydome_->Update();
+
 	//ステージ更新
 	stage_->Update();
 
@@ -150,6 +148,7 @@ void GameScene::Update(void)
 
 	// エネミー更新
 	enemys_->Update();
+
 	// プレイヤー更新
 	player_->Update();
 
@@ -180,25 +179,34 @@ void GameScene::Draw(void)
 {
 	// スカイドーム描画
 	skydome_->Draw();
+
 	// シャドウ描画のセットアップ
 	shadowMap_->DrawSetup();
+
 	// プレイヤー描画
 	player_->Draw();
+
 	// エネミー描画
 	enemys_->Draw();
+
 	// ステージ描画
 	stage_->Draw();
+
 	// シャドウ描画の終了
 	shadowMap_->DrawEnd();
 
 	// シャドウマップを使用して描画する
 	shadowMap_->SetShadow();
+
 	// プレイヤー描画
 	player_->Draw();
+
 	// エネミー描画
 	enemys_->Draw();
+
 	// ステージ描画
 	stage_->Draw();
+
 	// シャドウマップの使用を終了する
 	shadowMap_->EndShadow();
 
@@ -212,8 +220,8 @@ void GameScene::Draw(void)
 	}
 
 	// ロックオンUI描画
-	if (targetEnemy_ != nullptr) {
-		VECTOR enemyTransform = targetEnemy_->GetCenter();
+	if (targetColliderCapsule_ != nullptr) {
+		VECTOR enemyTransform = targetColliderCapsule_->GetCenter();
 		SetUseZBuffer3D(FALSE);
 		DrawBillboard3D(
 			enemyTransform,
@@ -263,24 +271,18 @@ void GameScene::Release(void)
 {
 	// スカイドーム解放
 	skydome_->Release();
-	delete skydome_;
 
 	// ステージ解放
 	stage_->Release();
-	delete stage_;
 
 	//プレイヤー解放
 	player_->Release();
-	delete player_;
 
 	//各エネミー解放
 	enemys_->Release();
-	delete enemys_;
-	delete targetEnemy_;
 
 	//シャドウマップ解放
 	shadowMap_->Release();
-	delete shadowMap_;
 }
 
 void GameScene::AddCollider(void)
@@ -375,7 +377,7 @@ void GameScene::UpdateCollider(void)
 
 void GameScene::UpdateAutoLockOn(void)
 {
-	Camera* camera = SceneManager::GetInstance().GetCamera();
+	std::shared_ptr<Camera> camera = SceneManager::GetInstance().GetCamera();
 	auto& enemys = enemys_->GetEnemys();
 	auto& inp = InputManager::GetInstance();
 	VECTOR playerPos = player_->GetTransform().pos;
@@ -418,14 +420,14 @@ void GameScene::UpdateAutoLockOn(void)
 		prevStickX = dir.x;
 		prevStickZ = dir.z;
 
-		ColliderCapsule* lastTagerEnemy = targetEnemy_;
+		std::shared_ptr<ColliderCapsule>  lastTagerEnemy = targetColliderCapsule_;
 
-		VECTOR targetPos = targetEnemy_->GetCenter();
+		VECTOR targetPos = targetColliderCapsule_->GetCenter();
 		float diff = VSize(VSub(targetPos, playerPos));
 
 		if (diff >= MAX_LOCKON_DIFF || isLockOn) {
 			camera_->ChangeMode(Camera::MODE::FOLLOW);
-			targetEnemy_ = nullptr;
+			targetColliderCapsule_ = nullptr;
 			isChanger = true;
 			player_->SetTargetTransform(nullptr);
 		}
@@ -439,8 +441,8 @@ void GameScene::UpdateAutoLockOn(void)
 					if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::HAND)
 						|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK)) continue;
 
-					ColliderCapsule* colliderCapsule =
-						dynamic_cast<ColliderCapsule*>(collider);
+					std::shared_ptr<ColliderCapsule> colliderCapsule =
+						std::dynamic_pointer_cast<ColliderCapsule>(collider);
 
 					if (colliderCapsule == nullptr
 						|| lastTagerEnemy == colliderCapsule) continue;
@@ -456,9 +458,9 @@ void GameScene::UpdateAutoLockOn(void)
 					if (angle >= a) continue;
 
 					diffMin = lockonDiff;
-					targetEnemy_ = colliderCapsule;
-					camera->SetTargetFollow(&targetEnemy_->GetCenter());
-					player_->SetTargetTransform(&targetEnemy_->GetCenter());
+					targetColliderCapsule_ = colliderCapsule;
+					camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
+					player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
 				}
 			}
 		}
@@ -488,9 +490,9 @@ void GameScene::UpdateAutoLockOn(void)
 					if (angle >= a)continue;
 
 					diffMin = lockonDiff;
-					targetEnemy_ = colliderCapsule;
-					camera->SetTargetFollow(&targetEnemy_->GetCenter());
-					player_->SetTargetTransform(&targetEnemy_->GetCenter());
+					targetColliderCapsule_ = colliderCapsule;
+					camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
+					player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
 				}
 			}
 		}
@@ -523,9 +525,9 @@ void GameScene::UpdateAutoLockOn(void)
 					if (cross.y > 0.0f)continue;
 
 					diffMin = lockonDiff;
-					targetEnemy_ = colliderCapsule;
-					camera->SetTargetFollow(&targetEnemy_->GetCenter());
-					player_->SetTargetTransform(&targetEnemy_->GetCenter());
+					targetColliderCapsule_ = colliderCapsule;
+					camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
+					player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
 				}
 			}
 		}
@@ -558,9 +560,9 @@ void GameScene::UpdateAutoLockOn(void)
 					if (cross.y < 0.0f)continue;
 
 					diffMin = lockonDiff;
-					targetEnemy_ = colliderCapsule;
-					camera->SetTargetFollow(&targetEnemy_->GetCenter());
-					player_->SetTargetTransform(&targetEnemy_->GetCenter());
+					targetColliderCapsule_ = colliderCapsule;
+					camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
+					player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
 				}
 			}
 		}
@@ -592,9 +594,9 @@ void GameScene::UpdateAutoLockOn(void)
 				if (angle >= a)continue;
 
 				diffMin = lockonDiff;
-				targetEnemy_ = colliderCapsule;
+				targetColliderCapsule_ = colliderCapsule;
 				// コライダが保持する座標の参照先を直接渡す（有効なライフタイムが保証される）
-				const VECTOR* enemyCenter = &targetEnemy_->GetCenter();
+				const VECTOR* enemyCenter = &targetColliderCapsule_->GetCenter();
 				camera->SetTargetFollow(enemyCenter);
 				player_->SetTargetTransform(enemyCenter);
 				camera->ChangeMode(Camera::MODE::TARGET_ROCKE);

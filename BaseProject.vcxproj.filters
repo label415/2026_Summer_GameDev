@@ -102,9 +102,6 @@
     <ClCompile Include="Src\Manager\InputManager.cpp">
       <Filter>ソース ファイル\Manager</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Common\Vector2.cpp">
-      <Filter>ソース ファイル\Common</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Object\Actor\ActorBase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -266,9 +263,6 @@
     <ClInclude Include="Src\Manager\InputManager.h">
       <Filter>ヘッダー ファイル\Manager</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Common\Vector2.h">
-      <Filter>ヘッダー ファイル\Common</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -383,9 +377,6 @@
     <ClInclude Include="Src\Object\Common\Collider2D\ColliderBox2D.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Common\Vector2F.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Object\Common\Collider2D\ColliderBase2D.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -399,6 +390,12 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Src\Object\Actor\UI\UISt.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Template\Singleton.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Template\Vector2Template.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

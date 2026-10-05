@@ -1,6 +1,6 @@
 #include "../../Common/Transform.h"
 #include "ColliderBase.h"
-ColliderBase::ColliderBase(SHAPE shape, TAG tag, const Transform* follow, int patrTag)
+ColliderBase::ColliderBase(SHAPE shape, TAG tag, std::weak_ptr<const Transform> follow, int patrTag)
 	:
 	shape_(shape),
 	tag_(tag),
@@ -21,18 +21,20 @@ void ColliderBase::Draw(void)
 	}
 	DrawDebug(color);
 }
-void ColliderBase::SetFollow(Transform* follow)
+void ColliderBase::SetFollow(std::weak_ptr<const Transform> follow)
 {
 	follow_ = follow;
 }
+
 void ColliderBase::SetValid(bool isValid)
 {
 	isValid_ = isValid;
 }
+
 VECTOR ColliderBase::GetRotPos(const VECTOR& localPos) const
 {
 	// 追従相手の回転に合わせて指定ローカル座標を回転し、
 		// 基準座標に加えることでワールド座標へ変換
-	VECTOR localRotPos = follow_->quaRot.PosAxis(localPos);
-	return VAdd(follow_->pos, localRotPos);
+	VECTOR localRotPos = follow_.lock()->quaRot.PosAxis(localPos);
+	return VAdd(follow_.lock()->pos, localRotPos);
 }

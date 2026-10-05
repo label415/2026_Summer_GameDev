@@ -1,8 +1,10 @@
 #pragma once
 #include <map>
+#include "../Template/Singleton.h"
 
-class SoundManager
+class SoundManager : public Singleton<SoundManager>
 {
+    friend class Singleton<SoundManager>;
 public:
 	// SEのID（名前）を定義するenum
     enum class SeId
@@ -34,6 +36,7 @@ public:
     static SoundManager& GetInstance(void); 
 
     void Init(void); // 内部変数の初期化
+    void Release(void);
 
     // --- 定数定義 ---
     static constexpr int MaxVolumeValue = 100;   // ユーザーが指定する最大音量

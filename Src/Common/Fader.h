@@ -3,9 +3,6 @@
 class Fader
 {
 public:
-	// フェードが進む速さ
-	static constexpr float SPEED_ALPHA = 15.0f;
-
 	// 状態
 	enum class STATE
 	{
@@ -21,10 +18,10 @@ public:
 	~Fader(void);
 
 	// 状態の取得
-	STATE GetState(void) const;
+	STATE GetState(void) const { return state_; }
 
 	// フェード処理が終了しているか
-	bool IsEnd(void) const;
+	bool IsEnd(void) const { return isEnd_; }
 
 	// 指定フェードを開始する
 	void SetFade(STATE state);
@@ -40,6 +37,9 @@ public:
 private:
 	//透明度最大値
 	static constexpr float MAX_ALPHA = 255.0f;
+
+	// フェードが進む速さ
+	static constexpr float SPEED_ALPHA = 15.0f;
 
 	// 状態
 	STATE state_;

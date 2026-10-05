@@ -14,33 +14,14 @@
 #include "FontManager.h"
 #include "SceneManager.h"
 
-SceneManager* SceneManager::instance_ = nullptr;
-
-void SceneManager::CreateInstance()
-{
-	if (instance_ == nullptr)
-	{
-		instance_ = new SceneManager();
-	}
-	instance_->Init();
-}
-
-SceneManager& SceneManager::GetInstance(void)
-{
-	return *instance_;
-}
-
 void SceneManager::Init(void)
 {
-	// フォント管理クラス生成
-	FontManager::CreateInstance();
-
 	// ロード画面生成
-	load_ = new Loading();
+	load_ = std::make_unique<Loading>();
 	load_->Load();
 
 	// カメラ
-	camera_ = new Camera();
+	camera_ = std::make_shared<Camera>();
 	camera_->Init();
 
 	// デルタタイム
@@ -63,24 +44,29 @@ void SceneManager::Init3D(void)
 
 	// Zバッファを有効にする
 	SetUseZBuffer3D(true);
-
 	// Zバッファへの書き込みを有効にする
 	SetWriteZBuffer3D(true);
-
 	// バックカリングを有効にする
 	SetUseBackCulling(true);
 
 	// ライトの設定
 	SetUseLighting(true);
-	ChangeLightTypeDir(VGet(-0.5f, -1.0f, -0.5f));
-	SetLightDifColor(GetColorF(1.0f, 1.0f, 0.95f, 1.0f));
-	SetLightAmbColor(GetColorF(0.4f, 0.4f, 0.45f, 1.0f));
+	// ライトの方向
+	ChangeLightTypeDir(LIGHT_DIRECTION);
+	// ライトのディフューズカラー
+	SetLightDifColor(LIGHT_DIFF_COLOR);
+	// ライトのアンビエントカラー
+	SetLightAmbColor(LIGHT_AMB_COLOR);
 
 	// フォグ設定
 	SetFogEnable(true);
-	SetFogColor(5, 5, 5);
-	SetFogStartEnd(10000.0f, 20000.0f);
-
+	// フォグの色
+	SetFogColor(
+		FOG_COLOR_R,
+		FOG_COLOR_G,
+		FOG_COLOR_B);
+	// フォグ表示範囲
+	SetFogStartEnd(FOG_START, FOG_END);
 }
 
 void SceneManager::ChangeScene(SCENE_ID sceneId)
@@ -130,7 +116,7 @@ void SceneManager::ResetScene(SCENE_ID sceneId)
 
 void SceneManager::Update(void)
 {
-	//末尾のやつだけUpdate
+	// 末尾のやつだけUpdate
 	scenes_.back()->Update();
 
 	// カメラ更新
@@ -159,25 +145,23 @@ void SceneManager::Draw(void)
 	camera_->DrawDebug();
 }
 
-void SceneManager::Destroy(void)
+void SceneManager::Release(void)
 {
+	// カメラの解放
 	camera_->Release();
-	delete camera_;
 
 	// ロード画面の削除
 	load_->Release();
-	delete load_;
-
-	FontManager::GetInstance().Destroy();
-
-	// インスタンスのメモリ解放
-	delete instance_;
 }
 
 std::unique_ptr<SceneBase> SceneManager::CreateScene(SCENE_ID sceneId)
 {
 	// シーンIDを更新
 	sceneId_ = sceneId;
+
+	// すべてのSE,BGMを停止
+	SoundManager::GetInstance().Release();
+	ResourceManager::GetInstance().Release();
 
 	// インスタンス生成
 	switch (sceneId_) {

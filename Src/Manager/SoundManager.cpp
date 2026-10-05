@@ -30,6 +30,12 @@ void SoundManager::Init(void)
     seMap_.clear();
 }
 
+void SoundManager::Release(void)
+{
+    AllStopSE();
+    StopBGM();
+}
+
 void SoundManager::PlayBGM(int handle, int volume)
 {
 	// Šù‘¶‚ÌBGM‚ð’âŽ~‚µ‚Ä‰ð•ú

@@ -10,7 +10,7 @@ class ColliderCapsule : public ColliderBase
 public:
 	// コンストラクタ
 	ColliderCapsule(
-		TAG tag, const Transform* follow,
+		TAG tag, std::weak_ptr<const Transform> follow,
 		const VECTOR& localPosTop, const VECTOR& localPosDown, float radius, int patrTag = 0);
 
 	// デストラクタ
@@ -46,24 +46,23 @@ public:
 
 	// 指定された回数と距離で三角形の法線方向に押し戻す
 	void PushBackAlongNormal(
-		const ColliderModel* colliderModel, Transform& transform,
+		std::weak_ptr<const ColliderModel> colliderModel, Transform& transform,
 		int maxTryCnt, float pushDistance,
 		bool isExclude = false, bool isTarget = false) const;
 
 	// 指定された回数で三角形の法線方向に押し戻す
 	void PushBackAlongNormal(
-		const ColliderCapsule* colliderCapsule, Transform& transform,
+		std::weak_ptr<const ColliderCapsule> colliderCapsule, Transform& transform,
 		int maxTryCnt,
 		bool isExclude = false, bool isTarget = false) const;
 
 	// 指定されたカプセルコライダと衝突しているか判定
-	bool IsHit(const ColliderModel* colliderModel,
+	bool IsHit(std::weak_ptr<const ColliderModel> colliderModel,
 		bool isExclude = false, bool isTarget = false) const;
 protected:
 	// デバッグ用描画
 	void DrawDebug(int color) override;
 private:
-
 	// 親Transformからの相対位置(上側)
 	VECTOR localPosTop_;
 	// 親Transformからの相対位置(下側)

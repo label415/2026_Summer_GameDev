@@ -1,6 +1,6 @@
 #pragma once
 #include <DxLib.h>
-#include "../../../Common/Vector2F.h"
+#include "../../../Template/Vector2Template.h"
 #include "ColliderBase2D.h"
 
 class Transform;
