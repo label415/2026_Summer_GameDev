@@ -9,12 +9,15 @@ class ColliderSphere : public ColliderBase
 public:
     // コンストラクタ
     ColliderSphere(
-        TAG tag, const Transform* follow, const VECTOR& localPos, float radius, int patrTag = 0);
+        TAG tag, std::weak_ptr<const Transform> follow,
+        const VECTOR& localPos, float radius, int patrTag = 0);
+
     // デストラクタ
     ~ColliderSphere(void);
 
     // 親Transformからの相対位置を取得
     const VECTOR& GetLocalPos(void) const { return localPos_; }
+
     // 親Transformからの相対位置をセット
     void SetLocalPos(const VECTOR& localPos) { localPos_ = localPos; }
 
@@ -23,6 +26,7 @@ public:
 
     // 半径
     float GetRadius(void) const { return radius_; }
+
     void SetRadius(float radius) { radius_ = radius; }
 
     // 指定された回数と距離で三角形の法線方向に押し戻した座標を取得
@@ -32,7 +36,8 @@ public:
         float pushDistance) const override;
 
     //球体とモデルの衝突判定
-    bool GetHitSpher_Model(const ColliderModel* colliderModel,bool isExclude = false, bool isTarget = false) const;
+    bool GetHitSpher_Model(std::weak_ptr<const ColliderModel> colliderModel,
+        bool isExclude = false, bool isTarget = false) const;
 protected:
     // デバッグ用描画
     void DrawDebug(int color) override;

@@ -75,9 +75,9 @@ VECTOR& ColliderCapsule::GetCenter(void)
 VECTOR ColliderCapsule::GetPosPushBackAlongNormal(const MV1_COLL_RESULT_POLY& hitColPoly, int maxTryCnt, float pushDistance) const
 {
 	// コピー生成
-	std::shared_ptr<const Transform> tmpTransform = follow_.lock();
+	auto tmpTransform = std::make_shared<Transform>(*follow_.lock());
 	ColliderCapsule tmpCapsule = *this;
-	tmpCapsule.SetFollow(&tmpTransform);
+	tmpCapsule.SetFollow(tmpTransform);
 	// 衝突補正処理
 	int tryCnt = 0;
 	while (tryCnt < maxTryCnt)
@@ -92,11 +92,11 @@ VECTOR ColliderCapsule::GetPosPushBackAlongNormal(const MV1_COLL_RESULT_POLY& hi
 			break;
 		}
 			// 衝突していたら法線方向に押し戻し
-			tmpTransform.pos =
-			VAdd(tmpTransform.pos, VScale(hitColPoly.Normal, pushDistance));
+			tmpTransform->pos =
+			VAdd(tmpTransform->pos, VScale(hitColPoly.Normal, pushDistance));
 		tryCnt++;
 	}
-	return tmpTransform.pos;
+	return tmpTransform->pos;
 }
 
 void ColliderCapsule::PushBackAlongNormal(
@@ -105,7 +105,7 @@ void ColliderCapsule::PushBackAlongNormal(
 {
 	// モデルとカプセルの衝突判定
 	auto hits = MV1CollCheck_Capsule(
-		colliderModel.lock()->GetFollow()->modelId, -1,
+		colliderModel.lock()->GetFollow().lock()->modelId, -1,
 		GetPosTop(), GetPosDown(), GetRadius());
 
 	// 衝突した複数のポリゴンと衝突回避するまで、位置を移動させる
@@ -113,12 +113,14 @@ void ColliderCapsule::PushBackAlongNormal(
 	{
 		auto hitPoly = hits.Dim[i];
 		// 除外フレームは無視する
-		if (isExclude && colliderModel.lock()->IsExcludeFrame(hitPoly.FrameIndex))
+		if (isExclude 
+			&& colliderModel.lock()->IsExcludeFrame(hitPoly.FrameIndex))
 		{
 			continue;
 		}
 		// 対象フレーム以外は無視する
-		if (isTarget && !colliderModel.lock()->IsTargetFrame(hitPoly.FrameIndex))
+		if (isTarget 
+			&& !colliderModel.lock()->IsTargetFrame(hitPoly.FrameIndex))
 		{
 			continue;
 		}
@@ -147,11 +149,13 @@ void ColliderCapsule::PushBackAlongNormal(
 
 		// プレイヤーの軸上で、敵の中心に一番近い点を求める
 		VECTOR p1 = AsoUtility::GetNearestPointOnSegment(
-			GetPosTop(), GetPosDown(), colliderCapsule.lock()->GetFollow()->pos);
+			GetPosTop(), GetPosDown(),
+			colliderCapsule.lock()->GetFollow().lock()->pos);
 
 		// 敵の軸上で、上記で求めたp1に一番近い点(p2)を求める
 		VECTOR p2 = AsoUtility::GetNearestPointOnSegment(
-			colliderCapsule.lock()->GetPosTop(), colliderCapsule.lock()->GetPosDown(), p1);
+			colliderCapsule.lock()->GetPosTop(),
+			colliderCapsule.lock()->GetPosDown(), p1);
 
 		// 敵からプレイヤーへ向かうベクトルにする
 		VECTOR vBA = VSub(p1, p2);
@@ -186,7 +190,7 @@ bool ColliderCapsule::IsHit(
 
 	// モデルとカプセルの衝突判定
 	auto hits = MV1CollCheck_Capsule(
-		colliderModel->GetFollow()->modelId, -1,
+		colliderModel.lock()->GetFollow().lock()->modelId, -1,
 		GetPosTop(), GetPosDown(), GetRadius());
 
 	// 衝突した複数のポリゴンと衝突回避するまで、位置を移動させる
@@ -194,12 +198,14 @@ bool ColliderCapsule::IsHit(
 	{
 		auto hitPoly = hits.Dim[i];
 		// 除外フレームは無視する
-		if (isExclude && colliderModel.lock()->IsExcludeFrame(hitPoly.FrameIndex))
+		if (isExclude 
+			&& colliderModel.lock()->IsExcludeFrame(hitPoly.FrameIndex))
 		{
 			continue;
 		}
 		// 対象フレーム以外は無視する
-		if (isTarget && !colliderModel.lock()->IsTargetFrame(hitPoly.FrameIndex))
+		if (isTarget 
+			&& !colliderModel.lock()->IsTargetFrame(hitPoly.FrameIndex))
 		{
 			continue;
 		}

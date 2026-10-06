@@ -4,7 +4,7 @@
 #include "ColliderLine.h"
 
 ColliderLine::ColliderLine(
-	TAG tag, const Transform* follow,
+	TAG tag, std::weak_ptr<const Transform> follow,
 	const VECTOR& localPosStart, const VECTOR& localPosEnd, int patrTag)
 	:
 	ColliderBase(SHAPE::LINE, tag, follow, patrTag),
@@ -46,12 +46,13 @@ VECTOR ColliderLine::GetPosEnd(void) const
 }
 
 bool ColliderLine::PushBackUp(
-	const ColliderModel* colliderModel, Transform& transform,
+	std::weak_ptr<const ColliderModel> colliderModel, Transform& transform,
 	float pushDistance, bool isExclude, bool isTarget) const
 {
 	// ステージモデル(地面)との衝突
 	auto hits = MV1CollCheck_LineDim(
-		colliderModel->GetFollow()->modelId, -1, GetPosStart(), GetPosEnd());
+		colliderModel.lock()->GetFollow().lock()->modelId,
+		-1, GetPosStart(), GetPosEnd());
 
 	//衝突判定
 	bool res = false;
@@ -61,13 +62,15 @@ bool ColliderLine::PushBackUp(
 		auto hit = hits.Dim[i];
 
 		// 除外フレームは無視する
-		if (isExclude && colliderModel->IsExcludeFrame(hit.FrameIndex))
+		if (isExclude 
+			&& colliderModel.lock()->IsExcludeFrame(hit.FrameIndex))
 		{
 			continue;
 		}
 
 		// 対象フレーム以外は無視する
-		if (isTarget && !colliderModel->IsTargetFrame(hit.FrameIndex))
+		if (isTarget 
+			&& !colliderModel.lock()->IsTargetFrame(hit.FrameIndex))
 		{
 			continue;
 		}

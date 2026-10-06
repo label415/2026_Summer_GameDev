@@ -18,6 +18,7 @@ public:
 		MODEL,
 		BOX
 	};
+
 	// Õ“Ëí•Ê
 	enum class TAG
 	{

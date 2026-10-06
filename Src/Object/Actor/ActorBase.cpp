@@ -46,7 +46,7 @@ void ActorBase::Draw(void)
 			collider->Draw();
 		}
 	}
-#endif // _DEBUG
+#endif
 
 	if (transform_.modelId != -1)
 	{
@@ -57,57 +57,9 @@ void ActorBase::Draw(void)
 void ActorBase::Release(void)
 {
 	transform_.Release();
-
-	for (const auto& own : ownColliders_)
-	{
-		for (const auto& collider : own.second) {
-			delete collider;
-		}
-	}
-	ownColliders_.clear();
 }
 
 const Transform& ActorBase::GetTransform(void) const
 {
 	return transform_;
-}
-
-const std::vector<ColliderBase*> ActorBase::GetOwnCollider(int key) const
-{
-	// 指定された形状のコライダが存在しない場合は空のベクトルを返す
-	if (ownColliders_.count(key) == 0)
-	{
-		return std::vector<ColliderBase*>();
-	}
-	return ownColliders_.at(key);
-}
-
-void ActorBase::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
-{
-	// コライダーを登録
-	if (hitCollider.size() == 0)return;
-	hitColliders_[shape].insert(
-		hitColliders_[shape].end(),
-		hitCollider.begin(),
-		hitCollider.end()
-	);
-}
-
-void ActorBase::ClearHitCollider(void)
-{
-	hitColliders_.clear();
-}
-
-void ActorBase::RemoveHitColliderByShapeAndTag(ColliderBase::SHAPE shape, ColliderBase::TAG tag)
-{
-	// 指定された形状のコライダが存在しない場合は処理を抜ける
-	if (hitColliders_.count(static_cast<int>(shape)) == 0) return;
-	auto& vec = hitColliders_[static_cast<int>(shape)];
-	vec.erase(
-		std::remove_if(vec.begin(), vec.end(),
-			[tag](const ColliderBase* collider) {
-				return collider->GetTag() == tag;
-			}),
-		vec.end()
-	);
 }

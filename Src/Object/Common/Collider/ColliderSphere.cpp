@@ -3,7 +3,8 @@
 #include "ColliderSphere.h"
 
 ColliderSphere::ColliderSphere(
-	TAG tag, const Transform* follow, const VECTOR& localPos, float radius, int patrTag)
+	TAG tag, std::weak_ptr<const Transform> follow,
+	const VECTOR& localPos, float radius, int patrTag)
 	:
 	ColliderBase(SHAPE::SPHERE, tag, follow, patrTag),
 	localPos_(localPos),
@@ -17,9 +18,9 @@ VECTOR ColliderSphere::GetPosPushBackAlongNormal(
 	const MV1_COLL_RESULT_POLY& hitColPoly, int maxTryCnt, float pushDistance) const
 {
 	// コピー生成
-	Transform tmpTransform = *follow_;
+	auto tmpTransform = std::make_shared<Transform>(*follow_.lock());
 	ColliderSphere tmpCapsule = *this;
-	tmpCapsule.SetFollow(&tmpTransform);
+	tmpCapsule.SetFollow(tmpTransform);
 	// 衝突補正処理
 	int tryCnt = 0;
 	while (tryCnt < maxTryCnt)
@@ -34,21 +35,21 @@ VECTOR ColliderSphere::GetPosPushBackAlongNormal(
 			break;
 		}
 		// 衝突していたら法線方向に押し戻し
-		tmpTransform.pos =
-			VAdd(tmpTransform.pos, VScale(hitColPoly.Normal, pushDistance));
+		tmpTransform->pos =
+			VAdd(tmpTransform->pos, VScale(hitColPoly.Normal, pushDistance));
 		tryCnt++;
 	}
-	return tmpTransform.pos;
+	return tmpTransform->pos;
 }
 
 bool ColliderSphere::GetHitSpher_Model(
-	const ColliderModel* colliderModel, bool isExclude, bool isTarget) const
+	std::weak_ptr<const ColliderModel> colliderModel, bool isExclude, bool isTarget) const
 {
 	bool ret = false;
 
 	// モデルとカプセルの衝突判定
 	auto hits = MV1CollCheck_Sphere(
-		colliderModel->GetFollow()->modelId, -1,
+		colliderModel.lock()->GetFollow().lock()->modelId, -1,
 		GetPos(), GetRadius());
 
 	// 衝突した複数のポリゴンと衝突回避するまで、位置を移動させる
@@ -56,12 +57,14 @@ bool ColliderSphere::GetHitSpher_Model(
 	{
 		auto hitPoly = hits.Dim[i];
 		// 除外フレームは無視する
-		if (isExclude && colliderModel->IsExcludeFrame(hitPoly.FrameIndex))
+		if (isExclude 
+			&& colliderModel.lock()->IsExcludeFrame(hitPoly.FrameIndex))
 		{
 			continue;
 		}
 		// 対象フレーム以外は無視する
-		if (isTarget && !colliderModel->IsTargetFrame(hitPoly.FrameIndex))
+		if (isTarget 
+			&& !colliderModel.lock()->IsTargetFrame(hitPoly.FrameIndex))
 		{
 			continue;
 		}

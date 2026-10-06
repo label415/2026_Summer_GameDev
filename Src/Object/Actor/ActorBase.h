@@ -35,22 +35,6 @@ public:
 	// 大きさ、回転、座標等の取得
 	const Transform& GetTransform(void) const;
 
-	// 自身の衝突情報取得
-	const std::map<int, std::vector<ColliderBase*>>& GetOwnColliders(void) const
-	{
-		return ownColliders_;
-	}
-
-	// 特定の自身の衝突情報取得
-	const std::vector<ColliderBase*> GetOwnCollider(int key) const;
-
-	// 衝突対象となるコライダを登録
-	void AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider);
-	// 衝突対象となるコライダをクリア
-	void ClearHitCollider(void);
-
-	void RemoveHitColliderByShapeAndTag(ColliderBase::SHAPE shape, ColliderBase::TAG tag);
-
 	//生存フラグ取得
 	const bool GetIsAlive(void)const { return isAlive_; }
 protected:
@@ -59,19 +43,14 @@ protected:
 
 	// シングルトン参照
 	ResourceManager& resMng_;
+
 	SceneManager& scnMng_;
 
 	// モデル制御の基本情報
 	Transform transform_;
 
 	//エフェクトコントローラ
-	EffectController* effect_;
-
-	// 自身の衝突情報
-	std::map<int, std::vector<ColliderBase*>> ownColliders_;
-
-	// 衝突相手の情報
-	std::map<int, std::vector<ColliderBase*>> hitColliders_;
+	std::unique_ptr<EffectController> effect_;
 
 	// リソースロード
 	virtual void InitLoad(void) = 0;

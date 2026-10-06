@@ -10,7 +10,7 @@ class ColliderLine : public ColliderBase
 public:
 	// コンストラクタ
 	ColliderLine(
-		TAG tag, const Transform* follow,
+		TAG tag, std::weak_ptr<const Transform> follow,
 		const VECTOR& localPosStart, const VECTOR& localPosEnd, int patrTag = 0);
 
 	// デストラクタ
@@ -30,7 +30,7 @@ public:
 
 	//ステージモデルとの衝突
 	bool  PushBackUp(
-		const ColliderModel* colliderModel,
+		std::weak_ptr<const ColliderModel> colliderModel,
 		Transform& transform,
 		float pushDistance,
 		bool isExclude = false,

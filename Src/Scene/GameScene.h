@@ -96,12 +96,6 @@ private:
 	// シャドウマップ
 	std::unique_ptr<ShadowMap> shadowMap_;
 
-	// コライダー登録
-	void AddCollider(void);
-
-	// コライダー更新
-	void UpdateCollider(void);
-
 	// 自動ロックオン対象選別
 	void UpdateAutoLockOn(void);
 };
