@@ -121,9 +121,5 @@ public:
 
 	// •¶š—ñ‚Ì•ªŠ„
 	static std::vector<std::string> Split(std::string& line, char delimiter);
-
-	// ü•ªã‚ÌÅ‹ßÚ“_‚ğæ“¾
-	static VECTOR GetNearestPointOnSegment(const VECTOR& statePos,
-		const VECTOR& endPos, const VECTOR& targetPos);
 };
 

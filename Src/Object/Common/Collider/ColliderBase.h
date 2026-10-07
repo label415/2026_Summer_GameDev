@@ -59,6 +59,8 @@ public:
 	//色変更
 	void SetValid(bool isValid);
 
+	bool GetIsValid(void)const { return isValid_; }
+
 	// 指定された回数と距離で三角形の法線方向に押し戻した座標を取得
 	virtual VECTOR GetPosPushBackAlongNormal(
 		const MV1_COLL_RESULT_POLY& hitColPoly,

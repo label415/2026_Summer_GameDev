@@ -19,30 +19,43 @@ bool CollisionUtility::IsHit(
 
 bool CollisionUtility::IsHit(
 	const ColliderCapsule& capsule,
+	const ColliderSphere& sphere)
+{
+	return HitCheck_Sphere_Capsule(
+		sphere.GetPos(), sphere.GetRadius(),
+		capsule.GetPosTop(), capsule.GetPosDown(),
+		capsule.GetRadius());
+}
+
+bool CollisionUtility::IsHit(
+	const ColliderCapsule& capsule,
 	const ColliderModel& model,
-	MV1_COLL_RESULT_POLY_DIM& outHits,
 	bool isExclude, bool isTarget)
 {
 	auto modelFollow = model.GetFollow().lock();
 	if (!modelFollow) return false;
 
-	outHits = MV1CollCheck_Capsule(
+	auto hits = MV1CollCheck_Capsule(
 		modelFollow->modelId, -1,
-		capsule.GetPosTop(),
-		capsule.GetPosDown(),
+		capsule.GetPosTop(), capsule.GetPosDown(),
 		capsule.GetRadius());
 
-	for (int i = 0; i < outHits.HitNum; i++)
+	bool isHit = false;
+	// 衝突した複数のポリゴンと衝突回避するまで、位置を移動させる
+	for (int i = 0; i < hits.HitNum; i++)
 	{
 		if (IsValidPoly(
 			model,
-			outHits.Dim[i].FrameIndex,
+			hits.Dim[i].FrameIndex,
 			isExclude, isTarget))
 		{
-			return true;
+			isHit = true;
+			break;
 		}
 	}
-	return false;
+	// 検出した地面ポリゴン情報の後始末
+	MV1CollResultPolyDimTerminate(hits);
+	return isHit;
 }
 
 bool CollisionUtility::IsHit(
@@ -76,27 +89,29 @@ bool CollisionUtility::IsHit(
 bool CollisionUtility::IsHit(
 	const ColliderLine& line,
 	const ColliderModel& model,
-	MV1_COLL_RESULT_POLY_DIM& outHits,
 	bool isExclude, bool isTarget)
 {
-	auto modelFollow = model.GetFollow().lock();
-	if (!modelFollow) return false;
-
-	outHits = MV1CollCheck_LineDim(
-		modelFollow->modelId, -1,
+	// モデルとカプセルの衝突判定
+	auto hits = MV1CollCheck_Line(
+		model.GetFollow().lock()->modelId, -1,
 		line.GetPosStart(), line.GetPosEnd());
 
-	for (int i = 0; i < outHits.HitNum; i++)
+	bool isHit = false;
+	if (hits.HitFlag == 1)
 	{
-		if (IsValidPoly(
-			model,
-			outHits.Dim[i].FrameIndex,
-			isExclude, isTarget))
+		// 除外フレームは無視する
+		if (isExclude && model.IsExcludeFrame(hits.FrameIndex))
 		{
-			return true;
+			return false;
 		}
+		// 対象フレームは無視する
+		if (isTarget && model.IsTargetFrame(hits.FrameIndex))
+		{
+			return false;
+		}
+		isHit = true;
 	}
-	return false;
+	return isHit;
 }
 
 bool CollisionUtility::IsValidPoly(
@@ -112,10 +127,11 @@ VECTOR CollisionUtility::CalcPushCapsuleCapsule(
 	const ColliderCapsule& a,
 	const ColliderCapsule& b)
 {
-	VECTOR targetPos = b.GetFollow().lock() ? b.GetFollow().lock()->pos : b.GetPosDown();
-	VECTOR p1 = AsoUtility::GetNearestPointOnSegment(
+	VECTOR targetPos =
+		b.GetFollow().lock() ? b.GetFollow().lock()->pos : b.GetPosDown();
+	VECTOR p1 = GetNearestPointOnSegment(
 		a.GetPosTop(), a.GetPosDown(), targetPos);
-	VECTOR p2 = AsoUtility::GetNearestPointOnSegment(
+	VECTOR p2 = GetNearestPointOnSegment(
 		b.GetPosTop(), b.GetPosDown(), p1);
 
 	VECTOR vBA = VSub(p1, p2);
@@ -222,4 +238,26 @@ VECTOR CollisionUtility::CalcPushUpLineModel(
 		}
 	}
 	return VScale(AsoUtility::DIR_U, maxDiffY);
+}
+
+VECTOR CollisionUtility::GetNearestPointOnSegment(const VECTOR& statePos, const VECTOR& endPos, const VECTOR& targetPos)
+{
+	VECTOR segmentVec = VSub(endPos, statePos);
+	VECTOR toTargetVec = VSub(targetPos, statePos);
+
+	float lenSquare = static_cast<float>(VSquareSize(segmentVec));
+
+	if (lenSquare < 1e-6)
+	{
+		return statePos;
+	}
+
+	float segmentRatio = VDot(toTargetVec, segmentVec) / lenSquare;
+
+	if (segmentRatio < 0.0f) { segmentRatio = 0.0f; }
+	if (segmentRatio > 1.0f) { segmentRatio = 1.0f; }
+
+	VECTOR nearestPos = VAdd(statePos, VScale(segmentVec, segmentRatio));
+
+	return nearestPos;
 }

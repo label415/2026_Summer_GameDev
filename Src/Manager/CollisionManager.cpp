@@ -6,9 +6,9 @@
 #include "../Object/Common/Transform.h"
 #include "CollisionManager.h"
 
-void CollisionManager::AddCollider(std::shared_ptr<ColliderBase> col, CollisionCallback callback)
+void CollisionManager::AddCollider(std::shared_ptr<ColliderBase> col)
 {
-	colliders_.push_back({ col, callback });
+	colliders_.push_back(col);
 }
 
 void CollisionManager::Release(void)
@@ -18,13 +18,12 @@ void CollisionManager::Release(void)
 
 void CollisionManager::DrawDebug(void)
 {
-	for (auto& entry : colliders_)
+#ifdef _DEBUG
+	for (auto& collider : colliders_)
 	{
-		if (entry.collider)
-		{
-			entry.collider->Draw();
-		}
+		collider->Draw();
 	}
+#endif
 }
 
 void CollisionManager::Update(void)
@@ -34,8 +33,8 @@ void CollisionManager::Update(void)
 	// îjä¸çœÇ›ÇÃéQè∆ÇçÌèú
 	colliders_.erase(
 		std::remove_if(colliders_.begin(), colliders_.end(),
-			[](const ColliderEntry& e) {
-				return !e.collider || e.collider->GetFollow().expired();
+			[](const std::shared_ptr<ColliderBase>& e) {
+				return !e || e.get()->GetFollow().expired();
 			}),
 		colliders_.end()
 	);
@@ -46,127 +45,108 @@ void CollisionManager::Update(void)
 		for (size_t j = i + 1; j < colliders_.size(); ++j)
 		{
 			if (!IsCheckColliderTag(
-				colliders_[i].collider->GetTag(),
-				colliders_[j].collider->GetTag()))
+				colliders_[i]->GetTag(),
+				colliders_[j]->GetTag()))
 			{
 				continue;
 			}
 
+			// è’ìÀîªíËé¿çs
 			ResolveCollision(colliders_[i], colliders_[j]);
 		}
 	}
 }
 
-void CollisionManager::ResolveCollision(ColliderEntry& entryA, ColliderEntry& entryB)
+void CollisionManager::ResolveCollision(
+	std::weak_ptr<ColliderBase> colliderA,
+	std::weak_ptr<ColliderBase> colliderB)
 {
-	auto& colA = entryA.collider;
-	auto& colB = entryB.collider;
+	auto colA = colliderA.lock();
+	auto colB = colliderB.lock();
 
-	auto shapeA = colA->GetShape();
-	auto shapeB = colB->GetShape();
-
-	if (shapeA == ColliderBase::SHAPE::CAPSULE && shapeB == ColliderBase::SHAPE::CAPSULE)
+	if (colA->GetShape() == ColliderBase::SHAPE::CAPSULE 
+		&& colB->GetShape() == ColliderBase::SHAPE::CAPSULE)
 	{
 		auto capA = std::static_pointer_cast<ColliderCapsule>(colA);
 		auto capB = std::static_pointer_cast<ColliderCapsule>(colB);
 
 		if (CollisionUtility::IsHit(*capA, *capB))
 		{
-			// ÉLÉÉÉâìØémÇÃâüÇµçáÇ¢
-			VECTOR pushA = CollisionUtility::CalcPushCapsuleCapsule(*capA, *capB);
-			if (entryA.onCollision) entryA.onCollision(colA, colB, { true, pushA });
-			if (entryB.onCollision) entryB.onCollision(colB, colA, { true, VScale(pushA, -1.0f) });
-		}
-		return;
-	}
-
-	auto HandleCapsuleModel = [](ColliderEntry& capEnt, ColliderEntry& mdlEnt) {
-		auto cap = std::static_pointer_cast<ColliderCapsule>(capEnt.collider);
-		auto mdl = std::static_pointer_cast<ColliderModel>(mdlEnt.collider);
-
-		MV1_COLL_RESULT_POLY_DIM hits;
-		if (CollisionUtility::IsHit(*cap, *mdl, hits, true, false))
-		{
-			VECTOR push = CollisionUtility::CalcPushCapsuleModel(*cap, *mdl, hits, 20, 1.0f, true, false);
-			if (capEnt.onCollision)
+			if (capA->GetTag() == ColliderBase::TAG::PLAYER
+				&& capB->GetTag() == ColliderBase::TAG::ENEMY)
 			{
-				capEnt.onCollision(capEnt.collider, mdlEnt.collider, { true, push });
+
 			}
 		}
-		MV1CollResultPolyDimTerminate(hits);
-		};
-
-	if (shapeA == ColliderBase::SHAPE::CAPSULE && shapeB == ColliderBase::SHAPE::MODEL)
-	{
-		HandleCapsuleModel(entryA, entryB);
-		return;
-	}
-	if (shapeB == ColliderBase::SHAPE::CAPSULE && shapeA == ColliderBase::SHAPE::MODEL)
-	{
-		HandleCapsuleModel(entryB, entryA);
-		return;
 	}
 
-	auto HandleLineModel = [](ColliderEntry& lineEnt, ColliderEntry& mdlEnt) {
-		auto line = std::static_pointer_cast<ColliderLine>(lineEnt.collider);
-		auto mdl = std::static_pointer_cast<ColliderModel>(mdlEnt.collider);
+	if (colA->GetShape() == ColliderBase::SHAPE::CAPSULE 
+		&& colB->GetShape() == ColliderBase::SHAPE::SPHERE)
+	{
+		auto capA = std::static_pointer_cast<ColliderCapsule>(colA);
+		auto capB = std::static_pointer_cast<ColliderSphere>(colB);
 
-		MV1_COLL_RESULT_POLY_DIM hits;
-		if (CollisionUtility::IsHit(*line, *mdl, hits, false, true))
+		if (CollisionUtility::IsHit(*capA, *capB))
 		{
-			float currentY = line->GetFollow().lock() ? line->GetFollow().lock()->pos.y : 0.0f;
-			VECTOR pushUp = CollisionUtility::CalcPushUpLineModel(currentY, *mdl, hits, 2.0f, false, true);
-			if (lineEnt.onCollision)
-			{
-				lineEnt.onCollision(lineEnt.collider, mdlEnt.collider, { true, pushUp });
-			}
+
 		}
-		MV1CollResultPolyDimTerminate(hits);
-		};
-
-	if (shapeA == ColliderBase::SHAPE::LINE && shapeB == ColliderBase::SHAPE::MODEL)
-	{
-		HandleLineModel(entryA, entryB);
-		return;
-	}
-	if (shapeB == ColliderBase::SHAPE::LINE && shapeA == ColliderBase::SHAPE::MODEL)
-	{
-		HandleLineModel(entryB, entryA);
-		return;
 	}
 
-	if ((shapeA == ColliderBase::SHAPE::SPHERE && shapeB == ColliderBase::SHAPE::CAPSULE) ||
-		(shapeB == ColliderBase::SHAPE::SPHERE && shapeA == ColliderBase::SHAPE::CAPSULE))
+	if (colA->GetShape() == ColliderBase::SHAPE::CAPSULE 
+		&& colB->GetShape() == ColliderBase::SHAPE::MODEL)
 	{
-		auto& sphEnt = (shapeA == ColliderBase::SHAPE::SPHERE) ? entryA : entryB;
-		auto& capEnt = (shapeA == ColliderBase::SHAPE::SPHERE) ? entryB : entryA;
+		auto capA = std::static_pointer_cast<ColliderCapsule>(colA);
+		auto capB = std::static_pointer_cast<ColliderSphere>(colB);
 
-		auto sph = std::static_pointer_cast<ColliderSphere>(sphEnt.collider);
-		auto cap = std::static_pointer_cast<ColliderCapsule>(capEnt.collider);
-
-		if (HitCheck_Sphere_Capsule(
-			sph->GetPos(), sph->GetRadius(),
-			cap->GetPosTop(), cap->GetPosDown(), cap->GetRadius()))
+		if (CollisionUtility::IsHit(*capA, *capB))
 		{
-			if (capEnt.onCollision) capEnt.onCollision(capEnt.collider, sphEnt.collider, { true, {0,0,0} });
-			if (sphEnt.onCollision) sphEnt.onCollision(sphEnt.collider, capEnt.collider, { true, {0,0,0} });
+
 		}
-		return;
+	}
+
+	if (colA->GetShape() == ColliderBase::SHAPE::MODEL 
+		&& colB->GetShape() == ColliderBase::SHAPE::SPHERE)
+	{
+		auto capA = std::static_pointer_cast<ColliderModel>(colA);
+		auto capB = std::static_pointer_cast<ColliderSphere>(colB);
+
+		if (CollisionUtility::IsHit(*capB, *capA))
+		{
+
+		}
+	}
+
+	if (colA->GetShape() == ColliderBase::SHAPE::MODEL 
+		&& colB->GetShape() == ColliderBase::SHAPE::LINE)
+	{
+		auto capA = std::static_pointer_cast<ColliderModel>(colA);
+		auto capB = std::static_pointer_cast<ColliderLine>(colB);
+
+		if (CollisionUtility::IsHit(*capB, *capA))
+		{
+
+		}
 	}
 }
 
-bool CollisionManager::IsCheckColliderTag(ColliderBase::TAG tagA, ColliderBase::TAG tagB) const
+bool CollisionManager::IsCheckColliderTag(
+	ColliderBase::TAG tagA, ColliderBase::TAG tagB) const
 {
 	using TAG = ColliderBase::TAG;
 
-	if ((tagA == TAG::PLAYER && tagB == TAG::ENEMY)|| (tagA == TAG::ENEMY && tagB == TAG::PLAYER)) return true;
-	if ((tagA == TAG::PLAYER && tagB == TAG::STAGE) || (tagA == TAG::STAGE && tagB == TAG::PLAYER)) return true;
-	if ((tagA == TAG::ENEMY && tagB == TAG::STAGE) || (tagA == TAG::STAGE && tagB == TAG::ENEMY)) return true;
-	if ((tagA == TAG::GROUND && tagB == TAG::STAGE) || (tagA == TAG::STAGE && tagB == TAG::GROUND)) return true;
-	if ((tagA == TAG::CAMERA && tagB == TAG::STAGE) || (tagA == TAG::STAGE && tagB == TAG::CAMERA)) return true;
-	if ((tagA == TAG::ENEMY_WEPON && tagB == TAG::STAGE) || (tagA == TAG::STAGE && tagB == TAG::ENEMY_WEPON)) return true;
-	if ((tagA == TAG::PLAYER && tagB == TAG::ENEMY_WEPON) || (tagA == TAG::ENEMY_WEPON && tagB == TAG::PLAYER)) return true;
-	if ((tagA == TAG::ENEMY && tagB == TAG::PLAYER_WEPON) || (tagA == TAG::PLAYER_WEPON && tagB == TAG::ENEMY)) return true;
+	// èáïsìØÇ≈àÍívÇ∑ÇÈÇ©îªíËÇ∑ÇÈÉâÉÄÉ_éÆ
+	auto match = [tagA, tagB](TAG a, TAG b) {
+		return (tagA == a && tagB == b) || (tagA == b && tagB == a);
+		};
+
+	if (match(TAG::PLAYER, TAG::ENEMY)) return true;
+	if (match(TAG::PLAYER, TAG::STAGE)) return true;
+	if (match(TAG::ENEMY, TAG::STAGE)) return true;
+	if (match(TAG::GROUND, TAG::STAGE)) return true;
+	if (match(TAG::CAMERA, TAG::STAGE)) return true;
+	if (match(TAG::ENEMY_WEPON, TAG::STAGE)) return true;
+	if (match(TAG::PLAYER, TAG::ENEMY_WEPON)) return true;
+	if (match(TAG::ENEMY, TAG::PLAYER_WEPON)) return true;
 
 	return false;
 }
