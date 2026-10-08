@@ -263,9 +263,6 @@ public:
 	// リソースの解放処理
 	void Release(void) override;
 
-	// 衝突判定時の処理
-	void HitDamage(bool isHit) override;
-
 	// 装備中の武器ポインタを取得
 	const WeponBase* GetWepon(void) const { return wepon_; }
 
@@ -310,6 +307,9 @@ protected:
 
 	// プレイヤー更新後の後処理
 	void UpdateProcessPost(void) override;
+
+	// 当たり判定衝突時の更新処理
+	void UpdateHitCollider(void) override;
 private:
 	// 攻撃コンボデータ
 	std::map<STATE_ATTACK_COMBO, ATTACK_COMBO> atkComboData_;
@@ -328,19 +328,6 @@ private:
 
 	// エフェクト種別
 	EFFECT effType_;
-
-	// 衝突判定用カプセル上部球体(回避時)
-	static constexpr VECTOR COL_CAPSULE_TOP_AVOIDANCE_LOCAL_POS =
-	{ 0.0f, 80.0f, 0.0f };
-	// 衝突判定用カプセル下部球体(回避時)
-	static constexpr VECTOR COL_CAPSULE_DOWN_AVOIDANCE_LOCAL_POS =
-	{ 0.0f, 30.0f, 0.0f };
-	// 衝突判定用線分開始(回避時)
-	static constexpr VECTOR COL_LINE_AVOIDANCE_START_LOCAL_POS =
-	{ 0.0f, 40.0f, 0.0f };
-	// 衝突判定用線分終了(回避時)
-	static constexpr VECTOR COL_LINE_AVOIDANCE_END_LOCAL_POS =
-	{ 0.0f, -10.0f, 0.0f };
 
 	//アニメーションを固定化する座標
 	static constexpr VECTOR LOCK_POS1 = { 0.0f, 78.0f, 0.0f };
@@ -383,9 +370,6 @@ private:
 
 	// 死亡演出処理
 	void ProcessDie(void);
-
-	// ステートやアニメーションに応じたコライダー位置の再配置
-	void CollisionReserve(void) override;
 
 	// 無敵
 	bool isVinclible_;

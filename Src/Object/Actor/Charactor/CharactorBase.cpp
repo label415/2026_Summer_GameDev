@@ -34,9 +34,6 @@ void CharactorBase::Update(void)
 	// 重力による移動量
 	CalcGravityPow();
 
-	// 衝突判定前準備
-	CollisionReserve();
-
 	// 衝突判定
 	Collision();
 
@@ -64,7 +61,6 @@ void CharactorBase::Release(void)
 	// 各ポインタ変数開放
 	anim_->Release();
 	delete anim_;
-	delete effect_;
 }
 
 VECTOR CharactorBase::GetTargetDir(void)
@@ -122,102 +118,49 @@ void CharactorBase::Collision(void)
 
 	// 衝突(重力)
 	CollisionGravity();
+
+	// 衝突判定後の更新処理
+	UpdateHitCollider();
 }
 
 void CharactorBase::CollisionGravity(void)
 {
-	// 落下中しか判定しない
-	if (!(VDot(AsoUtility::DIR_D, jumpPow_) > 0.9f))
-	{
-		return;
-	}
-
-	// 線分コライダ
 	int lineType = static_cast<int>(ColliderBase::SHAPE::LINE);
-
-	// 線分コライダが無ければ処理を抜ける
 	if (ownColliders_.count(lineType) == 0) return;
 
-
-	const auto& vecs = ownColliders_.at(lineType);
-	for (const auto& vec : vecs)
+	for (const auto& col : ownColliders_.at(lineType))
 	{
-		// 線分コライダ情報
-		ColliderLine* colliderLine_ =
-			dynamic_cast<ColliderLine*>(vec);
+		if (!col->GetIsCollier()) continue;
 
-		if (colliderLine_ == nullptr) return;
-
-		// 登録されている衝突物を全てチェック
-		for (const auto& hitCol : hitColliders_)
+		for (const auto& hit : col->GetCollisionResults())
 		{
-			for (const auto& i : hitCol.second)
+			if (hit.isHit_ && hit.targetTag_ == ColliderBase::TAG::STAGE)
 			{
-				// ステージ以外は処理を飛ばす
-				if (i->GetTag() != ColliderBase::TAG::STAGE) continue;
-
-				// 派生クラスへキャスト
-				const ColliderModel* colliderModel =
-					dynamic_cast<const ColliderModel*>(i);
-
-				if (colliderModel == nullptr) continue;
-
-				bool isHit = colliderLine_->PushBackUp(colliderModel, transform_, 2.0f, false, true);
-
-				if (isHit)
-				{
-					isJump_ = false;
-				}
+				// 地面押し上げ処理
+				transform_.pos = VAdd(transform_.pos, hit.pushVector_);
+				isJump_ = false;
+				jumpPow_ = AsoUtility::VECTOR_ZERO;
+				stepJump_ = 0.0f;
 			}
-		}
-		if (!isJump_)
-		{
-			// ジャンプリセット
-			jumpPow_ = AsoUtility::VECTOR_ZERO;
-
-			// ジャンプの入力受付時間をリセット
-			stepJump_ = 0.0f;
 		}
 	}
 }
 
 void CharactorBase::CollisionCapsule(void)
 {
-	// カプセルコライダ  
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
-
-	// カプセルコライダが無ければ処理を抜ける  
 	if (ownColliders_.count(capsuleType) == 0) return;
 
-	const auto& vecs = ownColliders_.at(capsuleType);
-	for (const auto& vec : vecs)
+	for (const auto& col : ownColliders_.at(capsuleType))
 	{
-		// カプセルコライダ情報  
-		ColliderCapsule* colliderCapsule =
-			dynamic_cast<ColliderCapsule*>(vec);
+		if (!col->GetIsCollier()) continue;
 
-		if (colliderCapsule == nullptr) return;
-
-		// 登録されている衝突物を全てチェック  
-		for (const auto& hitCol : hitColliders_)
+		for (const auto& hit : col->GetCollisionResults())
 		{
-			for (const auto& i : hitCol.second)
+			// ステージ壁や敵本体による押し出し量を反映
+			if (hit.isHit_ && !AsoUtility::EqualsVZero(hit.pushVector_))
 			{
-				// モデル以外は処理を飛ばす  
-				if (i->GetShape() != ColliderBase::SHAPE::MODEL) continue;
-
-				const ColliderModel* colliderModel =
-					dynamic_cast<const ColliderModel*>(i);
-
-				if (colliderModel == nullptr) continue;
-
-				colliderCapsule->PushBackAlongNormal(
-					colliderModel,
-					transform_,
-					CNT_TRY_COLLISION,
-					COLLISION_BACK_DIS,
-					true, false
-				);
+				transform_.pos = VAdd(transform_.pos, hit.pushVector_);
 			}
 		}
 	}

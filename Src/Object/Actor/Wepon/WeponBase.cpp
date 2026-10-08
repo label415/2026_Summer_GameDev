@@ -25,4 +25,11 @@ void WeponBase::Update(void)
 	transform_.quaRot = Quaternion::GetRotation(transform_.matRot);
 	// 大きさ、回転(クォータニオン)、座標を元にモデルを更新
 	transform_.Update();
+
+	Collision();
+}
+
+void WeponBase::Collision(void)
+{
+	UpdateHitCollider();
 }

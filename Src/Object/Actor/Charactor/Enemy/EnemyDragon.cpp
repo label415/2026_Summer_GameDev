@@ -3,6 +3,7 @@
 #include "../../../../Manager/ResourceManager.h"
 #include "../../../../Manager/SoundManager.h"
 #include "../../../../Manager/SceneManager.h"
+#include "../../../../Manager/CollisionManager.h"
 #include "../../../Common/AnimationController.h"
 #include "../../../Common/Collider/ColliderLine.h"
 #include "../../../Common/Collider/ColliderCapsule.h"
@@ -38,17 +39,24 @@ void EnemyDragon::Draw(void)
 	// 基底クラスの描画処理
 	CharactorBase::Draw();
 
-	if (wepon_ != nullptr) {
-		wepon_->Draw();
-	}
+	if (weponBracelet_) weponBracelet_->Draw();
+	if (weponFlame_) weponFlame_->Draw();
 }
 
 void EnemyDragon::Release(void)
 {
 	CharactorBase::Release();
-	if (wepon_ != nullptr) {
-		wepon_->Release();
-		delete wepon_;
+
+	if (weponBracelet_) {
+		weponBracelet_->Release();
+		delete weponBracelet_;
+		weponBracelet_ = nullptr;
+	}
+
+	if (weponFlame_) {
+		weponFlame_->Release();
+		delete weponFlame_;
+		weponFlame_ = nullptr;
 	}
 
 	delete uiHp_;
@@ -67,6 +75,21 @@ void EnemyDragon::InitLoad(void)
 		Application::SCREEN_SIZE_Y - UI_HP_OFFSET_Y,
 		UI_HP_SCALE_X, UI_HP_SCALE_Y, UI_HP_SCALE_Z);
 	uiHp_->Load();
+
+	// --- 2つの武器を初期化時に生成・Init呼び出し ---
+	VECTOR defaultDir = transform_.GetForward();
+	if (!weponBracelet_)
+	{
+		weponBracelet_ = new WeponBracelet(transform_, defaultDir, FRAME_NO_MOUTH);
+		weponBracelet_->Load();
+	}
+
+	// 2. 空中火炎弾（WeponFlameThrower）
+	if (!weponFlame_)
+	{
+		weponFlame_ = new WeponFlameThrower(transform_, defaultDir, FRAME_NO_MOUTH);
+		weponFlame_->Load();
+	}
 }
 
 void EnemyDragon::InitTransform(void)
@@ -80,38 +103,40 @@ void EnemyDragon::InitTransform(void)
 
 void EnemyDragon::InitCollider(void)
 {
-	//ライン
-	std::vector<ColliderBase*> colLines;
-	// 地面との衝突判定で使用するラインコライダー
-	ColliderLine* groundLine = new ColliderLine(
-		ColliderBase::TAG::GROUND, &transform_,
-		COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
-	colLines.push_back(groundLine);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::LINE), colLines);
-	colLines.clear();
+	// 1. 地面衝突用ラインコライダー
+	std::vector<ColliderBase::TAG> lineTargets = { ColliderBase::TAG::STAGE };
+	auto groundLine = std::make_shared<ColliderLine>(
+		ColliderBase::SHAPE::LINE,
+		ColliderBase::TAG::GROUND,
+		lineTargets,
+		&transform_,
+		COL_LINE_START_LOCAL_POS,
+		COL_LINE_END_LOCAL_POS
+	);
+	ownColliders_[static_cast<int>(ColliderBase::SHAPE::LINE)].push_back(groundLine);
+	CollisionManager::GetInstance().AddCollider(groundLine);
 
-	//カプセル
-	std::vector<ColliderBase*> colCapsules;
+	// 2. 各部位の当たり判定カプセル（敵本体・被弾・攻撃用）
+	std::vector<ColliderBase::TAG> bodyTargets = {
+		ColliderBase::TAG::PLAYER,
+		ColliderBase::TAG::PLAYER_WEPON,
+		ColliderBase::TAG::STAGE
+	};
 
-	for (int i = 0; i < std::size(ENEMY_CAPSULE_FRAMES); i++) {
-		ColliderCapsule* hitCapsule = new ColliderCapsule(
-			ColliderBase::TAG::ENEMY, &colTransform_,
-			AsoUtility::VECTOR_ZERO,
-			AsoUtility::VECTOR_ZERO,
-			HIT_RADIUS,
-			static_cast<int>(ENEMY_CAPSULE_FRAMES[i].patrTag));
-		colCapsules.push_back(hitCapsule);
+	for (size_t i = 0; i < std::size(ENEMY_CAPSULE_FRAMES); i++)
+	{
+		auto hitCapsule = std::make_shared<ColliderCapsule>(
+			ColliderBase::SHAPE::CAPSULE,
+			ColliderBase::TAG::ENEMY,
+			bodyTargets,
+			&colTransform_,
+			static_cast<int>(ENEMY_CAPSULE_FRAMES[i].patrTag)
+		);
+		hitCapsule->SetRadius(HIT_RADIUS);
+
+		ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(hitCapsule);
+		CollisionManager::GetInstance().AddCollider(hitCapsule);
 	}
-
-	// 地面との衝突判定で使用するカプセルコライダー
-	ColliderCapsule* groundCapsule = new ColliderCapsule(
-		ColliderBase::TAG::GROUND, &transform_,
-		COL_CAPSULE_TOP_LOCAL_POS,
-		COL_CAPSULE_DOWN_LOCAL_POS, COL_CAPSULE_RADIUS);
-	colCapsules.push_back(groundCapsule);
-
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsules);
-	colCapsules.clear();
 }
 
 void EnemyDragon::InitAnimation(void)
@@ -214,6 +239,9 @@ void EnemyDragon::InitPost(void)
 
 	uiHp_->Init();
 
+	weponBracelet_->Init();
+	weponFlame_->Init();
+
 	// 初期状態設定
 	ChangeState(STATE::ROAR);
 }
@@ -239,38 +267,40 @@ void EnemyDragon::UpdateProcess(void)
 
 	/*UpdateDebugImGui();*/
 
+	// ボーン追従と攻撃判定の有効／無効制御
 	const auto& cols = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-	int cnt = 0; // 対象となるカプセルの個数を数えるカウンタ
+	int cnt = 0;
 	for (const auto& col : cols) {
 		if (col->GetTag() != ColliderBase::TAG::ENEMY) continue;
 
-		ColliderCapsule* colliderCapsule = dynamic_cast<ColliderCapsule*>(col);
-		if (colliderCapsule)
+		auto colliderCapsule = std::dynamic_pointer_cast<ColliderCapsule>(col);
+		if (colliderCapsule && cnt < std::size(ENEMY_CAPSULE_FRAMES))
 		{
-			// 配列の範囲外アクセス防止
-			if (cnt < std::size(ENEMY_CAPSULE_FRAMES))
-			{
-				// 現在のカウントに対応するフレームIDのペアを取得
-				int topFrame = ENEMY_CAPSULE_FRAMES[cnt].top;
-				int downFrame = ENEMY_CAPSULE_FRAMES[cnt].down;
+			int topFrame = ENEMY_CAPSULE_FRAMES[cnt].top;
+			int downFrame = ENEMY_CAPSULE_FRAMES[cnt].down;
 
-				VECTOR tFramePos = MV1GetFramePosition(transform_.modelId, topFrame);
-				VECTOR dFramePos = MV1GetFramePosition(transform_.modelId, downFrame);
+			VECTOR tFramePos = MV1GetFramePosition(transform_.modelId, topFrame);
+			VECTOR dFramePos = MV1GetFramePosition(transform_.modelId, downFrame);
 
-				if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::BODY)) {
-					colliderCapsule->SetRadius(BODY_RADIUS);
-					tFramePos.y += BODY_COL_OFFSET_Y;
-					dFramePos.y += BODY_COL_OFFSET_Y;
-				}
-				else if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::NECK)
-					|| colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::TAIL)) {
-					colliderCapsule->SetRadius(NECK_TAIL_RADIUS);
-					tFramePos.y += NECK_TAIL_COL_OFFSET_Y;
-					dFramePos.y += NECK_TAIL_COL_OFFSET_Y;
-				}
+			if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::BODY)) {
+				colliderCapsule->SetRadius(BODY_RADIUS);
+				tFramePos.y += BODY_COL_OFFSET_Y;
+				dFramePos.y += BODY_COL_OFFSET_Y;
+			}
+			else if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::NECK)
+				|| colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::TAIL)) {
+				colliderCapsule->SetRadius(NECK_TAIL_RADIUS);
+				tFramePos.y += NECK_TAIL_COL_OFFSET_Y;
+				dFramePos.y += NECK_TAIL_COL_OFFSET_Y;
+			}
 
-				colliderCapsule->SetLocalPosTop(tFramePos);
-				colliderCapsule->SetLocalPosDown(dFramePos);
+			colliderCapsule->SetLocalPosTop(tFramePos);
+			colliderCapsule->SetLocalPosDown(dFramePos);
+
+			// 攻撃中でない場合、頭や手などの攻撃判定を不用意に発動させない制御例
+			if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::HEAD)) {
+				// 噛みつき・突進中のみ頭部判定を有効化
+				colliderCapsule->SetIsCollier(isAttack_ || !isInvincible_);
 			}
 			cnt++;
 		}
@@ -278,14 +308,9 @@ void EnemyDragon::UpdateProcess(void)
 
 	SetFrameUserLocalPos(LOCK_POS, LOCK_FRAME_NO);
 
-	if (wepon_ != nullptr) {
-		if (!wepon_->GetIsAlive()) {
-			delete wepon_;
-			wepon_ = nullptr;
-			return;
-		}
-		wepon_->Update();
-	}
+	// 2つの武器を毎フレーム更新
+	if (weponBracelet_) weponBracelet_->Update();
+	if (weponFlame_) weponFlame_->Update();
 }
 
 void EnemyDragon::UpdateDebugImGui(void)
@@ -303,44 +328,71 @@ void EnemyDragon::UpdateProcessPost(void)
 
 void EnemyDragon::CollisionCapsule(void)
 {
-	// カプセルコライダ  
+	// カプセルコライダ
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 
-	// カプセルコライダが無ければ処理を抜ける  
+	// カプセルコライダが無ければ処理を抜ける
 	if (ownColliders_.count(capsuleType) == 0) return;
 
 	const auto& vecs = ownColliders_.at(capsuleType);
-	for (const auto& vec : vecs)
+	for (const auto& col : vecs)
 	{
-		if (vec->GetTag() != ColliderBase::TAG::GROUND) continue;
+		// 地面衝突用コライダー以外、または判定無効時はスキップ
+		if (col->GetTag() != ColliderBase::TAG::GROUND || !col->GetIsCollier()) continue;
 
-		// カプセルコライダ情報  
-		ColliderCapsule* colliderCapsule =
-			dynamic_cast<ColliderCapsule*>(vec);
-
-		if (colliderCapsule == nullptr) return;
-
-		// 登録されている衝突物を全てチェック  
-		for (const auto& hitCol : hitColliders_)
+		// マネージャー側で計算された衝突結果を走査
+		for (const auto& result : col->GetCollisionResults())
 		{
-			for (const auto& i : hitCol.second)
+			// ステージ（モデル）との衝突かつ押し戻しベクトルが存在する場合
+			if (result.isHit_ && result.targetTag_ == ColliderBase::TAG::STAGE)
 			{
-				// モデル以外は処理を飛ばす  
-				if (i->GetShape() != ColliderBase::SHAPE::MODEL) continue;
+				if (!AsoUtility::EqualsVZero(result.pushVector_))
+				{
+					// 壁や障害物からの押し戻し量を加算
+					transform_.pos = VAdd(transform_.pos, result.pushVector_);
+				}
+			}
+		}
+	}
+}
 
-				const ColliderModel* colliderModel =
-					dynamic_cast<const ColliderModel*>(i);
+void EnemyDragon::UpdateHitCollider(void)
+{
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
+	if (ownColliders_.count(capsuleType) == 0) return;
 
-				if (colliderModel == nullptr) continue;
+	for (const auto& col : ownColliders_.at(capsuleType))
+	{
+		if (!col->GetIsCollier()) continue;
 
-				colliderCapsule->PushBackAlongNormal(
-					colliderModel,
-					transform_,
-					CNT_TRY_COLLISION,
-					COLLISION_BACK_DIS,
-					true,
-					false
-				);
+		for (const auto& hit : col->GetCollisionResults())
+		{
+			// プレイヤーの武器から攻撃を受けた場合
+			if (hit.isHit_ && hit.targetTag_ == ColliderBase::TAG::PLAYER_WEPON)
+			{
+				if (!isInvincible_)
+				{
+					uiHp_->SetHp(DAMAGE_HIT_PLAYER_WEAPON);
+					isInvincible_ = true;
+					invincibleTimer_ = INVINCIBLE_TIME;
+
+					// 無敵中は多重ヒット防止のため一時的に喰らい判定を無効化
+					for (auto& c : ownColliders_.at(capsuleType)) {
+						c->SetIsCollier(false);
+					}
+
+					effect_->Play(static_cast<int>(EFFECT::BLOOD));
+					effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
+
+					auto cap = std::static_pointer_cast<ColliderCapsule>(col);
+					VECTOR diff = VSub(cap->GetPosTop(), cap->GetPosDown());
+					VECTOR center = VAdd(cap->GetPosDown(), VScale(diff, 0.5f));
+					effect_->SetEffectPos(static_cast<int>(EFFECT::BLOOD), center);
+
+					int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_HIT_DAMAGE).handleId_;
+					SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEPON_SE2, bgm_, SE_VOLUME_DEFAULT);
+					return;
+				}
 			}
 		}
 	}
@@ -537,34 +589,18 @@ void EnemyDragon::ChangeStateFlyingAttack(void)
 void EnemyDragon::ChangeStateBreathAttack(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateBreathAttack, this);
-
 	attackCnt_ = 0.0f;
+
 	VECTOR dir = VNorm(VSub(*targetTrans_, transform_.pos));
-
-	// 登録されている衝突物を全てチェック  
-	for (const auto& hitCol : hitColliders_)
+	if (weponBracelet_)
 	{
-		for (const auto& i : hitCol.second)
-		{
-			// モデル以外は処理を飛ばす  
-			if (i->GetShape() != ColliderBase::SHAPE::MODEL
-				&& i->GetTag() != ColliderBase::TAG::STAGE) continue;
-
-			//派生クラスへキャスト
-			const ColliderModel* colliderModel =
-				dynamic_cast<const ColliderModel*>(i);
-
-			wepon_ = new WeponBracelet(transform_, colliderModel, dir, FRAME_NO_MOUTH);
-			wepon_->Init();
-		}
+		weponBracelet_->SetMoveDir(dir);
 	}
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_BREASE_1).handleId_;
 	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREASE1, bgm_, SE_VOLUME_DEFAULT);
 
-	// 歩きアニメーション再生
-	anim_->Play(
-		static_cast<int>(ANIM_TYPE::BRACELET_ATTACK), false);
+	anim_->Play(static_cast<int>(ANIM_TYPE::BRACELET_ATTACK), false);
 }
 
 void EnemyDragon::ChangeStateMeleeAttack(void)
@@ -804,25 +840,15 @@ void EnemyDragon::UpdateFlyingAttack(void)
 	transform_.pos.y = MAX_TAKE;
 	moveDir_ = preMoverDir_;
 
+	// 指定ステップで火炎弾を Shot
 	if (anim_->GetPlayAnim().step == FLYING_ATTACK_FIRE_STEP)
 	{
-		VECTOR dir = VNorm(VSub(*targetTrans_, MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH)));
-		// 登録されている衝突物を全てチェック  
-		for (const auto& hitCol : hitColliders_)
+		VECTOR mouthPos = MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH);
+		VECTOR dir = VNorm(VSub(*targetTrans_, mouthPos));
+
+		if (weponFlame_)
 		{
-			for (const auto& i : hitCol.second)
-			{
-				// モデル以外は処理を飛ばす  
-				if (i->GetShape() != ColliderBase::SHAPE::MODEL
-					&& i->GetTag() != ColliderBase::TAG::STAGE) continue;
-
-				//派生クラスへキャスト
-				const ColliderModel* colliderModel =
-					dynamic_cast<const ColliderModel*>(i);
-
-				wepon_ = new WeponFlameThrower(transform_, colliderModel, dir, FRAME_NO_MOUTH);
-				wepon_->Init();
-			}
+			weponFlame_->Shot(dir);
 		}
 	}
 
@@ -844,7 +870,6 @@ void EnemyDragon::UpdateBreathAttack(void)
 		&& anim_->GetPlayAnim().step <= BREATH_SE2_END_STEP)
 	{
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_BREASE1);
-
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_BREASE_2).handleId_;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREASE2, bgm_, SE_VOLUME_DEFAULT);
 	}
@@ -854,18 +879,16 @@ void EnemyDragon::UpdateBreathAttack(void)
 		if (attackCnt_ <= BREATH_ATTACK_DURATION) {
 			anim_->SetSpecificTime(BREATH_ANIM_LOOP_START, BREATH_ANIM_LOOP_END, true);
 			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
-			wepon_->SetIsAttack(true);
+			if (weponBracelet_) weponBracelet_->SetIsAttack(true);
 		}
 		else {
 			anim_->SetSpecificTime(0.0f, 0.0f, false);
 		}
 	}
+
 	if (anim_->GetPlayAnim().step >= BREATH_WEAPON_END_STEP)
 	{
-		if (wepon_ != nullptr)
-		{
-			wepon_->SetIsEnd(true);
-		}
+		if (weponBracelet_) weponBracelet_->SetIsEnd(true);
 	}
 
 	if (anim_->GetPlayAnim().step >= BREATH_ATTACK_END_STEP)
@@ -972,81 +995,15 @@ void EnemyDragon::UpdateEnd(void)
 
 void EnemyDragon::SetTargetCollider(void)
 {
-	for (const auto& hitCol : hitColliders_)
+	auto playerCol =
+		CollisionManager::GetInstance().GetColliderByTag(ColliderBase::TAG::PLAYER);
+	if (playerCol)
 	{
-		for (const auto& i : hitCol.second)
-		{
-			// プレイヤーのカプセル以外は処理を飛ばす
-			if (i->GetTag() != ColliderBase::TAG::PLAYER) continue;
-
-			//派生クラスへキャスト
-			const ColliderCapsule* colliderCapsule =
-				dynamic_cast<const ColliderCapsule*>(i);
-
-			if (colliderCapsule == nullptr) continue;
-
-			targetCollider_ = colliderCapsule;
-		}
+		targetCollider_ = playerCol.get();
 	}
-}
-
-void EnemyDragon::HitDamage(bool isHit)
-{
-	// カプセルコライダ  
-	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
-
-	// カプセルコライダが無ければ処理を抜ける  
-	if (ownColliders_.count(capsuleType) == 0) return;
-
-	const auto& vecs = ownColliders_.at(capsuleType);
-	for (const auto& vec : vecs)
+	else
 	{
-		// カプセルコライダ情報  
-		const ColliderCapsule* colliderCapsule1 =
-			dynamic_cast<const ColliderCapsule*>(vec);
-
-		if (colliderCapsule1 == nullptr
-			|| colliderCapsule1->GetTag() != ColliderBase::TAG::ENEMY) continue;
-
-		// 登録されている衝突物を全てチェック  
-		for (const auto& hitCol : hitColliders_)
-		{
-			for (const auto& i : hitCol.second)
-			{
-				// モデル以外は処理を飛ばす  
-				if (i->GetShape() != ColliderBase::SHAPE::CAPSULE
-					|| i->GetTag() != ColliderBase::TAG::PLAYER_WEPON) continue;
-
-				ColliderCapsule* colliderCapsule2 =
-					dynamic_cast<ColliderCapsule*>(i);
-
-				if (colliderCapsule2 == nullptr) continue;
-
-				if (HitCheck_Capsule_Capsule(
-					colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown(), colliderCapsule1->GetRadius(),
-					colliderCapsule2->GetPosTop(), colliderCapsule2->GetPosDown(), colliderCapsule2->GetRadius()))
-				{
-					if (!isInvincible_) {
-						uiHp_->SetHp(DAMAGE_HIT_PLAYER_WEAPON);
-						isInvincible_ = true;
-						invincibleTimer_ = INVINCIBLE_TIME;
-						effect_->Play(static_cast<int>(EFFECT::BLOOD));
-						effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
-
-						VECTOR diff = VSub(colliderCapsule1->GetPosTop(), colliderCapsule1->GetPosDown());
-						VECTOR center = VAdd(colliderCapsule1->GetPosDown(), VScale(diff, 0.5f));
-						effect_->SetEffectPos(static_cast<int>(EFFECT::BLOOD), center);
-
-						int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_HIT_DAMAGE).handleId_;
-						SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEPON_SE2, bgm_, SE_VOLUME_DEFAULT);
-
-						return;
-					}
-					else {
-					}
-				}
-			}
-		}
+		targetCollider_ = nullptr;
 	}
 }
 

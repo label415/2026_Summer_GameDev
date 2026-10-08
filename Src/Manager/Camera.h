@@ -5,6 +5,7 @@
 #include "../Object/Actor/ActorBase.h"
 
 class Transform;
+class ColliderSphere;
 
 class Camera : public ActorBase
 {
@@ -101,9 +102,6 @@ public:
 	//ロックオン対象の設定
 	void SetTargetFollow(const VECTOR* target) { targetTransform_ = target; }
 
-	// 衝突対象となるコライダを登録
-    void AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider);
-
 	// マウス入力の有効無効設定
 	void SetIsMouseInput(bool isMouseInput) { isMouseInput_ = isMouseInput; }
 
@@ -124,6 +122,9 @@ protected:
 
 	// 初期化後の個別処理
 	void InitPost(void) override;
+
+	// 当たり判定衝突時の更新処理
+	void UpdateHitCollider(void) override;
 private:
 	// カメラの回転スピード
 	static constexpr float ROT_SPEED = 0.1f;
@@ -209,9 +210,6 @@ private:
 	void SetBeforeDrawFollow(void);
 	void SetBeforeDrawTargetLockeOn(void);
 
-	// 衝突判定
-	void Collision(void);
-
 	// カメラの補間移動率
 	static constexpr float LERP_RATE_MOVE = 0.1f;
 
@@ -228,4 +226,7 @@ private:
 
 	// マウス入力の有効無効フラグ
 	bool isMouseInput_;
+
+	// カメラの球体コライダー
+	std::shared_ptr<ColliderSphere> colliderSphere_;
 };

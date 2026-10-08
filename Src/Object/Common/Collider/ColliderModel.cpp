@@ -1,11 +1,14 @@
 #include "../../Common/Transform.h"
 #include "ColliderModel.h"
-ColliderModel::ColliderModel(TAG tag, std::weak_ptr<const Transform> follow, int patrTag)
+ColliderModel::ColliderModel(
+	TAG tag, const std::vector<TAG>& targetTags,
+	std::weak_ptr<const Transform> follow, int patrTag)
 	:
-	ColliderBase(SHAPE::MODEL, tag, follow, patrTag)
-{}
+	ColliderBase(SHAPE::MODEL, tag, targetTags, follow, patrTag)
+{
+}
 
-ColliderModel::~ColliderModel(void){}
+ColliderModel::~ColliderModel(void) {}
 
 void ColliderModel::AddExcludeFrameIds(const std::wstring& name)
 {
@@ -75,32 +78,4 @@ bool ColliderModel::IsTargetFrame(int frameIdx) const
 		return true;
 	}
 	return false;
-}
-
-bool ColliderModel::IsHit(VECTOR pos1, VECTOR pos2, bool isExclude, bool isTarget)const
-{
-	bool ret = false;
-
-	// モデルとカプセルの衝突判定
-	auto hits = MV1CollCheck_Line(
-		GetFollow().lock()->modelId, -1,
-		pos1, pos2);
-
-	if(hits.HitFlag == 1)
-	{
-		// 除外フレームは無視する
-		if (isExclude && IsExcludeFrame(hits.FrameIndex))
-		{
-			return false;
-		}
-		// 対象フレームは無視する
-		if (isTarget && IsTargetFrame(hits.FrameIndex))
-		{
-			return false;
-		}
-
-		ret = true;
-	}
-
-	return ret;
 }

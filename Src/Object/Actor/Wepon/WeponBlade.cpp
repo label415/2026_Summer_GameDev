@@ -1,5 +1,6 @@
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Manager/ResourceManager.h"
+#include "../../../Manager/CollisionManager.h"
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "WeponBlade.h"
 
@@ -41,7 +42,29 @@ void WeponBlade::InitTransform(void)
 	};
 }
 
-void WeponBlade::InitCollider(void){}
+void WeponBlade::InitCollider(void)
+{
+	// 攻撃対象タグ（敵本体など）
+	std::vector<ColliderBase::TAG> targetTags = {
+		ColliderBase::TAG::ENEMY
+	};
+
+	// 武器コライダーを初期化時に生成
+	colliderCapsule_ = std::make_shared<ColliderCapsule>(
+		ColliderBase::TAG::PLAYER_WEPON,
+		targetTags,
+		&transform_,
+		COL_CAPSULE_TOP_LOCAL_POS,
+		COL_CAPSULE_DOWN_LOCAL_POS,
+		COL_CAPSULE_RADIUS
+	);
+
+	// 初期状態は当たり判定を無効化
+	colliderCapsule_->SetIsCollier(false);
+
+	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colliderCapsule_);
+	CollisionManager::GetInstance().AddCollider(colliderCapsule_);
+}
 
 void WeponBlade::InitAnimation(void){}
 
@@ -49,23 +72,24 @@ void WeponBlade::InitPost(void){}
 
 void WeponBlade::SetCollider(void)
 {
-	// 生存フラグを有効にする
 	isAlive_ = true;
-	// 衝突判定用カプセルコライダを作成し、ownColliders_に登録
-	ColliderCapsule* colCapsule = new ColliderCapsule(
-		ColliderBase::TAG::PLAYER_WEPON, &transform_,
-		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
-		COL_CAPSULE_RADIUS);
-
-	std::vector<ColliderBase*> colCapsules;
-	colCapsules.push_back(colCapsule);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsules);
+	if (colliderCapsule_)
+	{
+		colliderCapsule_->SetIsCollier(true);
+	}
 }
 
 void WeponBlade::ClearCollider(void)
 {
-	// 生存フラグを無効にする
 	isAlive_ = false;
-	// 衝突判定用カプセルコライダを削除し、ownColliders_から削除
-	ownColliders_.erase(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
+	if (colliderCapsule_)
+	{
+		// 当たり判定をオフにする
+		colliderCapsule_->SetIsCollier(false);
+
+		// 生成時の初期座標・初期サイズに戻す
+		colliderCapsule_->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
+		colliderCapsule_->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
+		colliderCapsule_->SetRadius(COL_CAPSULE_RADIUS);
+	}
 }

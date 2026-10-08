@@ -38,4 +38,7 @@ protected:
 
 	// ローカル回転
 	VECTOR localRot_;
+
+	// 当たり判定衝突時の更新処理
+	void Collision(void) override;
 };

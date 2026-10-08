@@ -4,6 +4,8 @@
 #include "../../Common/Transform.h"
 #include "../ActorBase.h"
 
+class ColliderModel;
+
 class Stage :public ActorBase
 {
 public:
@@ -33,6 +35,9 @@ protected:
 
 	// 初期化後の個別処理
 	void InitPost(void)override;
+
+	// 当たり判定衝突時の更新処理
+	void UpdateHitCollider(void)override;
 private:
 	// ステージモデル座標
 	static constexpr VECTOR STAGE_POS = { 0.0f, -100.0f, 0.0f };
@@ -47,9 +52,7 @@ private:
 
 	// 対象フレームの不透明度率
 	std::vector<int> frameOpacityRate_;
-
-	// 衝突判定
-	void Collision(void);
+	std::shared_ptr<ColliderModel> colModel_;
 
 	// 対象フレームの不透明度率を設定
 	void RateFrameIds(const std::wstring& name);

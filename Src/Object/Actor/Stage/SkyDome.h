@@ -31,5 +31,8 @@ protected:
 
 	// ‰Šú‰»Œã‚ÌŒÂ•Êˆ—
 	void InitPost(void)override;
+
+	// Õ“Ë‚ÌXV
+	void UpdateHitCollider(void)override{}
 };
 

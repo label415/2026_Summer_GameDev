@@ -24,9 +24,6 @@ public:
     // 解放
     virtual void Release(void) override;
 
-    //当たり判定
-    virtual void HitDamage(bool isHit) {}
-
     //攻撃フラグの取得
     const bool GetIsAttack(void) const { return isAttack_; }
 
@@ -59,9 +56,6 @@ protected:
     //アニメーションコントローラ
     AnimationController* anim_;
 
-    //エフェクトコントローラ
-    EffectController* effect_;
-
     // 移動方向
     VECTOR moveDir_;
     // 移動量
@@ -78,16 +72,19 @@ protected:
     bool isJump_;
     // リソースロード
     virtual void InitLoad(void) override;
+
     // 更新系
     virtual void UpdateProcess(void) = 0;
     virtual void UpdateProcessPost(void) = 0;
+
     // 移動方向に応じた遅延回転
     void DelayRotate(void);
+
     // 重力計算
     void CalcGravityPow(void);
+
     // 衝突判定
-    virtual void CollisionReserve(void) {}
-    void Collision(void);
+    void Collision(void)override;
     void CollisionGravity(void);
     virtual void CollisionCapsule(void);
 

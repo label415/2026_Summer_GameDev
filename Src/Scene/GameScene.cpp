@@ -138,7 +138,7 @@ void GameScene::Update(void)
 	stage_->Update();
 
 	// 自動ロックオン対象選別
-	UpdateAutoLockOn();
+	/*UpdateAutoLockOn();*/
 
 	// エネミー更新
 	enemys_->Update();
@@ -271,230 +271,230 @@ void GameScene::Release(void)
 
 void GameScene::UpdateAutoLockOn(void)
 {
-	std::shared_ptr<Camera> camera = SceneManager::GetInstance().GetCamera();
-	auto& enemys = enemys_->GetEnemys();
-	auto& inp = InputManager::GetInstance();
-	VECTOR playerPos = player_->GetTransform().pos;
-	float diffMin = MAX_LOCKON_DIFF;
-	bool isChanger = false;
+	//std::shared_ptr<Camera> camera = SceneManager::GetInstance().GetCamera();
+	//auto& enemys = enemys_->GetEnemys();
+	//auto& inp = InputManager::GetInstance();
+	//VECTOR playerPos = player_->GetTransform().pos;
+	//float diffMin = MAX_LOCKON_DIFF;
+	//bool isChanger = false;
 
-	for (const auto& enemy : enemys) {
-		enemy->SetTargetTransform(&player_->GetTransform().pos);
-	}
+	//for (const auto& enemy : enemys) {
+	//	enemy->SetTargetTransform(&player_->GetTransform().pos);
+	//}
 
-	bool isLockOn = inp.IsTrgMouseMiddle()
-		|| inp.IsPadBtnTrgDown(
-			InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
+	//bool isLockOn = inp.IsTrgMouseMiddle()
+	//	|| inp.IsPadBtnTrgDown(
+	//		InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
 
-	if (camera_->GetCameraMode() == Camera::MODE::TARGET_ROCKE) {
+	//if (camera_->GetCameraMode() == Camera::MODE::TARGET_ROCKE) {
 
-		VECTOR dir = AsoUtility::VECTOR_ZERO;
-		InputManager::JOYPAD_IN_STATE padState =
-			inp.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+	//	VECTOR dir = AsoUtility::VECTOR_ZERO;
+	//	InputManager::JOYPAD_IN_STATE padState =
+	//		inp.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
-		// アナログスティック方向
-		dir = inp.GetDirectionXZAKey(padState.AKeyRX, padState.AKeyRY);
+	//	// アナログスティック方向
+	//	dir = inp.GetDirectionXZAKey(padState.AKeyRX, padState.AKeyRY);
 
-		static float prevStickX = 0.0f;
-		static float prevStickZ = 0.0f;
-		const float stickThreshold = InputManager::THRESHOLD;
+	//	static float prevStickX = 0.0f;
+	//	static float prevStickZ = 0.0f;
+	//	const float stickThreshold = InputManager::THRESHOLD;
 
-		// ロックオン対象選択フラグ
-		bool isNextUp = (dir.z > stickThreshold)
-			&& (prevStickZ <= stickThreshold);
-		bool isNextDown = (dir.z < -stickThreshold)
-			&& (prevStickZ >= -stickThreshold);
-		bool isNextRight = (dir.x > stickThreshold)
-			&& (prevStickX <= stickThreshold)
-			|| inp.GetMouseWheelRot() > 0.0f;
-		bool isNextLeft = (dir.x < -stickThreshold)
-			&& (prevStickX >= -stickThreshold)
-			|| inp.GetMouseWheelRot() < 0.0f;
+	//	// ロックオン対象選択フラグ
+	//	bool isNextUp = (dir.z > stickThreshold)
+	//		&& (prevStickZ <= stickThreshold);
+	//	bool isNextDown = (dir.z < -stickThreshold)
+	//		&& (prevStickZ >= -stickThreshold);
+	//	bool isNextRight = (dir.x > stickThreshold)
+	//		&& (prevStickX <= stickThreshold)
+	//		|| inp.GetMouseWheelRot() > 0.0f;
+	//	bool isNextLeft = (dir.x < -stickThreshold)
+	//		&& (prevStickX >= -stickThreshold)
+	//		|| inp.GetMouseWheelRot() < 0.0f;
 
-		prevStickX = dir.x;
-		prevStickZ = dir.z;
+	//	prevStickX = dir.x;
+	//	prevStickZ = dir.z;
 
-		std::shared_ptr<ColliderCapsule>  lastTagerEnemy = targetColliderCapsule_;
+	//	std::shared_ptr<ColliderCapsule>  lastTagerEnemy = targetColliderCapsule_;
 
-		VECTOR targetPos = targetColliderCapsule_->GetCenter();
-		float diff = VSize(VSub(targetPos, playerPos));
+	//	VECTOR targetPos = targetColliderCapsule_->GetCenter();
+	//	float diff = VSize(VSub(targetPos, playerPos));
 
-		if (diff >= MAX_LOCKON_DIFF || isLockOn) {
-			camera_->ChangeMode(Camera::MODE::FOLLOW);
-			targetColliderCapsule_ = nullptr;
-			isChanger = true;
-			player_->SetTargetTransform(nullptr);
-		}
+	//	if (diff >= MAX_LOCKON_DIFF || isLockOn) {
+	//		camera_->ChangeMode(Camera::MODE::FOLLOW);
+	//		targetColliderCapsule_ = nullptr;
+	//		isChanger = true;
+	//		player_->SetTargetTransform(nullptr);
+	//	}
 
-		if (isNextUp) {
-			diffMin = FLT_MAX;
-			for (auto& enemy : enemys) {
-				for (const auto& collider
-					: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
+	//	if (isNextUp) {
+	//		diffMin = FLT_MAX;
+	//		for (auto& enemy : enemys) {
+	//			for (const auto& collider
+	//				: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
 
-					if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::HAND)
-						|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK)) continue;
+	//				if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::HAND)
+	//					|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK)) continue;
 
-					std::shared_ptr<ColliderCapsule> colliderCapsule =
-						std::dynamic_pointer_cast<ColliderCapsule>(collider);
+	//				std::shared_ptr<ColliderCapsule> colliderCapsule =
+	//					std::dynamic_pointer_cast<ColliderCapsule>(collider);
 
-					if (colliderCapsule == nullptr
-						|| lastTagerEnemy == colliderCapsule) continue;
+	//				if (colliderCapsule == nullptr
+	//					|| lastTagerEnemy == colliderCapsule) continue;
 
-					VECTOR enemyPos = colliderCapsule->GetCenter();
+	//				VECTOR enemyPos = colliderCapsule->GetCenter();
 
-					float lockonDiff = VSize(VSub(enemyPos, playerPos));
-					if (lockonDiff >= diffMin) continue;
+	//				float lockonDiff = VSize(VSub(enemyPos, playerPos));
+	//				if (lockonDiff >= diffMin) continue;
 
-					float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
-					float angle = acosf(dot);
-					float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
-					if (angle >= a) continue;
+	//				float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
+	//				float angle = acosf(dot);
+	//				float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
+	//				if (angle >= a) continue;
 
-					diffMin = lockonDiff;
-					targetColliderCapsule_ = colliderCapsule;
-					camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
-					player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
-				}
-			}
-		}
+	//				diffMin = lockonDiff;
+	//				targetColliderCapsule_ = colliderCapsule;
+	//				camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
+	//				player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
+	//			}
+	//		}
+	//	}
 
-		if (isNextDown) {
-			for (auto& enemy : enemys) {
-				for (const auto& collider
-					: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
-					if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::HAND)
-						|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK))continue;
-					// カプセルコライダ情報  
-					ColliderCapsule* colliderCapsule =
-						dynamic_cast<ColliderCapsule*>(collider);
+	//	if (isNextDown) {
+	//		for (auto& enemy : enemys) {
+	//			for (const auto& collider
+	//				: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
+	//				if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::HAND)
+	//					|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK))continue;
+	//				// カプセルコライダ情報  
+	//				ColliderCapsule* colliderCapsule =
+	//					dynamic_cast<ColliderCapsule*>(collider);
 
-					if (colliderCapsule == nullptr
-						|| lastTagerEnemy == colliderCapsule)continue;
+	//				if (colliderCapsule == nullptr
+	//					|| lastTagerEnemy == colliderCapsule)continue;
 
-					VECTOR enemyPos = colliderCapsule->GetCenter();
+	//				VECTOR enemyPos = colliderCapsule->GetCenter();
 
-					//プレイヤーと敵のベクトルの大きさ
-					float lockonDiff = VSize(VSub(enemyPos, playerPos));
-					if (lockonDiff >= diffMin)continue;
+	//				//プレイヤーと敵のベクトルの大きさ
+	//				float lockonDiff = VSize(VSub(enemyPos, playerPos));
+	//				if (lockonDiff >= diffMin)continue;
 
-					float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
-					float angle = acosf(dot);
-					float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
-					if (angle >= a)continue;
+	//				float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
+	//				float angle = acosf(dot);
+	//				float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
+	//				if (angle >= a)continue;
 
-					diffMin = lockonDiff;
-					targetColliderCapsule_ = colliderCapsule;
-					camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
-					player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
-				}
-			}
-		}
+	//				diffMin = lockonDiff;
+	//				targetColliderCapsule_ = colliderCapsule;
+	//				camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
+	//				player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
+	//			}
+	//		}
+	//	}
 
-		if (isNextLeft) {
-			for (auto& enemy : enemys) {
-				for (const auto& collider
-					: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
-					if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::HAND)
-						|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK))continue;
-					// カプセルコライダ情報  
-					ColliderCapsule* colliderCapsule =
-						dynamic_cast<ColliderCapsule*>(collider);
+	//	if (isNextLeft) {
+	//		for (auto& enemy : enemys) {
+	//			for (const auto& collider
+	//				: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
+	//				if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::HAND)
+	//					|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK))continue;
+	//				// カプセルコライダ情報  
+	//				ColliderCapsule* colliderCapsule =
+	//					dynamic_cast<ColliderCapsule*>(collider);
 
-					if (colliderCapsule == nullptr
-						|| lastTagerEnemy == colliderCapsule)continue;
+	//				if (colliderCapsule == nullptr
+	//					|| lastTagerEnemy == colliderCapsule)continue;
 
-					VECTOR enemyPos = colliderCapsule->GetCenter();
+	//				VECTOR enemyPos = colliderCapsule->GetCenter();
 
-					//プレイヤーと敵のベクトルの大きさ
-					float lockonDiff = VSize(VSub(enemyPos, playerPos));
-					if (lockonDiff >= diffMin)continue;
+	//				//プレイヤーと敵のベクトルの大きさ
+	//				float lockonDiff = VSize(VSub(enemyPos, playerPos));
+	//				if (lockonDiff >= diffMin)continue;
 
-					float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
-					float angle = acosf(dot);
-					float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
-					if (angle >= a)continue;
+	//				float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
+	//				float angle = acosf(dot);
+	//				float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
+	//				if (angle >= a)continue;
 
-					VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
-					if (cross.y > 0.0f)continue;
+	//				VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+	//				if (cross.y > 0.0f)continue;
 
-					diffMin = lockonDiff;
-					targetColliderCapsule_ = colliderCapsule;
-					camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
-					player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
-				}
-			}
-		}
+	//				diffMin = lockonDiff;
+	//				targetColliderCapsule_ = colliderCapsule;
+	//				camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
+	//				player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
+	//			}
+	//		}
+	//	}
 
-		if (isNextRight) {
-			for (auto& enemy : enemys) {
-				for (const auto& collider
-					: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
-					if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::HAND)
-						|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK))continue;
-					// カプセルコライダ情報  
-					ColliderCapsule* colliderCapsule =
-						dynamic_cast<ColliderCapsule*>(collider);
+	//	if (isNextRight) {
+	//		for (auto& enemy : enemys) {
+	//			for (const auto& collider
+	//				: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
+	//				if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::HAND)
+	//					|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK))continue;
+	//				// カプセルコライダ情報  
+	//				ColliderCapsule* colliderCapsule =
+	//					dynamic_cast<ColliderCapsule*>(collider);
 
-					if (colliderCapsule == nullptr
-						|| lastTagerEnemy == colliderCapsule)continue;
+	//				if (colliderCapsule == nullptr
+	//					|| lastTagerEnemy == colliderCapsule)continue;
 
-					VECTOR enemyPos = colliderCapsule->GetCenter();
+	//				VECTOR enemyPos = colliderCapsule->GetCenter();
 
-					//プレイヤーと敵のベクトルの大きさ
-					float lockonDiff = VSize(VSub(enemyPos, playerPos));
-					if (lockonDiff >= diffMin)continue;
+	//				//プレイヤーと敵のベクトルの大きさ
+	//				float lockonDiff = VSize(VSub(enemyPos, playerPos));
+	//				if (lockonDiff >= diffMin)continue;
 
-					float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
-					float angle = acosf(dot);
-					float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
-					if (angle >= a)continue;
+	//				float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
+	//				float angle = acosf(dot);
+	//				float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
+	//				if (angle >= a)continue;
 
-					VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
-					if (cross.y < 0.0f)continue;
+	//				VECTOR cross = VCross(VNorm(camera_->GetForward()), VSub(enemyPos, playerPos));
+	//				if (cross.y < 0.0f)continue;
 
-					diffMin = lockonDiff;
-					targetColliderCapsule_ = colliderCapsule;
-					camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
-					player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
-				}
-			}
-		}
-	}
+	//				diffMin = lockonDiff;
+	//				targetColliderCapsule_ = colliderCapsule;
+	//				camera->SetTargetFollow(&targetColliderCapsule_->GetCenter());
+	//				player_->SetTargetTransform(&targetColliderCapsule_->GetCenter());
+	//			}
+	//		}
+	//	}
+	//}
 
-	if (camera_->GetCameraMode() == Camera::MODE::FOLLOW
-		&& isChanger == false) {
-		if (!isLockOn)return;
-		for (auto& enemy : enemys) {
-			for (const auto& collider
-				: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
-				if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::TAIL)
-					|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK))continue;
-				// カプセルコライダ情報  
-				ColliderCapsule* colliderCapsule =
-					dynamic_cast<ColliderCapsule*>(collider);
+	//if (camera_->GetCameraMode() == Camera::MODE::FOLLOW
+	//	&& isChanger == false) {
+	//	if (!isLockOn)return;
+	//	for (auto& enemy : enemys) {
+	//		for (const auto& collider
+	//			: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
+	//			if (collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::TAIL)
+	//				|| collider->GetPatrTag() == static_cast<int>(EnemyDragon::PATR_TAG::NECK))continue;
+	//			// カプセルコライダ情報  
+	//			ColliderCapsule* colliderCapsule =
+	//				dynamic_cast<ColliderCapsule*>(collider);
 
-				if (enemy == nullptr)continue;
+	//			if (enemy == nullptr)continue;
 
-				//プレイヤーと敵のベクトルの大きさ
-				VECTOR enemyPos = colliderCapsule->GetCenter();
+	//			//プレイヤーと敵のベクトルの大きさ
+	//			VECTOR enemyPos = colliderCapsule->GetCenter();
 
-				float lockonDiff = VSize(VSub(enemyPos, playerPos));
-				if (lockonDiff >= diffMin)continue;
+	//			float lockonDiff = VSize(VSub(enemyPos, playerPos));
+	//			if (lockonDiff >= diffMin)continue;
 
-				float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
-				float angle = acosf(dot);
-				float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
-				if (angle >= a)continue;
+	//			float dot = VDot(camera_->GetForward(), VNorm(VSub(enemyPos, playerPos)));
+	//			float angle = acosf(dot);
+	//			float a = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
+	//			if (angle >= a)continue;
 
-				diffMin = lockonDiff;
-				targetColliderCapsule_ = colliderCapsule;
-				// コライダが保持する座標の参照先を直接渡す（有効なライフタイムが保証される）
-				const VECTOR* enemyCenter = &targetColliderCapsule_->GetCenter();
-				camera->SetTargetFollow(enemyCenter);
-				player_->SetTargetTransform(enemyCenter);
-				camera->ChangeMode(Camera::MODE::TARGET_ROCKE);
-			}
-		}
-	}
+	//			diffMin = lockonDiff;
+	//			targetColliderCapsule_ = colliderCapsule;
+	//			// コライダが保持する座標の参照先を直接渡す（有効なライフタイムが保証される）
+	//			const VECTOR* enemyCenter = &targetColliderCapsule_->GetCenter();
+	//			camera->SetTargetFollow(enemyCenter);
+	//			player_->SetTargetTransform(enemyCenter);
+	//			camera->ChangeMode(Camera::MODE::TARGET_ROCKE);
+	//		}
+	//	}
+	//}
 }

@@ -10,7 +10,6 @@ ActorBase::ActorBase(void)
 	transform_()
 {
 	isAlive_ = true;
-	effect_ = nullptr;
 }
 
 ActorBase::~ActorBase(void){}
@@ -62,4 +61,9 @@ void ActorBase::Release(void)
 const Transform& ActorBase::GetTransform(void) const
 {
 	return transform_;
+}
+
+void ActorBase::Collision(void)
+{
+	UpdateHitCollider();
 }

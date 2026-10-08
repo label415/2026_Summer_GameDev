@@ -2,7 +2,6 @@
 #include "WeponBase.h"
 
 class Transform;
-class ColliderModel;
 
 class WeponFlameThrower :public WeponBase
 {
@@ -18,7 +17,6 @@ public:
 	// コンストラクタ
 	WeponFlameThrower(
 		const Transform& followTransform,
-		const ColliderModel* colMod,
 		const VECTOR moverDir, int followFrameId);
 
 	// デストラクタ
@@ -32,6 +30,13 @@ public:
 
 	// 解放
 	void Release(void)override;
+
+	// 衝突判定の有効化・無効化
+	void SetCollider(void) override;
+	void ClearCollider(void) override;
+
+	// 発射処理（向きと位置をセットして開始）
+	void Shot(const VECTOR& dir);
 protected:
 	// 最小衝突判定用カプセル球体半径
 	static constexpr float MIN_RADIUS = 50.0f;
@@ -74,14 +79,13 @@ private:
 	// 爆発開始時間
 	float exState_;
 
-	// 移動処理
-	void Move(void);
-
-	// コライダーポインタ
-	const ColliderModel* ColMod_;
-
 	// 前フレームの座標
 	VECTOR prePos_;
+
+	std::shared_ptr<ColliderSphere> colliderSphere_;
+
+	// 移動処理
+	void Move(void);
 
 	// エフェクト切り替え
 	void ChangerEffect(EFFECT_TYPE effectType);

@@ -75,9 +75,6 @@ protected:
     // ‰Šú‰»Œã‚ÌŒÂ•Êˆ—
     void InitPost(void) override {}
 
-    // Õ“Ë”»’è
-    void CollisionReserve(void) override{}
-
     // „‰ñƒ‹[ƒgÀ•W
     std::vector<VECTOR> wayPoints_;
 

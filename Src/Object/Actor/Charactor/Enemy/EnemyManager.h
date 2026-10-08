@@ -29,23 +29,14 @@ public:
 	// 解放
 	void Release(void);
 
-	// 衝突判定
-	void HitDamegr(bool isHit);
-
 	// エネミー
 	const std::vector<EnemyBase*>& GetEnemys(void) const { return enemys_; }
-
-	// 衝突対象となるコライダを登録
-	void AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider);
 
 	// CSVから敵情報の読取を行う
 	void LoadCsvData(void);
 
 	// エネミー生成
 	EnemyBase* Create(const EnemyBase::EnemyData& data);
-
-	// 衝突対象となるコライダを削除
-	void RemoveCollider(ColliderBase::SHAPE shape, ColliderBase::TAG tag);
 private:
 	// エネミー
 	std::vector<EnemyBase*> enemys_;

@@ -23,14 +23,33 @@ public:
 
     // 解放処理
     void Release(void);
+
+    // 登録されているコライダーから特定のタグを持つコライダーを取得する
+    std::shared_ptr<ColliderBase> GetColliderByTag(ColliderBase::TAG tag) const
+    {
+        for (const auto& col : colliders_)
+        {
+            if (col && col->GetTag() == tag)
+            {
+                return col;
+            }
+        }
+        return nullptr;
+    }
 private:
     // コライダー配列
-    std::vector<std::shared_ptr<ColliderBase>> colliders_;
+	std::vector<std::shared_ptr<ColliderBase>> colliders_;
 
-    // 各ペアごとの判定・計算・結果反映
-    void ResolveCollision(
-        std::weak_ptr<ColliderBase> collderA, std::weak_ptr<ColliderBase> collderB);
+	// 2者間の判定・押し戻し計算および HitInfo 生成
+	void ResolveCollision(
+		std::shared_ptr<ColliderBase> colA,
+		std::shared_ptr<ColliderBase> colB);
 
-    // タグ間の判定要否チェック
-    bool IsCheckColliderTag(ColliderBase::TAG tagA, ColliderBase::TAG tagB) const;
+	// どちらか一方でも相手を対象としているか判定
+	bool CanCollide(
+		const ColliderBase& a,
+		const ColliderBase& b) const;
+
+	// 壁による遮蔽判定（武器 vs プレイヤー等の遮蔽チェック用）
+	bool CheckWallOcclusion(const VECTOR& start, const VECTOR& end) const;
 };

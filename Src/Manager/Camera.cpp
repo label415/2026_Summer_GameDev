@@ -4,6 +4,7 @@
 #include "../Application.h"
 #include "../Manager/InputManager.h"
 #include "../Manager/SceneManager.h"
+#include "../Manager/CollisionManager.h"
 #include "../Object/Common/Transform.h"
 #include "../Object/Common/Collider/ColliderModel.h"
 #include "../Object/Common/Collider/ColliderSphere.h"
@@ -73,32 +74,22 @@ void Camera::DrawDebug(void){}
 
 void Camera::Release(void){}
 
-void Camera::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
-{
-	// すでに登録されている場合は追加しない
-	for (const auto& c : hitColliders_)
-	{
-		if (c.second == hitCollider)
-		{
-			return;
-		}
-	}
-	hitColliders_.emplace(shape, hitCollider);
-}
-
 void Camera::InitCollider(void)
 {
-	// 主に地面との衝突で使用する球体コライダ
-	ColliderSphere* colliderSphere = new ColliderSphere(
+	// 衝突対象：ステージモデル
+	std::vector<ColliderBase::TAG> targetTags = {
+		ColliderBase::TAG::STAGE
+	};
+
+	colliderSphere_ = std::make_shared<ColliderSphere>(
 		ColliderBase::TAG::CAMERA,
+		targetTags,
 		&transform_,
-		AsoUtility::VECTOR_ZERO,
 		COL_CAPSULE_SPHERE
 	);
 
-	std::vector<ColliderBase*> colliderSpheres;
-	colliderSpheres.push_back(colliderSphere);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::SPHERE), colliderSpheres);
+	ownColliders_[static_cast<int>(ColliderBase::SHAPE::SPHERE)].push_back(colliderSphere_);
+	CollisionManager::GetInstance().AddCollider(colliderSphere_);
 }
 
 void Camera::InitPost(void)
@@ -112,6 +103,25 @@ void Camera::InitPost(void)
 	preMouseY = ins.GetMousePos().y;
 
 	isMouseInput_ = false;
+}
+
+void Camera::UpdateHitCollider(void)
+{
+	if (!colliderSphere_ || !colliderSphere_->GetIsCollier()) return;
+
+	// CollisionManagerで判定・計算された衝突結果を処理
+	for (const auto& hit : colliderSphere_->GetCollisionResults())
+	{
+		if (hit.isHit_ && hit.targetTag_ == ColliderBase::TAG::STAGE)
+		{
+			// ステージ壁・地面からの押し戻し量を加算
+			if (!AsoUtility::EqualsVZero(hit.pushVector_))
+			{
+				transform_.pos = VAdd(transform_.pos, hit.pushVector_);
+				isCameraLope_ = true;
+			}
+		}
+	}
 }
 
 const VECTOR& Camera::GetPos(void) const
@@ -365,95 +375,6 @@ void Camera::SetBeforeDrawTargetLockeOn(void)
 
 	// 衝突判定
 	Collision();
-}
-
-void Camera::Collision(void)
-{
-	// プレイヤーのルートフレーム
-	VECTOR start = MV1GetFramePosition(followTransform_->modelId, 1);
-
-	for (const auto& hitCol : hitColliders_)
-	{
-		for (const auto& i : hitCol.second)
-		{
-			// モデル以外は処理を飛ばす
-			if (i->GetShape() != ColliderBase::SHAPE::MODEL) continue;
-
-			// 派生クラスへキャスト
-			const ColliderModel* colliderModel =
-				dynamic_cast<const ColliderModel*>(i);
-
-			if (colliderModel == nullptr) continue;
-
-			// 線分で衝突判定
-			auto hits = MV1CollCheck_LineDim(
-				colliderModel->GetFollow()->modelId,
-				-1,
-				transform_.pos,
-				start
-			);
-
-			// 追従対象に一番近い衝突点を探す
-			bool isCollision_ = false;
-			isCameraLope_ = false;
-			MV1_COLL_RESULT_POLY hitPoly;
-			double minDist = DBL_MAX;
-			for (int i = 0; i < hits.HitNum; i++)
-			{
-				const auto& hit = hits.Dim[i];
-
-				// 対象フレーム以外は無視する
-				if (!colliderModel->IsTargetFrame(hit.FrameIndex))
-				{
-					continue;
-				}
-
-				// 衝突判定
-				isCollision_ = true;
-				isCameraLope_ = true;
-
-				// 距離判定
-				double dist = AsoUtility::Distance(start, hit.HitPosition);
-				if (minDist > dist)
-				{
-					// 追従対象に一番近い衝突点を優先
-					minDist = dist;
-					hitPoly = hit;
-				}
-			}
-
-			// 検出した地面ポリゴン情報の後始末
-			MV1CollResultPolyDimTerminate(hits);
-
-			if (!isCollision_)
-			{
-				// 衝突していなければ次のコライダへ
-				continue;
-			}
-
-			// カメラ位置から注視点への方向
-			VECTOR dirToTarget = VNorm(VSub(targetPos_, transform_.pos));
-
-			// 衝突点の少し手前にカメラを置く
-			transform_.pos =
-				VAdd(hitPoly.HitPosition, VScale(dirToTarget, COLLISION_BACK_DIS));
-
-			// カメラ位置の球体コライダ
-			int typeSphere = static_cast<int>(ColliderBase::SHAPE::SPHERE);
-
-			// 球体コライダが無ければ処理を抜ける
-			if (ownColliders_.count(typeSphere) == 0) continue;
-
-			const auto& vecs = ownColliders_.at(typeSphere);
-			for (const auto& vec : vecs)
-			{
-				// 指定された回数と距離で三角形の法線方向に押し戻す
-				transform_.pos =
-					vec->GetPosPushBackAlongNormal(
-						hitPoly, CNT_TRY_COLLISION_CAMERA, COLLISION_BACK_DIS);
-			}
-		}
-	}
 }
 
 void Camera::RotKeyboard(bool isLimit)

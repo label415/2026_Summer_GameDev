@@ -1,7 +1,9 @@
 #pragma once
 #include <map>
+#include <memory>
 #include <vector>
 #include "../Common/Transform.h"
+#include "../Common/EffectController.h"
 #include "../Common/Collider/ColliderBase.h"
 
 class ResourceManager;
@@ -52,6 +54,9 @@ protected:
 	//エフェクトコントローラ
 	std::unique_ptr<EffectController> effect_;
 
+	// 所有しているコライダー
+	std::map<int, std::vector<std::shared_ptr<ColliderBase>>> ownColliders_;
+
 	// リソースロード
 	virtual void InitLoad(void) = 0;
 
@@ -66,4 +71,8 @@ protected:
 
 	// 初期化後の個別処理
 	virtual void InitPost(void) = 0;
+
+	// 当たり判定衝突時の更新処理
+	virtual void Collision(void);
+	virtual void UpdateHitCollider(void);
 };

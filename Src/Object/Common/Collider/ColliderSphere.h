@@ -9,7 +9,7 @@ class ColliderSphere : public ColliderBase
 public:
     // コンストラクタ
     ColliderSphere(
-        TAG tag, std::weak_ptr<const Transform> follow,
+        TAG tag, const std::vector<TAG>& targetTags, std::weak_ptr<const Transform> follow,
         const VECTOR& localPos, float radius, int patrTag = 0);
 
     // デストラクタ
@@ -28,16 +28,6 @@ public:
     float GetRadius(void) const { return radius_; }
 
     void SetRadius(float radius) { radius_ = radius; }
-
-    // 指定された回数と距離で三角形の法線方向に押し戻した座標を取得
-    VECTOR GetPosPushBackAlongNormal(
-        const MV1_COLL_RESULT_POLY& hitColPoly,
-        int maxTryCnt,
-        float pushDistance) const override;
-
-    //球体とモデルの衝突判定
-    bool GetHitSpher_Model(std::weak_ptr<const ColliderModel> colliderModel,
-        bool isExclude = false, bool isTarget = false) const;
 protected:
     // デバッグ用描画
     void DrawDebug(int color) override;

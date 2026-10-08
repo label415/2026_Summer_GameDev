@@ -4,16 +4,16 @@
 #include "ColliderLine.h"
 
 ColliderLine::ColliderLine(
-	TAG tag, std::weak_ptr<const Transform> follow,
+	TAG tag, const std::vector<TAG>& targetTags, std::weak_ptr<const Transform> follow,
 	const VECTOR& localPosStart, const VECTOR& localPosEnd, int patrTag)
 	:
-	ColliderBase(SHAPE::LINE, tag, follow, patrTag),
+	ColliderBase(SHAPE::LINE, tag, targetTags, follow, patrTag),
 	localPosStart_(localPosStart),
 	localPosEnd_(localPosEnd)
 {
 }
 
-ColliderLine::~ColliderLine(void){}
+ColliderLine::~ColliderLine(void) {}
 
 void ColliderLine::SetLocalPosStart(const VECTOR& pos)
 {
@@ -43,54 +43,6 @@ VECTOR ColliderLine::GetPosStart(void) const
 VECTOR ColliderLine::GetPosEnd(void) const
 {
 	return GetRotPos(localPosEnd_);
-}
-
-bool ColliderLine::PushBackUp(
-	std::weak_ptr<const ColliderModel> colliderModel, Transform& transform,
-	float pushDistance, bool isExclude, bool isTarget) const
-{
-	// ステージモデル(地面)との衝突
-	auto hits = MV1CollCheck_LineDim(
-		colliderModel.lock()->GetFollow().lock()->modelId,
-		-1, GetPosStart(), GetPosEnd());
-
-	//衝突判定
-	bool res = false;
-
-	for (int i = 0; i < hits.HitNum; i++)
-	{
-		auto hit = hits.Dim[i];
-
-		// 除外フレームは無視する
-		if (isExclude 
-			&& colliderModel.lock()->IsExcludeFrame(hit.FrameIndex))
-		{
-			continue;
-		}
-
-		// 対象フレーム以外は無視する
-		if (isTarget 
-			&& !colliderModel.lock()->IsTargetFrame(hit.FrameIndex))
-		{
-			continue;
-		}
-
-		// 衝突地点から、少し上に移動
-		if (transform.pos.y < hit.HitPosition.y)
-		{
-			// 衝突物より、下側にいる場合のみ、位置を修正する
-			transform.pos =
-				VAdd(hit.HitPosition, VScale(AsoUtility::DIR_U, pushDistance));
-		}
-
-		//衝突判定をture
-		res = true;
-	}
-
-	// 検出した地面ポリゴン情報の後始末
-	MV1CollResultPolyDimTerminate(hits);
-
-	return res;
 }
 
 void ColliderLine::DrawDebug(int color)

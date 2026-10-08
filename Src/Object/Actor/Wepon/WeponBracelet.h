@@ -4,7 +4,6 @@
 #include "WeponBase.h"
 
 class Transform;
-class ColliderModel;
 
 class WeponBracelet : public WeponBase
 {
@@ -21,7 +20,7 @@ public:
 
 	// コンストラクタ
 	WeponBracelet(
-		const Transform& followTransform, const ColliderModel* colMod,
+		const Transform& followTransform,
 		const VECTOR moverDir, int followFrameId);
 
 	// デストラクタ
@@ -39,11 +38,15 @@ public:
 	// 衝突判定の設定
 	void SetCollider(void) override;
 
+	void ClearCollider(void) override;
+
 	// 攻撃フラグの設定
 	void SetIsAttack(bool isAttack)override;
 
 	// 終了フラグの設定
 	void SetIsEnd(bool isEnd) override { isEnd_ = isEnd; }
+
+	void SetMoveDir(const VECTOR& dir) { moveDir_ = dir; }
 protected:
 	// リソースロード
 	void InitLoad(void) override;
@@ -77,9 +80,6 @@ private:
 	// 移動距離
 	static constexpr float LENGTH = 2000.0f;
 
-	// 衝突判定用コライダ
-	const ColliderModel* ColMod_;
-
 	// 衝突判定用座標上部
 	VECTOR topPos_;
 	// 衝突判定用座標下部
@@ -96,6 +96,9 @@ private:
 
 	// 終了フラグ
 	bool isEnd_;
+
+	// 保持しているコライダーへの参照
+	std::shared_ptr<ColliderCapsule> colliderCapsule_;
 
 	//移動処理
 	void Move(void);

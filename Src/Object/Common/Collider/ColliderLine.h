@@ -10,7 +10,7 @@ class ColliderLine : public ColliderBase
 public:
 	// コンストラクタ
 	ColliderLine(
-		TAG tag, std::weak_ptr<const Transform> follow,
+		TAG tag, const std::vector<TAG>& targetTags, std::weak_ptr<const Transform> follow,
 		const VECTOR& localPosStart, const VECTOR& localPosEnd, int patrTag = 0);
 
 	// デストラクタ
@@ -27,14 +27,6 @@ public:
 	// ワールド座標の取得
 	VECTOR GetPosStart(void) const;
 	VECTOR GetPosEnd(void) const;
-
-	//ステージモデルとの衝突
-	bool  PushBackUp(
-		std::weak_ptr<const ColliderModel> colliderModel,
-		Transform& transform,
-		float pushDistance,
-		bool isExclude = false,
-		bool isTarget = false) const;
 protected:
 	// デバッグ用描画
     void DrawDebug(int color) override;

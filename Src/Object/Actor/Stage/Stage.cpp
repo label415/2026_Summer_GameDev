@@ -1,5 +1,6 @@
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/SceneManager.h"
+#include "../../../Manager/CollisionManager.h"
 #include "../../Common/Collider/ColliderModel.h"
 #include "../../Common/Collider/ColliderSphere.h"
 #include "Stage.h"
@@ -52,84 +53,57 @@ void Stage::InitTransform(void)
 
 void Stage::InitCollider(void)
 {
-	// DxLib側の衝突情報セットアップ
 	MV1SetupCollInfo(transform_.modelId);
 
-	// モデルのコライダ
-	ColliderModel* colModel =
-		new ColliderModel(ColliderBase::TAG::STAGE, &transform_);
+	// ステージモデルが反応する対象タグ
+	std::vector<ColliderBase::TAG> targetTags = {
+		ColliderBase::TAG::PLAYER,
+		ColliderBase::TAG::ENEMY,
+		ColliderBase::TAG::CAMERA,
+		ColliderBase::TAG::GROUND,
+		ColliderBase::TAG::PLAYER_WEPON,
+		ColliderBase::TAG::ENEMY_WEPON
+	};
 
-	//除外フレーム格納処理
+	colModel_ = std::make_shared<ColliderModel>(
+		ColliderBase::TAG::STAGE,
+		targetTags,
+		&transform_
+	);
+
 	for (const std::wstring& name : EXCLUDE_FRAME_NAMES)
 	{
-		colModel->AddExcludeFrameIds(name);
+		colModel_->AddExcludeFrameIds(name);
 	}
 
-	//対象フレーム格納処理
 	for (const std::wstring& name : TARGET_FRAME_NAMES)
 	{
-		colModel->AddTargetFrameIds(name);
+		colModel_->AddTargetFrameIds(name);
 	}
 
-	// 自身のコライダに登録
-	std::vector<ColliderBase*> colModels;
-	colModels.push_back(colModel);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::MODEL), colModels);
+	ownColliders_[static_cast<int>(ColliderBase::SHAPE::MODEL)].push_back(colModel_);
+	CollisionManager::GetInstance().AddCollider(colModel_);
 }
 
 void Stage::InitAnimation(void){}
 
 void Stage::InitPost(void){}
 
-void Stage::Collision(void)
+void Stage::UpdateHitCollider(void)
 {
-	// 対象フレームの不透明度率をリセット
+	// 前フレームで半透明化したフレームの不透明度をリセット
 	for (auto& frameIdx : frameOpacityRate_) {
 		MV1SetFrameOpacityRate(transform_.modelId, frameIdx, 1.0f);
 	}
-
-	// 対象フレームの不透明度率をクリア
 	frameOpacityRate_.clear();
 
-	// 衝突判定
-	for (const auto& hitCol : hitColliders_)
+	if (!colModel_ || !colModel_->GetIsCollier()) return;
+
+	// カメラ等と接触した遮蔽フレームの半透明化処理
+	for (const auto& hit : colModel_->GetCollisionResults())
 	{
-		for(const auto& i : hitCol.second)
+		if (hit.isHit_ && hit.targetTag_ == ColliderBase::TAG::CAMERA)
 		{
-			// モデル以外は処理を飛ばす
-			if (i->GetShape() != ColliderBase::SHAPE::SPHERE) continue;
-
-			//派生クラスへキャスト
-			const ColliderSphere* colliderSphere =
-				dynamic_cast<const ColliderSphere*>(i);
-
-			if (colliderSphere == nullptr)continue;
-
-			auto hits = MV1CollCheck_Sphere(
-				transform_.modelId,
-				-1,
-				colliderSphere->GetPos(),
-				colliderSphere->GetRadius());
-
-			// 検出した地面ポリゴン情報の数だけループ
-			for (int i = 0; i < hits.HitNum; i++)
-			{
-				const auto& hit = hits.Dim[i];
-
-				for (const std::wstring& name : TARGET_FRAME_NAMES)
-				{
-					RateFrameIds(name);
-				}
-
-				if (IsRateFrame(hit.FrameIndex))continue;
-
-				MV1SetFrameOpacityRate(transform_.modelId, hit.FrameIndex, 0.3f);
-
-				frameOpacityRate_.emplace_back(hit.FrameIndex);
-
-			}
-			// 検出した地面ポリゴン情報の後始末
-			MV1CollResultPolyDimTerminate(hits);
 		}
 	}
 }

@@ -52,24 +52,6 @@ void EnemyManager::Release(void)
 	}
 }
 
-void EnemyManager::HitDamegr(bool isHit)
-{
-	// エネミーのダメージ判定
-	for (auto& enemy : enemys_)
-	{
-		enemy->HitDamage(isHit);
-	}
-}
-
-void EnemyManager::AddHitCollider(int shape, const std::vector<ColliderBase*> hitCollider)
-{
-	// エネミーに衝突対象となるコライダを登録
-	for (auto& enemy : enemys_)
-	{
-		enemy->AddHitCollider(shape, hitCollider);
-	}
-}
-
 void EnemyManager::LoadCsvData(void)
 {
 	// ファイルの読込
@@ -140,13 +122,4 @@ EnemyBase* EnemyManager::Create(const EnemyBase::EnemyData& data)
 	}
 
 	return enemy;
-}
-
-void EnemyManager::RemoveCollider(ColliderBase::SHAPE shape, ColliderBase::TAG tag)
-{
-	// エネミーに衝突対象となるコライダを削除
-	for (auto& enemy : enemys_)
-	{
-		enemy->RemoveHitColliderByShapeAndTag(shape, tag);
-	}
 }

@@ -1,6 +1,7 @@
 #include <DxLib.h>
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/SceneManager.h"
+#include "../../../Manager/CollisionManager.h"
 #include "../../../Manager/Camera.h"
 #include "../../../Manager/InputManager.h"
 #include "../../../Manager/SoundManager.h"
@@ -20,22 +21,22 @@
 #include "Player.h"
 
 Player::Player(void)
-    : animLockPos_(AsoUtility::VECTOR_ZERO)
-    , stRecoverTime_(0.0f)
-    , effType_(EFFECT::NONE)
-    , deathAnimationTime_(0.0f)
-    , invincibleTimer_(0.0f)
-    , isComboNext_(false)
-    , isVinclible_(false)
-    , stateAtkCombo_(STATE_ATTACK_COMBO::COMBO_1)
-    , state_(STATE::IDLE)
-    , uiRecovery_(nullptr)
-    , wepon_(nullptr)
-    , uiSt_(nullptr)
+	: animLockPos_(AsoUtility::VECTOR_ZERO)
+	, stRecoverTime_(0.0f)
+	, effType_(EFFECT::NONE)
+	, deathAnimationTime_(0.0f)
+	, invincibleTimer_(0.0f)
+	, isComboNext_(false)
+	, isVinclible_(false)
+	, stateAtkCombo_(STATE_ATTACK_COMBO::COMBO_1)
+	, state_(STATE::IDLE)
+	, uiRecovery_(nullptr)
+	, wepon_(nullptr)
+	, uiSt_(nullptr)
 {
 }
 
-Player::~Player(void){}
+Player::~Player(void) {}
 
 void Player::Draw(void)
 {
@@ -63,160 +64,6 @@ void Player::Release(void)
 	if (uiSt_) {
 		delete uiSt_;
 		uiSt_ = nullptr;
-	}
-}
-
-void Player::HitDamage(bool isHit)
-{
-	// プレイヤーと敵の座標を取得
-	VECTOR playerPos = transform_.pos;
-	VECTOR enemyPos = AsoUtility::VECTOR_ZERO;
-	if (targetTrans_ != nullptr)
-	{
-		enemyPos = *targetTrans_;
-	}
-
-	// カプセルコライダ  
-	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
-
-	// カプセルコライダが無ければ処理を抜ける  
-	if (ownColliders_.count(capsuleType) == 0) return;
-
-	const auto& vecs = ownColliders_.at(capsuleType);
-	for (const auto& vec : vecs)
-	{
-		// カプセルコライダ情報  
-		const ColliderCapsule* colliderCapsule1 =
-			dynamic_cast<const ColliderCapsule*>(vec);
-
-		if (colliderCapsule1 == nullptr) continue;
-
-		playerPos = colliderCapsule1->GetFollow()->pos;
-
-		for (const auto& hitCol : hitColliders_)
-		{
-			for (const auto& i : hitCol.second)
-			{
-				// 敵本体との当たり判定
-				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
-					&& i->GetTag() == ColliderBase::TAG::ENEMY) {
-
-					const ColliderCapsule* colliderCapsule2 =
-						dynamic_cast<ColliderCapsule*>(i);
-					if (colliderCapsule2 == nullptr) continue;
-
-					auto hits = HitCheck_Capsule_Capsule(
-						colliderCapsule1->GetPosTop(),
-						colliderCapsule1->GetPosDown(),
-						colliderCapsule1->GetRadius(),
-						colliderCapsule2->GetPosTop(),
-						colliderCapsule2->GetPosDown(),
-						colliderCapsule2->GetRadius());
-
-					if (hits) {
-						if (isHit && !isVinclible_) {
-							anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
-							state_ = STATE::DOWN;
-							uiHp_->SetHp(DAMAGE_ENEMY_BODY);
-							effType_ = EFFECT::BLOOD;
-							effect_->Play(static_cast<int>(effType_));
-							effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
-							int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
-							SoundManager::GetInstance().PlaySE(
-								SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
-							return;
-						}
-						else {
-							colliderCapsule1->PushBackAlongNormal(
-								colliderCapsule2, transform_, PUSH_BACK_POWER, false, false);
-						}
-					}
-				}
-
-				// 無敵状態なら当たり判定を無視
-				if (isVinclible_) continue;
-
-				bool isBlockedByWall = false;
-				
-				// 壁による遮蔽判定
-				for (const auto& stageColPair : hitColliders_)
-				{
-					for (const auto& stageCol : stageColPair.second)
-					{
-						if (stageCol->GetShape() == ColliderBase::SHAPE::MODEL
-							&& stageCol->GetTag() == ColliderBase::TAG::STAGE) {
-							const ColliderModel* colliderModel =
-								dynamic_cast<ColliderModel*>(stageCol);
-							if (colliderModel == nullptr) continue;
-
-							// 敵とプレイヤーの間の直線上にモデルがあれば true
-							if (colliderModel->IsHit(enemyPos, playerPos, false, false)) {
-								isBlockedByWall = true;
-								break;
-							}
-						}
-					}
-					if (isBlockedByWall) break;
-				}
-
-				// 壁による遮蔽がある場合は当たり判定を無視
-				if (isBlockedByWall) continue;
-
-				// 敵カプセルコライダーとの当たり判定
-				if (i->GetShape() == ColliderBase::SHAPE::CAPSULE
-					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
-
-					ColliderCapsule* colliderCapsule2 =
-						dynamic_cast<ColliderCapsule*>(i);
-					if (colliderCapsule2 == nullptr) continue;
-
-					auto hits = HitCheck_Capsule_Capsule(
-						colliderCapsule1->GetPosTop(),
-						colliderCapsule1->GetPosDown(),
-						colliderCapsule1->GetRadius(),
-						colliderCapsule2->GetPosTop(),
-						colliderCapsule2->GetPosDown(),
-						colliderCapsule2->GetRadius());
-
-					if (hits) {
-						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
-						state_ = STATE::DOWN;
-						uiHp_->SetHp(DAMAGE_ENEMY_WEAPON);
-						int bgm_ = resMng_.Load(
-							ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
-						SoundManager::GetInstance().PlaySE(
-							SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
-						return;
-					}
-				}
-
-				// 敵球体コライダーとの当たり判定
-				if (i->GetShape() == ColliderBase::SHAPE::SPHERE
-					&& i->GetTag() == ColliderBase::TAG::ENEMY_WEPON) {
-
-					ColliderSphere* colliderSphere =
-						dynamic_cast<ColliderSphere*>(i);
-					if (colliderSphere == nullptr) continue;
-
-					auto hits = HitCheck_Sphere_Capsule(
-						colliderSphere->GetPos(),
-						colliderSphere->GetRadius(),
-						colliderCapsule1->GetPosTop(),
-						colliderCapsule1->GetPosDown(),
-						colliderCapsule1->GetRadius());
-
-					if (hits) {
-						anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
-						state_ = STATE::DOWN;
-						uiHp_->SetHp(DAMAGE_ENEMY_WEAPON);
-						int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
-						SoundManager::GetInstance().PlaySE(
-							SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
-						return;
-					}
-				}
-			}
-		}
 	}
 }
 
@@ -276,23 +123,36 @@ void Player::InitTransform(void)
 void Player::InitCollider(void)
 {
 	// 線分コライダ
-	ColliderLine* colLine = new ColliderLine(
-		ColliderBase::TAG::PLAYER, &transform_,
-		COL_LINE_START_LOCAL_POS, COL_LINE_END_LOCAL_POS);
+	std::vector<ColliderBase::TAG> lineTags = { ColliderBase::TAG::STAGE };
+	auto colLine = std::make_shared<ColliderLine>(
+		ColliderBase::TAG::PLAYER,
+		lineTags,
+		&transform_,
+		COL_LINE_START_LOCAL_POS,
+		COL_LINE_END_LOCAL_POS);
 
-	std::vector<ColliderBase*> colLines;
-	colLines.push_back(colLine);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::LINE), colLines);
+	// マネージャーへ登録
+	ownColliders_[static_cast<int>(ColliderBase::SHAPE::LINE)].push_back(colLine);
+	CollisionManager::GetInstance().AddCollider(colLine);
 
 	// カプセルコライダ
-	ColliderCapsule* colCapsule = new ColliderCapsule(
-		ColliderBase::TAG::PLAYER, &transform_,
-		COL_CAPSULE_TOP_LOCAL_POS, COL_CAPSULE_DOWN_LOCAL_POS,
+	std::vector<ColliderBase::TAG> CapsuleTags = {
+	ColliderBase::TAG::ENEMY,
+	ColliderBase::TAG::ENEMY_WEPON,
+	ColliderBase::TAG::STAGE
+	};
+
+	auto colCapsule = std::make_shared<ColliderCapsule>(
+		ColliderBase::TAG::PLAYER,
+		CapsuleTags,
+		&transform_,
+		COL_CAPSULE_TOP_LOCAL_POS,
+		COL_CAPSULE_DOWN_LOCAL_POS,
 		COL_CAPSULE_RADIUS);
 
-	std::vector<ColliderBase*> colCapsules;
-	colCapsules.push_back(colCapsule);
-	ownColliders_.emplace(static_cast<int>(ColliderBase::SHAPE::CAPSULE), colCapsules);
+	// マネージャーへ登録
+	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colCapsule);
+	CollisionManager::GetInstance().AddCollider(colCapsule);
 }
 
 void Player::InitAnimation(void)
@@ -357,7 +217,7 @@ void Player::InitPost(void)
 
 	// エフェクト
 	effType_ = EFFECT::NONE;
-	effect_ = new EffectController();
+	effect_ = std::make_unique<EffectController>();
 	effect_->Add(
 		static_cast<int>(EFFECT::BLOOD),
 		(Application::PATH_EFFECT + L"Blood.efkefc"));
@@ -458,7 +318,7 @@ void Player::ProcessMove(void)
 			Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
 			transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetRot, ROT_TARGET_SLERP_RATE);
 		}
-		
+
 		// ダッシュ入力判定
 		auto& ins = InputManager::GetInstance();
 		bool isR = ins.IsNew(KEY_INPUT_LSHIFT)
@@ -626,23 +486,17 @@ void Player::ProcessAttack(void)
 
 void Player::ProcessEvasion(void)
 {
-	// 回避入力判定
 	bool isP = false;
 	auto& ins = InputManager::GetInstance();
 
-	// スタミナが残っている場合のみ回避可能
 	if (uiSt_->GetSt() >= 0) {
 		isP = ins.IsTrgDown(KEY_INPUT_SPACE)
 			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT);
 	}
 
-	// 回避入力があり、かつ回避状態でない場合、かつ通常状態の場合に回避開始
 	if (isP && !isJump_
-		&& (state_ == STATE::IDLE
-			|| state_ == STATE::RUN
-			|| state_ == STATE::FAST_RUN))
+		&& (state_ == STATE::IDLE || state_ == STATE::RUN || state_ == STATE::FAST_RUN))
 	{
-		// 回避状態に遷移
 		state_ = STATE::EVASION;
 		lastQrot_ = transform_.quaRotLocal;
 		transform_.quaRotLocal =
@@ -651,24 +505,32 @@ void Player::ProcessEvasion(void)
 		uiSt_->SetSt(CONSUMPTION_ST_EVASION);
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_EVASION).handleId_;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_AVE, bgm_, SE_VOLUME_EVASION);
+
+		isVinclible_ = true;
+		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
+			for (auto& col : ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
+				col->SetIsCollier(false);
+			}
+		}
 	}
 
-	// 回避状態でなければ処理終了
 	if (state_ != STATE::EVASION) return;
 
-	// 回避アニメーション再生
-	anim_->Play(
-		static_cast<int>(ANIM_TYPE::EVASION), false);
-
-	// 回避中は無敵状態
+	anim_->Play(static_cast<int>(ANIM_TYPE::EVASION), false);
 	moveSpeed_ = SPEED_EVASION;
 	movePow_ = VScale(moveDir_, moveSpeed_);
-	isVinclible_ = true;
 
-	// 回避アニメーションが終了したら元の回転に戻して通常状態に遷移
 	if (anim_->IsEnd()) {
 		transform_.quaRotLocal = lastQrot_;
 		state_ = STATE::IDLE;
+		isVinclible_ = false;
+
+		// 回避終了：コライダーを再有効化
+		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
+			for (auto& col : ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
+				col->SetIsCollier(true);
+			}
+		}
 	}
 }
 
@@ -698,7 +560,7 @@ void Player::ProcessDownUp(void)
 			}
 		}
 	}
-	
+
 	// アップ状態の処理
 	if (state_ == STATE::UP)
 	{
@@ -769,73 +631,6 @@ void Player::ProcessDie(void)
 	}
 }
 
-void Player::CollisionReserve(void)
-{
-	// 回避中またはダウン中のアニメーション再生時にコライダーの位置を変更
-	if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::EVASION)
-		|| anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::DOWN))
-	{
-		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)
-		{
-			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE));
-			if (!vec.empty())
-			{
-				ColliderLine* colLine = dynamic_cast<ColliderLine*>(vec.front());
-				if (colLine)
-				{
-					colLine->SetLocalPosStart(COL_LINE_AVOIDANCE_START_LOCAL_POS);
-					colLine->SetLocalPosEnd(COL_LINE_AVOIDANCE_END_LOCAL_POS);
-				}
-			}
-		}
-		// カプセルコライダの位置を変更
-		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE)) != 0)
-		{
-			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-			if (!vec.empty())
-			{
-				ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(vec.front());
-				if (colCapsule)
-				{
-					colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_AVOIDANCE_LOCAL_POS);
-					colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_AVOIDANCE_LOCAL_POS);
-				}
-			}
-		}
-	}
-	else
-	{
-		// 通常時のコライダーの位置に戻す
-		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::LINE)) != 0)
-		{
-			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::LINE));
-			if (!vec.empty())
-			{
-				ColliderLine* colLine = dynamic_cast<ColliderLine*>(vec.front());
-				if (colLine)
-				{
-					colLine->SetLocalPosStart(COL_LINE_START_LOCAL_POS);
-					colLine->SetLocalPosEnd(COL_LINE_END_LOCAL_POS);
-				}
-			}
-		}
-		// カプセルコライダの位置を通常時に戻す
-		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE)) != 0)
-		{
-			const auto& vec = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
-			if (!vec.empty())
-			{
-				ColliderCapsule* colCapsule = dynamic_cast<ColliderCapsule*>(vec.front());
-				if (colCapsule)
-				{
-					colCapsule->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
-					colCapsule->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
-				}
-			}
-		}
-	}
-}
-
 void Player::UpdateProcess(void)
 {
 	// 死亡状態の処理
@@ -873,7 +668,7 @@ void Player::UpdateProcess(void)
 	}
 
 	// スタミナ回復クールタイムの処理
-	if (stRecoverTime_	 > 0.0f) {
+	if (stRecoverTime_ > 0.0f) {
 		stRecoverTime_ -= 1.0f * SceneManager::GetInstance().GetDeltaTime();
 	}
 
@@ -924,7 +719,62 @@ void Player::UpdateProcess(void)
 	SetFrameUserLocalPos(animLockPos_, LOCK_FRAME_NO);
 }
 
-void Player::UpdateProcessPost(void){}
+void Player::UpdateProcessPost(void) {}
+
+void Player::UpdateHitCollider(void)
+{
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
+	if (ownColliders_.count(capsuleType) == 0) return;
+
+	for (const auto& col : ownColliders_.at(capsuleType))
+	{
+		if (!col->GetIsCollier()) continue;
+
+		for (const auto& result : col->GetCollisionResults())
+		{
+			if (!result.isHit_) continue;
+
+			// --- 敵本体との衝突 ---
+			if (result.targetTag_ == ColliderBase::TAG::ENEMY)
+			{
+				if (!isVinclible_)
+				{
+					anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
+					state_ = STATE::DOWN;
+					uiHp_->SetHp(DAMAGE_ENEMY_BODY);
+
+					effType_ = EFFECT::BLOOD;
+					effect_->Play(static_cast<int>(effType_));
+					effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
+
+					int seHandle = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
+					SoundManager::GetInstance().PlaySE(
+						SoundManager::SeId::PLAYER_DMAGE, seHandle, SE_VOLUME_DAMAGE);
+					return;
+				}
+			}
+
+			// --- 敵武器との衝突 ---
+			if (result.targetTag_ == ColliderBase::TAG::ENEMY_WEPON)
+			{
+				if (isVinclible_ || result.isBlocked) continue;
+
+				anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
+				state_ = STATE::DOWN;
+				uiHp_->SetHp(DAMAGE_ENEMY_WEAPON);
+
+				effType_ = EFFECT::BLOOD;
+				effect_->Play(static_cast<int>(effType_));
+				effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
+
+				int seHandle = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
+				SoundManager::GetInstance().PlaySE(
+					SoundManager::SeId::PLAYER_DMAGE, seHandle, SE_VOLUME_DAMAGE);
+				return;
+			}
+		}
+	}
+}
 
 VECTOR Player::GetInputDirection(void)
 {

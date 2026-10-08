@@ -7,7 +7,9 @@ class ColliderModel : public ColliderBase
 {
 public:
 	// コンストラクタ
-	ColliderModel(TAG tag, std::weak_ptr<const Transform> follow, int patrTag = 0);
+	ColliderModel(
+		TAG tag, const std::vector<TAG>& targetTags,
+		std::weak_ptr<const Transform> follow, int patrTag = 0);
 
 	// デストラクタ
 	~ColliderModel(void) override;
@@ -29,9 +31,6 @@ public:
 
 	// 対象フレーム判定
 	bool IsTargetFrame(int frameIdx) const;
-
-	bool IsHit(VECTOR pos1, VECTOR pos2,
-		bool isExclude = false, bool isTarget = false)const;
 protected:
 	// 衝突判定から除外するフレーム番号
 	std::vector<int> excludeFrameIds_;

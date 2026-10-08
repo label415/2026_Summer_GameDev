@@ -1,12 +1,13 @@
 #include "../../Common/Transform.h"
 #include "ColliderBase.h"
-ColliderBase::ColliderBase(SHAPE shape, TAG tag, std::weak_ptr<const Transform> follow, int patrTag)
+ColliderBase::ColliderBase(
+	SHAPE shape, TAG tag,
+	const std::vector<TAG>& targetTags,
+	std::weak_ptr<const Transform> follow, int patrTag)
 	:
-	shape_(shape),
-	tag_(tag),
-	follow_(follow),
-	patrTag_(patrTag),
-	isValid_(true)
+	shape_(shape), tag_(tag),
+	targetTags_(targetTags), patrTag_(patrTag),
+	follow_(follow),isCollier_(true)
 {
 }
 ColliderBase::~ColliderBase(void)
@@ -15,7 +16,7 @@ ColliderBase::~ColliderBase(void)
 void ColliderBase::Draw(void)
 {
 	int color = COLOR_INVALID;
-	if (isValid_)
+	if (isCollier_)
 	{
 		color = COLOR_VALID;
 	}
@@ -26,9 +27,9 @@ void ColliderBase::SetFollow(std::weak_ptr<const Transform> follow)
 	follow_ = follow;
 }
 
-void ColliderBase::SetValid(bool isValid)
+void ColliderBase::SetIsCollier(bool isCollier)
 {
-	isValid_ = isValid;
+	isCollier_ = isCollier;
 }
 
 VECTOR ColliderBase::GetRotPos(const VECTOR& localPos) const

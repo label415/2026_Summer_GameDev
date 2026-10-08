@@ -10,7 +10,7 @@ class ColliderCapsule : public ColliderBase
 public:
 	// コンストラクタ
 	ColliderCapsule(
-		TAG tag, std::weak_ptr<const Transform> follow,
+		TAG tag, const std::vector<TAG>& targetTags, std::weak_ptr<const Transform> follow,
 		const VECTOR& localPosTop, const VECTOR& localPosDown, float radius, int patrTag = 0);
 
 	// デストラクタ
@@ -37,28 +37,6 @@ public:
 
 	// カプセルの中心座標
 	VECTOR& GetCenter(void);
-
-	// 指定された回数と距離で三角形の法線方向に押し戻した座標を取得
-	VECTOR GetPosPushBackAlongNormal(
-		const MV1_COLL_RESULT_POLY& hitColPoly,
-		int maxTryCnt,
-		float pushDistance) const override;
-
-	// 指定された回数と距離で三角形の法線方向に押し戻す
-	void PushBackAlongNormal(
-		std::weak_ptr<const ColliderModel> colliderModel, Transform& transform,
-		int maxTryCnt, float pushDistance,
-		bool isExclude = false, bool isTarget = false) const;
-
-	// 指定された回数で三角形の法線方向に押し戻す
-	void PushBackAlongNormal(
-		std::weak_ptr<const ColliderCapsule> colliderCapsule, Transform& transform,
-		int maxTryCnt,
-		bool isExclude = false, bool isTarget = false) const;
-
-	// 指定されたカプセルコライダと衝突しているか判定
-	bool IsHit(std::weak_ptr<const ColliderModel> colliderModel,
-		bool isExclude = false, bool isTarget = false) const;
 protected:
 	// デバッグ用描画
 	void DrawDebug(int color) override;

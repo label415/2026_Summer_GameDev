@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <vector>
 #include <DxLib.h>
 #include "../../../Utility/AsoUtility.h"
 
@@ -22,18 +23,39 @@ public:
 	// 衝突種別
 	enum class TAG
 	{
+		NONE,
 		STAGE,
 		PLAYER,
 		CAMERA,
 		ENEMY,
 		VIEW_RANGE,
 		PLAYER_WEPON,
-	    ENEMY_WEPON,
+		ENEMY_WEPON,
 		GROUND
 	};
 
+	// 処理結果
+	struct HitInfo
+	{
+		// 衝突相手
+		TAG targetTag_ = TAG::NONE;
+		// 押し出し方向
+		VECTOR pushVectorDir_;
+		// 押し出し量
+		VECTOR  pushVector_;
+		// 衝突フラグ
+		bool isHit_ = false;
+		// 遮断フラグ
+		bool isBlocked = false;
+	};
+
 	// コンストラクタ
-	ColliderBase(SHAPE shape, TAG tag, std::weak_ptr<const Transform> follow, int patrTag);
+	ColliderBase(
+		SHAPE shape,
+		TAG tag,
+		const std::vector<TAG>& targetTags,
+		std::weak_ptr<const Transform> follow,
+		int patrTag);
 
 	// デストラクタ
 	virtual ~ColliderBase(void);
@@ -54,22 +76,34 @@ public:
 	TAG GetTag(void) const { return tag_; }
 
 	//各部位衝突種別
-	int GetPatrTag(void)const  { return patrTag_; }
+	int GetPatrTag(void)const { return patrTag_; }
 
-	//色変更
-	void SetValid(bool isValid);
+	// 当たり判定フラグを設定する
+	void SetIsCollier(bool isIsCollier);
 
-	bool GetIsValid(void)const { return isValid_; }
+	// 当たり判定フラグを取得
+	bool GetIsCollier(void)const { return isCollier_; }
 
-	// 指定された回数と距離で三角形の法線方向に押し戻した座標を取得
-	virtual VECTOR GetPosPushBackAlongNormal(
-		const MV1_COLL_RESULT_POLY& hitColPoly,
-		int maxTryCnt,
-		float pushDistance) const {return AsoUtility::VECTOR_ZERO;}
+	// 当たり判定対象タグの判定
+	bool IsTargetTag(TAG tag) const
+	{
+		return std::find(
+			targetTags_.begin(),
+			targetTags_.end(),
+			tag) != targetTags_.end();
+	}
+
+	// 衝突結果の格納・取得
+	void ClearCollisionResults() { hitInfos_.clear(); }
+	void AddCollisionResult(const HitInfo& res) { hitInfos_.push_back(res); }
+	const std::vector<HitInfo>& GetCollisionResults() const { return hitInfos_; }
 protected:
 	// デバッグ表示の色
 	static constexpr int COLOR_VALID = 0xff0000;
 	static constexpr int COLOR_INVALID = 0xaaaaaa;
+
+	// 衝突判定対象とするタグ一覧
+	std::vector<TAG> targetTags_;
 
 	// 形状
 	SHAPE shape_;
@@ -84,7 +118,10 @@ protected:
 	std::weak_ptr<const Transform> follow_;
 
 	// 有効フラグ
-	bool isValid_;
+	bool isCollier_;
+
+	// 処理結果情報格納関数
+	std::vector<HitInfo> hitInfos_;
 
 	// ローカル座標をワールド座標に変換
 	VECTOR GetRotPos(const VECTOR& localPos) const;

@@ -65,7 +65,7 @@ public:
 		NECK,
 	};
 
-	//各部位のタグ
+	// エフェクト
 	enum class EFFECT {
 		NONE,
 		ROAT,
@@ -192,9 +192,6 @@ public:
 	// 解放処理
 	void Release(void) override;
 
-	// ダメージ処理
-	void HitDamage(bool isHit) override;
-
 	// HPUI表示
 	void DrawHp(void) override;
 protected:
@@ -221,6 +218,9 @@ protected:
 	
 	// 地面とのカプセル衝突判定と押し出し処理
 	void CollisionCapsule(void) override;
+
+	// 当たり判定衝突時の更新処理
+	void UpdateHitCollider(void) override;
 private:
 	// モデルの大きさ
 	static constexpr float SCALE = 0.4f;
@@ -296,6 +296,9 @@ private:
 
 	// 更新ステップ
 	float step_;
+
+	WeponBracelet* weponBracelet_;
+	WeponFlameThrower* weponFlame_;
 
 	//攻撃対象の情報を当たり判定から取得
 	const ColliderBase* targetCollider_;
