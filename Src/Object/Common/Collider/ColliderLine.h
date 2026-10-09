@@ -10,7 +10,7 @@ class ColliderLine : public ColliderBase
 public:
 	// コンストラクタ
 	ColliderLine(
-		TAG tag, const std::vector<TAG>& targetTags, std::weak_ptr<const Transform> follow,
+		TAG tag, const std::vector<TAG>& targetTags, const Transform* follow,
 		const VECTOR& localPosStart, const VECTOR& localPosEnd, int patrTag = 0);
 
 	// デストラクタ

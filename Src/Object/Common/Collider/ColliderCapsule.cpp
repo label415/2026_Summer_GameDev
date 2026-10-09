@@ -5,8 +5,12 @@
 #include "ColliderModel.h"
 
 ColliderCapsule::ColliderCapsule(
-	TAG tag, const std::vector<TAG>& targetTags, std::weak_ptr<const Transform> follow,
-	const VECTOR& localPosTop, const VECTOR& localPosDown, float radius, int patrTag)
+	TAG tag,
+	const std::vector<TAG>& targetTags,
+	const Transform* follow,
+	const VECTOR& localPosTop,
+	const VECTOR& localPosDown,
+	float radius, int patrTag)
 	:
 	ColliderBase(SHAPE::CAPSULE, tag, targetTags, follow, patrTag),
 	localPosTop_(localPosTop),
@@ -88,25 +92,25 @@ void ColliderCapsule::DrawDebug(int color)
 	VECTOR s;
 	VECTOR e;
 	// ‹…‘Ì‚ðŒq‚®ü(X+)
-	dir = follow_.lock()->GetRight();
+	dir = follow_->GetRight();
 	s = VAdd(pos1, VScale(dir, radius_));
 	e = VAdd(pos2, VScale(dir, radius_));
 	DrawLine3D(s, e, color);
 
 	// ‹…‘Ì‚ðŒq‚®ü(X-)
-	dir = follow_.lock()->GetLeft();
+	dir = follow_->GetLeft();
 	s = VAdd(pos1, VScale(dir, radius_));
 	e = VAdd(pos2, VScale(dir, radius_));
 	DrawLine3D(s, e, color);
 
 	// ‹…‘Ì‚ðŒq‚®ü(Z+)
-	dir = follow_.lock()->GetForward();
+	dir = follow_->GetForward();
 	s = VAdd(pos1, VScale(dir, radius_));
 	e = VAdd(pos2, VScale(dir, radius_));
 	DrawLine3D(s, e, color);
 
 	// ‹…‘Ì‚ðŒq‚®ü(Z-)
-	dir = follow_.lock()->GetBack();
+	dir = follow_->GetBack();
 	s = VAdd(pos1, VScale(dir, radius_));
 	e = VAdd(pos2, VScale(dir, radius_));
 	DrawLine3D(s, e, color);

@@ -2,7 +2,7 @@
 #include "ColliderModel.h"
 ColliderModel::ColliderModel(
 	TAG tag, const std::vector<TAG>& targetTags,
-	std::weak_ptr<const Transform> follow, int patrTag)
+	const Transform* follow, int patrTag)
 	:
 	ColliderBase(SHAPE::MODEL, tag, targetTags, follow, patrTag)
 {
@@ -13,11 +13,11 @@ ColliderModel::~ColliderModel(void) {}
 void ColliderModel::AddExcludeFrameIds(const std::wstring& name)
 {
 	// フレーム数を取得
-	int num = MV1GetFrameNum(follow_.lock()->modelId);
+	int num = MV1GetFrameNum(follow_->modelId);
 	for (int i = 0; i < num; i++)
 	{
 		// フレーム名称を取得
-		std::wstring frameName = MV1GetFrameName(follow_.lock()->modelId, i);
+		std::wstring frameName = MV1GetFrameName(follow_->modelId, i);
 		if (frameName.find(name) != std::wstring::npos)
 		{
 			// 除外フレームに追加
@@ -48,11 +48,11 @@ bool ColliderModel::IsExcludeFrame(int frameIdx) const
 void ColliderModel::AddTargetFrameIds(const std::wstring& name)
 {
 	// フレーム数を取得
-	int num = MV1GetFrameNum(follow_.lock()->modelId);
+	int num = MV1GetFrameNum(follow_->modelId);
 	for (int i = 0; i < num; i++)
 	{
 		// フレーム名称を取得
-		std::wstring frameName = MV1GetFrameName(follow_.lock()->modelId, i);
+		std::wstring frameName = MV1GetFrameName(follow_->modelId, i);
 		if (frameName.find(name) != std::wstring::npos)
 		{
 			// 除外フレームに追加

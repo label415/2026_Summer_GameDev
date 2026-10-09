@@ -3,8 +3,11 @@
 #include "ColliderSphere.h"
 
 ColliderSphere::ColliderSphere(
-	TAG tag, const std::vector<TAG>& targetTags, std::weak_ptr<const Transform> follow,
-	const VECTOR& localPos, float radius, int patrTag)
+	TAG tag,
+	const std::vector<TAG>& targetTags,
+	const Transform* follow,
+	const VECTOR& localPos, 
+	float radius, int patrTag)
 	:
 	ColliderBase(SHAPE::SPHERE, tag, targetTags, follow, patrTag),
 	localPos_(localPos),

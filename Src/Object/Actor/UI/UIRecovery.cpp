@@ -6,7 +6,11 @@
 
 UIRecovery::UIRecovery(int cnt)
 	:
-	bottleCount_(cnt)
+	bottleCount_(cnt),
+	cntfont_(L""),
+	imgBox_(-1),
+	imgBottle_(-1),
+	font_(-1)
 {
 }
 
@@ -21,19 +25,19 @@ void UIRecovery::Update(void)
 void UIRecovery::Draw(void)
 {
 	// アイテムボックスを描画
-	DrawRotaGraph(
+	DrawRotaGraphF(
 		Application::SCREEN_SIZE_X / UI_POS_ADJ_X,
 		Application::SCREEN_SIZE_Y / UI_POS_ADJ_Y,
 		BOX_SIZE, 0.0f, imgBox_, true);
 
 	// 回復瓶を描画
-	DrawRotaGraph(
+	DrawRotaGraphF(
 		Application::SCREEN_SIZE_X / UI_POS_ADJ_X,
 		Application::SCREEN_SIZE_Y / UI_POS_ADJ_Y,
 		BOTTLE_SIZE, 0.0f, imgBottle_, true);
 
 	// 回復瓶の数を描画
-	DrawFormatStringToHandle(
+	DrawFormatStringFToHandle(
 		Application::SCREEN_SIZE_X / FONT_POS_ADJ_X,
 		Application::SCREEN_SIZE_Y / FONT_POS_ADJ_Y,
 		FONT_COLOR,

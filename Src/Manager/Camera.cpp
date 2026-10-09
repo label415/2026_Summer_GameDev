@@ -85,6 +85,7 @@ void Camera::InitCollider(void)
 		ColliderBase::TAG::CAMERA,
 		targetTags,
 		&transform_,
+		AsoUtility::VECTOR_ZERO,
 		COL_CAPSULE_SPHERE
 	);
 
@@ -97,10 +98,10 @@ void Camera::InitPost(void)
 	// ƒJƒƒ‰ƒ‚[ƒh‚Ì‰Šú‰»
 	ChangeMode(MODE::FIXED_POINT);
 	auto& ins = InputManager::GetInstance();
-	mouseX = ins.GetMousePos().x;
-	mouseY = ins.GetMousePos().y;
-	preMouseX = ins.GetMousePos().x;
-	preMouseY = ins.GetMousePos().y;
+	mouseX = static_cast<float>(ins.GetMousePos().x);
+	mouseY = static_cast<float>(ins.GetMousePos().y);
+	preMouseX = static_cast<float>(ins.GetMousePos().x);
+	preMouseY = static_cast<float>(ins.GetMousePos().y);
 
 	isMouseInput_ = false;
 }

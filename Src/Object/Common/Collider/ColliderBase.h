@@ -40,9 +40,9 @@ public:
 		// 衝突相手
 		TAG targetTag_ = TAG::NONE;
 		// 押し出し方向
-		VECTOR pushVectorDir_;
+		VECTOR pushVectorDir_ = { 0.0f, 0.0f, 0.0f };
 		// 押し出し量
-		VECTOR  pushVector_;
+		VECTOR  pushVector_ = { 0.0f, 0.0f, 0.0f };
 		// 衝突フラグ
 		bool isHit_ = false;
 		// 遮断フラグ
@@ -54,8 +54,8 @@ public:
 		SHAPE shape,
 		TAG tag,
 		const std::vector<TAG>& targetTags,
-		std::weak_ptr<const Transform> follow,
-		int patrTag);
+		const Transform* follow,
+		int patrTag = 0);
 
 	// デストラクタ
 	virtual ~ColliderBase(void);
@@ -64,10 +64,10 @@ public:
 	void Draw(void);
 
 	// 追従先の取得
-	std::weak_ptr<const Transform> GetFollow(void) const { return follow_; }
+	const Transform* GetFollow(void) const { return follow_; }
 
 	// 追従先の再設定
-	void SetFollow(std::weak_ptr<const Transform> follow);
+	void SetFollow(const Transform* follow);
 
 	// 形状
 	SHAPE GetShape(void) const { return shape_; }
@@ -115,7 +115,7 @@ protected:
 	int patrTag_;
 
 	// 追従先
-	std::weak_ptr<const Transform> follow_;
+	const Transform* follow_;
 
 	// 有効フラグ
 	bool isCollier_;

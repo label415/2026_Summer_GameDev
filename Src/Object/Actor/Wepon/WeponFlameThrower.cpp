@@ -49,6 +49,7 @@ void WeponFlameThrower::InitCollider(void)
 		ColliderBase::TAG::ENEMY_WEPON,
 		targetTags,
 		&transform_,
+		AsoUtility::VECTOR_ZERO,
 		MIN_RADIUS
 	);
 
@@ -68,7 +69,7 @@ void WeponFlameThrower::InitPost(void)
 
 	radius_ = MIN_RADIUS;
 
-	effect_ = std::unique_ptr<EffectController>();
+	effect_ = std::make_unique<EffectController>();
 	effect_->Add(
 		static_cast<int>(EFFECT_TYPE::BULLET),
 		(Application::PATH_EFFECT + L"FireBall_Bullet.efkefc"));

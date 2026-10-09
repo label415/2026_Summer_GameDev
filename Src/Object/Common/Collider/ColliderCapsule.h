@@ -3,22 +3,25 @@
 #include "ColliderBase.h"
 
 class Transform;
-class ColliderModel;
 
 class ColliderCapsule : public ColliderBase
 {
 public:
 	// コンストラクタ
 	ColliderCapsule(
-		TAG tag, const std::vector<TAG>& targetTags, std::weak_ptr<const Transform> follow,
-		const VECTOR& localPosTop, const VECTOR& localPosDown, float radius, int patrTag = 0);
+		TAG tag,
+		const std::vector<TAG>& targetTags,
+		const Transform* follow,
+		const VECTOR& localPosTop,
+		const VECTOR& localPosDown,
+		float radius, int patrTag = 0);
 
 	// デストラクタ
 	~ColliderCapsule(void);
 
 	// 親Transformからの相対位置を取得
 	const VECTOR& GetLocalPosTop(void) const;
-	const VECTOR & GetLocalPosDown(void) const;
+	const VECTOR& GetLocalPosDown(void) const;
 
 	// 親Transformからの相対位置をセット
 	void SetLocalPosTop(const VECTOR& pos);

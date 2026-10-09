@@ -45,13 +45,12 @@ void WeponBracelet::InitCollider(void)
 		ColliderBase::TAG::ENEMY_WEPON,
 		targetTags,
 		&transform_,
-		0
+		COL_CAPSULE_TOP_LOCAL_POS,
+		COL_CAPSULE_DOWN_LOCAL_POS,
+		COL_CAPSULE_RADIUS
 	);
 
-	colliderCapsule_->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
-	colliderCapsule_->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
-	colliderCapsule_->SetRadius(COL_CAPSULE_RADIUS);
-	colliderCapsule_->SetIsCollier(false); // ‰Šúó‘Ô‚Í–³Œø
+	colliderCapsule_->SetIsCollier(false);
 
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colliderCapsule_);
 	CollisionManager::GetInstance().AddCollider(colliderCapsule_);
@@ -66,7 +65,7 @@ void WeponBracelet::InitPost(void)
 	downPos_ = COL_CAPSULE_DOWN_LOCAL_POS;
 	moveSpeed_ = SPEED;
 
-	effect_ = std::unique_ptr<EffectController>();
+	effect_ = std::make_unique<EffectController>();
 	effect_->Add(
 		static_cast<int>(EFFECT_TYPE::BRACELET),
 		(Application::PATH_EFFECT + L"Breath.efkefc"));

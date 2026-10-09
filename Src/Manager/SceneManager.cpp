@@ -8,6 +8,7 @@
 #include "../Scene/PauseScene.h"
 #include "../Manager/SoundManager.h"
 #include "../Manager/InputManager.h"
+#include "../Manager/CollisionManager.h"
 #include "../Application.h"
 #include "Camera.h"
 #include "ResourceManager.h"
@@ -162,6 +163,7 @@ std::unique_ptr<SceneBase> SceneManager::CreateScene(SCENE_ID sceneId)
 	// すべてのSE,BGMを停止
 	SoundManager::GetInstance().Release();
 	ResourceManager::GetInstance().Release();
+	CollisionManager::GetInstance().Release();
 
 	// インスタンス生成
 	switch (sceneId_) {
@@ -174,4 +176,9 @@ std::unique_ptr<SceneBase> SceneManager::CreateScene(SCENE_ID sceneId)
 	default:
 		return nullptr;
 	}
+}
+
+SceneManager::SceneManager(void)
+{
+
 }

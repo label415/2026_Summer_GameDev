@@ -106,7 +106,6 @@ void EnemyDragon::InitCollider(void)
 	// 1. 地面衝突用ラインコライダー
 	std::vector<ColliderBase::TAG> lineTargets = { ColliderBase::TAG::STAGE };
 	auto groundLine = std::make_shared<ColliderLine>(
-		ColliderBase::SHAPE::LINE,
 		ColliderBase::TAG::GROUND,
 		lineTargets,
 		&transform_,
@@ -126,17 +125,28 @@ void EnemyDragon::InitCollider(void)
 	for (size_t i = 0; i < std::size(ENEMY_CAPSULE_FRAMES); i++)
 	{
 		auto hitCapsule = std::make_shared<ColliderCapsule>(
-			ColliderBase::SHAPE::CAPSULE,
 			ColliderBase::TAG::ENEMY,
 			bodyTargets,
 			&colTransform_,
+			AsoUtility::VECTOR_ZERO,
+			AsoUtility::VECTOR_ZERO,
+			HIT_RADIUS,
 			static_cast<int>(ENEMY_CAPSULE_FRAMES[i].patrTag)
 		);
-		hitCapsule->SetRadius(HIT_RADIUS);
-
 		ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(hitCapsule);
 		CollisionManager::GetInstance().AddCollider(hitCapsule);
 	}
+
+	auto groundCapsule = std::make_shared<ColliderCapsule>(
+		ColliderBase::TAG::GROUND,
+		lineTargets,
+		&transform_,
+		COL_CAPSULE_TOP_LOCAL_POS,
+		COL_CAPSULE_DOWN_LOCAL_POS,
+		COL_CAPSULE_RADIUS
+	);
+	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(groundCapsule);
+	CollisionManager::GetInstance().AddCollider(groundCapsule);
 }
 
 void EnemyDragon::InitAnimation(void)
@@ -223,7 +233,7 @@ void EnemyDragon::InitPost(void)
 
 	effectType_ = EFFECT::NONE;
 
-	effect_ = new EffectController();
+	effect_ = std::make_unique<EffectController>();
 	effect_->Add(
 		static_cast<int>(EFFECT::FALLING_ATTACK),
 		(Application::PATH_EFFECT + L"Fall.efkefc"));
@@ -251,7 +261,8 @@ void EnemyDragon::UpdateProcess(void)
 	effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
 	preMoverDir_ = moveDir_;
 	//ターゲットの方向更新
-	moveDir_ = GetTargetDir();
+	/*moveDir_ = GetTargetDir();*/
+	moveDir_ = AsoUtility::DIR_B;
 
 	// 無敵タイマー更新
 	if (isInvincible_) {

@@ -33,14 +33,14 @@ void CollisionManager::Update(void)
 {
 	if (colliders_.empty()) return;
 
-	// 破棄済みの参照を削除
-	colliders_.erase(
-		std::remove_if(colliders_.begin(), colliders_.end(),
-			[](const std::shared_ptr<ColliderBase>& e) {
-				return !e || e->GetFollow().expired();
-			}),
-		colliders_.end()
-	);
+	//// 破棄済みの参照を削除
+	//colliders_.erase(
+	//	std::remove_if(colliders_.begin(), colliders_.end(),
+	//		[](const std::shared_ptr<ColliderBase>& e) {
+	//			return !e || e->GetFollow();
+	//		}),
+	//	colliders_.end()
+	//);
 
 	// 前回の衝突結果を全コライダークリア
 	for (auto& col : colliders_)
@@ -77,7 +77,8 @@ bool CollisionManager::CanCollide(
 	const ColliderBase& b) const
 {
 	// どちらか一方が相手のタグをターゲットとしている場合に判定を実行
-	return a.IsTargetTag(b.GetTag()) || b.IsTargetTag(a.GetTag());
+	return a.IsTargetTag(b.GetTag()) 
+		|| b.IsTargetTag(a.GetTag());
 }
 
 void CollisionManager::ResolveCollision(
@@ -175,13 +176,13 @@ void CollisionManager::ResolveCollision(
 
 	if (isHit)
 	{
-		// 壁遮蔽フラグの算出
 		bool blocked = false;
-		auto followA = colA->GetFollow().lock();
-		auto followB = colB->GetFollow().lock();
+		auto followA = colA->GetFollow();
+		auto followB = colB->GetFollow();
 		if (followA && followB)
 		{
-			blocked = CheckWallOcclusion(followA->pos, followB->rot);
+			if(colA && colB)
+			blocked = CheckWallOcclusion(followA->pos, followB->pos);
 		}
 
 		// AがBを判定対象としている場合、Aに結果を格納
@@ -220,7 +221,7 @@ bool CollisionManager::CheckWallOcclusion(const VECTOR& start, const VECTOR& end
 	ColliderLine tempLine(
 		ColliderBase::TAG::NONE,
 		targetTags,
-		std::weak_ptr<const Transform>(),
+		nullptr,
 		start,
 		end
 	);

@@ -4,7 +4,7 @@
 #include "ColliderLine.h"
 
 ColliderLine::ColliderLine(
-	TAG tag, const std::vector<TAG>& targetTags, std::weak_ptr<const Transform> follow,
+	TAG tag, const std::vector<TAG>& targetTags, const Transform* follow,
 	const VECTOR& localPosStart, const VECTOR& localPosEnd, int patrTag)
 	:
 	ColliderBase(SHAPE::LINE, tag, targetTags, follow, patrTag),
@@ -37,12 +37,20 @@ const VECTOR& ColliderLine::GetLocalPosEnd(void) const
 
 VECTOR ColliderLine::GetPosStart(void) const
 {
-	return GetRotPos(localPosStart_);
+	if (follow_ != nullptr)
+	{
+		return GetRotPos(localPosStart_);
+	}
+	return localPosStart_;
 }
 
 VECTOR ColliderLine::GetPosEnd(void) const
 {
-	return GetRotPos(localPosEnd_);
+	if (follow_ != nullptr)
+	{
+		return GetRotPos(localPosEnd_);
+	}
+	return localPosEnd_;
 }
 
 void ColliderLine::DrawDebug(int color)

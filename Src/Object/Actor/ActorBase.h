@@ -74,5 +74,5 @@ protected:
 
 	// “–‚½‚è”»’èÕ“Ë‚ÌXVˆ—
 	virtual void Collision(void);
-	virtual void UpdateHitCollider(void);
+	virtual void UpdateHitCollider(void){}
 };

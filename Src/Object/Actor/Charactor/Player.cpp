@@ -125,7 +125,7 @@ void Player::InitCollider(void)
 	// ü•ªƒRƒ‰ƒCƒ_
 	std::vector<ColliderBase::TAG> lineTags = { ColliderBase::TAG::STAGE };
 	auto colLine = std::make_shared<ColliderLine>(
-		ColliderBase::TAG::PLAYER,
+		ColliderBase::TAG::GROUND,
 		lineTags,
 		&transform_,
 		COL_LINE_START_LOCAL_POS,

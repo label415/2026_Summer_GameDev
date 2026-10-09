@@ -43,7 +43,7 @@ private:
     //　使用するフォント
     std::wstring fontName_ = L"KazukiReiwa";
     // フォントのサイズ
-    static constexpr float FONT_SIZE = 50.0f;
+    static constexpr int FONT_SIZE = 50;
 
     // アイテムボックスの大きさ
 	static constexpr float BOX_SIZE = 0.8f;

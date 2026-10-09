@@ -9,8 +9,12 @@ class ColliderSphere : public ColliderBase
 public:
     // コンストラクタ
     ColliderSphere(
-        TAG tag, const std::vector<TAG>& targetTags, std::weak_ptr<const Transform> follow,
-        const VECTOR& localPos, float radius, int patrTag = 0);
+        TAG tag,
+        const std::vector<TAG>& targetTags,
+        const Transform* follow,
+        const VECTOR& localPos,
+        float radius,
+        int patrTag = 0);
 
     // デストラクタ
     ~ColliderSphere(void);

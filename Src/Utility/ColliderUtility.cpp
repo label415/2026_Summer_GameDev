@@ -32,7 +32,7 @@ bool CollisionUtility::IsHit(
 	const ColliderModel& model,
 	bool isExclude, bool isTarget)
 {
-	auto modelFollow = model.GetFollow().lock();
+	auto modelFollow = model.GetFollow();
 	if (!modelFollow) return false;
 
 	auto hits = MV1CollCheck_Capsule(
@@ -63,7 +63,7 @@ bool CollisionUtility::IsHit(
 	const ColliderModel& model,
 	bool isExclude, bool isTarget)
 {
-	auto modelFollow = model.GetFollow().lock();
+	auto modelFollow = model.GetFollow();
 	if (!modelFollow) return false;
 
 	auto hits = MV1CollCheck_Sphere(
@@ -93,7 +93,7 @@ bool CollisionUtility::IsHit(
 {
 	// モデルとカプセルの衝突判定
 	auto hits = MV1CollCheck_Line(
-		model.GetFollow().lock()->modelId, -1,
+		model.GetFollow()->modelId, -1,
 		line.GetPosStart(), line.GetPosEnd());
 
 	bool isHit = false;
@@ -128,7 +128,7 @@ VECTOR CollisionUtility::CalcPushCapsuleCapsule(
 	const ColliderCapsule& b)
 {
 	VECTOR targetPos =
-		b.GetFollow().lock() ? b.GetFollow().lock()->pos : b.GetPosDown();
+		b.GetFollow() ? b.GetFollow()->pos : b.GetPosDown();
 	VECTOR p1 = GetNearestPointOnSegment(
 		a.GetPosTop(), a.GetPosDown(), targetPos);
 	VECTOR p2 = GetNearestPointOnSegment(

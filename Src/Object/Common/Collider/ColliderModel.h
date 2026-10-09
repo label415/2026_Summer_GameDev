@@ -9,7 +9,7 @@ public:
 	// コンストラクタ
 	ColliderModel(
 		TAG tag, const std::vector<TAG>& targetTags,
-		std::weak_ptr<const Transform> follow, int patrTag = 0);
+		const Transform*, int patrTag = 0);
 
 	// デストラクタ
 	~ColliderModel(void) override;
