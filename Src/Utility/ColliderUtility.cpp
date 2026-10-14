@@ -41,17 +41,14 @@ bool CollisionUtility::IsHit(
 		capsule.GetRadius());
 
 	bool isHit = false;
-	// 衝突した複数のポリゴンと衝突回避するまで、位置を移動させる
 	for (int i = 0; i < hits.HitNum; i++)
 	{
-		if (IsValidPoly(
-			model,
-			hits.Dim[i].FrameIndex,
-			isExclude, isTarget))
-		{
-			isHit = true;
-			break;
-		}
+		if (!IsValidPoly(
+			model, hits.Dim[i].FrameIndex,
+			isExclude, isTarget))continue;
+
+		isHit = true;
+		break;
 	}
 	// 検出した地面ポリゴン情報の後始末
 	MV1CollResultPolyDimTerminate(hits);
@@ -73,14 +70,12 @@ bool CollisionUtility::IsHit(
 	bool isHit = false;
 	for (int i = 0; i < hits.HitNum; i++)
 	{
-		if (IsValidPoly(
-			model,
-			hits.Dim[i].FrameIndex,
-			isExclude, isTarget))
-		{
-			isHit = true;
-			break;
-		}
+		if (!IsValidPoly(
+			model, hits.Dim[i].FrameIndex,
+			isExclude, isTarget))continue;
+
+		isHit = true;
+		break;
 	}
 	MV1CollResultPolyDimTerminate(hits);
 	return isHit;
@@ -91,26 +86,26 @@ bool CollisionUtility::IsHit(
 	const ColliderModel& model,
 	bool isExclude, bool isTarget)
 {
-	// モデルとカプセルの衝突判定
-	auto hits = MV1CollCheck_Line(
+	auto modelFollow = model.GetFollow();
+	if (!modelFollow) return false;
+
+	// ステージモデル(地面)との衝突
+	auto hits = MV1CollCheck_LineDim(
 		model.GetFollow()->modelId, -1,
 		line.GetPosStart(), line.GetPosEnd());
 
 	bool isHit = false;
-	if (hits.HitFlag == 1)
+	for (int i = 0; i < hits.HitNum; i++)
 	{
-		// 除外フレームは無視する
-		if (isExclude && model.IsExcludeFrame(hits.FrameIndex))
-		{
-			return false;
-		}
-		// 対象フレームは無視する
-		if (isTarget && model.IsTargetFrame(hits.FrameIndex))
-		{
-			return false;
-		}
+		if (!IsValidPoly(
+			model, hits.Dim[i].FrameIndex,
+			isExclude, isTarget))continue;
+
 		isHit = true;
+		break;
 	}
+	// 検出した地面ポリゴン情報の後始末
+	MV1CollResultPolyDimTerminate(hits);
 	return isHit;
 }
 
@@ -118,8 +113,9 @@ bool CollisionUtility::IsValidPoly(
 	const ColliderModel& model,
 	int frameIdx, bool isExclude, bool isTarget)
 {
-	if (isExclude && model.IsExcludeFrame(frameIdx)) return false;
-	if (isTarget && !model.IsTargetFrame(frameIdx)) return false;
+	if (isExclude && model.IsExcludeFrame(frameIdx)
+		|| isTarget && !model.IsTargetFrame(frameIdx)) return false;
+
 	return true;
 }
 
@@ -157,28 +153,25 @@ VECTOR CollisionUtility::CalcPushCapsuleCapsule(
 }
 
 VECTOR CollisionUtility::CalcPushCapsuleTriangle(
-	const VECTOR& top,
-	const VECTOR& down,
-	float radius, const MV1_COLL_RESULT_POLY& poly,
+	const ColliderCapsule& capsule,
+	const MV1_COLL_RESULT_POLY& poly,
+	const VECTOR& pos,
 	int maxTryCnt, float pushDistance)
 {
 	VECTOR push = AsoUtility::VECTOR_ZERO;
-	VECTOR curTop = top;
-	VECTOR curDown = down;
-
-	for (int tryCnt = 0; tryCnt < maxTryCnt; ++tryCnt)
+	int tryCnt = 0;
+	while (tryCnt < maxTryCnt)
 	{
 		if (!HitCheck_Capsule_Triangle(
-			curTop, curDown, radius,
+			capsule.GetPosTop(), capsule.GetPosDown(), capsule.GetRadius(),
 			poly.Position[0], poly.Position[1], poly.Position[2]))
 		{
 			break;
 		}
 
-		VECTOR step = VScale(poly.Normal, pushDistance);
-		push = VAdd(push, step);
-		curTop = VAdd(curTop, step);
-		curDown = VAdd(curDown, step);
+		// 衝突していたら法線方向に押し戻し
+		push = VAdd(pos, VScale(poly.Normal, pushDistance));
+		tryCnt++;
 	}
 	return push;
 }
@@ -186,10 +179,18 @@ VECTOR CollisionUtility::CalcPushCapsuleTriangle(
 VECTOR CollisionUtility::CalcPushCapsuleModel(
 	const ColliderCapsule& capsule,
 	const ColliderModel& model,
-	const MV1_COLL_RESULT_POLY_DIM& hits,
-	int maxTryCnt, float pushDistance, bool isExclude, bool isTarget)
+	const VECTOR& pos,
+	int maxTryCnt, float pushDistance,
+	bool isExclude, bool isTarget)
 {
 	VECTOR totalPush = AsoUtility::VECTOR_ZERO;
+
+	// モデルとカプセルの衝突判定
+	auto hits = MV1CollCheck_Capsule(
+		model.GetFollow()->modelId, -1,
+		capsule.GetPosTop(),
+		capsule.GetPosDown(),
+		capsule.GetRadius());
 
 	for (int i = 0; i < hits.HitNum; i++)
 	{
@@ -198,27 +199,26 @@ VECTOR CollisionUtility::CalcPushCapsuleModel(
 			model, hitPoly.FrameIndex,
 			isExclude, isTarget)) continue;
 
-		// 蓄積された押し戻し量を加味した現在位置で計算
-		VECTOR curTop = VAdd(capsule.GetPosTop(), totalPush);
-		VECTOR curDown = VAdd(capsule.GetPosDown(), totalPush);
-
-		VECTOR push = CalcPushCapsuleTriangle(
-			curTop, curDown,
-			capsule.GetRadius(),
-			hitPoly, maxTryCnt, pushDistance);
-
-		totalPush = VAdd(totalPush, push);
+		totalPush = CalcPushCapsuleTriangle(
+			capsule, hitPoly, pos, maxTryCnt, pushDistance);
 	}
+	// 検出した地面ポリゴン情報の後始末
+	MV1CollResultPolyDimTerminate(hits);
 	return totalPush;
 }
 
 VECTOR CollisionUtility::CalcPushUpLineModel(
-	float currentPosY,
+	const ColliderLine& line,
 	const ColliderModel& model,
-	const MV1_COLL_RESULT_POLY_DIM& hits,
+	const float& currentPosY,
 	float pushDistance, bool isExclude, bool isTarget)
 {
-	float maxDiffY = 0.0f;
+	VECTOR PushUpPos = { 0.0f, 0.0f, 0.0f };
+
+	// ステージモデル(地面)との衝突
+	auto hits = MV1CollCheck_LineDim(
+		model.GetFollow()->modelId, -1,
+		line.GetPosStart(), line.GetPosEnd());
 
 	for (int i = 0; i < hits.HitNum; i++)
 	{
@@ -227,17 +227,17 @@ VECTOR CollisionUtility::CalcPushUpLineModel(
 			model, hit.FrameIndex,
 			isExclude, isTarget)) continue;
 
-		float targetY = hit.HitPosition.y + pushDistance;
-		if (currentPosY < targetY)
+		// 衝突地点から、少し上に移動
+		if (currentPosY < hit.HitPosition.y)
 		{
-			float diffY = targetY - currentPosY;
-			if (diffY > maxDiffY)
-			{
-				maxDiffY = diffY;
-			}
+			// 衝突物より、下側にいる場合のみ、位置を修正する
+			PushUpPos =
+				VAdd(hit.HitPosition, VScale(AsoUtility::DIR_U, pushDistance));
 		}
 	}
-	return VScale(AsoUtility::DIR_U, maxDiffY);
+	// 検出した地面ポリゴン情報の後始末
+	MV1CollResultPolyDimTerminate(hits);
+	return PushUpPos;
 }
 
 VECTOR CollisionUtility::GetNearestPointOnSegment(const VECTOR& statePos, const VECTOR& endPos, const VECTOR& targetPos)

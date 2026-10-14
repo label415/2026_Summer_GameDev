@@ -23,9 +23,9 @@ Camera::Camera(void)
 	angleY = 0.0f;
 }
 
-Camera::~Camera(void){}
+Camera::~Camera(void) {}
 
-void Camera::Update(void){}
+void Camera::Update(void) {}
 
 void Camera::SetBeforeDraw(void)
 {
@@ -70,9 +70,9 @@ void Camera::SetBeforeDraw(void)
 	Effekseer_Sync3DSetting();
 }
 
-void Camera::DrawDebug(void){}
+void Camera::DrawDebug(void) {}
 
-void Camera::Release(void){}
+void Camera::Release(void) {}
 
 void Camera::InitCollider(void)
 {
@@ -111,16 +111,12 @@ void Camera::UpdateHitCollider(void)
 	if (!colliderSphere_ || !colliderSphere_->GetIsCollier()) return;
 
 	// CollisionManagerで判定・計算された衝突結果を処理
-	for (const auto& hit : colliderSphere_->GetCollisionResults())
+	for (const auto& hit : colliderSphere_->GetHitColliders())
 	{
-		if (hit.isHit_ && hit.targetTag_ == ColliderBase::TAG::STAGE)
+		if (hit.lock()->GetIsCollier()
+			&& hit.lock()->GetTag() == ColliderBase::TAG::STAGE)
 		{
-			// ステージ壁・地面からの押し戻し量を加算
-			if (!AsoUtility::EqualsVZero(hit.pushVector_))
-			{
-				transform_.pos = VAdd(transform_.pos, hit.pushVector_);
-				isCameraLope_ = true;
-			}
+			isCameraLope_ = true;
 		}
 	}
 }
@@ -200,7 +196,7 @@ void Camera::SyncFollow(void)
 	VECTOR pos = followTransform_->pos;
 
 	// Y軸
-	if(angleY != 0.0f){
+	if (angleY != 0.0f) {
 		angles_.y = angleY;
 		angleY = 0.0f;
 	}
@@ -213,7 +209,7 @@ void Camera::SyncFollow(void)
 	// 注視点
 	localPos = transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS);
 	VECTOR nextTargetPos = VAdd(pos, localPos);
-	targetPos_ = AsoUtility::Lerp(transform_.pos, nextTargetPos,  MOVE_SPEED);
+	targetPos_ = AsoUtility::Lerp(transform_.pos, nextTargetPos, MOVE_SPEED);
 
 	// カメラ位置
 	localPos = transform_.quaRot.PosAxis(FOLLOW_CAMERA_LOCAL_POS);
@@ -224,7 +220,7 @@ void Camera::SyncFollow(void)
 void Camera::SynLockOn(void)
 {
 	// 各位置の取得
-	VECTOR followPos = followTransform_->pos; 
+	VECTOR followPos = followTransform_->pos;
 	VECTOR TargetPos = *targetTransform_;
 
 	// 注視点の高さを調整
@@ -329,13 +325,13 @@ void Camera::ProcessMove(void)
 	}
 }
 
-void Camera::SetBeforeDrawFixedPoint(void){}
+void Camera::SetBeforeDrawFixedPoint(void) {}
 
 void Camera::SetBeforeDrawFree(void)
 {
 	// カメラ操作(回転)
 	ProcessRot(false);
-	
+
 	// カメラ操作(移動)
 	ProcessMove();
 
@@ -390,7 +386,7 @@ void Camera::RotKeyboard(bool isLimit)
 		angles_.y += mouseMove.x * MROT_POW_RAD;
 	}
 
-	if(SceneManager::GetInstance().GetSceneID() == SceneManager::SCENE_ID::GAME
+	if (SceneManager::GetInstance().GetSceneID() == SceneManager::SCENE_ID::GAME
 		&& isMouseInput_)
 	{
 		ins.SetMousePos(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
@@ -425,7 +421,7 @@ void Camera::RotGamePad(bool isLimit)
 
 	// 右スティック上下の傾き
 	angles_.x -= dir.z * ROT_POW_RAD;
-	
+
 	// 角度制限
 	if (isLimit && angles_.x < -LIMIT_X_DW_RAD)
 	{

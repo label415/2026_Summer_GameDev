@@ -54,29 +54,28 @@ public:
     static VECTOR CalcPushCapsuleModel(
         const ColliderCapsule& capsule,
         const ColliderModel& model,
-        const MV1_COLL_RESULT_POLY_DIM& hits,
+        const VECTOR& pos,
         int maxTryCnt = 5,
         float pushDistance = 0.5f,
+        bool isExclude = false,
+        bool isTarget = false);
+
+    // 線分の上方向押し上げ量計算
+    static VECTOR CalcPushUpLineModel(
+        const ColliderLine& line,
+        const ColliderModel& model,
+        const float& currentPosY,
+        float pushDistance = 0.0f,
         bool isExclude = false,
         bool isTarget = false);
 private:
     // カプセルの法線方向への押し戻しベクトル計算
     static VECTOR CalcPushCapsuleTriangle(
-        const VECTOR& top,
-        const VECTOR& down,
-        float radius,
+        const ColliderCapsule& capsule,
         const MV1_COLL_RESULT_POLY& poly,
+        const VECTOR& pos,
         int maxTryCnt = 5,
         float pushDistance = 0.5f);
-
-    // 線分の上方向押し上げ量計算
-    static VECTOR CalcPushUpLineModel(
-        float currentPosY,
-        const ColliderModel& model,
-        const MV1_COLL_RESULT_POLY_DIM& hits,
-        float pushDistance = 0.0f,
-        bool isExclude = false,
-        bool isTarget = false);
 
     // コライダーの線分上の最近接点を取得
     static VECTOR GetNearestPointOnSegment(const VECTOR& statePos,

@@ -1,5 +1,6 @@
 #include "../../../Application.h"
 #include "../../../Utility/AsoUtility.h"
+#include "../../../Utility/ColliderUtility.h"
 #include "../../../Manager/SceneManager.h"
 #include "../../../Manager/ResourceManager.h"
 #include "../../Common/Collider/ColliderLine.h"
@@ -125,6 +126,9 @@ void CharactorBase::Collision(void)
 
 void CharactorBase::CollisionGravity(void)
 {
+	// 落下中しか判定しない
+	if (!(VDot(AsoUtility::DIR_D, jumpPow_) > 0.9f))return;
+
 	int lineType = static_cast<int>(ColliderBase::SHAPE::LINE);
 	if (ownColliders_.count(lineType) == 0) return;
 
@@ -132,12 +136,27 @@ void CharactorBase::CollisionGravity(void)
 	{
 		if (!col->GetIsCollier()) continue;
 
-		for (const auto& hit : col->GetCollisionResults())
+		// カプセルコライダ情報  
+		std::shared_ptr<ColliderLine> colliderLine =
+			std::dynamic_pointer_cast<ColliderLine>(col);
+		if (colliderLine == nullptr) return;
+
+		for (const auto& hit : col->GetHitColliders())
 		{
-			if (hit.isHit_ && hit.targetTag_ == ColliderBase::TAG::STAGE)
+			if (hit.lock()->GetIsCollier()
+				&& hit.lock()->GetTag() == ColliderBase::TAG::STAGE)
 			{
+				std::shared_ptr<ColliderModel> colliderModel =
+					std::dynamic_pointer_cast<ColliderModel>(hit.lock());
+				if (colliderModel == nullptr) continue;
+
 				// 地面押し上げ処理
-				transform_.pos = VAdd(transform_.pos, hit.pushVector_);
+				transform_.pos =
+					CollisionUtility::CalcPushUpLineModel(
+						*colliderLine, *colliderModel,
+						transform_.pos.y, 2.0f,
+						false, true);
+
 				isJump_ = false;
 				jumpPow_ = AsoUtility::VECTOR_ZERO;
 				stepJump_ = 0.0f;
@@ -155,13 +174,25 @@ void CharactorBase::CollisionCapsule(void)
 	{
 		if (!col->GetIsCollier()) continue;
 
-		for (const auto& hit : col->GetCollisionResults())
+		// カプセルコライダ情報  
+		std::shared_ptr<ColliderCapsule> colliderCapsule =
+			std::dynamic_pointer_cast<ColliderCapsule>(col);
+		if (colliderCapsule == nullptr) return;
+
+		for (const auto& hit : col->GetHitColliders())
 		{
-			// ステージ壁や敵本体による押し出し量を反映
-			if (hit.isHit_ && !AsoUtility::EqualsVZero(hit.pushVector_))
-			{
-				transform_.pos = VAdd(transform_.pos, hit.pushVector_);
-			}
+			// モデル以外は処理を飛ばす  
+			if (hit.lock()->GetShape() != ColliderBase::SHAPE::MODEL) continue;
+
+			std::shared_ptr<ColliderModel> colliderModel =
+				std::dynamic_pointer_cast<ColliderModel>(hit.lock());
+			if (colliderModel == nullptr) continue;
+
+			transform_.pos =
+				CollisionUtility::CalcPushCapsuleModel(
+					*colliderCapsule, *colliderModel, transform_.pos,
+					CNT_TRY_COLLISION, COLLISION_BACK_DIS,
+					true, false);
 		}
 	}
 }

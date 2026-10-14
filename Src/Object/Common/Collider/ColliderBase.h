@@ -34,21 +34,6 @@ public:
 		GROUND
 	};
 
-	// 処理結果
-	struct HitInfo
-	{
-		// 衝突相手
-		TAG targetTag_ = TAG::NONE;
-		// 押し出し方向
-		VECTOR pushVectorDir_ = { 0.0f, 0.0f, 0.0f };
-		// 押し出し量
-		VECTOR  pushVector_ = { 0.0f, 0.0f, 0.0f };
-		// 衝突フラグ
-		bool isHit_ = false;
-		// 遮断フラグ
-		bool isBlocked = false;
-	};
-
 	// コンストラクタ
 	ColliderBase(
 		SHAPE shape,
@@ -93,10 +78,17 @@ public:
 			tag) != targetTags_.end();
 	}
 
-	// 衝突結果の格納・取得
-	void ClearCollisionResults() { hitInfos_.clear(); }
-	void AddCollisionResult(const HitInfo& res) { hitInfos_.push_back(res); }
-	const std::vector<HitInfo>& GetCollisionResults() const { return hitInfos_; }
+	// 衝突したコライダーの解放
+	void ClearHitCollider(void);
+
+	// 衝突したコライダーを登録
+	void SetHitCollider(std::weak_ptr<ColliderBase> hitCollider)
+	{
+		hitCollider_.push_back(hitCollider);
+	}
+
+	// 衝突したコライダーの取得
+	const std::vector<std::weak_ptr<ColliderBase>>& GetHitColliders(void) { return hitCollider_; }
 protected:
 	// デバッグ表示の色
 	static constexpr int COLOR_VALID = 0xff0000;
@@ -120,8 +112,8 @@ protected:
 	// 有効フラグ
 	bool isCollier_;
 
-	// 処理結果情報格納関数
-	std::vector<HitInfo> hitInfos_;
+	// 衝突した当たり判定
+	std::vector<std::weak_ptr<ColliderBase>> hitCollider_;
 
 	// ローカル座標をワールド座標に変換
 	VECTOR GetRotPos(const VECTOR& localPos) const;

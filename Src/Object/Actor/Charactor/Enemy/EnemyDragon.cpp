@@ -339,30 +339,34 @@ void EnemyDragon::UpdateProcessPost(void)
 
 void EnemyDragon::CollisionCapsule(void)
 {
-	// カプセルコライダ
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
-
-	// カプセルコライダが無ければ処理を抜ける
 	if (ownColliders_.count(capsuleType) == 0) return;
 
-	const auto& vecs = ownColliders_.at(capsuleType);
-	for (const auto& col : vecs)
+	for (const auto& col : ownColliders_.at(capsuleType))
 	{
-		// 地面衝突用コライダー以外、または判定無効時はスキップ
-		if (col->GetTag() != ColliderBase::TAG::GROUND || !col->GetIsCollier()) continue;
+		if (!col->GetIsCollier()) continue;
 
-		// マネージャー側で計算された衝突結果を走査
-		for (const auto& result : col->GetCollisionResults())
+		if (col->GetTag() != ColliderBase::TAG::GROUND) continue;
+
+		// カプセルコライダ情報  
+		std::shared_ptr<ColliderCapsule> colliderCapsule =
+			std::dynamic_pointer_cast<ColliderCapsule>(col);
+		if (colliderCapsule == nullptr) return;
+
+		for (const auto& hit : col->GetHitColliders())
 		{
-			// ステージ（モデル）との衝突かつ押し戻しベクトルが存在する場合
-			if (result.isHit_ && result.targetTag_ == ColliderBase::TAG::STAGE)
-			{
-				if (!AsoUtility::EqualsVZero(result.pushVector_))
-				{
-					// 壁や障害物からの押し戻し量を加算
-					transform_.pos = VAdd(transform_.pos, result.pushVector_);
-				}
-			}
+			// モデル以外は処理を飛ばす  
+			if (hit.lock()->GetShape() != ColliderBase::SHAPE::MODEL) continue;
+
+			std::shared_ptr<ColliderModel> colliderModel =
+				std::dynamic_pointer_cast<ColliderModel>(hit.lock());
+			if (colliderModel == nullptr) continue;
+
+			transform_.pos =
+				CollisionUtility::CalcPushCapsuleModel(
+					*colliderCapsule, *colliderModel, transform_.pos,
+					CNT_TRY_COLLISION, COLLISION_BACK_DIS,
+					true, false);
 		}
 	}
 }
@@ -376,10 +380,11 @@ void EnemyDragon::UpdateHitCollider(void)
 	{
 		if (!col->GetIsCollier()) continue;
 
-		for (const auto& hit : col->GetCollisionResults())
+		for (const auto& hit : col->GetHitColliders())
 		{
 			// プレイヤーの武器から攻撃を受けた場合
-			if (hit.isHit_ && hit.targetTag_ == ColliderBase::TAG::PLAYER_WEPON)
+			if (hit.lock()->GetIsCollier()
+				&& hit.lock()->GetTag() == ColliderBase::TAG::PLAYER_WEPON)
 			{
 				if (!isInvincible_)
 				{
@@ -1006,16 +1011,6 @@ void EnemyDragon::UpdateEnd(void)
 
 void EnemyDragon::SetTargetCollider(void)
 {
-	auto playerCol =
-		CollisionManager::GetInstance().GetColliderByTag(ColliderBase::TAG::PLAYER);
-	if (playerCol)
-	{
-		targetCollider_ = playerCol.get();
-	}
-	else
-	{
-		targetCollider_ = nullptr;
-	}
 }
 
 void EnemyDragon::DrawHp(void)

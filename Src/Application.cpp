@@ -97,8 +97,6 @@ void Application::Run(void)
 		// シーン更新処理
 		sceneManager.Update();
 
-		collisionManager.DrawDebug();
-
 		// シーン描画処理
 		sceneManager.Draw();
 
@@ -122,6 +120,7 @@ bool Application::Release(void)
 	CollisionManager::GetInstance().Destroy();
 	SceneManager::GetInstance().Release();
 	SceneManager::GetInstance().Destroy();
+	SoundManager::GetInstance().Release();
 	SoundManager::GetInstance().Destroy();
 	ResourceManager::GetInstance().Destroy();
 	FontManager::GetInstance().Destroy();

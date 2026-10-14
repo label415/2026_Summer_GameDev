@@ -34,6 +34,11 @@ void ColliderBase::SetIsCollier(bool isCollier)
 	isCollier_ = isCollier;
 }
 
+void ColliderBase::ClearHitCollider(void)
+{
+	hitCollider_.clear();
+}
+
 VECTOR ColliderBase::GetRotPos(const VECTOR& localPos) const
 {
 	// 追従相手の回転に合わせて指定ローカル座標を回転し、

@@ -56,14 +56,7 @@ void Stage::InitCollider(void)
 	MV1SetupCollInfo(transform_.modelId);
 
 	// ステージモデルが反応する対象タグ
-	std::vector<ColliderBase::TAG> targetTags = {
-		ColliderBase::TAG::PLAYER,
-		ColliderBase::TAG::ENEMY,
-		ColliderBase::TAG::CAMERA,
-		ColliderBase::TAG::GROUND,
-		ColliderBase::TAG::PLAYER_WEPON,
-		ColliderBase::TAG::ENEMY_WEPON
-	};
+	std::vector<ColliderBase::TAG> targetTags = { ColliderBase::TAG::NONE };
 
 	colModel_ = std::make_shared<ColliderModel>(
 		ColliderBase::TAG::STAGE,
@@ -89,24 +82,7 @@ void Stage::InitAnimation(void){}
 
 void Stage::InitPost(void){}
 
-void Stage::UpdateHitCollider(void)
-{
-	// 前フレームで半透明化したフレームの不透明度をリセット
-	for (auto& frameIdx : frameOpacityRate_) {
-		MV1SetFrameOpacityRate(transform_.modelId, frameIdx, 1.0f);
-	}
-	frameOpacityRate_.clear();
-
-	if (!colModel_ || !colModel_->GetIsCollier()) return;
-
-	// カメラ等と接触した遮蔽フレームの半透明化処理
-	for (const auto& hit : colModel_->GetCollisionResults())
-	{
-		if (hit.isHit_ && hit.targetTag_ == ColliderBase::TAG::CAMERA)
-		{
-		}
-	}
-}
+void Stage::UpdateHitCollider(void){}
 
 void Stage::RateFrameIds(const std::wstring& name)
 {

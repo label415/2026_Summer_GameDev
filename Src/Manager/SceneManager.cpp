@@ -136,6 +136,8 @@ void SceneManager::Draw(void)
 	// ƒJƒƒ‰İ’è
 	camera_->SetBeforeDraw();
 
+	CollisionManager::GetInstance().DrawDebug();
+
 	//æ‚Á‚Ä‚éƒV[ƒ“‚ğ‚·‚×‚ÄDraw
 	for (auto& scene : scenes_)
 	{

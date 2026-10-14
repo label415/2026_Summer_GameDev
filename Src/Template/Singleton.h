@@ -66,4 +66,3 @@ private:
     //Ã“Iƒƒ“ƒo‰Šú‰»
     inline static T* instance_ = nullptr;
 };
-

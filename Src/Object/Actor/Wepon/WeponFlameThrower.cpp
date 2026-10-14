@@ -89,9 +89,10 @@ void WeponFlameThrower::Move(void)
 	bool isHitStage = false;
 	if (colliderSphere_ && colliderSphere_->GetIsCollier())
 	{
-		for (const auto& hit : colliderSphere_->GetCollisionResults())
+		for (const auto& hit : colliderSphere_->GetHitColliders())
 		{
-			if (hit.isHit_ && hit.targetTag_ == ColliderBase::TAG::STAGE)
+			if (hit.lock()->GetIsCollier()
+				&& hit.lock()->GetTag() == ColliderBase::TAG::STAGE)
 			{
 				isHitStage = true;
 				break;

@@ -1,27 +1,6 @@
 #include <DxLib.h>
 #include "SoundManager.h"
 
-SoundManager* SoundManager::instance_ = nullptr;
-
-void SoundManager::CreateInstance(void)
-{
-    if (instance_ == nullptr)
-    {
-        instance_ = new SoundManager();
-        instance_->Init();
-    }
-}
-
-SoundManager& SoundManager::GetInstance(void)
-{
-    // インスタンスがなければ生成する
-    if (instance_ == nullptr)
-    {
-        CreateInstance();
-    }
-    return *instance_;
-}
-
 void SoundManager::Init(void)
 {
     bgm_ = -1;
@@ -178,4 +157,9 @@ void SoundManager::PlaySlowSE(SeId id, int handle, int volume,int slow)
         PlaySoundMem(newSe, DX_PLAYTYPE_BACK, TRUE);
         seMap_[id] = newSe;
     }
+}
+
+SoundManager::SoundManager(void)
+{
+
 }

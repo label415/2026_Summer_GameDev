@@ -6,6 +6,7 @@
 #include "../../../Manager/InputManager.h"
 #include "../../../Manager/SoundManager.h"
 #include "../../../Utility/AsoUtility.h"
+#include "../../../Utility/ColliderUtility.h"
 #include "../../../Utility/MatrixUtility.h"
 #include "../../../Application.h"
 #include "../../../Common/Quaternion.h"
@@ -726,50 +727,83 @@ void Player::UpdateHitCollider(void)
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	if (ownColliders_.count(capsuleType) == 0) return;
 
-	for (const auto& col : ownColliders_.at(capsuleType))
-	{
-		if (!col->GetIsCollier()) continue;
-
-		for (const auto& result : col->GetCollisionResults())
+	// ダメージ処理の共通化
+	auto ApplyDamage = [&](float damageAmount)
 		{
-			if (!result.isHit_) continue;
+			anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
+			state_ = STATE::DOWN;
+			uiHp_->SetHp(damageAmount);
 
-			// --- 敵本体との衝突 ---
-			if (result.targetTag_ == ColliderBase::TAG::ENEMY)
+			effType_ = EFFECT::BLOOD;
+			effect_->Play(static_cast<int>(effType_));
+			effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
+
+			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
+			SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
+		};
+
+	for (const auto& vec : ownColliders_.at(capsuleType))
+	{
+		ColliderCapsule* playerCap = static_cast<ColliderCapsule*>(vec.get());
+		if (!playerCap) continue;
+
+		VECTOR playerPos = playerCap->GetFollow()->pos;
+
+		// すでに衝突が確定した相手のリストを取得
+		const auto& hitList = playerCap->GetHitColliders();
+
+		// 壁の遮蔽判定
+		auto IsBlockedByWall = [&]() -> bool
 			{
-				if (!isVinclible_)
-				{
-					anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
-					state_ = STATE::DOWN;
-					uiHp_->SetHp(DAMAGE_ENEMY_BODY);
+				if (isVinclible_) return false;
 
-					effType_ = EFFECT::BLOOD;
-					effect_->Play(static_cast<int>(effType_));
-					effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
+				//// リストからステージモデルを探す
+				//for (const auto& hitCol : hitList)
+				//{
+				//	if (!hitCol || hitCol->GetShape() != ColliderBase::SHAPE::MODEL ||
+				//		hitCol->GetTag() != ColliderBase::TAG::STAGE) continue;
 
-					int seHandle = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
-					SoundManager::GetInstance().PlaySE(
-						SoundManager::SeId::PLAYER_DMAGE, seHandle, SE_VOLUME_DAMAGE);
-					return;
+				//	const ColliderModel* model = static_cast<const ColliderModel*>(hitCol.get());
+				//	if (model && model->IsHit(enemyPos, playerPos, false, false)) {
+				//		return true; // 壁に遮蔽されている
+				//	}
+				//}
+				return false;
+			};
+
+		bool isBlocked = IsBlockedByWall();
+
+		// 衝突相手に対する個別処理
+		for (const auto& hitCol : hitList)
+		{
+			if (!hitCol.lock()) continue;
+
+			auto shape = hitCol.lock()->GetShape();
+			auto tag = hitCol.lock()->GetTag();
+
+			// ===== 敵本体との判定 =====
+			if (tag == ColliderBase::TAG::ENEMY && shape == ColliderBase::SHAPE::CAPSULE)
+			{
+				ColliderCapsule* enemyCap = static_cast<ColliderCapsule*>(hitCol.lock().get());
+
+				if (!isVinclible_) {
+					ApplyDamage(DAMAGE_ENEMY_BODY);
+					return; // 被弾したら即終了
 				}
+
+				//// 無敵などで被弾を免れた場合は押し出し処理のみ実行
+				//playerCap->PushBackAlongNormal(enemyCap, transform_, PUSH_BACK_POWER, false, false);
+				//continue;
 			}
 
-			// --- 敵武器との衝突 ---
-			if (result.targetTag_ == ColliderBase::TAG::ENEMY_WEPON)
+			// ===== 敵武器判定の前に無効条件を弾く =====
+			if (isVinclible_ || isBlocked || tag != ColliderBase::TAG::ENEMY_WEPON) continue;
+
+			// リストに入っている時点で武器との当たり判定は true なので、即ダメージ処理へ移行
+			// ===== 敵武器（カプセル または スフィア）との判定 =====
+			if (shape == ColliderBase::SHAPE::CAPSULE || shape == ColliderBase::SHAPE::SPHERE)
 			{
-				if (isVinclible_ || result.isBlocked) continue;
-
-				anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
-				state_ = STATE::DOWN;
-				uiHp_->SetHp(DAMAGE_ENEMY_WEAPON);
-
-				effType_ = EFFECT::BLOOD;
-				effect_->Play(static_cast<int>(effType_));
-				effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
-
-				int seHandle = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
-				SoundManager::GetInstance().PlaySE(
-					SoundManager::SeId::PLAYER_DMAGE, seHandle, SE_VOLUME_DAMAGE);
+				ApplyDamage(DAMAGE_ENEMY_WEAPON);
 				return;
 			}
 		}

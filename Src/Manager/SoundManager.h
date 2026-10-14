@@ -29,12 +29,6 @@ public:
         Max,
     };
 
-	// シングルトンインスタンスの作成
-    static void CreateInstance(void);  
-
-	// シングルトンインスタンスの取得
-    static SoundManager& GetInstance(void); 
-
     void Init(void); // 内部変数の初期化
     void Release(void);
 
@@ -59,9 +53,10 @@ public:
     void SetSESpeed(SeId id, float speed);
 private:
 	// シングルトンインスタンス
-    SoundManager() = default;
-    ~SoundManager() = default;
-    static SoundManager* instance_;
+    SoundManager(void);
+    // コピーコンストラクタも同様
+    SoundManager(const SoundManager& instance) = default;
+    ~SoundManager(void) = default;
 
     int bgm_;           // 再生中BGMの複製ハンドル
     int currentBgmVol_; // 現在のBGM音量(0-255)

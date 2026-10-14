@@ -246,7 +246,7 @@ public:
 	static constexpr float UI_SCALE_Z = 4.0f;
 
 	// 初期スポーン位置
-	static constexpr VECTOR INITIAL_POS = { 0.0f, 0.0f, -500.0f };
+	static constexpr VECTOR INITIAL_POS = { 0.0f, 0.0f, -1000.0f };
 
 	// 攻撃判定発生時間
 	static constexpr float STATE_ATTACK_CILLIDER = 18.0f;
