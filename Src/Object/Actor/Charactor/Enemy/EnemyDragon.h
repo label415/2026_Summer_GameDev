@@ -300,9 +300,6 @@ private:
 	WeponBracelet* weponBracelet_;
 	WeponFlameThrower* weponFlame_;
 
-	//攻撃対象の情報を当たり判定から取得
-	const ColliderBase* targetCollider_;
-
 	// 行動遷移
 	void ChangeState(STATE state);
 
@@ -361,4 +358,6 @@ private:
 	// 無敵フラグとタイマー
 	bool isInvincible_ = false;
 	float invincibleTimer_ = 0.0f;
+
+	void ApplyDamage(const VECTOR& hitPos, float damageAmount);
 };

@@ -100,6 +100,8 @@ void Application::Run(void)
 		// ƒV[ƒ“•`‰æˆ—
 		sceneManager.Draw();
 
+		collisionManager.DrawDebug();
+
 		RenderVertex();
 
 		// GUI•`‰æˆ—

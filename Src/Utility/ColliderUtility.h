@@ -60,6 +60,15 @@ public:
         bool isExclude = false,
         bool isTarget = false);
 
+    static VECTOR CalcPushSphereModel(
+        const ColliderSphere& sphere,
+        const ColliderModel& model,
+        const VECTOR& pos,
+        int maxTryCnt = 5,
+        float pushDistance = 0.5f,
+        bool isExclude = false,
+        bool isTarget = false);
+
     // 線分の上方向押し上げ量計算
     static VECTOR CalcPushUpLineModel(
         const ColliderLine& line,
@@ -72,6 +81,14 @@ private:
     // カプセルの法線方向への押し戻しベクトル計算
     static VECTOR CalcPushCapsuleTriangle(
         const ColliderCapsule& capsule,
+        const MV1_COLL_RESULT_POLY& poly,
+        const VECTOR& pos,
+        int maxTryCnt = 5,
+        float pushDistance = 0.5f);
+
+    // 球体の法線方向への押し戻しベクトル計算
+    static VECTOR CalcPushSphereTriangle(
+        const ColliderSphere& sphere,
         const MV1_COLL_RESULT_POLY& poly,
         const VECTOR& pos,
         int maxTryCnt = 5,

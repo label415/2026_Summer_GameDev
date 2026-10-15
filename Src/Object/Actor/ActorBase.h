@@ -35,7 +35,7 @@ public:
 	virtual void Release(void);
 
 	// 大きさ、回転、座標等の取得
-	const Transform& GetTransform(void) const;
+	const Transform& GetTransform(void) const { return transform_; }
 
 	//生存フラグ取得
 	const bool GetIsAlive(void)const { return isAlive_; }

@@ -32,6 +32,9 @@ public:
 	// 描画
 	void Draw(void) override;
 
+	// オブジェクト描画
+	void ObjectDraw(void);
+
 	// 解放
 	void Release(void) override;
 private:
@@ -46,16 +49,6 @@ private:
 	static constexpr float SHADOW_MAP_MAX_DRAW = 1.5f;
 	// シャドウマップ最低描画倍率
 	static constexpr float SHADOW_MAP_MIN_DRAW = -1.0f;
-
-	// ロックオンUIのX座標
-	static constexpr float LOCON_UI_C_X = 0.5f;
-	//ロックオンUIの大きさ
-	static constexpr float LOCON_UI_SIZE = 50.0f;
-
-	// ロックオン対象範囲
-	static constexpr float MAX_LOCKON_DIFF = 2000.0f;
-	// ロックオン角度
-	static constexpr float LOCKON_VIEW_ANGLE = 80.0f;
 
 	// リザルト画像の大きさ
 	static constexpr float RESULT_UI_SIZE = 1.0f;
@@ -72,8 +65,6 @@ private:
 	int gameClearImg_;
 	// ゲームオーバーハンドル
 	int gameOverImg_;
-	// ロックオンUIハンドル
-	int lockOnImg_;
 
 	// スカイドーム
 	std::unique_ptr<SkyDome> skydome_;
@@ -87,15 +78,11 @@ private:
 	// エネミー
 	std::shared_ptr<EnemyManager> enemys_;
 
-	// ロックオン対象のエネミー
-	std::shared_ptr<ColliderCapsule> targetColliderCapsule_;
-
 	// カメラ
 	std::shared_ptr<Camera> camera_;
 
 	// シャドウマップ
 	std::unique_ptr<ShadowMap> shadowMap_;
 
-	// 自動ロックオン対象選別
 	void UpdateAutoLockOn(void);
 };

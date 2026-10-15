@@ -101,15 +101,15 @@ void EnemyManager::LoadCsvData(void)
 }
 
 
-EnemyBase* EnemyManager::Create(const EnemyBase::EnemyData& data)
+void EnemyManager::Create(const EnemyBase::EnemyData& data)
 {
 	// エネミー生成
-	EnemyBase* enemy = nullptr;
+	std::shared_ptr<EnemyBase> enemy = nullptr;
 
 	switch (data.type)
 	{
 	case EnemyBase::TYPE::DRAGON:
-		enemy = new EnemyDragon(data);
+		enemy = std::make_shared<EnemyDragon>(data);
 		break;
 	default:
 		break;
@@ -120,6 +120,4 @@ EnemyBase* EnemyManager::Create(const EnemyBase::EnemyData& data)
 		enemy->Load();
 		enemys_.push_back(enemy);
 	}
-
-	return enemy;
 }

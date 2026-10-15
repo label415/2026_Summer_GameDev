@@ -52,7 +52,6 @@ private:
 
 	// 対象フレームの不透明度率
 	std::vector<int> frameOpacityRate_;
-	std::shared_ptr<ColliderModel> colModel_;
 
 	// 対象フレームの不透明度率を設定
 	void RateFrameIds(const std::wstring& name);

@@ -30,15 +30,14 @@ public:
 	void Release(void);
 
 	// エネミー
-	const std::vector<EnemyBase*>& GetEnemys(void) const { return enemys_; }
-
+	const std::vector<std::shared_ptr<EnemyBase>>& GetEnemys() const {return enemys_;}
 	// CSVから敵情報の読取を行う
 	void LoadCsvData(void);
 
 	// エネミー生成
-	EnemyBase* Create(const EnemyBase::EnemyData& data);
+	void Create(const EnemyBase::EnemyData& data);
 private:
 	// エネミー
-	std::vector<EnemyBase*> enemys_;
+	std::vector<std::shared_ptr<EnemyBase>> enemys_;
 };
 

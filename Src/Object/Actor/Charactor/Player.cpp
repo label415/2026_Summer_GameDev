@@ -60,7 +60,6 @@ void Player::Release(void)
 
 	// 各ポインタ変数開放
 	delete wepon_;
-	delete uiHp_;
 	delete uiRecovery_;
 	if (uiSt_) {
 		delete uiSt_;
@@ -96,7 +95,7 @@ void Player::InitLoad(void)
 	uiRecovery_->Load();
 
 	// HP UI を画面左上に表示
-	uiHp_ = new UIHp(
+	uiHp_ = std::make_unique<UIHp>(
 		Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV, UI_HP_POS_Y,
 		UI_SCALE_X, UI_SCALE_Y, UI_SCALE_Z);
 	uiHp_->Load();
@@ -106,6 +105,8 @@ void Player::InitLoad(void)
 		Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV, UI_ST_POS_Y,
 		UI_SCALE_X, UI_SCALE_Y, UI_SCALE_Z);
 	uiSt_->Load();
+
+	animationController_ = std::make_unique<AnimationController>(transform_.modelId);
 }
 
 void Player::InitTransform(void)
@@ -158,29 +159,27 @@ void Player::InitCollider(void)
 
 void Player::InitAnimation(void)
 {
-	anim_ = new AnimationController(transform_.modelId);
-
-	anim_->Add(static_cast<int>(ANIM_TYPE::IDLE),
+	animationController_->Add(static_cast<int>(ANIM_TYPE::IDLE),
 		ANIM_SPEED_IDLE, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_IDLE));
-	anim_->Add(static_cast<int>(ANIM_TYPE::RUN),
+	animationController_->Add(static_cast<int>(ANIM_TYPE::RUN),
 		ANIM_SPEED_RUN, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
-	anim_->Add(static_cast<int>(ANIM_TYPE::FAST_RUN),
+	animationController_->Add(static_cast<int>(ANIM_TYPE::FAST_RUN),
 		ANIM_SPEED_FAST_RUN, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
-	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK_1),
+	animationController_->Add(static_cast<int>(ANIM_TYPE::ATTACK_1),
 		ANIM_SPEED_ATTACK_1, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_1));
-	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK_2),
+	animationController_->Add(static_cast<int>(ANIM_TYPE::ATTACK_2),
 		ANIM_SPEED_ATTACK_2, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_2));
-	anim_->Add(static_cast<int>(ANIM_TYPE::ATTACK_3),
+	animationController_->Add(static_cast<int>(ANIM_TYPE::ATTACK_3),
 		ANIM_SPEED_ATTACK_3, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_3));
-	anim_->Add(static_cast<int>(ANIM_TYPE::EVASION),
+	animationController_->Add(static_cast<int>(ANIM_TYPE::EVASION),
 		ANIM_SPEED_EVASION, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_EVASION));
-	anim_->Add(static_cast<int>(ANIM_TYPE::DOWN),
+	animationController_->Add(static_cast<int>(ANIM_TYPE::DOWN),
 		ANIM_SPEED_DOWN, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_DOWN));
-	anim_->Add(static_cast<int>(ANIM_TYPE::UP),
+	animationController_->Add(static_cast<int>(ANIM_TYPE::UP),
 		ANIM_SPEED_UP, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_UP));
-	anim_->Add(static_cast<int>(ANIM_TYPE::RECOVERY),
+	animationController_->Add(static_cast<int>(ANIM_TYPE::RECOVERY),
 		ANIM_SPEED_RECOVERY, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RECOVERY));
-	anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
+	animationController_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 }
 
 void Player::InitPost(void)
@@ -330,14 +329,14 @@ void Player::ProcessMove(void)
 			moveSpeed_ = SPEED_DASH;
 			state_ = STATE::FAST_RUN;
 			uiSt_->SetSt(CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
-			anim_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
+			animationController_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
 			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WAKE);
 			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_RUN).handleId_;
 			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_RAN, bgm_, SE_VOLUME_RUN);
 		}
 		else {
 			moveSpeed_ = SPEED_MOVE;
-			anim_->Play(static_cast<int>(ANIM_TYPE::RUN));
+			animationController_->Play(static_cast<int>(ANIM_TYPE::RUN));
 			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
 			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_WAKE).handleId_;
 			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_WAKE, bgm_, SE_VOLUME_WALK);
@@ -349,7 +348,7 @@ void Player::ProcessMove(void)
 		state_ = STATE::IDLE;
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WAKE);
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
-		anim_->Play(static_cast<int>(ANIM_TYPE::IDLE));
+		animationController_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 	}
 }
 
@@ -385,7 +384,7 @@ void Player::ProcessAttack(void)
 		}
 
 		// 攻撃アニメーション再生
-		anim_->Play(static_cast<int>(comboData.animType), false);
+		animationController_->Play(static_cast<int>(comboData.animType), false);
 	}
 
 	// 攻撃状態でなければ処理終了
@@ -393,7 +392,7 @@ void Player::ProcessAttack(void)
 
 	// 現在のコンボデータを取得
 	auto& comboData = atkComboData_.at(stateAtkCombo_);
-	float currentStep = anim_->GetPlayAnim().step;
+	float currentStep = animationController_->GetPlayAnim().step;
 
 	if (comboData.moveSpeed > 0.0f && currentStep < comboData.stepCollisionStart)
 	{
@@ -447,7 +446,7 @@ void Player::ProcessAttack(void)
 
 	// コンボ遷移チェック
 	bool canInterrupt = comboData.IsValidInterrupt(currentStep);
-	bool isAnimEnd = anim_->IsEnd();
+	bool isAnimEnd = animationController_->IsEnd();
 
 	// 追加割込条件のチェック
 	if (comboData.isExtraInterrupt && comboData.isExtraInterrupt(comboData)) {
@@ -472,7 +471,7 @@ void Player::ProcessAttack(void)
 				nextData.extraInit();
 			}
 
-			anim_->Play(static_cast<int>(nextData.animType), false);
+			animationController_->Play(static_cast<int>(nextData.animType), false);
 		}
 		// アニメーションが終了した場合、または追加終了条件を満たした場合
 		else if (isAnimEnd || (comboData.isExtraEnd && comboData.isExtraEnd()))
@@ -517,11 +516,11 @@ void Player::ProcessEvasion(void)
 
 	if (state_ != STATE::EVASION) return;
 
-	anim_->Play(static_cast<int>(ANIM_TYPE::EVASION), false);
+	animationController_->Play(static_cast<int>(ANIM_TYPE::EVASION), false);
 	moveSpeed_ = SPEED_EVASION;
 	movePow_ = VScale(moveDir_, moveSpeed_);
 
-	if (anim_->IsEnd()) {
+	if (animationController_->IsEnd()) {
 		transform_.quaRotLocal = lastQrot_;
 		state_ = STATE::IDLE;
 		isVinclible_ = false;
@@ -547,14 +546,14 @@ void Player::ProcessDownUp(void)
 			static_cast<int>(effType_),
 			MV1GetFramePosition(transform_.modelId, HIT_EFFECT_FRAME_NO));
 
-		if (anim_->GetPlayType() == static_cast<int>(ANIM_TYPE::DOWN)
-			&& anim_->IsEnd()) {
+		if (animationController_->GetPlayType() == static_cast<int>(ANIM_TYPE::DOWN)
+			&& animationController_->IsEnd()) {
 
 			if (!uiHp_->IsActive()) {
 				state_ = STATE::DIE;
 			}
 			else {
-				anim_->Play(
+				animationController_->Play(
 					static_cast<int>(ANIM_TYPE::UP), false);
 
 				state_ = STATE::UP;
@@ -566,7 +565,7 @@ void Player::ProcessDownUp(void)
 	if (state_ == STATE::UP)
 	{
 		state_ = STATE::UP;
-		if (anim_->IsEnd()) {
+		if (animationController_->IsEnd()) {
 			state_ = STATE::IDLE;
 		}
 	}
@@ -590,7 +589,7 @@ void Player::ProcessRecovery(void)
 
 	// 回復入力があり、かつ回復瓶が残っている場合、かつ回復アニメーションが再生されていない場合に回復開始
 	if (isP && uiRecovery_->GetBottlcCnt() > 0
-		&& anim_->GetPlayType() != static_cast<int>(EFFECT::HP_ABSOLUTE)
+		&& animationController_->GetPlayType() != static_cast<int>(EFFECT::HP_ABSOLUTE)
 		&& state_ != STATE::RECOVERY) {
 
 		state_ = STATE::RECOVERY;
@@ -605,10 +604,10 @@ void Player::ProcessRecovery(void)
 	if (state_ != STATE::RECOVERY) return;
 
 	// 回復アニメーション再生
-	anim_->Play(static_cast<int>(ANIM_TYPE::RECOVERY), false);
+	animationController_->Play(static_cast<int>(ANIM_TYPE::RECOVERY), false);
 
 	// 回復アニメーションの特定のステップで回復処理を実行
-	if (anim_->GetPlayAnim().step == RECOVERY_TRIGGER_STEP) {
+	if (animationController_->GetPlayAnim().step == RECOVERY_TRIGGER_STEP) {
 		uiHp_->SetHpAbsolute(HEAL_HP_AMOUNT);
 		uiRecovery_->SetBottleCnt(CONSUME_RECOVERY_BOTTLE_COUNT);
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_RECOVERY).handleId_;
@@ -616,7 +615,7 @@ void Player::ProcessRecovery(void)
 	}
 
 	// 回復アニメーションが終了したら通常状態に遷移
-	if (anim_->IsEnd()) {
+	if (animationController_->IsEnd()) {
 		state_ = STATE::IDLE;
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_HER);
 	}
@@ -630,6 +629,20 @@ void Player::ProcessDie(void)
 		deathAnimationTime_ = DIE_END_THRESHOLD;
 		state_ = STATE::END;
 	}
+}
+
+void Player::ApplyDamage(float damageAmount)
+{
+	animationController_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
+	state_ = STATE::DOWN;
+	uiHp_->SetHp(damageAmount);
+
+	effType_ = EFFECT::BLOOD;
+	effect_->Play(static_cast<int>(effType_));
+	effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
+
+	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
+	SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
 }
 
 void Player::UpdateProcess(void)
@@ -724,89 +737,54 @@ void Player::UpdateProcessPost(void) {}
 
 void Player::UpdateHitCollider(void)
 {
+	if (isVinclible_) return;
+
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	if (ownColliders_.count(capsuleType) == 0) return;
 
-	// ダメージ処理の共通化
-	auto ApplyDamage = [&](float damageAmount)
-		{
-			anim_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
-			state_ = STATE::DOWN;
-			uiHp_->SetHp(damageAmount);
-
-			effType_ = EFFECT::BLOOD;
-			effect_->Play(static_cast<int>(effType_));
-			effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
-
-			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
-			SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
-		};
+	// 受けるダメージ量を保持する変数
+	float damage = 0.0f;
 
 	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
-		ColliderCapsule* playerCap = static_cast<ColliderCapsule*>(vec.get());
-		if (!playerCap) continue;
+		auto playerCapsule = std::dynamic_pointer_cast<ColliderCapsule>(vec);
+		if (!playerCapsule || !playerCapsule->GetIsCollier()) continue;
 
-		VECTOR playerPos = playerCap->GetFollow()->pos;
+		const auto& hitList = playerCapsule->GetHitColliders();
 
-		// すでに衝突が確定した相手のリストを取得
-		const auto& hitList = playerCap->GetHitColliders();
-
-		// 壁の遮蔽判定
-		auto IsBlockedByWall = [&]() -> bool
-			{
-				if (isVinclible_) return false;
-
-				//// リストからステージモデルを探す
-				//for (const auto& hitCol : hitList)
-				//{
-				//	if (!hitCol || hitCol->GetShape() != ColliderBase::SHAPE::MODEL ||
-				//		hitCol->GetTag() != ColliderBase::TAG::STAGE) continue;
-
-				//	const ColliderModel* model = static_cast<const ColliderModel*>(hitCol.get());
-				//	if (model && model->IsHit(enemyPos, playerPos, false, false)) {
-				//		return true; // 壁に遮蔽されている
-				//	}
-				//}
-				return false;
-			};
-
-		bool isBlocked = IsBlockedByWall();
-
-		// 衝突相手に対する個別処理
 		for (const auto& hitCol : hitList)
 		{
-			if (!hitCol.lock()) continue;
+			auto targetCol = hitCol.lock();
+			if (!targetCol || !targetCol->GetIsCollier()) continue;
 
-			auto shape = hitCol.lock()->GetShape();
-			auto tag = hitCol.lock()->GetTag();
+			auto shape = targetCol->GetShape();
+			auto tag = targetCol->GetTag();
 
-			// ===== 敵本体との判定 =====
-			if (tag == ColliderBase::TAG::ENEMY && shape == ColliderBase::SHAPE::CAPSULE)
+			// 敵本体との当たり判定
+			if (tag == ColliderBase::TAG::ENEMY
+				&& shape == ColliderBase::SHAPE::CAPSULE)
 			{
-				ColliderCapsule* enemyCap = static_cast<ColliderCapsule*>(hitCol.lock().get());
-
-				if (!isVinclible_) {
-					ApplyDamage(DAMAGE_ENEMY_BODY);
-					return; // 被弾したら即終了
-				}
-
-				//// 無敵などで被弾を免れた場合は押し出し処理のみ実行
-				//playerCap->PushBackAlongNormal(enemyCap, transform_, PUSH_BACK_POWER, false, false);
-				//continue;
+				// 複数同時に当たった場合は大きい方のダメージを優先
+				damage = DAMAGE_ENEMY_BODY;
+				continue;
 			}
 
-			// ===== 敵武器判定の前に無効条件を弾く =====
-			if (isVinclible_ || isBlocked || tag != ColliderBase::TAG::ENEMY_WEPON) continue;
+			// タグが敵武器でないときは処理しない
+			if (tag != ColliderBase::TAG::ENEMY_WEPON) continue;
 
-			// リストに入っている時点で武器との当たり判定は true なので、即ダメージ処理へ移行
-			// ===== 敵武器（カプセル または スフィア）との判定 =====
-			if (shape == ColliderBase::SHAPE::CAPSULE || shape == ColliderBase::SHAPE::SPHERE)
+			// 敵武器との当たり判定
+			if (shape == ColliderBase::SHAPE::CAPSULE
+				|| shape == ColliderBase::SHAPE::SPHERE)
 			{
-				ApplyDamage(DAMAGE_ENEMY_WEAPON);
-				return;
+				damage = DAMAGE_ENEMY_WEAPON;
 			}
 		}
+	}
+
+	// ダメージが発生していればループの外で1回だけ適用
+	if (damage > 0.0f)
+	{
+		ApplyDamage(damage);
 	}
 }
 

@@ -1,9 +1,8 @@
 #pragma once
 #include "../../Common/AnimationController.h"
 #include "../../Common/EffectController.h"
+#include "../UI/UIHp.h"
 #include "../ActorBase.h"
-
-class UIHp;
 
 class CharactorBase :
     public ActorBase
@@ -27,17 +26,10 @@ public:
     //攻撃フラグの取得
     const bool GetIsAttack(void) const { return isAttack_; }
 
-    //ロックオン対象の設定
-    void SetTargetTransform(const VECTOR* transform) { targetTrans_ = transform; }
-
-    //ターゲットの方向を取得
-    VECTOR GetTargetDir(void);
-
 	//HP描画
     virtual void DrawHp(void){}
 
-    //HP情報取得
-    const UIHp* GetHP(void)const { return uiHp_; }
+    void SetTargetTransform(const Transform* targetTrans) {targetTrans_ = targetTrans; }
 protected:
     // 最大落下速度
     static constexpr float MAX_FALL_SPEED = -30.0f;
@@ -47,14 +39,13 @@ protected:
     // 衝突時の押し戻し量
     static constexpr float COLLISION_BACK_DIS = 1.0f;
 
-    //ロックオン対象Transform
-    const VECTOR* targetTrans_;
-
 	//HP UI
-	UIHp* uiHp_;
+	std::unique_ptr<UIHp> uiHp_;
 
     //アニメーションコントローラ
-    AnimationController* anim_;
+    std::unique_ptr<AnimationController> animationController_;
+
+    const Transform* targetTrans_;
 
     // 移動方向
     VECTOR moveDir_;
@@ -82,6 +73,9 @@ protected:
 
     // 重力計算
     void CalcGravityPow(void);
+
+    // ターゲット方向の取得
+    VECTOR GetTargetDir(void);
 
     // 衝突判定
     void Collision(void)override;

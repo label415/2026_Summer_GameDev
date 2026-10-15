@@ -2,6 +2,7 @@
 #include <EffekseerForDXLib.h>
 #include "../Utility/AsoUtility.h"
 #include "../Application.h"
+#include "ResourceManager.h"
 #include "../Manager/InputManager.h"
 #include "../Manager/SceneManager.h"
 #include "../Manager/CollisionManager.h"
@@ -25,7 +26,10 @@ Camera::Camera(void)
 
 Camera::~Camera(void) {}
 
-void Camera::Update(void) {}
+void Camera::Update(void)
+{
+	Collision();
+}
 
 void Camera::SetBeforeDraw(void)
 {
@@ -46,15 +50,15 @@ void Camera::SetBeforeDraw(void)
 	case Camera::MODE::FOLLOW:
 		SetBeforeDrawFollow();
 		break;
-
 	case Camera::MODE::TARGET_ROCKE:
 		SetBeforeDrawTargetLockeOn();
 		break;
 	}
 
-	// カメラの設定（ロックオン時は Y軸Up を固定すると安定します）
-	if (mode_ == Camera::MODE::TARGET_ROCKE) {
-		// ロックオン時は常に頭上（Y軸）を上として扱うことで画面の傾きを防ぐ
+	// カメラの設定
+	if (mode_ == Camera::MODE::TARGET_ROCKE)
+	{
+		// ロックオン時は常に頭上を上として扱うことで画面の傾きを防ぐ
 		SetCameraPositionAndTarget_UpVecY(transform_.pos, targetPos_);
 	}
 	else {
@@ -70,9 +74,24 @@ void Camera::SetBeforeDraw(void)
 	Effekseer_Sync3DSetting();
 }
 
-void Camera::DrawDebug(void) {}
+void Camera::DrawDebug(void)
+{
+	// ロックオンUI描画
+	if (mode_ != MODE::TARGET_ROCKE) return;
+
+	VECTOR enemyTransform = targetTransform_->pos;
+	SetUseZBuffer3D(FALSE);
+	DrawBillboard3D(
+		enemyTransform,
+		0.5f, 0.5f,
+		LOCON_UI_SIZE, 0.0f,
+		lockOnImg_, true);
+	SetUseZBuffer3D(TRUE);
+}
 
 void Camera::Release(void) {}
+
+void Camera::InitLoad(void){}
 
 void Camera::InitCollider(void)
 {
@@ -81,7 +100,7 @@ void Camera::InitCollider(void)
 		ColliderBase::TAG::STAGE
 	};
 
-	colliderSphere_ = std::make_shared<ColliderSphere>(
+	auto colliderSphere = std::make_shared<ColliderSphere>(
 		ColliderBase::TAG::CAMERA,
 		targetTags,
 		&transform_,
@@ -89,8 +108,8 @@ void Camera::InitCollider(void)
 		COL_CAPSULE_SPHERE
 	);
 
-	ownColliders_[static_cast<int>(ColliderBase::SHAPE::SPHERE)].push_back(colliderSphere_);
-	CollisionManager::GetInstance().AddCollider(colliderSphere_);
+	ownColliders_[static_cast<int>(ColliderBase::SHAPE::SPHERE)].push_back(colliderSphere);
+	CollisionManager::GetInstance().AddCollider(colliderSphere);
 }
 
 void Camera::InitPost(void)
@@ -103,20 +122,110 @@ void Camera::InitPost(void)
 	preMouseX = static_cast<float>(ins.GetMousePos().x);
 	preMouseY = static_cast<float>(ins.GetMousePos().y);
 
+	// ロックオン画像ロード
+	lockOnImg_ = resMng_.Load(ResourceManager::SRC::UI_LOCKON).handleId_;
+
 	isMouseInput_ = false;
 }
 
 void Camera::UpdateHitCollider(void)
 {
-	if (!colliderSphere_ || !colliderSphere_->GetIsCollier()) return;
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
+	if (ownColliders_.count(capsuleType) == 0) return;
 
-	// CollisionManagerで判定・計算された衝突結果を処理
-	for (const auto& hit : colliderSphere_->GetHitColliders())
+	for (const auto& col : ownColliders_.at(capsuleType))
 	{
-		if (hit.lock()->GetIsCollier()
-			&& hit.lock()->GetTag() == ColliderBase::TAG::STAGE)
+		if (!col->GetIsCollier()) continue;
+
+		// カプセルコライダ情報  
+		std::shared_ptr<ColliderSphere> colliderSphere =
+			std::dynamic_pointer_cast<ColliderSphere>(col);
+		if (colliderSphere == nullptr) return;
+
+		for (const auto& hit : col->GetHitColliders())
 		{
-			isCameraLope_ = true;
+			// モデル以外は処理を飛ばす  
+			if (hit.lock()->GetShape() != ColliderBase::SHAPE::MODEL) continue;
+
+			std::shared_ptr<ColliderModel> colliderModel =
+				std::dynamic_pointer_cast<ColliderModel>(hit.lock());
+
+			if (colliderModel == nullptr) continue;
+
+			transform_.pos =
+				CollisionUtility::CalcPushSphereModel(
+					*colliderSphere, *colliderModel, transform_.pos,
+					CNT_TRY_COLLISION_CAMERA, COLLISION_BACK_DIS,
+					false, false);
+		}
+	}
+}
+
+const Transform* Camera::FindLockOnTarget(SWITCH_DIR switchDir) const
+{
+	const VECTOR& playerPos = followTransform_->pos;
+	VECTOR camForward = VNorm(GetForward());
+	float maxAngleRad = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
+	float diffMin = (switchDir == SWITCH_DIR::UP) ? FLT_MAX : MAX_LOCKON_DIFF;
+
+	const Transform* bestTarget = nullptr;
+
+	for (const Transform* candidate : targetTransforms_) {
+		// 早期リターン
+		if (candidate == nullptr || candidate == targetTransform_) continue;
+
+		VECTOR toEnemy = VSub(candidate->pos, playerPos);
+		float lockonDiff = VSize(toEnemy);
+		if (lockonDiff >= diffMin) continue;
+
+		// 視野角判定
+		float dot = VDot(camForward, VNorm(toEnemy));
+		dot = std::clamp(dot, -1.0f, 1.0f);
+		if (acosf(dot) >= maxAngleRad) continue;
+
+		// 左右切り替え時の外積判定
+		if (switchDir == SWITCH_DIR::LEFT && VCross(camForward, toEnemy).y > 0.0f) continue;
+		if (switchDir == SWITCH_DIR::RIGHT && VCross(camForward, toEnemy).y < 0.0f) continue;
+
+		diffMin = lockonDiff;
+		bestTarget = candidate;
+	}
+
+	return bestTarget;
+}
+
+void Camera::HandleTargetSwitching(void)
+{
+	auto& inp = InputManager::GetInstance();
+	InputManager::JOYPAD_IN_STATE padState =
+		inp.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
+	VECTOR dir = inp.GetDirectionXZAKey(padState.AKeyRX, padState.AKeyRY);
+	const float stickThreshold = InputManager::THRESHOLD;
+
+	bool isNextUp = (dir.z > stickThreshold)
+		&& (prevStickZ_ <= stickThreshold);
+	bool isNextDown = (dir.z < -stickThreshold)
+		&& (prevStickZ_ >= -stickThreshold);
+	bool isNextRight = ((dir.x > stickThreshold)
+		&& (prevStickX_ <= stickThreshold))
+		|| (inp.GetMouseWheelRot() > 0.0f);
+	bool isNextLeft = ((dir.x < -stickThreshold)
+		&& (prevStickX_ >= -stickThreshold))
+		|| (inp.GetMouseWheelRot() < 0.0f);
+
+	prevStickX_ = dir.x;
+	prevStickZ_ = dir.z;
+
+	SWITCH_DIR switchDir = SWITCH_DIR::NONE;
+	if (isNextUp)         switchDir = SWITCH_DIR::UP;
+	else if (isNextDown)  switchDir = SWITCH_DIR::DOWN;
+	else if (isNextLeft)  switchDir = SWITCH_DIR::LEFT;
+	else if (isNextRight) switchDir = SWITCH_DIR::RIGHT;
+
+	if (switchDir != SWITCH_DIR::NONE) {
+		const Transform* nextTarget = FindLockOnTarget(switchDir);
+		if (nextTarget != nullptr) {
+			targetTransform_ = nextTarget;
 		}
 	}
 }
@@ -177,8 +286,62 @@ const Camera::MODE& Camera::GetCameraMode(void) const
 	return mode_;
 }
 
+void Camera::AddTargetTransform(const Transform* target)
+{
+	if (target == nullptr) return;
+
+	// すでに同じTransformが格納されていなければ追加
+	if (std::find(targetTransforms_.begin(),
+		targetTransforms_.end(),
+		target) == targetTransforms_.end())
+	{
+		targetTransforms_.push_back(target);
+	}
+}
+
+void Camera::UpdateLockOn(void)
+{
+	// 早期リターン：追従対象（プレイヤー）がいなければ処理しない
+	if (followTransform_ == nullptr) return;
+
+	auto& inp = InputManager::GetInstance();
+	bool isLockOnTrg = inp.IsTrgMouseMiddle()
+		|| inp.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
+
+	// ロックオン中の処理
+	if (mode_ == MODE::TARGET_ROCKE)
+	{
+		// 早期リターン：ターゲットが喪失している、または解除条件を満たした場合
+		if (targetTransform_ == nullptr ||
+			VSize(VSub(targetTransform_->pos, followTransform_->pos)) >= MAX_LOCKON_DIFF ||
+			isLockOnTrg)
+		{
+			targetTransform_ = nullptr;
+			ChangeMode(MODE::FOLLOW);
+			return;
+		}
+
+		// スティック・ホイール入力によるターゲット切り替え処理
+		HandleTargetSwitching();
+		return;
+	}
+
+	// 通常追従中の処理
+	if (mode_ == MODE::FOLLOW && isLockOnTrg)
+	{
+		const Transform* newTarget = FindLockOnTarget(SWITCH_DIR::NONE);
+		if (newTarget != nullptr) {
+			targetTransform_ = newTarget;
+			ChangeMode(MODE::TARGET_ROCKE);
+		}
+	}
+}
+
 void Camera::SetDefault(void)
 {
+	// 毎フレーム補間フラグをリセットする
+	isCameraLope_ = false;
+
 	// カメラの初期設定
 	transform_.pos = DERFAULT_POS;
 
@@ -221,7 +384,7 @@ void Camera::SynLockOn(void)
 {
 	// 各位置の取得
 	VECTOR followPos = followTransform_->pos;
-	VECTOR TargetPos = *targetTransform_;
+	VECTOR TargetPos = targetTransform_->pos;
 
 	// 注視点の高さを調整
 	VECTOR targetCenterPos = TargetPos;
@@ -297,21 +460,16 @@ void Camera::ProcessMove(void)
 	}
 	else
 	{
-
 		InputManager::JOYPAD_IN_STATE padState =
 			ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
 		// 左スティックの傾き
 		moveDir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
-
 	}
 
 	// 移動処理
 	if (!AsoUtility::EqualsVZero(moveDir))
 	{
-
-		// 移動させたい方向(ベクトル)に変換
-
 		// 現在の向きからの進行方向を取得
 		VECTOR direction = VNorm(transform_.quaRot.PosAxis(moveDir));
 
@@ -321,7 +479,6 @@ void Camera::ProcessMove(void)
 		// カメラ位置も注視点も移動させる
 		transform_.pos = VAdd(transform_.pos, movePow);
 		targetPos_ = VAdd(targetPos_, movePow);
-
 	}
 }
 
@@ -376,11 +533,10 @@ void Camera::SetBeforeDrawTargetLockeOn(void)
 
 void Camera::RotKeyboard(bool isLimit)
 {
-
 	auto& ins = InputManager::GetInstance();
 
 	auto mouseMove = ins.GetMousePosDistance();
-	if (mouseMove.x != 0.0f || mouseMove.y != 0.0f) // より明示的にチェック
+	if (mouseMove.x != 0.0f || mouseMove.y != 0.0f)
 	{
 		angles_.x += mouseMove.y * MROT_POW_RAD;
 		angles_.y += mouseMove.x * MROT_POW_RAD;
@@ -401,12 +557,10 @@ void Camera::RotKeyboard(bool isLimit)
 	{
 		angles_.x = LIMIT_X_UP_RAD;
 	}
-
 }
 
 void Camera::RotGamePad(bool isLimit)
 {
-
 	auto& ins = InputManager::GetInstance();
 
 	// 接続されているゲームパッド１の情報を取得
@@ -431,5 +585,4 @@ void Camera::RotGamePad(bool isLimit)
 	{
 		angles_.x = LIMIT_X_UP_RAD;
 	}
-
 }

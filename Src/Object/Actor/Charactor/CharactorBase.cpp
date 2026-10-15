@@ -11,7 +11,19 @@
 
 CharactorBase::CharactorBase(void)
 	:
-	ActorBase()
+	ActorBase(),
+	targetTrans_(nullptr),
+	uiHp_(nullptr),
+	animationController_(nullptr),
+	moveDir_(AsoUtility::VECTOR_ZERO),
+	movePow_(AsoUtility::VECTOR_ZERO),
+	prevPos_(AsoUtility::VECTOR_ZERO),
+	jumpPow_(AsoUtility::VECTOR_ZERO),
+	moveSpeed_(0.0f),
+	stepJump_(0.0f),
+	isJump_(false),
+	isDamage_(false),
+	isAttack_(false)
 {}
 
 CharactorBase::~CharactorBase(void){}
@@ -42,7 +54,7 @@ void CharactorBase::Update(void)
 	transform_.Update();
 
 	// アニメーション再生
-	anim_->Update();
+	animationController_->Update();
 
 	// 各キャラクターごとの更新後処理
 	UpdateProcessPost();
@@ -60,14 +72,13 @@ void CharactorBase::Release(void)
 	transform_.Release();
 
 	// 各ポインタ変数開放
-	anim_->Release();
-	delete anim_;
+	animationController_->Release();
 }
 
 VECTOR CharactorBase::GetTargetDir(void)
 {
 	//自分と相手のベクトルを計算
-	VECTOR targetVec = VSub(*targetTrans_, transform_.pos);
+	VECTOR targetVec = VSub(targetTrans_->pos, transform_.pos);
 	//ベクトルを正規化
 	VECTOR targetdir = VNorm(targetVec);
 	//Y座標を無効

@@ -371,6 +371,8 @@ private:
 	// €–S‰‰oˆ—
 	void ProcessDie(void);
 
+	void ApplyDamage(float damageAmount);
+
 	// –³“G
 	bool isVinclible_;
 	// –³“GŠÔ

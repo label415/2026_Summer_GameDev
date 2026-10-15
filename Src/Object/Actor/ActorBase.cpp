@@ -7,7 +7,7 @@ ActorBase::ActorBase(void)
 	: 
 	resMng_(ResourceManager::GetInstance()),
 	scnMng_(SceneManager::GetInstance()),
-	transform_()
+	transform_(Transform())
 {
 	isAlive_ = true;
 }
@@ -46,11 +46,6 @@ void ActorBase::Draw(void)
 void ActorBase::Release(void)
 {
 	transform_.Release();
-}
-
-const Transform& ActorBase::GetTransform(void) const
-{
-	return transform_;
 }
 
 void ActorBase::Collision(void)

@@ -158,22 +158,75 @@ VECTOR CollisionUtility::CalcPushCapsuleTriangle(
 	const VECTOR& pos,
 	int maxTryCnt, float pushDistance)
 {
-	VECTOR push = AsoUtility::VECTOR_ZERO;
+	// 初期値を現在の座標にする
+	VECTOR pushedPos = pos;
+
+	// 元の座標から現在のposまでの移動差分をカプセル座標にも反映する
+	VECTOR diff = VSub(pos, capsule.GetFollow()->pos);
+	VECTOR topPos = VAdd(capsule.GetPosTop(), diff);
+	VECTOR downPos = VAdd(capsule.GetPosDown(), diff);
+	float radius = capsule.GetRadius();
+
+	// 1回あたりの押し戻しベクトル
+	VECTOR pushVec = VScale(poly.Normal, pushDistance);
+
 	int tryCnt = 0;
 	while (tryCnt < maxTryCnt)
 	{
+		// 押し戻し後のカプセル座標で再判定する
 		if (!HitCheck_Capsule_Triangle(
-			capsule.GetPosTop(), capsule.GetPosDown(), capsule.GetRadius(),
-			poly.Position[0], poly.Position[1], poly.Position[2]))
+			topPos, downPos, radius,
+			poly.Position[0],
+			poly.Position[1],
+			poly.Position[2]))
 		{
 			break;
 		}
 
-		// 衝突していたら法線方向に押し戻し
-		push = VAdd(pos, VScale(poly.Normal, pushDistance));
+		// 衝突していたら法線方向に押し戻す
+		pushedPos = VAdd(pushedPos, pushVec);
+		topPos = VAdd(topPos, pushVec);
+		downPos = VAdd(downPos, pushVec);
+
 		tryCnt++;
 	}
-	return push;
+
+	return pushedPos;
+}
+
+VECTOR CollisionUtility::CalcPushSphereTriangle(
+	const ColliderSphere& sphere,
+	const MV1_COLL_RESULT_POLY& poly,
+	const VECTOR& pos,
+	int maxTryCnt, float pushDistance)
+{
+	VECTOR pushedPos = pos;
+	float radius = sphere.GetRadius();
+
+	// 1回あたりの押し戻しベクトル
+	VECTOR pushVec = VScale(poly.Normal, pushDistance);
+
+	int tryCnt = 0;
+	while (tryCnt < maxTryCnt)
+	{
+		VECTOR currentSpherePos = pushedPos;
+		VECTOR diff = VSub(currentSpherePos, sphere.GetFollow()->pos);
+
+		if (!HitCheck_Sphere_Triangle(
+			diff, radius,
+			poly.Position[0],
+			poly.Position[1],
+			poly.Position[2]))
+		{
+			break; // 衝突しなくなったらループを抜ける
+		}
+
+		// 衝突していたら法線方向に押し戻す
+		pushedPos = VAdd(pushedPos, pushVec);
+		tryCnt++;
+	}
+
+	return pushedPos;
 }
 
 VECTOR CollisionUtility::CalcPushCapsuleModel(
@@ -183,7 +236,7 @@ VECTOR CollisionUtility::CalcPushCapsuleModel(
 	int maxTryCnt, float pushDistance,
 	bool isExclude, bool isTarget)
 {
-	VECTOR totalPush = AsoUtility::VECTOR_ZERO;
+	VECTOR pushedPos = pos;
 
 	// モデルとカプセルの衝突判定
 	auto hits = MV1CollCheck_Capsule(
@@ -199,12 +252,48 @@ VECTOR CollisionUtility::CalcPushCapsuleModel(
 			model, hitPoly.FrameIndex,
 			isExclude, isTarget)) continue;
 
-		totalPush = CalcPushCapsuleTriangle(
-			capsule, hitPoly, pos, maxTryCnt, pushDistance);
+		// 前のポリゴンで押し戻された座標を引き継いで渡す
+		pushedPos = CalcPushCapsuleTriangle(
+			capsule, hitPoly, pushedPos, maxTryCnt, pushDistance);
 	}
+
 	// 検出した地面ポリゴン情報の後始末
 	MV1CollResultPolyDimTerminate(hits);
-	return totalPush;
+
+	return pushedPos;
+}
+
+VECTOR CollisionUtility::CalcPushSphereModel(
+	const ColliderSphere& sphere,
+	const ColliderModel& model,
+	const VECTOR& pos,
+	int maxTryCnt, float pushDistance,
+	bool isExclude, bool isTarget)
+{
+	VECTOR pushedPos = pos;
+
+	// モデルとカプセルの衝突判定
+	auto hits = MV1CollCheck_Sphere(
+		model.GetFollow()->modelId, -1,
+		sphere.GetPos(),
+		sphere.GetRadius());
+
+	for (int i = 0; i < hits.HitNum; i++)
+	{
+		auto hitPoly = hits.Dim[i];
+		if (!IsValidPoly(
+			model, hitPoly.FrameIndex,
+			isExclude, isTarget)) continue;
+
+		// 前のポリゴンで押し戻された座標を引き継いで渡す
+		pushedPos = CalcPushSphereTriangle(
+			sphere, hitPoly, pushedPos, maxTryCnt, pushDistance);
+	}
+
+	// 検出した地面ポリゴン情報の後始末
+	MV1CollResultPolyDimTerminate(hits);
+
+	return pushedPos;
 }
 
 VECTOR CollisionUtility::CalcPushUpLineModel(

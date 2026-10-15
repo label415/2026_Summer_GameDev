@@ -18,6 +18,15 @@ public:
 		0.0f, 0.0f, 0.0f
 	};
 
+	// ロックオン最大距離・視野角
+	static constexpr float MAX_LOCKON_DIFF = 2000.0f;
+	static constexpr float LOCKON_VIEW_ANGLE = 80.0f;
+
+	// ロックオンUIのX座標
+	static constexpr float LOCON_UI_C_X = 0.5f;
+	//ロックオンUIの大きさ
+	static constexpr float LOCON_UI_SIZE = 50.0f;
+
 	// カメラの回転量
 	const float ROT_POW_DEG = 2.0f;
 	const float ROT_POW_RAD = ROT_POW_DEG * DX_PI_F / 180.0f;
@@ -99,8 +108,17 @@ public:
 	// 追従対象の設定
 	void SetFollow(const Transform* follow) { followTransform_ = follow; }
 
-	//ロックオン対象の設定
-	void SetTargetFollow(const VECTOR* target) { targetTransform_ = target; }
+	// ロックオン候補のTransformを格納する
+	void AddTargetTransform(const Transform* target);
+
+	// ロックオン候補リストをクリアする
+	void ClearTargetTransforms(void) { targetTransforms_.clear(); }
+
+	// 現在ロックオンしている対象のTransformを取得（非ロックオン時は nullptr）
+	const Transform* GetTargetTransform(void) const { return targetTransform_; }
+
+	// ロックオン対象の選別・切り替え更新
+	void UpdateLockOn(void);
 
 	// マウス入力の有効無効設定
 	void SetIsMouseInput(bool isMouseInput) { isMouseInput_ = isMouseInput; }
@@ -109,7 +127,7 @@ public:
 	bool GetIsMouseInput(void) { return isMouseInput_; }
 protected:
 	// リソースロード
-	void InitLoad(void) override{}
+	void InitLoad(void) override;
 
 	// 大きさ、回転、座標の初期化
 	void InitTransform(void) override{}
@@ -126,6 +144,31 @@ protected:
 	// 当たり判定衝突時の更新処理
 	void UpdateHitCollider(void) override;
 private:
+
+	// ロックオン切り替え方向
+	enum class SWITCH_DIR {
+		NONE,
+		UP,
+		DOWN,
+		LEFT,
+		RIGHT
+	};
+
+	// ロックオン候補のTransformリスト（敵クラスに依存せず格納）
+	std::vector<const Transform*> targetTransforms_;
+
+	// 現在ロックオンしている対象のTransform
+	const Transform* targetTransform_;
+
+	// 右スティックの前回入力保持用
+	float prevStickX_ = 0.0f;
+	float prevStickZ_ = 0.0f;
+
+	// 格納されたTransformリストから条件に合う対象を検索する
+	const Transform* FindLockOnTarget(SWITCH_DIR switchDir) const;
+
+	void HandleTargetSwitching(void);
+
 	// カメラの回転スピード
 	static constexpr float ROT_SPEED = 0.1f;
 	// ロックオンカメラの高さ
@@ -137,9 +180,6 @@ private:
 
 	// カメラが追従対象とするTransform
 	const Transform* followTransform_;
-
-	//ロックオン対象のTransform
-	const VECTOR* targetTransform_;
 
 	// ロックオン時のボスズーム
 	static constexpr float LOCKON_BOSS_ZOOM = 100.0f;
@@ -184,6 +224,9 @@ private:
 
 	// 注視点
 	VECTOR targetPos_;
+
+	// ロックオンUIハンドル
+	int lockOnImg_;
 	
 	// カメラを初期位置に戻す
 	void SetDefault(void);
@@ -226,7 +269,4 @@ private:
 
 	// マウス入力の有効無効フラグ
 	bool isMouseInput_;
-
-	// カメラの球体コライダー
-	std::shared_ptr<ColliderSphere> colliderSphere_;
 };

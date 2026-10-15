@@ -58,7 +58,7 @@ void Stage::InitCollider(void)
 	// ステージモデルが反応する対象タグ
 	std::vector<ColliderBase::TAG> targetTags = { ColliderBase::TAG::NONE };
 
-	colModel_ = std::make_shared<ColliderModel>(
+	auto colModel_ = std::make_shared<ColliderModel>(
 		ColliderBase::TAG::STAGE,
 		targetTags,
 		&transform_
