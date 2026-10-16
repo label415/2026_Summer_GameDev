@@ -40,11 +40,8 @@ private:
 	static constexpr float SCALE = 1.3f;
 
 	// 衝突判定用カプセルの初期値
-		static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 150.0f, 0.0f };
+	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 150.0f, 0.0f };
 	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 20.0f, 0.0f };
 	static constexpr float COL_CAPSULE_RADIUS = 20.0f;
-
-	// 保持しているコライダーへの参照
-	std::shared_ptr<ColliderCapsule> colliderCapsule_;
 };
 

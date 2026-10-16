@@ -11,14 +11,13 @@
 
 WeponBracelet::WeponBracelet(const Transform& followTransform, const VECTOR moverDir, int followFrameId)
 	:
-	WeponBase(followTransform, followFrameId),
+	WeponBase(WeponBase::WEAPON_TYPE::BRACKELET, followTransform, followFrameId),
 	moveDir_(moverDir),
 	isAttack_(false),
 	isEnd_(false),
 	topPos_(COL_CAPSULE_TOP_LOCAL_POS),
 	downPos_(COL_CAPSULE_DOWN_LOCAL_POS),
-	moveSpeed_(SPEED),
-	colliderCapsule_(nullptr)
+	moveSpeed_(SPEED)
 {
 }
 
@@ -41,7 +40,7 @@ void WeponBracelet::InitCollider(void)
 		ColliderBase::TAG::PLAYER
 	};
 
-	colliderCapsule_ = std::make_shared<ColliderCapsule>(
+	auto colliderCapsule = std::make_shared<ColliderCapsule>(
 		ColliderBase::TAG::ENEMY_WEPON,
 		targetTags,
 		&transform_,
@@ -50,10 +49,10 @@ void WeponBracelet::InitCollider(void)
 		COL_CAPSULE_RADIUS
 	);
 
-	colliderCapsule_->SetIsCollier(false);
+	colliderCapsule->SetIsCollier(false);
 
-	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colliderCapsule_);
-	CollisionManager::GetInstance().AddCollider(colliderCapsule_);
+	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colliderCapsule);
+	CollisionManager::GetInstance().AddCollider(colliderCapsule);
 }
 
 void WeponBracelet::InitAnimation(void) {}
@@ -73,22 +72,28 @@ void WeponBracelet::InitPost(void)
 
 void WeponBracelet::SetCollider(void)
 {
-	if (colliderCapsule_) {
-		colliderCapsule_->SetIsCollier(true);
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
+	for (const auto& vec : ownColliders_.at(capsuleType))
+	{
+		vec->SetIsCollier(true);
 	}
 }
 
 void WeponBracelet::ClearCollider(void)
 {
-	if (colliderCapsule_) {
-		colliderCapsule_->SetIsCollier(false);
-		// 初期座標と初期半径に復帰
-		topPos_ = COL_CAPSULE_TOP_LOCAL_POS;
-		downPos_ = COL_CAPSULE_DOWN_LOCAL_POS;
-		colliderCapsule_->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
-		colliderCapsule_->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
-		colliderCapsule_->SetRadius(COL_CAPSULE_RADIUS);
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
+	for (const auto& vec : ownColliders_.at(capsuleType))
+	{
+		auto capsuleCollider = std::dynamic_pointer_cast<ColliderCapsule>(vec);
+		capsuleCollider->SetIsCollier(false);
+		capsuleCollider->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
+		capsuleCollider->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
+		capsuleCollider->SetRadius(COL_CAPSULE_RADIUS);
 	}
+
+	// 初期座標と初期半径に復帰
+	topPos_ = COL_CAPSULE_TOP_LOCAL_POS;
+	downPos_ = COL_CAPSULE_DOWN_LOCAL_POS;
 }
 
 void WeponBracelet::SetIsAttack(bool isAttack)
@@ -131,10 +136,12 @@ void WeponBracelet::Move(void)
 		}
 	}
 
-	if (colliderCapsule_)
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
+	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
-		colliderCapsule_->SetLocalPosTop(topPos_);
-		colliderCapsule_->SetLocalPosDown(downPos_);
+		auto capsuleCollider = std::dynamic_pointer_cast<ColliderCapsule>(vec);
+		capsuleCollider->SetLocalPosTop(topPos_);
+		capsuleCollider->SetLocalPosDown(downPos_);
 	}
 }
 

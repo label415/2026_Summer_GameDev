@@ -38,26 +38,12 @@ void EnemyDragon::Draw(void)
 {
 	// 基底クラスの描画処理
 	CharactorBase::Draw();
-
-	if (weponBracelet_) weponBracelet_->Draw();
-	if (weponFlame_) weponFlame_->Draw();
 }
 
 void EnemyDragon::Release(void)
 {
+	// 基底クラスの解放処理
 	CharactorBase::Release();
-
-	if (weponBracelet_) {
-		weponBracelet_->Release();
-		delete weponBracelet_;
-		weponBracelet_ = nullptr;
-	}
-
-	if (weponFlame_) {
-		weponFlame_->Release();
-		delete weponFlame_;
-		weponFlame_ = nullptr;
-	}
 }
 
 void EnemyDragon::InitLoad(void)
@@ -68,19 +54,25 @@ void EnemyDragon::InitLoad(void)
 	transform_.SetModel(
 		resMng_.LoadModelDuplicate(ResourceManager::SRC::MODEL_ENEMY_DRAGON));
 
+	// 敵HP
 	uiHp_ = std::make_unique<UIHp>(
 		Application::SCREEN_SIZE_X / 2,
 		Application::SCREEN_SIZE_Y - UI_HP_OFFSET_Y,
 		UI_HP_SCALE_X, UI_HP_SCALE_Y, UI_HP_SCALE_Z);
 	uiHp_->Load();
 
-	// --- 2つの武器を初期化時に生成・Init呼び出し ---
+	// 2つの武器を初期化時に生成
 	VECTOR defaultDir = transform_.GetForward();
-	weponBracelet_ = new WeponBracelet(transform_, defaultDir, FRAME_NO_MOUTH);
-	weponBracelet_->Load();
 
-	weponFlame_ = new WeponFlameThrower(transform_, defaultDir, FRAME_NO_MOUTH);
-	weponFlame_->Load();
+	auto weponBracelet = std::make_unique<WeponBracelet>(transform_, defaultDir, FRAME_NO_MOUTH);
+	weapons_.push_back(std::move(weponBracelet));
+
+	auto weponFlame = std::make_unique<WeponFlameThrower>(transform_, defaultDir, FRAME_NO_MOUTH);
+	weapons_.push_back(std::move(weponFlame));
+
+	for (const auto& weapon : weapons_) {
+		weapon->Load();
+	}
 }
 
 void EnemyDragon::InitTransform(void)
@@ -94,7 +86,7 @@ void EnemyDragon::InitTransform(void)
 
 void EnemyDragon::InitCollider(void)
 {
-	// 1. 地面衝突用ラインコライダー
+	// 地面衝突用ラインコライダー
 	std::vector<ColliderBase::TAG> lineTargets = { ColliderBase::TAG::STAGE };
 	auto groundLine = std::make_shared<ColliderLine>(
 		ColliderBase::TAG::GROUND,
@@ -106,7 +98,7 @@ void EnemyDragon::InitCollider(void)
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::LINE)].push_back(groundLine);
 	CollisionManager::GetInstance().AddCollider(groundLine);
 
-	// 2. 各部位の当たり判定カプセル（敵本体・被弾・攻撃用）
+	// 各部位の当たり判定カプセル（敵本体・被弾・攻撃用）
 	std::vector<ColliderBase::TAG> bodyTargets = {
 		ColliderBase::TAG::PLAYER,
 		ColliderBase::TAG::PLAYER_WEPON,
@@ -240,8 +232,10 @@ void EnemyDragon::InitPost(void)
 
 	uiHp_->Init();
 
-	weponBracelet_->Init();
-	weponFlame_->Init();
+	// 武器
+	for (const auto& weapon : weapons_) {
+		weapon->Init();
+	}
 
 	// 初期状態設定
 	ChangeState(STATE::ROAR);
@@ -310,8 +304,10 @@ void EnemyDragon::UpdateProcess(void)
 	SetFrameUserLocalPos(LOCK_POS, LOCK_FRAME_NO);
 
 	// 2つの武器を毎フレーム更新
-	if (weponBracelet_) weponBracelet_->Update();
-	if (weponFlame_) weponFlame_->Update();
+		// 武器
+	for (const auto& weapon : weapons_) {
+		weapon->Update();
+	}
 }
 
 void EnemyDragon::UpdateDebugImGui(void)
@@ -627,6 +623,15 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 
 	const VECTOR& targetPos = targetTrans_->pos;
 	VECTOR dir = VNorm(VSub(targetPos, transform_.pos));
+
+	for (const auto& weapon : weapons_)
+	{
+		if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::BRACKELET)return;
+
+		std::unique_ptr<WeponBracelet> colliderModel =
+			std::dynamic_pointer_cast<WeponBracelet>(hit.lock());
+	}
+
 	if (weponBracelet_)
 	{
 		weponBracelet_->SetMoveDir(dir);

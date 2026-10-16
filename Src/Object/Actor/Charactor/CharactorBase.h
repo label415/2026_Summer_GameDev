@@ -1,6 +1,7 @@
 #pragma once
 #include "../../Common/AnimationController.h"
 #include "../../Common/EffectController.h"
+#include "../Wepon/WeponBase.h"
 #include "../UI/UIHp.h"
 #include "../ActorBase.h"
 
@@ -29,6 +30,7 @@ public:
 	//HP描画
     virtual void DrawHp(void){}
 
+    // 追尾対象のTransform取得
     void SetTargetTransform(const Transform* targetTrans) {targetTrans_ = targetTrans; }
 protected:
     // 最大落下速度
@@ -45,22 +47,39 @@ protected:
     //アニメーションコントローラ
     std::unique_ptr<AnimationController> animationController_;
 
+    // 武器
+    std::vector<std::unique_ptr<WeponBase>> weapons_;
+
+    // 追尾対象のTransform
     const Transform* targetTrans_;
 
     // 移動方向
     VECTOR moveDir_;
+
     // 移動量
     VECTOR movePow_;
+
     // 移動前の座標
     VECTOR prevPos_;
+
     // ジャンプ量
     VECTOR jumpPow_;
+
     // 移動スピード
     float moveSpeed_;
+
     // ジャンプの入力受付時間
     float stepJump_;
+
     // ジャンプ判定
     bool isJump_;
+
+    //ダメージフラグ
+    bool isDamage_;
+
+    //攻撃フラグ
+    bool isAttack_;
+
     // リソースロード
     virtual void InitLoad(void) override;
 
@@ -84,11 +103,5 @@ protected:
 
     //キャラクター移動量の無効
     void SetFrameUserLocalPos(VECTOR locakPos, int frameNo);
-
-    //ダメージフラグ
-    bool isDamage_;
-
-    //攻撃フラグ
-    bool isAttack_;
 };
 

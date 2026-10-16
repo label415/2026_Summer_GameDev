@@ -82,8 +82,6 @@ private:
 	// 前フレームの座標
 	VECTOR prePos_;
 
-	std::shared_ptr<ColliderSphere> colliderSphere_;
-
 	// 移動処理
 	void Move(void);
 

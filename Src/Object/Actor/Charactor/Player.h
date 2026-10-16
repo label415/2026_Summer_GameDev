@@ -263,9 +263,6 @@ public:
 	// リソースの解放処理
 	void Release(void) override;
 
-	// 装備中の武器ポインタを取得
-	const WeponBase* GetWepon(void) const { return wepon_; }
-
 	// HPおよび各種UIの描画
 	void DrawHp(void) override;
 
@@ -278,15 +275,6 @@ public:
 	// 死亡演出タイム取得
 	const float GetDesath(void)const { return deathAnimationTime_; }
 protected:
-	// スタミナ UI
-	UISt* uiSt_;
-
-	// 回復
-	UIRecovery* uiRecovery_;
-
-	// 状態
-	STATE state_;
-
 	// プレイヤーリソースロード
 	void InitLoad(void) override;
 
@@ -311,6 +299,15 @@ protected:
 	// 当たり判定衝突時の更新処理
 	void UpdateHitCollider(void) override;
 private:
+	// スタミナ UI
+	std::unique_ptr<UISt> uiSt_;
+
+	// 回復
+	std::unique_ptr<UIRecovery> uiRecovery_;
+
+	// 状態
+	STATE state_;
+
 	// 攻撃コンボデータ
 	std::map<STATE_ATTACK_COMBO, ATTACK_COMBO> atkComboData_;
 
@@ -319,9 +316,6 @@ private:
 
 	// 攻撃コンボの更新ステップ
 	bool isComboNext_;
-
-	// 武器
-	WeponBase* wepon_;
 
 	// 初期角度を保存
 	Quaternion lastQrot_;
@@ -351,7 +345,7 @@ private:
 	static constexpr float COL_CAPSULE_RADIUS = 20.0f;
 
 	// 無敵時間
-	static constexpr float INVINCIBLE_TIME = 10.0f;
+	static constexpr float INVINCIBLE_TIME = 2.0f;
 
 	// 移動入力判定および移動処理（通常歩行・ダッシュ）
 	void ProcessMove(void);

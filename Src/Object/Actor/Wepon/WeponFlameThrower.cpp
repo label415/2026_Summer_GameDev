@@ -13,7 +13,7 @@
 
 WeponFlameThrower::WeponFlameThrower(const Transform& followTransform, const VECTOR moverDir, int followFrameId)
 	:
-	WeponBase(followTransform, followFrameId),
+	WeponBase(WeponBase::WEAPON_TYPE::FLAME, followTransform, followFrameId),
 	moveDir_(moverDir)
 {
 }
@@ -45,7 +45,7 @@ void WeponFlameThrower::InitCollider(void)
 		ColliderBase::TAG::STAGE
 	};
 
-	colliderSphere_ = std::make_shared<ColliderSphere>(
+	auto colliderSphere = std::make_shared<ColliderSphere>(
 		ColliderBase::TAG::ENEMY_WEPON,
 		targetTags,
 		&transform_,
@@ -53,10 +53,10 @@ void WeponFlameThrower::InitCollider(void)
 		MIN_RADIUS
 	);
 
-	colliderSphere_->SetIsCollier(false); // 初期状態は当たり判定無効
+	colliderSphere->SetIsCollier(false);
 
-	ownColliders_[static_cast<int>(ColliderBase::SHAPE::SPHERE)].push_back(colliderSphere_);
-	CollisionManager::GetInstance().AddCollider(colliderSphere_);
+	ownColliders_[static_cast<int>(ColliderBase::SHAPE::SPHERE)].push_back(colliderSphere);
+	CollisionManager::GetInstance().AddCollider(colliderSphere);
 }
 
 void WeponFlameThrower::InitAnimation(void)
@@ -85,11 +85,14 @@ void WeponFlameThrower::InitPost(void)
 
 void WeponFlameThrower::Move(void)
 {
-	// CollisionManagerの衝突結果からステージ衝突（壁・地面への着弾）を検知
+	// CollisionManagerの衝突結果からステージ衝突を検知
 	bool isHitStage = false;
-	if (colliderSphere_ && colliderSphere_->GetIsCollier())
+
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
+	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
-		for (const auto& hit : colliderSphere_->GetHitColliders())
+		auto colliderSphere = std::dynamic_pointer_cast<ColliderSphere>(vec);
+		for (const auto& hit : colliderSphere->GetHitColliders())
 		{
 			if (hit.lock()->GetIsCollier()
 				&& hit.lock()->GetTag() == ColliderBase::TAG::STAGE)
@@ -116,9 +119,11 @@ void WeponFlameThrower::Move(void)
 		if (radius_ <= MAX_RADIUS)
 		{
 			radius_ += 50.0f;
-			if (colliderSphere_)
+			int capsuleType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
+			for (const auto& vec : ownColliders_.at(capsuleType))
 			{
-				colliderSphere_->SetRadius(radius_);
+				auto colliderSphere = std::dynamic_pointer_cast<ColliderSphere>(vec);
+				colliderSphere->SetRadius(radius_);
 			}
 		}
 		else
@@ -164,23 +169,27 @@ void WeponFlameThrower::Release(void)
 
 void WeponFlameThrower::SetCollider(void)
 {
-	if (colliderSphere_)
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
+	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
-		colliderSphere_->SetIsCollier(true);
+		auto colliderSphere = std::dynamic_pointer_cast<ColliderSphere>(vec);
+		colliderSphere->SetIsCollier(true);
 	}
 }
 
 void WeponFlameThrower::ClearCollider(void)
 {
-	if (colliderSphere_)
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
+	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
+		auto colliderSphere = std::dynamic_pointer_cast<ColliderSphere>(vec);
 		// 当たり判定をオフにする
-		colliderSphere_->SetIsCollier(false);
-
-		// 大きさと位置を初期状態へリセット
-		radius_ = MIN_RADIUS;
-		colliderSphere_->SetRadius(MIN_RADIUS);
+		colliderSphere->SetIsCollier(false);
+		colliderSphere->SetRadius(MIN_RADIUS);
 	}
+
+	// 大きさと位置を初期状態へリセット
+	radius_ = MIN_RADIUS;
 
 	// 追従元の口元座標へリセット
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);

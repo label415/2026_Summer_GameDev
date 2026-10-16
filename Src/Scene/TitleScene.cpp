@@ -18,6 +18,11 @@ TitleScene::~TitleScene(void) {}
 
 void TitleScene::Load(void)
 {
+	// BGM再生
+	bgm_ = resMng_.Load(ResourceManager::SRC::BGM_TITLE).handleId_;
+	volume_ = BGM_VOLUME;
+	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
+
 	// フォントのロード
 	resMng_.Load(ResourceManager::SRC::FONT);
 	pauseFont_ = fontMng_.GetInstance().CreateMyFont(fontName_, FONT_SIZE, FONT_THICKNESS);
@@ -40,10 +45,6 @@ void TitleScene::Load(void)
 
 void TitleScene::LoadEnd(void)
 {
-	// BGM再生
-	bgm_ = resMng_.Load(ResourceManager::SRC::BGM_TITLE).handleId_;
-	volume_ = BGM_VOLUME;
-	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
 }
 
 void TitleScene::Update(void)
@@ -118,7 +119,7 @@ void TitleScene::Draw(void)
 		float centerY =
 			uiBoxs_[selectIndex_]->Top()
 			+ (uiBoxs_[selectIndex_]->Bottom()
-				- uiBoxs_[selectIndex_]->Top()) * 0.5f;
+				- uiBoxs_[selectIndex_]->Top()) * SELECT_IMG_ADJUST_Y;
 
 		DrawRotaGraph(
 			Application::HALF_SCREEN_SIZE_X,

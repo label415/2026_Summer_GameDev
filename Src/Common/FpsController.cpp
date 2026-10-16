@@ -37,7 +37,7 @@ void FpsController::Wait()
     {
 
         // ‘Ò‚Â‚×‚«ŽžŠÔ(ƒ~ƒŠ•b)
-        double waitMiliSecond = (idealFrameTime_ - deltaTime) * 1000.0;
+        double waitMiliSecond = (idealFrameTime_ - deltaTime) * WAITMILI;
 
         // Sleep‚Å‘Ò‚¿ŽžŠÔ•ª‚ð‘Ò‹@
         if (waitMiliSecond >= 1.0)

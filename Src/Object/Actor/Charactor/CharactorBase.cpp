@@ -24,7 +24,9 @@ CharactorBase::CharactorBase(void)
 	isJump_(false),
 	isDamage_(false),
 	isAttack_(false)
-{}
+{
+	weapons_.clear();
+}
 
 CharactorBase::~CharactorBase(void){}
 
@@ -64,6 +66,11 @@ void CharactorBase::Draw(void)
 {
 	// 基底クラスの描画処理
 	ActorBase::Draw();
+
+	// 武器描画
+	for (const auto& weapon : weapons_) {
+		weapon->Draw();
+	}
 }
 
 void CharactorBase::Release(void)
@@ -73,6 +80,12 @@ void CharactorBase::Release(void)
 
 	// 各ポインタ変数開放
 	animationController_->Release();
+
+	// 武器の解放処理
+	for (const auto& weapon : weapons_) {
+		weapon->Release();
+	}
+	weapons_.clear();
 }
 
 VECTOR CharactorBase::GetTargetDir(void)

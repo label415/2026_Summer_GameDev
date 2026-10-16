@@ -17,7 +17,7 @@ public:
 	Quaternion(double w, double x, double y, double z);
 
 	// デストラクタ
-	~Quaternion(void);
+	~Quaternion(void){}
 
 	// オイラー角からクォータニオンへ変換
 	static Quaternion Euler(const VECTOR& rad);

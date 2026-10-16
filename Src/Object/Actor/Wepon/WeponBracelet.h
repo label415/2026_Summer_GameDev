@@ -97,9 +97,6 @@ private:
 	// 終了フラグ
 	bool isEnd_;
 
-	// 保持しているコライダーへの参照
-	std::shared_ptr<ColliderCapsule> colliderCapsule_;
-
 	//移動処理
 	void Move(void);
 };

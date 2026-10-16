@@ -92,7 +92,7 @@ void PauseScene::Update(void)
 		}
 		else if (selectIndex_ == static_cast<int>(LIST::タイトルに戻る))
 		{
-			sceMng_.ResetScene(SceneManager::SCENE_ID::TITLE);
+			sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
 		}
 		else if (selectIndex_ == static_cast<int>(LIST::ゲーム終了))
 		{

@@ -7,7 +7,8 @@
 // コンストラクタ
 Loading::Loading()
 	: pauseFont_(-1)
-	, loadTimer_(0)
+	, loadTimer_(0),
+	isLoading_(false)
 {}
 
 // デストラクタ
@@ -16,6 +17,8 @@ Loading::~Loading(){}
 // 読み込み
 void Loading::Load(void)
 {
+	SetUseASyncLoadFlag(false);
+
 	// リソース取得
 	auto& res = ResourceManager::GetInstance();
 	res.Load(ResourceManager::SRC::FONT);
@@ -28,27 +31,36 @@ void Loading::Load(void)
 // 更新
 void Loading::Update(void)
 {
+	// ロード中でないときは処理しない
 	if (!IsLoading())return;
 
 	// ロード時間更新
 	loadTimer_++;
+
+	// 非同期読み込みがすべて完了し、かつ最低表示時間を過ぎたらロード終了
+	if (GetASyncLoadNum() == 0 && loadTimer_ >= MIN_LOAD_TIME)
+	{
+		isLoading_ = false;
+	}
 }
 
 // 描画
 void Loading::Draw(void)
 {
-	if (!IsLoading())return;
+	if (!isLoading_) return;
 
 	int dotCount = (loadTimer_ / 20) % 4;
-    std::wstring dots(dotCount, L'.');
+	std::wstring text = 
+		std::wstring(LOADING_TEXT) + std::wstring(dotCount, L'.');
 
-	DrawFormatStringToHandle(
-		Application::SCREEN_SIZE_X - FONT_ADJUST_X,
-		Application::SCREEN_SIZE_Y - FONT_ADJUST_Y,
+	const int x = Application::SCREEN_SIZE_X - FONT_ADJUST_X;
+	const int y = Application::SCREEN_SIZE_Y - FONT_ADJUST_Y;
+
+	DrawStringToHandle(
+		x, y,
+		text.c_str(),
 		FONT_COLOR,
-		pauseFont_,
-		(LOADING + dots_).c_str()
-	);
+		pauseFont_);
 }
 
 // 解放
@@ -58,14 +70,20 @@ void Loading::Release(void)
 	DeleteFontToHandle(pauseFont_);
 }
 
+void Loading::StartLoading(void)
+{
+	isLoading_ = true;
+	loadTimer_ = 0;
+}
+
 // 非同期読み込みに切り替える
 void Loading::StartAsyncLoad(void)
 {
 	// ロード時間リセット
-	loadTimer_ = 0;
+	isLoading_ = true;
 
 	// 非同期読み込み開始
-	SetUseASyncLoadFlag(true);
+	SetUseASyncLoadFlag(false);
 }
 
 // 同期読み込みに切り替える

@@ -170,7 +170,6 @@ bool CollisionManager::CheckWallOcclusion(const VECTOR& start, const VECTOR& end
 			if (!modelCol || !modelCol->GetIsCollier()) continue;
 
 			// CollisionUtility ‚Ìü•ª vs ƒ‚ƒfƒ‹Œğ·”»’è
-			// isExclude = false, isTarget = true
 			if (CollisionUtility::IsHit(tempLine, *modelCol, false, true))
 			{
 				return true;

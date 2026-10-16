@@ -5,7 +5,7 @@ class Loading
 {
 private:
 	// 最低でもロード画面を表示する時間
-	static constexpr int MIN_LOAD_TIME = 60;
+	static constexpr int MIN_LOAD_TIME = 70;
 public:
 	// コンストラクタ
 	Loading();
@@ -25,31 +25,33 @@ public:
 	//解放
 	void Release(void);
 
-	// 非同期ロードの開始
-	void StartAsyncLoad(void);
+	// ロード画面の表示開始
+	void StartLoading(void);
 
-	// 非同期ロードの終了
+	// 非同期ロードの開始・終了
+	void StartAsyncLoad(void);
 	void EndAsyncLoad(void);
 
-	// ロード中かを返す。
-	bool IsLoading(void) { return GetASyncLoadNum() != 0 && loadTimer_ <= MIN_LOAD_TIME; }
+	// ロード中かを返す
+	bool IsLoading(void) const { return isLoading_; }
 private:
 	// フォント名
-	std::wstring FONT_NAME = L"KazukiReiwa";
+	static constexpr const wchar_t* FONT_NAME = L"KazukiReiwa";
 	//表示するフォント
-	std::wstring LOADING = L"Loading";
+	static constexpr const wchar_t* LOADING_TEXT = L"Loading";
+
 	// フォント座標調整値
 	static constexpr float FONT_ADJUST_X = 200.0f;
 	static constexpr float FONT_ADJUST_Y = 70.0f;
 	// フォントのサイズ
-	static constexpr float FONT_SIZE = 56.0f;
+	static constexpr float FONT_SIZE = 40.0f;
 	// フォントの太さ
 	static constexpr float FONT_THICKNESS = 20.0f;
 	// フォントの色
 	static constexpr int FONT_COLOR = 0xffffff;
 
-	// ロード中追加するフォント
-	std::wstring dots_;
+	// 現在ロード中かどうかのフラグ
+	bool isLoading_;
 
 	// 最低でもロード画面を表示する時間の範囲
 	int loadTimer_;

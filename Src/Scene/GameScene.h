@@ -84,5 +84,11 @@ private:
 	// シャドウマップ
 	std::unique_ptr<ShadowMap> shadowMap_;
 
+	// 追尾対象更新
 	void UpdateAutoLockOn(void);
+	// シーン変更
+	void UpdateResult(void);
+
+	//UI描画
+	void DrawUI(void);
 };

@@ -12,32 +12,38 @@ class CollisionUtility
 {
 public:
     // 判定処理
+    // カプセル同士の当たり判定
     static bool IsHit(
         const ColliderCapsule& capsule1,
         const ColliderCapsule& capsule2);
 
+    // カプセルと球体の当たり判定
     static bool IsHit(
         const ColliderCapsule& capsule,
         const ColliderSphere& sphere);
 
+    // カプセルとモデルの当たり判定
     static bool IsHit(
         const ColliderCapsule& capsule,
         const ColliderModel& model,
         bool isExclude = false,
         bool isTarget = false);
 
+    // 球体とモデルの当たり判定
     static bool IsHit(
         const ColliderSphere& sphere,
         const ColliderModel& model,
         bool isExclude = false,
         bool isTarget = false);
 
+    // ラインとモデルの当たり判定
     static bool IsHit(
         const ColliderLine& line,
         const ColliderModel& model,
         bool isExclude = false,
         bool isTarget = false);
 
+    // モデルフレーム判定
     static bool IsValidPoly(
         const ColliderModel& model,
         int frameIdx,

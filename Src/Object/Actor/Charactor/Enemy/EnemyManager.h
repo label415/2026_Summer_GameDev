@@ -31,6 +31,7 @@ public:
 
 	// エネミー
 	const std::vector<std::shared_ptr<EnemyBase>>& GetEnemys() const {return enemys_;}
+
 	// CSVから敵情報の読取を行う
 	void LoadCsvData(void);
 

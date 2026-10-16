@@ -55,20 +55,12 @@ void Camera::SetBeforeDraw(void)
 		break;
 	}
 
-	// カメラの設定
-	if (mode_ == Camera::MODE::TARGET_ROCKE)
-	{
-		// ロックオン時は常に頭上を上として扱うことで画面の傾きを防ぐ
-		SetCameraPositionAndTarget_UpVecY(transform_.pos, targetPos_);
-	}
-	else {
-		// 通常カメラ時は既存の Up ベクトルを使用
-		SetCameraPositionAndTargetAndUpVec(
-			transform_.pos,
-			targetPos_,
-			transform_.quaRot.GetUp()
-		);
-	}
+	// 通常カメラ時は既存の Up ベクトルを使用
+	SetCameraPositionAndTargetAndUpVec(
+		transform_.pos,
+		targetPos_,
+		transform_.quaRot.GetUp()
+	);
 
 	// DXライブラリのカメラとEffekseerのカメラを同期する。
 	Effekseer_Sync3DSetting();
@@ -91,7 +83,7 @@ void Camera::DrawDebug(void)
 
 void Camera::Release(void) {}
 
-void Camera::InitLoad(void){}
+void Camera::InitLoad(void) {}
 
 void Camera::InitCollider(void)
 {
@@ -140,6 +132,7 @@ void Camera::UpdateHitCollider(void)
 		// カプセルコライダ情報  
 		std::shared_ptr<ColliderSphere> colliderSphere =
 			std::dynamic_pointer_cast<ColliderSphere>(col);
+
 		if (colliderSphere == nullptr) return;
 
 		for (const auto& hit : col->GetHitColliders())
@@ -301,7 +294,7 @@ void Camera::AddTargetTransform(const Transform* target)
 
 void Camera::UpdateLockOn(void)
 {
-	// 早期リターン：追従対象（プレイヤー）がいなければ処理しない
+	// 早期リターン
 	if (followTransform_ == nullptr) return;
 
 	auto& inp = InputManager::GetInstance();
@@ -311,7 +304,7 @@ void Camera::UpdateLockOn(void)
 	// ロックオン中の処理
 	if (mode_ == MODE::TARGET_ROCKE)
 	{
-		// 早期リターン：ターゲットが喪失している、または解除条件を満たした場合
+		// 早期リターン
 		if (targetTransform_ == nullptr ||
 			VSize(VSub(targetTransform_->pos, followTransform_->pos)) >= MAX_LOCKON_DIFF ||
 			isLockOnTrg)

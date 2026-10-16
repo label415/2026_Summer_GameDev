@@ -3,8 +3,9 @@
 #include "../../Common/Transform.h"
 #include "WeponBase.h"
 
-WeponBase::WeponBase(const Transform& followTransform, int followFrameId)
+WeponBase::WeponBase(WEAPON_TYPE weaponType, const Transform& followTransform, int followFrameId)
 	:
+	weapontype_(weaponType),
 	followTransform_(followTransform),
 	followFrameId_(followFrameId),
 	localPos_(AsoUtility::VECTOR_ZERO),

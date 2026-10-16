@@ -2,14 +2,11 @@
 #include <memory>
 #include <cassert>
 
-// シングルトンテンプレートクラス
 template <typename T>
 class Singleton
 {
 public:
-    /// <summary>
-    /// インスタンスの生成
-    /// </summary>
+    // インスタンスの生成
     static void CreateInstance()
     {
         if (!instance_)
@@ -18,19 +15,15 @@ public:
         }
     }
 
-    /// <summary>
-    /// インスタンスへのアクセス
-    /// </summary>
-    /// <returns>インスタンス</returns>
+    // インスタンスへのアクセス
     static T& GetInstance()
     {
-        assert(instance_ != nullptr && "シングルトンクラスが生成されていない");
+        assert(instance_ != nullptr 
+            && "シングルトンクラスが生成されていない");
         return *instance_;
     }
 
-	/// <summary>
-	/// 解放処理
-	/// </summary>
+	// 解放処理
 	static void Destroy()
 	{
 		if (instance_)
@@ -40,27 +33,16 @@ public:
 		}
 	}   
 
-    /// <summary>
-    /// コピーコンストラクタを削除
-    /// </summary>
-    /// <param name=""></param>
+    // コピーコンストラクタを削除
     Singleton(const Singleton&) = delete;
 
-    /// <summary>
-    /// コピー代入演算子を削除
-    /// </summary>
-    /// <param name=""></param>
-    /// <returns></returns>
+    // コピー代入演算子を削除
     Singleton& operator=(const Singleton&) = delete;
 protected:
-    /// <summary>
-    /// デフォルトコンストラクタは protected にして外部生成を防止
-    /// </summary>
+    // デフォルトコンストラクタは protected にして外部生成を防止
     Singleton() = default;
 
-    /// <summary>
-    /// デストラクタも protected
-    /// </summary>
+    // デストラクタも protected
     virtual ~Singleton() = default;
 private:
     //静的メンバ初期化

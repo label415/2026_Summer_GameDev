@@ -23,6 +23,9 @@ public:
     // Œ»İ‚ÌFPS‚ğæ“¾
     float GetFPS(void) const { return fps_; }
 private:
+    // ŠÔŒo‰ßŠ„‡
+    static constexpr float  WAITMILI = 1000.0f;
+
     // Å‘åFPS
     static constexpr int MAX_FPS = 1200;
 

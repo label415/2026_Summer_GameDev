@@ -166,7 +166,7 @@ void EffectController::SetEffectRot(int type, VECTOR rot)
 
 bool EffectController::IsEnd(int type)
 {
-	// えふぇく再生が終了しているか
+	// エフェクト再生が終了しているか
 	bool res = false;
 	int ret = IsEffekseer3DEffectPlaying(effects_[type]->PlayId_);
 	if (ret == -1)

@@ -32,7 +32,6 @@ Player::Player(void)
 	, stateAtkCombo_(STATE_ATTACK_COMBO::COMBO_1)
 	, state_(STATE::IDLE)
 	, uiRecovery_(nullptr)
-	, wepon_(nullptr)
 	, uiSt_(nullptr)
 {
 }
@@ -45,8 +44,8 @@ void Player::Draw(void)
 	CharactorBase::Draw();
 
 	// 武器描画
-	if (wepon_) {
-		wepon_->Draw();
+	for(const auto& weapon : weapons_) {
+		weapon->Draw();
 	}
 }
 
@@ -54,17 +53,6 @@ void Player::Release(void)
 {
 	// 基底クラスの解放処理
 	CharactorBase::Release();
-
-	// 武器の解放処理
-	wepon_->Release();
-
-	// 各ポインタ変数開放
-	delete wepon_;
-	delete uiRecovery_;
-	if (uiSt_) {
-		delete uiSt_;
-		uiSt_ = nullptr;
-	}
 }
 
 void Player::DrawHp(void)
@@ -87,11 +75,14 @@ void Player::InitLoad(void)
 		ResourceManager::SRC::MODEL_PLAYER));
 
 	// 武器
-	wepon_ = new WeponBlade(transform_, WEAPON_ATTACH_FRAME_NO);
-	wepon_->Load();
+	auto weaponBlade = std::make_unique<WeponBlade>(transform_, WEAPON_ATTACH_FRAME_NO);
+	weapons_.push_back(std::move(weaponBlade));
+	for (const auto& weapon : weapons_) {
+		weapon->Load();
+	}
 
 	// 回復瓶UI
-	uiRecovery_ = new UIRecovery(INITIAL_RECOVERY_BOTTLE_COUNT);
+	uiRecovery_ = std::make_unique<UIRecovery>(INITIAL_RECOVERY_BOTTLE_COUNT);
 	uiRecovery_->Load();
 
 	// HP UI を画面左上に表示
@@ -101,7 +92,7 @@ void Player::InitLoad(void)
 	uiHp_->Load();
 
 	// スタミナUIを HP の下に表示
-	uiSt_ = new UISt(
+	uiSt_ = std::make_unique<UISt>(
 		Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV, UI_ST_POS_Y,
 		UI_SCALE_X, UI_SCALE_Y, UI_SCALE_Z);
 	uiSt_->Load();
@@ -195,7 +186,9 @@ void Player::InitPost(void)
 	state_ = STATE::IDLE;
 
 	// 武器
-	wepon_->Init();
+	for (const auto& weapon : weapons_) {
+		weapon->Init();
+	}
 
 	// HPUI
 	uiHp_->Init();
@@ -429,12 +422,17 @@ void Player::ProcessAttack(void)
 		}
 	}
 
-	// 衝突判定（Hitbox）の処理
+	// 衝突判定の処理
 	if (comboData.IsValidCollsion(currentStep)) {
-		wepon_->SetCollider();
+		for (const auto& weapon : weapons_) {
+			weapon->SetCollider();
+		}
+		
 	}
 	else {
-		wepon_->ClearCollider();
+		for (const auto& weapon : weapons_) {
+			weapon->ClearCollider();
+		}
 	}
 
 	// SE再生処理
@@ -459,7 +457,10 @@ void Player::ProcessAttack(void)
 		if (comboData.isNextCombo && comboData.nextCombo != STATE_ATTACK_COMBO::MAX) {
 			// 次のコンボへ状態遷移
 			stateAtkCombo_ = comboData.nextCombo;
-			wepon_->ClearCollider();
+
+			for (const auto& weapon : weapons_) {
+				weapon->ClearCollider();
+			}
 
 			// 新しいコンボデータのセットアップ
 			auto& nextData = atkComboData_.at(stateAtkCombo_);
@@ -479,7 +480,10 @@ void Player::ProcessAttack(void)
 			state_ = STATE::IDLE;
 			stateAtkCombo_ = STATE_ATTACK_COMBO::COMBO_1;
 			comboData.isNextCombo = false;
-			wepon_->ClearCollider();
+
+			for (const auto& weapon : weapons_) {
+				weapon->ClearCollider();
+			}
 		}
 	}
 }
@@ -555,7 +559,7 @@ void Player::ProcessDownUp(void)
 			else {
 				animationController_->Play(
 					static_cast<int>(ANIM_TYPE::UP), false);
-
+				invincibleTimer_ = INVINCIBLE_TIME;
 				state_ = STATE::UP;
 			}
 		}
@@ -687,9 +691,12 @@ void Player::UpdateProcess(void)
 	}
 
 	// 武器のコライダーを攻撃中以外では無効化
-	if (wepon_ != nullptr && state_ != STATE::ATTACK)
+	if (state_ != STATE::ATTACK)
 	{
-		wepon_->ClearCollider();
+		for (const auto& weapon : weapons_)
+		{
+			weapon->ClearCollider();
+		}
 	}
 
 	// 回復処理

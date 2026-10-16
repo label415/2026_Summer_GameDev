@@ -6,7 +6,7 @@
 
 WeponBlade::WeponBlade(const Transform& followTransform, int followFrameId)
 	:
-	WeponBase(followTransform, followFrameId)
+	WeponBase(WeponBase::WEAPON_TYPE::BLADE, followTransform, followFrameId)
 {
 	// 生存フラグを無効にする
 	isAlive_ = false;
@@ -50,7 +50,7 @@ void WeponBlade::InitCollider(void)
 	};
 
 	// 武器コライダーを初期化時に生成
-	colliderCapsule_ = std::make_shared<ColliderCapsule>(
+	auto colliderCapsule = std::make_shared<ColliderCapsule>(
 		ColliderBase::TAG::PLAYER_WEPON,
 		targetTags,
 		&transform_,
@@ -60,10 +60,10 @@ void WeponBlade::InitCollider(void)
 	);
 
 	// 初期状態は当たり判定を無効化
-	colliderCapsule_->SetIsCollier(false);
+	colliderCapsule->SetIsCollier(false);
 
-	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colliderCapsule_);
-	CollisionManager::GetInstance().AddCollider(colliderCapsule_);
+	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colliderCapsule);
+	CollisionManager::GetInstance().AddCollider(colliderCapsule);
 }
 
 void WeponBlade::InitAnimation(void){}
@@ -73,23 +73,26 @@ void WeponBlade::InitPost(void){}
 void WeponBlade::SetCollider(void)
 {
 	isAlive_ = true;
-	if (colliderCapsule_)
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
+	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
-		colliderCapsule_->SetIsCollier(true);
+		vec->SetIsCollier(true);
 	}
 }
 
 void WeponBlade::ClearCollider(void)
 {
 	isAlive_ = false;
-	if (colliderCapsule_)
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
+	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
+		auto capsuleCollider = std::dynamic_pointer_cast<ColliderCapsule>(vec);
 		// 当たり判定をオフにする
-		colliderCapsule_->SetIsCollier(false);
+		capsuleCollider->SetIsCollier(false);
 
 		// 生成時の初期座標・初期サイズに戻す
-		colliderCapsule_->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
-		colliderCapsule_->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
-		colliderCapsule_->SetRadius(COL_CAPSULE_RADIUS);
+		capsuleCollider->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
+		capsuleCollider->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
+		capsuleCollider->SetRadius(COL_CAPSULE_RADIUS);
 	}
 }

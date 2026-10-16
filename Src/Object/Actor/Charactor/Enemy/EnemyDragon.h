@@ -254,6 +254,7 @@ private:
 
 	//アニメーションを固定化する座標
 	static constexpr VECTOR LOCK_POS = { 0.0f, 2.0f, 0.0f };
+
 	//アニメーションを固定化するフレーム
 	static constexpr int LOCK_FRAME_NO = 1;
 
@@ -296,9 +297,6 @@ private:
 
 	// 更新ステップ
 	float step_;
-
-	WeponBracelet* weponBracelet_;
-	WeponFlameThrower* weponFlame_;
 
 	// 行動遷移
 	void ChangeState(STATE state);

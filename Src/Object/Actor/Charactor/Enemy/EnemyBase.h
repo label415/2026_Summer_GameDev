@@ -41,22 +41,18 @@ public:
     // 描画
     virtual void Draw(void) override;
 
-    //武器情報取得
-    const WeponBase* GetWepon(void)const { return wepon_; }
-
 	// 種別取得
     const int GetState(void)const { return stateBase_; }
 
 	// 死亡演出タイム取得
     const float GetDesath(void)const { return deathAnimationTime_; }
 protected:
-	// 武器
-    WeponBase* wepon_;
-
     // 状態管理
     int stateBase_;
+
     // 状態管理(状態遷移時初期処理)
     std::map<int, std::function<void(void)>> stateChanges_;
+
     // 状態管理(更新ステップ)
     std::function<void(void)> stateUpdate_;
 
