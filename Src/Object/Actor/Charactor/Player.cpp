@@ -715,8 +715,9 @@ void Player::UpdateProcess(void)
 	ProcessDownUp();
 
 	// 武器処理
-	if (wepon_) {
-		wepon_->Update();
+	for (const auto& weapon : weapons_)
+	{
+		weapon->Update();
 	}
 
 	// コライダーの位置をアニメーションに合わせて変更

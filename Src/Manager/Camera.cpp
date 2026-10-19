@@ -26,10 +26,7 @@ Camera::Camera(void)
 
 Camera::~Camera(void) {}
 
-void Camera::Update(void)
-{
-	Collision();
-}
+void Camera::Update(void){}
 
 void Camera::SetBeforeDraw(void)
 {
@@ -99,6 +96,7 @@ void Camera::InitCollider(void)
 		AsoUtility::VECTOR_ZERO,
 		COL_CAPSULE_SPHERE
 	);
+	colliderSphere->SetIsCollier(true);
 
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::SPHERE)].push_back(colliderSphere);
 	CollisionManager::GetInstance().AddCollider(colliderSphere);
@@ -122,34 +120,44 @@ void Camera::InitPost(void)
 
 void Camera::UpdateHitCollider(void)
 {
-	int capsuleType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
-	if (ownColliders_.count(capsuleType) == 0) return;
+	// 追従対象がいなければ処理しない
+	if (followTransform_ == nullptr) return;
 
-	for (const auto& col : ownColliders_.at(capsuleType))
+	// カメラ自身の球体コライダーリストを取得
+	int sphereType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
+	if (ownColliders_.count(sphereType) == 0) return;
+
+	// プレイヤーのルートフレーム座標（線分の始点）を取得
+	VECTOR startPos = MV1GetFramePosition(followTransform_->modelId, 1);
+
+	for (const auto& col : ownColliders_.at(sphereType))
 	{
 		if (!col->GetIsCollier()) continue;
 
-		// カプセルコライダ情報  
-		std::shared_ptr<ColliderSphere> colliderSphere =
-			std::dynamic_pointer_cast<ColliderSphere>(col);
-
-		if (colliderSphere == nullptr) return;
+		// 形状はSPHEREと確定しているため static_pointer_cast でダウンキャスト
+		auto colliderSphere = std::static_pointer_cast<ColliderSphere>(col);
+		if (colliderSphere == nullptr) continue;
 
 		for (const auto& hit : col->GetHitColliders())
 		{
-			// モデル以外は処理を飛ばす  
-			if (hit.lock()->GetShape() != ColliderBase::SHAPE::MODEL) continue;
+			// weak_ptr を1度だけ lock() して有効性を確認
+			auto hitCol = hit.lock();
+			if (!hitCol || hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
 
-			std::shared_ptr<ColliderModel> colliderModel =
-				std::dynamic_pointer_cast<ColliderModel>(hit.lock());
 
-			if (colliderModel == nullptr) continue;
+			const auto* colliderModel = static_cast<const ColliderModel*>(hitCol.get());
 
-			transform_.pos =
-				CollisionUtility::CalcPushSphereModel(
-					*colliderSphere, *colliderModel, transform_.pos,
-					CNT_TRY_COLLISION_CAMERA, COLLISION_BACK_DIS,
-					false, false);
+			transform_.pos = CollisionUtility::CalcCameraPushBack(
+				*colliderSphere,
+				*colliderModel,
+				startPos,
+				transform_.pos,
+				isCameraLope_,
+				CNT_TRY_COLLISION_CAMERA,
+				COLLISION_BACK_DIS,
+				false,
+				false
+			);
 		}
 	}
 }

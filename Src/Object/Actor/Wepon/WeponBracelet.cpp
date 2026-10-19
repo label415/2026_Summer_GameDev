@@ -68,6 +68,9 @@ void WeponBracelet::InitPost(void)
 	effect_->Add(
 		static_cast<int>(EFFECT_TYPE::BRACELET),
 		(Application::PATH_EFFECT + L"Breath.efkefc"));
+
+	effect_->Stop(static_cast<int>(EFFECT_TYPE::BRACELET));
+	ClearCollider();
 }
 
 void WeponBracelet::SetCollider(void)
@@ -84,21 +87,25 @@ void WeponBracelet::ClearCollider(void)
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
-		auto capsuleCollider = std::dynamic_pointer_cast<ColliderCapsule>(vec);
+		auto* capsuleCollider = static_cast<ColliderCapsule*>(vec.get());
 		capsuleCollider->SetIsCollier(false);
 		capsuleCollider->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
 		capsuleCollider->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
 		capsuleCollider->SetRadius(COL_CAPSULE_RADIUS);
 	}
 
-	// 初期座標と初期半径に復帰
+	// 初期座標とすべてのフラグを確実にリセット
 	topPos_ = COL_CAPSULE_TOP_LOCAL_POS;
 	downPos_ = COL_CAPSULE_DOWN_LOCAL_POS;
+	isAttack_ = false;
+	isEnd_ = false;
 }
 
 void WeponBracelet::SetIsAttack(bool isAttack)
 {
 	if (!isAttack_ && isAttack) {
+		ClearCollider();
+
 		float yaw = atan2f(moveDir_.x, moveDir_.z);
 		float pitch = -asinf(moveDir_.y);
 		VECTOR euler = { pitch, yaw, 0.0f };
@@ -111,7 +118,7 @@ void WeponBracelet::SetIsAttack(bool isAttack)
 			effPos,
 			euler, VGet(400.0f, 400.0f, LENGTH / 2.2f));
 
-		SetCollider(); // 判定開始
+		SetCollider();
 	}
 	isAttack_ = isAttack;
 }
@@ -119,6 +126,8 @@ void WeponBracelet::SetIsAttack(bool isAttack)
 void WeponBracelet::Move(void)
 {
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
+
+	if (!isAttack_ && !isEnd_) return;
 
 	if (isAttack_ && !isEnd_)
 	{
@@ -129,17 +138,18 @@ void WeponBracelet::Move(void)
 	else if (isEnd_)
 	{
 		downPos_ = VAdd(downPos_, VScale(moveDir_, moveSpeed_));
-		if (VSize(VSub(topPos_, downPos_)) <= 50.0f) {
-			// 攻撃が終了して縮み切ったら判定をリセット
+
+		VECTOR remainVec = VSub(topPos_, downPos_);
+		if (VSize(remainVec) <= moveSpeed_ || VDot(remainVec, moveDir_) <= 0.0f) {
 			ClearCollider();
-			isEnd_ = false;
+			return;
 		}
 	}
 
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
-		auto capsuleCollider = std::dynamic_pointer_cast<ColliderCapsule>(vec);
+		auto* capsuleCollider = static_cast<ColliderCapsule*>(vec.get());
 		capsuleCollider->SetLocalPosTop(topPos_);
 		capsuleCollider->SetLocalPosDown(downPos_);
 	}

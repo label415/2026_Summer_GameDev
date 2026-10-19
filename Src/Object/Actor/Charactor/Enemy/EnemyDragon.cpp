@@ -254,6 +254,16 @@ void EnemyDragon::UpdateProcess(void)
 		if (invincibleTimer_ <= 0.0f) {
 			isInvincible_ = false;
 			invincibleTimer_ = 0.0f;
+
+			// 無敵時間が終了したら、敵本体の各部位コライダーを再び true に戻す
+			int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
+			if (ownColliders_.count(capsuleType) > 0) {
+				for (const auto& col : ownColliders_.at(capsuleType)) {
+					if (col->GetTag() == ColliderBase::TAG::ENEMY) {
+						col->SetIsCollier(true);
+					}
+				}
+			}
 		}
 	}
 
@@ -295,7 +305,7 @@ void EnemyDragon::UpdateProcess(void)
 			// 攻撃中でない場合、頭や手などの攻撃判定を不用意に発動させない制御例
 			if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::HEAD)) {
 				// 噛みつき・突進中のみ頭部判定を有効化
-				colliderCapsule->SetIsCollier(isAttack_ || !isInvincible_);
+				colliderCapsule->SetIsCollier(!isInvincible_);
 			}
 			cnt++;
 		}
@@ -378,7 +388,7 @@ void EnemyDragon::UpdateHitCollider(void)
 			if (!targetCol || !targetCol->GetIsCollier()) continue;
 
 			// プレイヤーの武器から攻撃を受けた場合
-			if (targetCol->GetTag() != ColliderBase::TAG::PLAYER_WEPON)return;
+			if (targetCol->GetTag() != ColliderBase::TAG::PLAYER_WEPON) continue;
 			damage = DAMAGE_HIT_PLAYER_WEAPON;
 
 			// ヒットしたカプセルの中心座標を計算して保持
@@ -412,6 +422,7 @@ void EnemyDragon::ApplyDamage(const VECTOR& hitPos, float damageAmount)
 	{
 		for (auto& c : ownColliders_.at(capsuleType))
 		{
+			if (c->GetTag() != ColliderBase::TAG::ENEMY)continue;
 			c->SetIsCollier(false);
 		}
 	}
@@ -605,6 +616,7 @@ void EnemyDragon::ChangeStateFallingAttack(void)
 void EnemyDragon::ChangeStateFlyingAttack(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateFlyingAttack, this);
+	attackCnt_ = 0.0f;
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ARE_BREASE_1).handleId_;
 	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ARE_ENEMY_BREASE1, bgm_, SE_VOLUME_DEFAULT);
@@ -626,15 +638,11 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 
 	for (const auto& weapon : weapons_)
 	{
-		if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::BRACKELET)return;
+		if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::BRACKELET) continue;
 
-		std::unique_ptr<WeponBracelet> colliderModel =
-			std::dynamic_pointer_cast<WeponBracelet>(hit.lock());
-	}
-
-	if (weponBracelet_)
-	{
-		weponBracelet_->SetMoveDir(dir);
+		WeponBracelet* weponBracelet = dynamic_cast<WeponBracelet*>(weapon.get());
+		weponBracelet->ClearCollider();
+		weponBracelet->SetMoveDir(dir);
 	}
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_BREASE_1).handleId_;
@@ -819,35 +827,36 @@ void EnemyDragon::UpdateFallingAttack(void)
 {
 	if (!uiHp_->IsActive()) {
 		ChangeState(STATE::DEAD);
-	}
-
-	moveDir_ = preMoverDir_;
-	if (isJump_) {
-		jumpPow_ = VAdd(jumpPow_, VScale(moveDir_, FALLING_JUMP_SPEED));
-		isAttack_ = true;
-		animationController_->SetSpecificTime(FALLING_ANIM_LOOP_START, FALLING_ANIM_LOOP_END, true);
-
-		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_FALL).handleId_;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_FALL, bgm_, SE_VOLUME_FALLING);
-	}
-	else {
-		if (attribute_ == ATTRIBUTE::AIR) {
-			effectType_ = EFFECT::FALLING_ATTACK;
-			effect_->Play(static_cast<int>(effectType_));
-			effect_->SetEffectScl(static_cast<int>(effectType_),
-				EFFECT_FALLING_SCALE);
-			effect_->SetEffectPos(static_cast<int>(effectType_),
-				transform_.pos);
-			effect_->Update(static_cast<int>(effectType_));
-		}
-		animationController_->SetSpecificTime(0.0f, 0.0f, false);
-		attribute_ = ATTRIBUTE::ABOVE_GROUND;
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_ARE);
-	}
-
-	if (animationController_->IsEnd()) {
-		ChangeState(STATE::IDLE);
 		return;
+	}
+
+	isJump_ = true;
+	transform_.pos.y = MAX_TAKE;
+	moveDir_ = preMoverDir_;
+
+	const float currentStep = animationController_->GetPlayAnim().step;
+
+	if (currentStep >= FLYING_ATTACK_FIRE_STEP && attackCnt_ == 0.0f)
+	{
+		attackCnt_ = 1.0f;
+
+		VECTOR mouthPos = MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH);
+		const VECTOR& targetPos = targetTrans_->pos;
+		VECTOR dir = VNorm(VSub(targetPos, mouthPos));
+
+		for (const auto& weapon : weapons_)
+		{
+			if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::FLAME) continue;
+
+			auto* weponFlame = static_cast<WeponFlameThrower*>(weapon.get());
+			weponFlame->Shot(dir);
+		}
+	}
+
+	if (currentStep >= FLYING_ATTACK_END_STEP
+		|| animationController_->IsEnd())
+	{
+		ChangeState(STATE::HOVER);
 	}
 }
 
@@ -878,26 +887,33 @@ void EnemyDragon::UpdateFlyingAttack(void)
 {
 	if (!uiHp_->IsActive()) {
 		ChangeState(STATE::DEAD);
+		return;
 	}
 
 	isJump_ = true;
 	transform_.pos.y = MAX_TAKE;
 	moveDir_ = preMoverDir_;
 
-	// 指定ステップで火炎弾を Shot
-	if (animationController_->GetPlayAnim().step == FLYING_ATTACK_FIRE_STEP)
+	const float currentStep = animationController_->GetPlayAnim().step;
+
+	if (currentStep >= FLYING_ATTACK_FIRE_STEP && attackCnt_ == 0.0f)
 	{
+		attackCnt_ = 1.0f; // 発射済み
+
 		VECTOR mouthPos = MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH);
 		const VECTOR& targetPos = targetTrans_->pos;
 		VECTOR dir = VNorm(VSub(targetPos, mouthPos));
 
-		if (weponFlame_)
+		for (const auto& weapon : weapons_)
 		{
-			weponFlame_->Shot(dir);
+			if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::FLAME) continue;
+
+			auto* weponFlame = static_cast<WeponFlameThrower*>(weapon.get());
+			weponFlame->Shot(dir);
 		}
 	}
 
-	if (animationController_->GetPlayAnim().step >= FLYING_ATTACK_END_STEP)
+	if (attackCnt_ > 0.0f && (currentStep >= FLYING_ATTACK_END_STEP || animationController_->IsEnd()))
 	{
 		ChangeState(STATE::HOVER);
 	}
@@ -907,39 +923,60 @@ void EnemyDragon::UpdateBreathAttack(void)
 {
 	if (!uiHp_->IsActive()) {
 		ChangeState(STATE::DEAD);
+		return;
 	}
 
 	moveDir_ = preMoverDir_;
+	const float currentStep = animationController_->GetPlayAnim().step;
 
-	if (animationController_->GetPlayAnim().step >= BREATH_SE2_START_STEP
-		&& animationController_->GetPlayAnim().step <= BREATH_SE2_END_STEP)
+	if (currentStep >= BREATH_SE2_START_STEP && currentStep <= BREATH_SE2_END_STEP)
 	{
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_BREASE1);
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_BREASE_2).handleId_;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREASE2, bgm_, SE_VOLUME_DEFAULT);
 	}
 
-	if (animationController_->GetPlayAnim().step >= BREATH_ATTACK_START_STEP)
+	// ★修正：終了ステップ（40.0f）より前の時だけ攻撃ループを行うように条件を明確化
+	if (currentStep >= BREATH_ATTACK_START_STEP && currentStep < BREATH_WEAPON_END_STEP)
 	{
 		if (attackCnt_ <= BREATH_ATTACK_DURATION) {
 			animationController_->SetSpecificTime(BREATH_ANIM_LOOP_START, BREATH_ANIM_LOOP_END, true);
-			attackCnt_ += 1.0f * SceneManager::GetInstance().GetDeltaTime();
-			if (weponBracelet_) weponBracelet_->SetIsAttack(true);
+			attackCnt_ += SceneManager::GetInstance().GetDeltaTime();
+
+			for (const auto& weapon : weapons_)
+			{
+				if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::BRACKELET) continue;
+
+				auto* weponBracelet = static_cast<WeponBracelet*>(weapon.get());
+				weponBracelet->SetIsAttack(true);
+			}
 		}
 		else {
 			animationController_->SetSpecificTime(0.0f, 0.0f, false);
 		}
 	}
-
-	if (animationController_->GetPlayAnim().step >= BREATH_WEAPON_END_STEP)
+	else if (currentStep >= BREATH_WEAPON_END_STEP)
 	{
-		if (weponBracelet_) weponBracelet_->SetIsEnd(true);
+		// ステップ40以降になったらブレスの根元を縮め始める
+		for (const auto& weapon : weapons_)
+		{
+			if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::BRACKELET) continue;
+
+			auto* weponBracelet = static_cast<WeponBracelet*>(weapon.get());
+			weponBracelet->SetIsEnd(true);
+		}
 	}
 
-	if (animationController_->GetPlayAnim().step >= BREATH_ATTACK_END_STEP)
+	// モーション終了で待機状態へ遷移（万が一判定が残っていても確実に消去する）
+	if (currentStep >= BREATH_ATTACK_END_STEP || animationController_->IsEnd())
 	{
-		ChangeState(STATE::IDLE);
+		for (const auto& weapon : weapons_)
+		{
+			if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::BRACKELET) continue;
+			weapon->ClearCollider();
+		}
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_BREASE2);
+		ChangeState(STATE::IDLE);
 	}
 }
 

@@ -83,6 +83,17 @@ public:
         float pushDistance = 0.0f,
         bool isExclude = false,
         bool isTarget = false);
+
+    static VECTOR CalcCameraPushBack(
+        const ColliderSphere& sphere,
+        const ColliderModel& model,
+        const VECTOR& startPos,
+        const VECTOR& cameraPos,
+        bool& outIsLineHit,
+        int maxTryCnt = 10,
+        float pushDistance = 2.0f,
+        bool isExclude = false,
+        bool isTarget = false);
 private:
     // カプセルの法線方向への押し戻しベクトル計算
     static VECTOR CalcPushCapsuleTriangle(
@@ -99,6 +110,15 @@ private:
         const VECTOR& pos,
         int maxTryCnt = 5,
         float pushDistance = 0.5f);
+
+    static bool TryGetNearestHitPolyLineModel(
+        const ColliderModel& model,
+        const VECTOR& startPos,
+        const VECTOR& endPos,
+        MV1_COLL_RESULT_POLY& outHitPoly,
+        bool isExclude = false,
+        bool isTarget = false);
+
 
     // コライダーの線分上の最近接点を取得
     static VECTOR GetNearestPointOnSegment(const VECTOR& statePos,

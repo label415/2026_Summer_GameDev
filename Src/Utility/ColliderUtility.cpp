@@ -209,11 +209,9 @@ VECTOR CollisionUtility::CalcPushSphereTriangle(
 	int tryCnt = 0;
 	while (tryCnt < maxTryCnt)
 	{
-		VECTOR currentSpherePos = pushedPos;
-		VECTOR diff = VSub(currentSpherePos, sphere.GetFollow()->pos);
-
+		// diff ではなく、現在の球体中心座標である pushedPos を直接渡す
 		if (!HitCheck_Sphere_Triangle(
-			diff, radius,
+			pushedPos, radius,
 			poly.Position[0],
 			poly.Position[1],
 			poly.Position[2]))
@@ -227,6 +225,49 @@ VECTOR CollisionUtility::CalcPushSphereTriangle(
 	}
 
 	return pushedPos;
+}
+
+bool CollisionUtility::TryGetNearestHitPolyLineModel(const ColliderModel& model, const VECTOR& startPos, const VECTOR& endPos, MV1_COLL_RESULT_POLY& outHitPoly, bool isExclude, bool isTarget)
+{
+	const Transform* modelFollow = model.GetFollow();
+	if (modelFollow == nullptr) return false;
+
+	// 線分とモデルの衝突判定を実行
+	auto hits = MV1CollCheck_LineDim(
+		modelFollow->modelId,
+		-1,
+		endPos,
+		startPos
+	);
+
+	bool isCollision = false;
+	double minDist = DBL_MAX;
+
+	for (int i = 0; i < hits.HitNum; i++)
+	{
+		const auto& poly = hits.Dim[i];
+
+		// 有効なフレーム（対象フレーム・除外フレーム）か確認
+		if (!IsValidPoly(model, poly.FrameIndex, isExclude, isTarget))
+		{
+			continue;
+		}
+
+		isCollision = true;
+
+		// 追従対象（startPos）に一番近い衝突点を優先して記録する
+		double dist = AsoUtility::Distance(startPos, poly.HitPosition);
+		if (minDist > dist)
+		{
+			minDist = dist;
+			outHitPoly = poly;
+		}
+	}
+
+	// 検出したポリゴン情報のメモリ解放（後始末）
+	MV1CollResultPolyDimTerminate(hits);
+
+	return isCollision;
 }
 
 VECTOR CollisionUtility::CalcPushCapsuleModel(
@@ -327,6 +368,35 @@ VECTOR CollisionUtility::CalcPushUpLineModel(
 	// 検出した地面ポリゴン情報の後始末
 	MV1CollResultPolyDimTerminate(hits);
 	return PushUpPos;
+}
+
+VECTOR CollisionUtility::CalcCameraPushBack(const ColliderSphere& sphere, const ColliderModel& model, const VECTOR& startPos, const VECTOR& cameraPos, bool& outIsLineHit, int maxTryCnt, float pushDistance, bool isExclude, bool isTarget)
+{
+	MV1_COLL_RESULT_POLY hitPoly{};
+
+	// プレイヤーとカメラを結ぶ線分で壁の遮蔽をチェック
+	outIsLineHit = TryGetNearestHitPolyLineModel(
+		model, startPos, cameraPos, hitPoly, isExclude, isTarget);
+
+	if (outIsLineHit)
+	{
+		// 遮蔽されていた場合：カメラ位置から追従対象（startPos）への方向ベクトルを算出
+		VECTOR dirToFollow = VNorm(VSub(startPos, cameraPos));
+
+		// 衝突点から追従対象の方向へ少し手前にカメラを移動させる
+		VECTOR pushedPos = VAdd(
+			hitPoly.HitPosition,
+			VScale(dirToFollow, pushDistance)
+		);
+
+		// さらに球体コライダーの半径分、壁の法線方向に押し戻してめり込みを防ぐ
+		return CalcPushSphereTriangle(
+			sphere, hitPoly, pushedPos, maxTryCnt, pushDistance);
+	}
+
+	// 線分が遮蔽されていない場合：通常の球体とモデルの押し戻しのみ行う
+	return CalcPushSphereModel(
+		sphere, model, cameraPos, maxTryCnt, pushDistance, isExclude, isTarget);
 }
 
 VECTOR CollisionUtility::GetNearestPointOnSegment(const VECTOR& statePos, const VECTOR& endPos, const VECTOR& targetPos)

@@ -314,6 +314,11 @@ void SceneManager::ReleaseSceneResources(void)
 	// 当たり判定情報解放
 	CollisionManager::GetInstance().Release();
 
+	if (camera_ != nullptr)
+	{
+		camera_->Init();
+	}
+
 	// 解放で消えたロード画面用のフォントを再読み込みする
 	if (load_ != nullptr)
 	{

@@ -201,7 +201,7 @@ private:
 	// Õ“Ë‚Ì‰Ÿ‚µ–ß‚µs‰ñ”
 	static constexpr int CNT_TRY_COLLISION_CAMERA = 10;
 	// Õ“Ë‚Ì‰Ÿ‚µ–ß‚µ—Ê
-	static constexpr float COLLISION_BACK_DIS = 2.0f;
+	static constexpr float COLLISION_BACK_DIS = 1.0f;
 	// Õ“Ë”»’è—p‹…‘Ì”¼Œa
 	static constexpr float COL_CAPSULE_SPHERE = 50.0f;
 

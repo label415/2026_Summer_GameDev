@@ -24,10 +24,15 @@ WeponFlameThrower::~WeponFlameThrower(void)
 
 void WeponFlameThrower::Update(void)
 {
+	if (!isAlive_) return;
+
 	prePos_ = transform_.pos;
 	Move();
+	if (!isAlive_ || effectType_ == EFFECT_TYPE::NONE) return;
+
 	effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
 	effect_->SetEffectScl(static_cast<int>(effectType_), VScale(AsoUtility::VECTOR_ONE, radius_));
+	effect_->Update(static_cast<int>(effectType_));
 }
 
 void WeponFlameThrower::InitLoad(void)
@@ -78,24 +83,24 @@ void WeponFlameThrower::InitPost(void)
 		(Application::PATH_EFFECT + L"FireBall_Explosion.efkefc"));
 
 	effectType_ = EFFECT_TYPE::NONE;
-	ChangerEffect(EFFECT_TYPE::BULLET);
-
+	isAlive_ = false;
 	exState_ = EXPLOSION_STATO_TIME;
 }
 
 void WeponFlameThrower::Move(void)
 {
-	// CollisionManagerの衝突結果からステージ衝突を検知
 	bool isHitStage = false;
 
-	int capsuleType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
-	for (const auto& vec : ownColliders_.at(capsuleType))
+	int sphereType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
+	for (const auto& vec : ownColliders_.at(sphereType))
 	{
-		auto colliderSphere = std::dynamic_pointer_cast<ColliderSphere>(vec);
+		// 所有権の操作は不要なため生ポインタの static_cast を使用
+		auto* colliderSphere = static_cast<ColliderSphere*>(vec.get());
 		for (const auto& hit : colliderSphere->GetHitColliders())
 		{
-			if (hit.lock()->GetIsCollier()
-				&& hit.lock()->GetTag() == ColliderBase::TAG::STAGE)
+			auto hitCol = hit.lock();
+			if (hitCol && hitCol->GetIsCollier()
+				&& hitCol->GetTag() == ColliderBase::TAG::STAGE)
 			{
 				isHitStage = true;
 				break;
@@ -119,16 +124,15 @@ void WeponFlameThrower::Move(void)
 		if (radius_ <= MAX_RADIUS)
 		{
 			radius_ += 50.0f;
-			int capsuleType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
-			for (const auto& vec : ownColliders_.at(capsuleType))
+			for (const auto& vec : ownColliders_.at(sphereType))
 			{
-				auto colliderSphere = std::dynamic_pointer_cast<ColliderSphere>(vec);
+				auto* colliderSphere = static_cast<ColliderSphere*>(vec.get());
 				colliderSphere->SetRadius(radius_);
 			}
 		}
 		else
 		{
-			// 爆発終了時に初期化
+			// 爆発終了時に初期化（isAlive_ = false になる）
 			ClearCollider();
 		}
 	}
