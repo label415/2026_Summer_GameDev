@@ -27,6 +27,9 @@ public:
 	// ワールド座標の取得
 	VECTOR GetPosStart(void) const;
 	VECTOR GetPosEnd(void) const;
+
+	// ラインコライダーの長さの取得
+	float GetLinelength(void)const;
 protected:
 	// デバッグ用描画
     void DrawDebug(int color) override;

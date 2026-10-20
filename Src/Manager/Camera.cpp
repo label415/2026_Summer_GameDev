@@ -14,14 +14,16 @@
 Camera::Camera(void)
 	:
 	followTransform_(nullptr),
-	targetTransform_(nullptr),
+	targetPos_(nullptr),
 	mode_(MODE::NONE),
 	angles_(AsoUtility::VECTOR_ZERO),
 	rotY_(Quaternion::Identity()),
-	targetPos_(AsoUtility::VECTOR_ZERO)
+	fixationPos_(AsoUtility::VECTOR_ZERO),
+	delayedFollowPos_(AsoUtility::VECTOR_ZERO),
+	prevFollowPos_(AsoUtility::VECTOR_ZERO),
+	prevStickX_(0.0f),
+	prevStickZ_(0.0f)
 {
-	// カメラの初期設定
-	angleY = 0.0f;
 }
 
 Camera::~Camera(void) {}
@@ -30,11 +32,8 @@ void Camera::Update(void){}
 
 void Camera::SetBeforeDraw(void)
 {
-	// クリップ距離を設定する(SetDrawScreenでリセットされる)
+	// クリップ距離を設定する
 	SetCameraNearFar(VIEW_NEAR, VIEW_FAR);
-
-	// 更新前情報
-	prePos_ = transform_.pos;
 
 	switch (mode_)
 	{
@@ -55,7 +54,7 @@ void Camera::SetBeforeDraw(void)
 	// 通常カメラ時は既存の Up ベクトルを使用
 	SetCameraPositionAndTargetAndUpVec(
 		transform_.pos,
-		targetPos_,
+		fixationPos_,
 		transform_.quaRot.GetUp()
 	);
 
@@ -68,10 +67,9 @@ void Camera::DrawDebug(void)
 	// ロックオンUI描画
 	if (mode_ != MODE::TARGET_ROCKE) return;
 
-	VECTOR enemyTransform = targetTransform_->pos;
 	SetUseZBuffer3D(FALSE);
 	DrawBillboard3D(
-		enemyTransform,
+		*targetPos_,
 		0.5f, 0.5f,
 		LOCON_UI_SIZE, 0.0f,
 		lockOnImg_, true);
@@ -127,9 +125,8 @@ void Camera::UpdateHitCollider(void)
 	int sphereType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
 	if (ownColliders_.count(sphereType) == 0) return;
 
-	// プレイヤーのルートフレーム座標（線分の始点）を取得
-	VECTOR startPos = MV1GetFramePosition(followTransform_->modelId, 1);
-
+	// プレイヤーの座標を取得
+	VECTOR startPos = followTransform_->pos;
 	for (const auto& col : ownColliders_.at(sphereType))
 	{
 		if (!col->GetIsCollier()) continue;
@@ -144,7 +141,6 @@ void Camera::UpdateHitCollider(void)
 			auto hitCol = hit.lock();
 			if (!hitCol || hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
 
-
 			const auto* colliderModel = static_cast<const ColliderModel*>(hitCol.get());
 
 			transform_.pos = CollisionUtility::CalcCameraPushBack(
@@ -152,7 +148,6 @@ void Camera::UpdateHitCollider(void)
 				*colliderModel,
 				startPos,
 				transform_.pos,
-				isCameraLope_,
 				CNT_TRY_COLLISION_CAMERA,
 				COLLISION_BACK_DIS,
 				false,
@@ -162,20 +157,20 @@ void Camera::UpdateHitCollider(void)
 	}
 }
 
-const Transform* Camera::FindLockOnTarget(SWITCH_DIR switchDir) const
+const VECTOR* Camera::FindLockOnTarget(SWITCH_DIR switchDir) const
 {
 	const VECTOR& playerPos = followTransform_->pos;
 	VECTOR camForward = VNorm(GetForward());
 	float maxAngleRad = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
 	float diffMin = (switchDir == SWITCH_DIR::UP) ? FLT_MAX : MAX_LOCKON_DIFF;
 
-	const Transform* bestTarget = nullptr;
+	const VECTOR* bestTarget = nullptr;
 
-	for (const Transform* candidate : targetTransforms_) {
+	for (const VECTOR* candidatePos : targetPoss_) {
 		// 早期リターン
-		if (candidate == nullptr || candidate == targetTransform_) continue;
+		if (candidatePos == nullptr || candidatePos == targetPos_) continue;
 
-		VECTOR toEnemy = VSub(candidate->pos, playerPos);
+		VECTOR toEnemy = VSub(*candidatePos, playerPos);
 		float lockonDiff = VSize(toEnemy);
 		if (lockonDiff >= diffMin) continue;
 
@@ -189,7 +184,7 @@ const Transform* Camera::FindLockOnTarget(SWITCH_DIR switchDir) const
 		if (switchDir == SWITCH_DIR::RIGHT && VCross(camForward, toEnemy).y < 0.0f) continue;
 
 		diffMin = lockonDiff;
-		bestTarget = candidate;
+		bestTarget = candidatePos;
 	}
 
 	return bestTarget;
@@ -224,9 +219,9 @@ void Camera::HandleTargetSwitching(void)
 	else if (isNextRight) switchDir = SWITCH_DIR::RIGHT;
 
 	if (switchDir != SWITCH_DIR::NONE) {
-		const Transform* nextTarget = FindLockOnTarget(switchDir);
+		const VECTOR* nextTarget = FindLockOnTarget(switchDir);
 		if (nextTarget != nullptr) {
-			targetTransform_ = nextTarget;
+			targetPos_ = nextTarget;
 		}
 	}
 }
@@ -243,7 +238,7 @@ const VECTOR& Camera::GetAngles(void) const
 
 const VECTOR& Camera::GetTargetPos(void) const
 {
-	return targetPos_;
+	return fixationPos_;
 }
 
 const Quaternion& Camera::GetQuaRot(void) const
@@ -258,7 +253,7 @@ const Quaternion& Camera::GetQuaRotY(void) const
 
 VECTOR Camera::GetForward(void) const
 {
-	return VNorm(VSub(targetPos_, transform_.pos));
+	return VNorm(VSub(fixationPos_, transform_.pos));
 }
 
 void Camera::ChangeMode(MODE mode)
@@ -287,16 +282,16 @@ const Camera::MODE& Camera::GetCameraMode(void) const
 	return mode_;
 }
 
-void Camera::AddTargetTransform(const Transform* target)
+void Camera::AddTargetPos(const VECTOR* targetPos)
 {
-	if (target == nullptr) return;
+	if (targetPos == nullptr) return;
 
-	// すでに同じTransformが格納されていなければ追加
-	if (std::find(targetTransforms_.begin(),
-		targetTransforms_.end(),
-		target) == targetTransforms_.end())
+	// すでに同じ座標ポインタが格納されていなければ追加
+	if (std::find(targetPoss_.begin(),
+		targetPoss_.end(),
+		targetPos) == targetPoss_.end())
 	{
-		targetTransforms_.push_back(target);
+		targetPoss_.push_back(targetPos);
 	}
 }
 
@@ -313,11 +308,11 @@ void Camera::UpdateLockOn(void)
 	if (mode_ == MODE::TARGET_ROCKE)
 	{
 		// 早期リターン
-		if (targetTransform_ == nullptr ||
-			VSize(VSub(targetTransform_->pos, followTransform_->pos)) >= MAX_LOCKON_DIFF ||
+		if (targetPos_ == nullptr ||
+			VSize(VSub(*targetPos_, followTransform_->pos)) >= MAX_LOCKON_DIFF ||
 			isLockOnTrg)
 		{
-			targetTransform_ = nullptr;
+			targetPos_ = nullptr;
 			ChangeMode(MODE::FOLLOW);
 			return;
 		}
@@ -330,9 +325,11 @@ void Camera::UpdateLockOn(void)
 	// 通常追従中の処理
 	if (mode_ == MODE::FOLLOW && isLockOnTrg)
 	{
-		const Transform* newTarget = FindLockOnTarget(SWITCH_DIR::NONE);
+		const VECTOR* newTarget = FindLockOnTarget(SWITCH_DIR::NONE);
 		if (newTarget != nullptr) {
-			targetTransform_ = newTarget;
+			targetPos_ = newTarget;
+			delayedFollowPos_ = followTransform_->pos;
+			prevFollowPos_ = followTransform_->pos;
 			ChangeMode(MODE::TARGET_ROCKE);
 		}
 	}
@@ -340,9 +337,6 @@ void Camera::UpdateLockOn(void)
 
 void Camera::SetDefault(void)
 {
-	// 毎フレーム補間フラグをリセットする
-	isCameraLope_ = false;
-
 	// カメラの初期設定
 	transform_.pos = DERFAULT_POS;
 
@@ -351,7 +345,7 @@ void Camera::SetDefault(void)
 	transform_.quaRot = Quaternion::Identity();
 
 	// 注視点
-	targetPos_ = AsoUtility::VECTOR_ZERO;
+	fixationPos_ = AsoUtility::VECTOR_ZERO;
 }
 
 void Camera::SyncFollow(void)
@@ -359,83 +353,76 @@ void Camera::SyncFollow(void)
 	// 同期先の位置
 	VECTOR pos = followTransform_->pos;
 
-	// Y軸
-	if (angleY != 0.0f) {
-		angles_.y = angleY;
-		angleY = 0.0f;
-	}
-	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
-
 	// Y軸 + X軸
+	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
 	VECTOR localPos;
 	// 注視点
 	localPos = transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS);
 	VECTOR nextTargetPos = VAdd(pos, localPos);
-	targetPos_ = AsoUtility::Lerp(transform_.pos, nextTargetPos, MOVE_SPEED);
+	fixationPos_ = AsoUtility::Lerp(transform_.pos, nextTargetPos, CAMERA_FOLLOW_RATE);
 
 	// カメラ位置
 	localPos = transform_.quaRot.PosAxis(FOLLOW_CAMERA_LOCAL_POS);
 	VECTOR nextCameraPos = VAdd(pos, localPos);
-	transform_.pos = AsoUtility::Lerp(transform_.pos, nextCameraPos, MOVE_SPEED);
+	transform_.pos = AsoUtility::Lerp(transform_.pos, nextCameraPos, CAMERA_FOLLOW_RATE);
 }
 
 void Camera::SynLockOn(void)
 {
-	// 各位置の取得
-	VECTOR followPos = followTransform_->pos;
-	VECTOR TargetPos = targetTransform_->pos;
+	if (followTransform_ == nullptr || targetPos_ == nullptr) return;
 
-	// 注視点の高さを調整
-	VECTOR targetCenterPos = TargetPos;
-	targetCenterPos.y += TARGET_CENTER_POS;
+	// 現在のプレイヤー座標とターゲット座標の取得
+	const VECTOR& currentFollowPos = followTransform_->pos;
+	VECTOR targetCenterPos = *targetPos_;
 
-	// プレイヤーとボスの距離
-	VECTOR toEnemy = VSub(targetCenterPos, followPos);
-	float distance = VSize(toEnemy);
+	// プレイヤーの移動量を計測
+	VECTOR playerMoveVec = VSub(currentFollowPos, prevFollowPos_);
+	playerMoveVec.y = 0.0f;
+	float moveSpeed = VSize(playerMoveVec);
+	prevFollowPos_ = currentFollowPos;
 
-	// ボス側基準のズーム
-	float baseDist = LOCKON_BOSS_ZOOM;
-	float bossFitDist = baseDist + (distance * LOCKON_BOSS_ZOOM_LERP_RATE);
+	bool isPlayerMoving = (moveSpeed > PLAYER_MOVE_THRESHOLD);
 
-	// プレイヤー側基準のズーム
-	float halfHeight = PLAYER_HEIGHT * LOCKON_BOSS_ZOOM_LERP_RATE + PLAYER_MARGIN;
-	float playerFitDist = halfHeight / tanf(AsoUtility::Deg2RadF(FOV_Y) * LOCKON_BOSS_ZOOM_LERP_RATE);
+	// 仮想のプレイヤー基準点を追従させる
+	delayedFollowPos_ = AsoUtility::Lerp(
+		delayedFollowPos_, currentFollowPos, LOCKON_PIVOT_FOLLOW_RATE);
 
-	// 両方満たす距離を採用
-	float dynamicDist = fmaxf(bossFitDist, playerFitDist);
-	dynamicDist = fminf(dynamicDist, LOCKON_BOSS_ZOOM_MAX);
+	// 目標となる注視点を計算
+	VECTOR idealFixationPos = AsoUtility::Lerp(
+		delayedFollowPos_, targetCenterPos, LOCKON_LOOKAT_WEIGHT);
 
-	float baseHeight = LOCKON_BOSS_HEIGHT_ADJUST;
-	float dynamicHeight = baseHeight + (distance * LOCKON_BOSS_HEIGHT_LERP_RATE);
+	// 現在の注視点を目標注視点へ遅れて移動させる
+	fixationPos_ = AsoUtility::Lerp(
+		fixationPos_, idealFixationPos, LOCKON_FIXATION_LERP_RATE);
 
-	// 注視点
-	VECTOR lookAtPoint = AsoUtility::Lerp(followPos, targetCenterPos, LOCKON_TARGET_LERP_RATE);
+	// 正面にとらえるための目標角度を計算
+	VECTOR toTargetDir = VSub(targetCenterPos, delayedFollowPos_);
+	if (!AsoUtility::EqualsVZero(toTargetDir))
+	{
+		toTargetDir = VNorm(toTargetDir);
+		float targetAngleY = atan2f(toTargetDir.x, toTargetDir.z);
+		Quaternion targetRotY = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
 
-	// カメラから見た目標の向き
-	VECTOR toTargetDir = VNorm(VSub(lookAtPoint, followPos));
-	float angleY = atan2f(toTargetDir.x, toTargetDir.z);
-	Quaternion targetRotY = Quaternion::AngleAxis(angleY, AsoUtility::AXIS_Y);
-	rotY_ = Quaternion::Slerp(rotY_, targetRotY, ROT_SPEED);
+		float rotLerpRate = isPlayerMoving ? LOCKON_ROT_RATE_MOVING : LOCKON_ROT_RATE_STOPPED;
+		rotY_ = Quaternion::Slerp(rotY_, targetRotY, rotLerpRate);
 
-	Quaternion targetQuaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
-	transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetQuaRot, ROT_SPEED);
+		// X軸もロックオン用の見やすい角度へ緩やかに補間
+		angles_.x = AsoUtility::Lerp(angles_.x, LOCKON_DEFAULT_ANGLE_X, rotLerpRate);
+		Quaternion targetQuaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
+		transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetQuaRot, rotLerpRate);
 
-	// 動的な距離と高さを使ってカメラ位置と注視点を確定
-	VECTOR backVec = transform_.quaRot.PosAxis(VGet(0.0f, 0.0f, -1.0f));
-	transform_.pos = VAdd(followPos, VScale(backVec, dynamicDist));
-	transform_.pos.y += dynamicHeight;
+		// ロックオン解除時にカメラがガクッと飛ばないよう、現在のY角度をangles_.yにも同期しておく
+		VECTOR forward = transform_.quaRot.PosAxis(AsoUtility::DIR_F);
+		angles_.y = atan2f(forward.x, forward.z);
+	}
 
-	targetPos_ = lookAtPoint;
-
-	// カメラの角度を更新
-	VECTOR forward = transform_.quaRot.PosAxis(VGet(0.0f, 0.0f, 1.0f));
-	angles_.y = atan2f(forward.x, forward.z);
-	float horizontalLen = sqrtf(forward.x * forward.x + forward.z * forward.z);
-	angles_.x = atan2f(-forward.y, horizontalLen);
-
-	prePos_ = transform_.pos;
+	// カメラ本体の座標も、遅延させた基準点の背後へ遅れて追従させる
+	VECTOR localPos = transform_.quaRot.PosAxis(LOCKON_CAMERA_LOCAL_POS);
+	VECTOR nextCameraPos = VAdd(delayedFollowPos_, localPos);
+	transform_.pos = AsoUtility::Lerp(
+		transform_.pos, nextCameraPos, LOCKON_POS_LERP_RATE);
 }
 
 void Camera::ProcessRot(bool isLimit)
@@ -479,7 +466,7 @@ void Camera::ProcessMove(void)
 
 		// カメラ位置も注視点も移動させる
 		transform_.pos = VAdd(transform_.pos, movePow);
-		targetPos_ = VAdd(targetPos_, movePow);
+		fixationPos_ = VAdd(fixationPos_, movePow);
 	}
 }
 
@@ -500,7 +487,7 @@ void Camera::SetBeforeDrawFree(void)
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
 	// 注視点更新
-	targetPos_ = VAdd(transform_.pos, transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS));
+	fixationPos_ = VAdd(transform_.pos, transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS));
 }
 
 void Camera::SetBeforeDrawFollow(void)
@@ -515,12 +502,6 @@ void Camera::SetBeforeDrawFollow(void)
 
 	// 衝突判定
 	Collision();
-
-	// カメラ位置の補間
-	if (isCameraLope_) {
-		transform_.pos =
-			AsoUtility::Lerp(prePos_, transform_.pos, LERP_RATE_MOVE);
-	}
 }
 
 void Camera::SetBeforeDrawTargetLockeOn(void)

@@ -370,10 +370,11 @@ VECTOR CollisionUtility::CalcPushUpLineModel(
 	return PushUpPos;
 }
 
-VECTOR CollisionUtility::CalcCameraPushBack(const ColliderSphere& sphere, const ColliderModel& model, const VECTOR& startPos, const VECTOR& cameraPos, bool& outIsLineHit, int maxTryCnt, float pushDistance, bool isExclude, bool isTarget)
+VECTOR CollisionUtility::CalcCameraPushBack(const ColliderSphere& sphere, const ColliderModel& model, const VECTOR& startPos, const VECTOR& cameraPos, int maxTryCnt, float pushDistance, bool isExclude, bool isTarget)
 {
 	MV1_COLL_RESULT_POLY hitPoly{};
 
+	bool outIsLineHit = false;
 	// プレイヤーとカメラを結ぶ線分で壁の遮蔽をチェック
 	outIsLineHit = TryGetNearestHitPolyLineModel(
 		model, startPos, cameraPos, hitPoly, isExclude, isTarget);

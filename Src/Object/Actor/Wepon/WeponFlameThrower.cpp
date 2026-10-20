@@ -132,7 +132,6 @@ void WeponFlameThrower::Move(void)
 		}
 		else
 		{
-			// ”š”­I—¹‚É‰Šú‰»iisAlive_ = false ‚É‚È‚éj
 			ClearCollider();
 		}
 	}

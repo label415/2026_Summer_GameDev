@@ -49,7 +49,7 @@ public:
 	// 追従位置からカメラ位置までの相対座標
 	static constexpr VECTOR LOCKON_CAMERA_LOCAL_POS = { 0.0f, 200.0f, -350.0f };
 	// 追従位置から注視点までの相対座標
-	static constexpr VECTOR LOCKON_TARGET_LOCAL_POS = { 0.0f, 0.0f, 500.0f };
+	static constexpr VECTOR LOCKON_TARGET_LOCAL_POS = { 0.0f, -500.0f, 100.0f };
 
 	// カメラのX回転上限度角
 	static constexpr float LIMIT_X_UP_RAD = 60.0f * (DX_PI_F / 180.0f);
@@ -108,14 +108,14 @@ public:
 	// 追従対象の設定
 	void SetFollow(const Transform* follow) { followTransform_ = follow; }
 
-	// ロックオン候補のTransformを格納する
-	void AddTargetTransform(const Transform* target);
+	// ロックオン候補の座標ポインタを格納する
+	void AddTargetPos(const VECTOR* targetPos);
 
 	// ロックオン候補リストをクリアする
-	void ClearTargetTransforms(void) { targetTransforms_.clear(); }
+	void ClearTargetPoss(void) { targetPoss_.clear(); }
 
-	// 現在ロックオンしている対象のTransformを取得（非ロックオン時は nullptr）
-	const Transform* GetTargetTransform(void) const { return targetTransform_; }
+	// 現在ロックオンしている対象の座標ポインタを取得（非ロックオン時は nullptr）
+	const VECTOR* GetLockOnTargetPos(void) const { return targetPos_; }
 
 	// ロックオン対象の選別・切り替え更新
 	void UpdateLockOn(void);
@@ -144,7 +144,6 @@ protected:
 	// 当たり判定衝突時の更新処理
 	void UpdateHitCollider(void) override;
 private:
-
 	// ロックオン切り替え方向
 	enum class SWITCH_DIR {
 		NONE,
@@ -154,49 +153,32 @@ private:
 		RIGHT
 	};
 
-	// ロックオン候補のTransformリスト（敵クラスに依存せず格納）
-	std::vector<const Transform*> targetTransforms_;
+	// 追尾時のカメラ補間率
+	static constexpr float CAMERA_FOLLOW_RATE = 0.5f;
 
-	// 現在ロックオンしている対象のTransform
-	const Transform* targetTransform_;
+	// 理想注視点の内分率（0.0:プレイヤー ～ 1.0:ターゲット。0.6前後で敵を少し重視）
+	static constexpr float LOCKON_LOOKAT_WEIGHT = 0.35f;
 
-	// 右スティックの前回入力保持用
-	float prevStickX_ = 0.0f;
-	float prevStickZ_ = 0.0f;
+	// プレイヤー移動に対するカメラ基準点の遅延追従率（小さいほど移動時に遅れてついてくる）
+	static constexpr float LOCKON_PIVOT_FOLLOW_RATE = 0.12f;
+	// カメラ本体座標の追従補間率
+	static constexpr float LOCKON_POS_LERP_RATE = 0.15f;
+	// 注視点(fixationPos_)の追従補間率
+	static constexpr float LOCKON_FIXATION_LERP_RATE = 0.10f;
 
-	// 格納されたTransformリストから条件に合う対象を検索する
-	const Transform* FindLockOnTarget(SWITCH_DIR switchDir) const;
+	// プレイヤーが「移動している」とみなす1フレームあたりの移動量閾値
+	static constexpr float PLAYER_MOVE_THRESHOLD = 1.0f;
+	// プレイヤー移動中の正面回り込み回転率（小さくして斜めアングルを許容＝半ロックオン感）
+	static constexpr float LOCKON_ROT_RATE_MOVING = 0.018f;
+	// プレイヤー停止中の正面回り込み回転率（止まったあと遅れて正面にとらえる）
+	static constexpr float LOCKON_ROT_RATE_STOPPED = 0.08f;
+	// ロックオン時の基本見下ろし角(X軸角度・ラジアン)
+	static constexpr float LOCKON_DEFAULT_ANGLE_X = 15.0f * (DX_PI_F / 180.0f);
 
-	void HandleTargetSwitching(void);
-
-	// カメラの回転スピード
-	static constexpr float ROT_SPEED = 0.1f;
-	// ロックオンカメラの高さ
-	static constexpr float PLAYER_HEIGHT = 180.0f;
-	// ロックオンカメラのプレイヤーとの距離
-	static constexpr float PLAYER_MARGIN = 40.0f;
-	// ロックオンカメラの視野角
-	static constexpr float FOV_Y = 60.0f;
-
-	// カメラが追従対象とするTransform
-	const Transform* followTransform_;
-
-	// ロックオン時のボスズーム
-	static constexpr float LOCKON_BOSS_ZOOM = 100.0f;
-	// ロックオン時のボスズームの最大値
-	static constexpr float LOCKON_BOSS_ZOOM_MAX = 500.0f;
-	// ロックオン時の高さ補正
-	static constexpr float LOCKON_BOSS_HEIGHT_ADJUST = 30.0f;
-	// ロックオン時の高さ調整値
-	static constexpr float LOCKON_BOSS_HEIGHT_LERP_RATE = 0.2f;
-	// ロックオン時のボスズームの補間率
-	static constexpr float LOCKON_BOSS_ZOOM_LERP_RATE = 0.5f;
-
-	//注視点の補間率
-	static constexpr float LOCKON_TARGET_LERP_RATE = 0.4f;
-
-	// ターゲットの中心位置
-	static constexpr float TARGET_CENTER_POS = 30.0f;
+	// 遅延追従用の仮想プレイヤー座標（カメラの回転・位置基準点）
+	VECTOR delayedFollowPos_;
+	// プレイヤーの移動判定用（前フレームのプレイヤー座標）
+	VECTOR prevFollowPos_;
 
 	// 衝突時の押し戻し試行回数
 	static constexpr int CNT_TRY_COLLISION_CAMERA = 10;
@@ -205,11 +187,14 @@ private:
 	// 衝突判定用球体半径
 	static constexpr float COL_CAPSULE_SPHERE = 50.0f;
 
-	//カメラ速度
-	static constexpr float MOVE_SPEED = 0.5f;
+	// ロックオン候補のTransformリスト（敵クラスに依存せず格納）
+	std::vector<const VECTOR*> targetPoss_;
 
-	// カメラ補間フラグ
-	bool isCameraLope_;
+	// 現在ロックオンしている対象のTransform
+	const VECTOR* targetPos_;
+
+	// カメラが追従対象とするTransform
+	const Transform* followTransform_;
 
 	// カメラモード
 	MODE mode_;
@@ -220,13 +205,26 @@ private:
 	// カメラ角度(Y軸のみ)
 	Quaternion rotY_;
 
-	float angleY;
-
 	// 注視点
-	VECTOR targetPos_;
+	VECTOR fixationPos_;
 
 	// ロックオンUIハンドル
 	int lockOnImg_;
+
+	// マウス入力の有効無効
+	float mouseX;
+	float mouseY;
+
+	// マウス入力の前回位置
+	float preMouseX;
+	float preMouseY;
+
+	// 右スティックの前回入力保持用
+	float prevStickX_;
+	float prevStickZ_;
+
+	// マウス入力の有効無効フラグ
+	bool isMouseInput_;
 	
 	// カメラを初期位置に戻す
 	void SetDefault(void);
@@ -253,20 +251,9 @@ private:
 	void SetBeforeDrawFollow(void);
 	void SetBeforeDrawTargetLockeOn(void);
 
-	// カメラの補間移動率
-	static constexpr float LERP_RATE_MOVE = 0.1f;
+	// 格納されたTransformリストから条件に合う対象を検索する
+	const VECTOR* FindLockOnTarget(SWITCH_DIR switchDir) const;
 
-	// カメラの更新前位置
-	VECTOR prePos_;
-
-	// マウス入力の有効無効
-	float mouseX;
-	float mouseY;
-
-	// マウス入力の前回位置
-	float preMouseX;
-	float preMouseY;
-
-	// マウス入力の有効無効フラグ
-	bool isMouseInput_;
+	// ターゲット切り替え入力
+	void HandleTargetSwitching(void);
 };

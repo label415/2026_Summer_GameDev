@@ -44,7 +44,7 @@ void Player::Draw(void)
 	CharactorBase::Draw();
 
 	// 武器描画
-	for(const auto& weapon : weapons_) {
+	for (const auto& weapon : weapons_) {
 		weapon->Draw();
 	}
 }
@@ -304,7 +304,7 @@ void Player::ProcessMove(void)
 		moveDir_ = inputDir; // 最終移動方向を保持
 
 		// ターゲットに向かって回転（ターゲット時のみ）
-		if (targetTrans_ != nullptr)
+		if (targetPos_ != nullptr)
 		{
 			VECTOR targetDir = GetTargetDir();
 			float targetAngleY = atan2f(targetDir.x, targetDir.z);
@@ -427,7 +427,7 @@ void Player::ProcessAttack(void)
 		for (const auto& weapon : weapons_) {
 			weapon->SetCollider();
 		}
-		
+
 	}
 	else {
 		for (const auto& weapon : weapons_) {
@@ -511,11 +511,6 @@ void Player::ProcessEvasion(void)
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_AVE, bgm_, SE_VOLUME_EVASION);
 
 		isVinclible_ = true;
-		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
-			for (auto& col : ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
-				col->SetIsCollier(false);
-			}
-		}
 	}
 
 	if (state_ != STATE::EVASION) return;
@@ -524,17 +519,11 @@ void Player::ProcessEvasion(void)
 	moveSpeed_ = SPEED_EVASION;
 	movePow_ = VScale(moveDir_, moveSpeed_);
 
-	if (animationController_->IsEnd()) {
+	if (animationController_->IsEnd())
+	{
 		transform_.quaRotLocal = lastQrot_;
 		state_ = STATE::IDLE;
 		isVinclible_ = false;
-
-		// 回避終了：コライダーを再有効化
-		if (ownColliders_.count(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
-			for (auto& col : ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE))) {
-				col->SetIsCollier(true);
-			}
-		}
 	}
 }
 
@@ -780,6 +769,16 @@ void Player::UpdateHitCollider(void)
 			// タグが敵武器でないときは処理しない
 			if (tag != ColliderBase::TAG::ENEMY_WEPON) continue;
 
+			if (targetCol->GetPatrTag() 
+				!= static_cast<int>(EnemyDragon::PATR_TAG::HEAD))continue;
+
+			auto enemyCapsule = std::dynamic_pointer_cast<ColliderCapsule>(targetCol);
+			if (enemyCapsule == nullptr)continue;
+
+			if (CollisionManager::GetInstance().CheckWallOcclusion(
+				enemyCapsule.get()->GetFollow()->pos,
+				playerCapsule.get()->GetFollow()->pos)) continue;
+
 			// 敵武器との当たり判定
 			if (shape == ColliderBase::SHAPE::CAPSULE
 				|| shape == ColliderBase::SHAPE::SPHERE)
@@ -844,7 +843,7 @@ VECTOR Player::GetInputDirection(void)
 	// ターゲットまたはカメラ基準のワールド方向に変換
 	VECTOR worldDir = AsoUtility::VECTOR_ZERO;
 
-	if (targetTrans_ != nullptr)
+	if (targetPos_ != nullptr)
 	{
 		// ターゲットがいる場合
 		VECTOR targetDir = GetTargetDir();

@@ -254,16 +254,6 @@ void EnemyDragon::UpdateProcess(void)
 		if (invincibleTimer_ <= 0.0f) {
 			isInvincible_ = false;
 			invincibleTimer_ = 0.0f;
-
-			// 無敵時間が終了したら、敵本体の各部位コライダーを再び true に戻す
-			int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
-			if (ownColliders_.count(capsuleType) > 0) {
-				for (const auto& col : ownColliders_.at(capsuleType)) {
-					if (col->GetTag() == ColliderBase::TAG::ENEMY) {
-						col->SetIsCollier(true);
-					}
-				}
-			}
 		}
 	}
 
@@ -416,17 +406,6 @@ void EnemyDragon::ApplyDamage(const VECTOR& hitPos, float damageAmount)
 	isInvincible_ = true;
 	invincibleTimer_ = INVINCIBLE_TIME;
 
-	// 無敵中は多重ヒット防止のため一時的に喰らい判定を無効化
-	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
-	if (ownColliders_.count(capsuleType) > 0)
-	{
-		for (auto& c : ownColliders_.at(capsuleType))
-		{
-			if (c->GetTag() != ColliderBase::TAG::ENEMY)continue;
-			c->SetIsCollier(false);
-		}
-	}
-
 	// 出血エフェクトの再生・座標設定
 	effect_->Play(static_cast<int>(EFFECT::BLOOD));
 	effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
@@ -455,7 +434,7 @@ void EnemyDragon::ChangeStateThink(void)
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::IDLE), true);
 
-	const VECTOR& targetPos = targetTrans_->pos;
+	const VECTOR& targetPos = *targetPos_;
 	float diff = VSize(VSub(targetPos, transform_.pos));
 	if (attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
@@ -633,7 +612,7 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateBreathAttack, this);
 	attackCnt_ = 0.0f;
 
-	const VECTOR& targetPos = targetTrans_->pos;
+	const VECTOR& targetPos = *targetPos_;
 	VECTOR dir = VNorm(VSub(targetPos, transform_.pos));
 
 	for (const auto& weapon : weapons_)
@@ -813,7 +792,7 @@ void EnemyDragon::UpdatePatrol(void)
 
 	// 思考
 	int rand = GetRand(STATE_END_RAND);
-	const VECTOR& targetPos = targetTrans_->pos;
+	const VECTOR& targetPos = *targetPos_;
 	float diff = VSize(VSub(targetPos, transform_.pos));
 	if (diff <= ENEMY_ATTACK[rand])
 	{
@@ -841,7 +820,7 @@ void EnemyDragon::UpdateFallingAttack(void)
 		attackCnt_ = 1.0f;
 
 		VECTOR mouthPos = MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH);
-		const VECTOR& targetPos = targetTrans_->pos;
+		const VECTOR& targetPos = *targetPos_;
 		VECTOR dir = VNorm(VSub(targetPos, mouthPos));
 
 		for (const auto& weapon : weapons_)
@@ -874,7 +853,7 @@ void EnemyDragon::UpdateFlying(void)
 
 	// 思考
 	int rand = GetRand(STATE_END_RAND);
-	const VECTOR& targetPos = targetTrans_->pos;
+	const VECTOR& targetPos = *targetPos_;
 	float diff = VSize(VSub(targetPos, transform_.pos));
 	if (diff <= ENEMY_ATTACK[rand])
 	{
@@ -901,7 +880,7 @@ void EnemyDragon::UpdateFlyingAttack(void)
 		attackCnt_ = 1.0f; // 発射済み
 
 		VECTOR mouthPos = MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH);
-		const VECTOR& targetPos = targetTrans_->pos;
+		const VECTOR& targetPos = *targetPos_;
 		VECTOR dir = VNorm(VSub(targetPos, mouthPos));
 
 		for (const auto& weapon : weapons_)

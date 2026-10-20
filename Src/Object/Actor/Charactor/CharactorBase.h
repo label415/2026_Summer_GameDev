@@ -30,8 +30,8 @@ public:
 	//HP•`‰æ
     virtual void DrawHp(void){}
 
-    // ’Ç”ö‘ÎÛ‚ÌTransformæ“¾
-    void SetTargetTransform(const Transform* targetTrans) {targetTrans_ = targetTrans; }
+    // ’Ç”ö‘ÎÛ‚Ìæ“¾
+    void SetTargetPos(const VECTOR* targetTrans) { targetPos_ = targetTrans; }
 protected:
     // Å‘å—‰º‘¬“x
     static constexpr float MAX_FALL_SPEED = -30.0f;
@@ -51,7 +51,7 @@ protected:
     std::vector<std::unique_ptr<WeponBase>> weapons_;
 
     // ’Ç”ö‘ÎÛ‚ÌTransform
-    const Transform* targetTrans_;
+    const VECTOR* targetPos_;
 
     // ˆÚ“®•ûŒü
     VECTOR moveDir_;

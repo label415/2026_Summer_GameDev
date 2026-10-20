@@ -23,6 +23,10 @@ public:
 
 	// 解放処理
 	void Release(void);
+
+	// 壁による遮蔽判定（武器 vs プレイヤー等の遮蔽チェック用）
+	bool CheckWallOcclusion(
+		const VECTOR& start, const VECTOR& end);
 private:
 	// コライダー配列
 	std::vector<std::weak_ptr<ColliderBase>> colliders_;
@@ -36,7 +40,4 @@ private:
 	bool CanCollide(
 		const ColliderBase& a,
 		const ColliderBase& b) const;
-
-	// 壁による遮蔽判定（武器 vs プレイヤー等の遮蔽チェック用）
-	bool CheckWallOcclusion(const VECTOR& start, const VECTOR& end) const;
 };

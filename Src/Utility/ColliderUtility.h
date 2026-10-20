@@ -89,7 +89,6 @@ public:
         const ColliderModel& model,
         const VECTOR& startPos,
         const VECTOR& cameraPos,
-        bool& outIsLineHit,
         int maxTryCnt = 10,
         float pushDistance = 2.0f,
         bool isExclude = false,

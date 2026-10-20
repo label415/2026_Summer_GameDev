@@ -35,7 +35,7 @@ void CollisionManager::Update(void)
 	colliders_.erase(
 		std::remove_if(colliders_.begin(), colliders_.end(),
 			[](const std::weak_ptr<ColliderBase>& wp) {
-				return wp.expired(); 
+				return wp.expired();
 			}),
 		colliders_.end()
 	);
@@ -92,8 +92,8 @@ void CollisionManager::ResolveCollision(
 	auto shape2 = colB->GetShape();
 	bool isHit = false;
 
-	 // カプセル vs カプセル
-	if (shape1 == ColliderBase::SHAPE::CAPSULE 
+	// カプセル vs カプセル
+	if (shape1 == ColliderBase::SHAPE::CAPSULE
 		&& shape2 == ColliderBase::SHAPE::CAPSULE)
 	{
 		auto cap1 = std::static_pointer_cast<ColliderCapsule>(colA);
@@ -101,7 +101,7 @@ void CollisionManager::ResolveCollision(
 		isHit = CollisionUtility::IsHit(*cap1, *cap2);
 	}
 	// スフィア vs カプセル
-	else if (shape1 == ColliderBase::SHAPE::SPHERE 
+	else if (shape1 == ColliderBase::SHAPE::SPHERE
 		&& shape2 == ColliderBase::SHAPE::CAPSULE)
 	{
 		auto sphere = std::static_pointer_cast<ColliderSphere>(colA);
@@ -117,7 +117,7 @@ void CollisionManager::ResolveCollision(
 		isHit = CollisionUtility::IsHit(*cap, *model);
 	}
 	// スフィア vs モデル
-	else if (shape1 == ColliderBase::SHAPE::SPHERE 
+	else if (shape1 == ColliderBase::SHAPE::SPHERE
 		&& shape2 == ColliderBase::SHAPE::MODEL)
 	{
 		auto sphere = std::static_pointer_cast<ColliderSphere>(colA);
@@ -125,7 +125,7 @@ void CollisionManager::ResolveCollision(
 		isHit = CollisionUtility::IsHit(*sphere, *model);
 	}
 	// ライン vs モデル
-	else if (shape1 == ColliderBase::SHAPE::LINE 
+	else if (shape1 == ColliderBase::SHAPE::LINE
 		&& shape2 == ColliderBase::SHAPE::MODEL)
 	{
 		auto line = std::static_pointer_cast<ColliderLine>(colA);
@@ -147,7 +147,7 @@ void CollisionManager::ResolveCollision(
 	}
 }
 
-bool CollisionManager::CheckWallOcclusion(const VECTOR& start, const VECTOR& end) const
+bool CollisionManager::CheckWallOcclusion(const VECTOR& start, const VECTOR& end)
 {
 	// プレイヤーと敵の間の直線を結ぶ一時的な線コライダーを生成
 	std::vector<ColliderBase::TAG> targetTags = { ColliderBase::TAG::STAGE };
@@ -163,18 +163,15 @@ bool CollisionManager::CheckWallOcclusion(const VECTOR& start, const VECTOR& end
 	// ステージコライダーを探して線コライダーとの交差を判定
 	for (const auto& col : colliders_)
 	{
-		if (col.lock()->GetShape() == ColliderBase::SHAPE::MODEL
-			&& col.lock()->GetTag() == ColliderBase::TAG::STAGE)
-		{
-			auto modelCol = std::static_pointer_cast<ColliderModel>(col.lock());
-			if (!modelCol || !modelCol->GetIsCollier()) continue;
+		if (col.lock()->GetShape() != ColliderBase::SHAPE::MODEL
+			&& col.lock()->GetTag() != ColliderBase::TAG::STAGE)continue;
 
-			// CollisionUtility の線分 vs モデル交差判定
-			if (CollisionUtility::IsHit(tempLine, *modelCol, false, true))
-			{
-				return true;
-			}
-		}
+		auto modelCol = std::static_pointer_cast<ColliderModel>(col.lock());
+		if (!modelCol || !modelCol->GetIsCollier()) continue;
+
+		// CollisionUtility の線分 vs モデル交差判定
+		if (CollisionUtility::IsHit(
+			tempLine, *modelCol))return true;
 	}
 	return false;
 }

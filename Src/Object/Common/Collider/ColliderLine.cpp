@@ -53,6 +53,11 @@ VECTOR ColliderLine::GetPosEnd(void) const
 	return localPosEnd_;
 }
 
+float ColliderLine::GetLinelength(void) const
+{
+	return VSize(VSub(GetPosEnd(), GetPosStart()));
+}
+
 void ColliderLine::DrawDebug(int color)
 {
 	VECTOR s = GetPosStart();

@@ -12,6 +12,7 @@
 #include "../Manager/FontManager.h"
 #include "../Manager/ResourceManager.h"
 #include "../Manager/SoundManager.h"
+#include "../Manager/CollisionManager.h"
 #include "../Application.h"
 #include "GameScene.h"
 
@@ -85,8 +86,13 @@ void GameScene::LoadEnd(void)
 	// 追尾対象追加
 	for (auto& enemy : enemys_->GetEnemys())
 	{
-		enemy->SetTargetTransform(&player_->GetTransform());
-		camera_->AddTargetTransform(&enemy->GetTransform());
+		enemy->SetTargetPos(&player_->GetTransform().pos);
+		for (const auto& collider
+			: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE)))
+		{
+			auto enemyCapsule = std::dynamic_pointer_cast<ColliderCapsule>(collider);
+			camera_->AddTargetPos(&enemyCapsule->GetCenter());
+		}
 	}
 
 	// シャドーマップ初期化
@@ -204,7 +210,7 @@ void GameScene::UpdateAutoLockOn(void)
 	camera->UpdateLockOn();
 
 	// カメラが現在ロックオンしている対象のTransformをプレイヤーに渡す
-	player_->SetTargetTransform(camera->GetTargetTransform());
+	player_->SetTargetPos(camera->GetLockOnTargetPos());
 }
 
 void GameScene::UpdateResult(void)

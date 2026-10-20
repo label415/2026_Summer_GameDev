@@ -48,6 +48,15 @@ void ActorBase::Release(void)
 	transform_.Release();
 }
 
+const std::vector<std::shared_ptr<ColliderBase>> ActorBase::GetOwnCollider(int key) const
+{
+	if (ownColliders_.count(key) == 0)
+	{
+		return std::vector<std::shared_ptr<ColliderBase>>();
+	}
+	return ownColliders_.at(key);
+}
+
 void ActorBase::Collision(void)
 {
 	UpdateHitCollider();

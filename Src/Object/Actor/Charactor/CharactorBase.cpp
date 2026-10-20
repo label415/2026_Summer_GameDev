@@ -12,7 +12,7 @@
 CharactorBase::CharactorBase(void)
 	:
 	ActorBase(),
-	targetTrans_(nullptr),
+	targetPos_(nullptr),
 	uiHp_(nullptr),
 	animationController_(nullptr),
 	moveDir_(AsoUtility::VECTOR_ZERO),
@@ -91,7 +91,7 @@ void CharactorBase::Release(void)
 VECTOR CharactorBase::GetTargetDir(void)
 {
 	//自分と相手のベクトルを計算
-	VECTOR targetVec = VSub(targetTrans_->pos, transform_.pos);
+	VECTOR targetVec = VSub(*targetPos_, transform_.pos);
 	//ベクトルを正規化
 	VECTOR targetdir = VNorm(targetVec);
 	//Y座標を無効
