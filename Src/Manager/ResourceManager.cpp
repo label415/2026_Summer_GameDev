@@ -190,6 +190,12 @@ int ResourceManager::LoadModelDuplicate(SRC src)
 		return -1;
 	}
 
+	// ”ñ“¯Šú“Ç‚İ‚İ’†‚Ìƒ‚ƒfƒ‹‚Í•¡»‚Å‚«‚È‚¢‚½‚ßA“Ç‚İ‚İŠ®—¹‚ğ‘Ò‚Â
+	if (CheckHandleASyncLoad(res.handleId_) == TRUE)
+	{
+		WaitHandleASyncLoad(res.handleId_);
+	}
+
 	int duId = MV1DuplicateModel(res.handleId_);
 	res.duplicateModelIds_.push_back(duId);
 

@@ -161,5 +161,7 @@ void SoundManager::PlaySlowSE(SeId id, int handle, int volume,int slow)
 
 SoundManager::SoundManager(void)
 {
-
-}
+	// メンバ変数の初期化
+	// (未初期化のままだと、最初のStopBGMで不定なハンドルを削除してしまう)
+	Init();
+}

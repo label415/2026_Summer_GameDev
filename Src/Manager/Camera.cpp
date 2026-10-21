@@ -64,7 +64,7 @@ void Camera::SetBeforeDraw(void)
 void Camera::DrawDebug(void)
 {
 	// ロックオンUI描画
-	if (mode_ != MODE::TARGET_ROCKE) return;
+	if (mode_ != MODE::TARGET_ROCKE || targetPos_ == nullptr) return;
 
 	SetUseZBuffer3D(FALSE);
 	DrawBillboard3D(
@@ -77,6 +77,32 @@ void Camera::DrawDebug(void)
 
 void Camera::Release(void)
 {
+}
+
+void Camera::ResetForScene(void)
+{
+	// 前のシーンのオブジェクトを指しているポインタを破棄する
+	followTransform_ = nullptr;
+	targetPos_ = nullptr;
+	targetPoss_.clear();
+
+	// 固定カメラに戻す
+	ChangeMode(MODE::FIXED_POINT);
+
+	// マウス入力を無効化
+	isMouseInput_ = false;
+
+	// シーン切り替えでリソースが解放されるため再読み込み
+	lockOnImg_ = resMng_.Load(ResourceManager::SRC::UI_LOCKON).handleId_;
+
+	// シーン切り替えで当たり判定管理がクリアされるため再登録
+	for (const auto& pair : ownColliders_)
+	{
+		for (const auto& col : pair.second)
+		{
+			CollisionManager::GetInstance().AddCollider(col);
+		}
+	}
 }
 
 void Camera::InitLoad(void) {}
@@ -346,7 +372,10 @@ void Camera::SetDefault(void)
 	// 注視点
 	fixationPos_ = AsoUtility::VECTOR_ZERO;
 
+	// ロックオン情報をクリア
+	// (前のシーンの敵を指したままにならないように)
 	targetPoss_.clear();
+	targetPos_ = nullptr;
 }
 
 void Camera::SyncFollow(void)
@@ -469,10 +498,16 @@ void Camera::SetBeforeDrawFree(void)
 
 void Camera::SetBeforeDrawFollow(void)
 {
-	if (!isMouseInput_)return;
+	// 追従対象がいなければ処理しない
+	if (followTransform_ == nullptr) return;
 
-	// カメラ操作(回転)
-	ProcessRot(true);
+	// カメラ操作(回転)はマウス入力が有効な時だけ行う
+	// (追従自体は常に行わないと、カメラが初期位置に残り
+	//  プレイヤーが画面外になってしまう)
+	if (isMouseInput_)
+	{
+		ProcessRot(true);
+	}
 
 	// 追従対象との相対位置を同期
 	SyncFollow();

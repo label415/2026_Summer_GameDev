@@ -18,10 +18,9 @@ TitleScene::~TitleScene(void) {}
 
 void TitleScene::Load(void)
 {
-	// BGM再生
+	// BGM読み込み(再生は読み込み完了後のLoadEndで行う)
 	bgm_ = resMng_.Load(ResourceManager::SRC::BGM_TITLE).handleId_;
 	volume_ = BGM_VOLUME;
-	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
 
 	// フォントのロード
 	resMng_.Load(ResourceManager::SRC::FONT);
@@ -45,6 +44,8 @@ void TitleScene::Load(void)
 
 void TitleScene::LoadEnd(void)
 {
+	// BGM再生
+	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
 }
 
 void TitleScene::Update(void)
@@ -148,6 +149,8 @@ void TitleScene::Draw(void)
 
 void TitleScene::Release(void)
 {
-	// フォントハンドルの削除
-	DeleteFontToHandle(pauseFont_);
-}
+	// フォントハンドルはFontManagerが共有管理しているため削除しない
+	// (ここで削除すると、次にタイトルやポーズを開いた時に
+	//  削除済みのハンドルが返されて文字が表示されなくなる)
+	pauseFont_ = -1;
+}

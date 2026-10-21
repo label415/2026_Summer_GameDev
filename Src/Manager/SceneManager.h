@@ -58,17 +58,20 @@ public:
 	// リソースの破棄
 	void Release(void);
 
-	// シーン遷移
+	// シーン遷移(要求のみ受け付け、Updateの最後に実行する)
 	void ChangeScene(SCENE_ID sceneId);
 
 	// シーン追加
 	void PushScene(SCENE_ID sceneId);
 
-	// シーン解放
+	// シーン解放(要求のみ受け付け、Updateの最後に実行する)
 	void PopScene(void);
 
 	// シーンリセット
 	void ResetScene(SCENE_ID sceneId);
+
+	// ロード中か
+	bool IsLoading(void) const;
 
 	// デルタタイムの取得
 	float GetDeltaTime(void) const { return 1.0f / 60.0f; }
@@ -82,8 +85,23 @@ private:
 	// 現在のシーンID
 	SCENE_ID sceneId_;
 
+	// 次に遷移するシーンID
+	SCENE_ID nextSceneId_;
+
+	// シーン遷移要求フラグ
+	bool isChangeRequest_;
+
+	// シーン解放(Pop)要求フラグ
+	bool isPopRequest_;
+
+	// ロード画面表示後にシーンの読み込みを開始するためのフラグ
+	bool isSceneLoadPending_;
+
 	// 各種シーン
 	std::vector<std::unique_ptr<SceneBase>> scenes_;
+
+	// 各種シーンのID(scenes_と同じ並び)
+	std::vector<SCENE_ID> sceneIds_;
 
 	// カメラ
 	std::shared_ptr<Camera> camera_;
@@ -108,4 +126,16 @@ private:
 
 	// 指定されたシーンIDのインスタンスを生成する
 	std::unique_ptr<SceneBase> CreateScene(SCENE_ID sceneId);
-};
+
+	// シーン遷移の実行(全シーンを解放してロード画面を開始する)
+	void DoChangeScene(SCENE_ID sceneId);
+
+	// シーン解放(Pop)の実行
+	void DoPopScene(void);
+
+	// ロード中の更新
+	void UpdateLoading(void);
+
+	// 積まれている全シーンの解放
+	void ReleaseAllScenes(void);
+};

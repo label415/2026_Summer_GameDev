@@ -31,8 +31,8 @@ void SceneManager::Init(void)
 	// 3D用の設定
 	Init3D();
 
-	//初期シーン
-	PushScene(SCENE_ID::TITLE);
+	// 初期シーン(ロード画面を経由して読み込む)
+	DoChangeScene(SCENE_ID::TITLE);
 }
 
 void SceneManager::Init3D(void)
@@ -72,32 +72,19 @@ void SceneManager::Init3D(void)
 
 void SceneManager::ChangeScene(SCENE_ID sceneId)
 {
-	// SE・BGM解放
-	SoundManager::GetInstance().Release();
-
-	// リソース解放
-	ResourceManager::GetInstance().Release();
-
-	// 当たり判定情報解放
-	CollisionManager::GetInstance().Release();
-
-	if (scenes_.empty()) {
-		scenes_.push_back(CreateScene(sceneId));
-		return;
-	}
-	scenes_.back() = CreateScene(sceneId);
-	scenes_.back()->Load();
-	scenes_.back()->LoadEnd();
-
-	// カメラのマウス入力を無効化
-	camera_->SetIsMouseInput(false);
-	// 入力管理のマウスフラグを有効化
-	InputManager::GetInstance().SetMouseFlage(true);
+	// 実行中のシーンのUpdate内から呼ばれても自身を破棄しないよう、
+	// ここでは要求だけ受け付けて、Updateの最後に遷移を実行する
+	nextSceneId_ = sceneId;
+	isChangeRequest_ = true;
 }
 
 void SceneManager::PushScene(SCENE_ID sceneId)
 {
+	// ロード中は受け付けない
+	if (IsLoading()) return;
+
 	scenes_.push_back(CreateScene(sceneId));
+	sceneIds_.push_back(sceneId);
 
 	scenes_.back()->Load();
 	scenes_.back()->LoadEnd();
@@ -110,41 +97,49 @@ void SceneManager::PushScene(SCENE_ID sceneId)
 
 void SceneManager::PopScene(void)
 {
-	//末尾のシーンを削除する
-	if (scenes_.size() > 1)
-	{
-		scenes_.pop_back();
-	}
+	// 実行中のシーンを破棄しないよう、要求だけ受け付ける
+	isPopRequest_ = true;
 }
 
 void SceneManager::ResetScene(SCENE_ID sceneId)
 {
-	// SE・BGM解放
-	SoundManager::GetInstance().Release();
+	// 全シーンを解放して遷移するのはChangeSceneと同じ
+	ChangeScene(sceneId);
+}
 
-	// リソース解放
-	ResourceManager::GetInstance().Release();
-
-	// 当たり判定情報解放
-	CollisionManager::GetInstance().Release();
-
-	scenes_.clear();
-	scenes_.push_back(CreateScene(sceneId));
-
-	scenes_.back()->Load();
-	scenes_.back()->LoadEnd();
-
-	// カメラのマウス入力を無効化
-	camera_->SetIsMouseInput(false);
-	// 入力管理のマウスフラグを有効化
-	InputManager::GetInstance().SetMouseFlage(true);
+bool SceneManager::IsLoading(void) const
+{
+	return isSceneLoadPending_ || load_->IsLoading();
 }
 
 void SceneManager::Update(void)
 {
-	scenes_.back()->Update();
+	// ロード中はロード処理のみ行う
+	if (IsLoading())
+	{
+		UpdateLoading();
+		return;
+	}
+
+	if (!scenes_.empty())
+	{
+		scenes_.back()->Update();
+	}
 
 	camera_->Update();
+
+	// シーンの処理が終わってから遷移要求を処理する
+	if (isChangeRequest_)
+	{
+		isChangeRequest_ = false;
+		isPopRequest_ = false;
+		DoChangeScene(nextSceneId_);
+	}
+	else if (isPopRequest_)
+	{
+		isPopRequest_ = false;
+		DoPopScene();
+	}
 }
 
 void SceneManager::Draw(void)
@@ -155,6 +150,13 @@ void SceneManager::Draw(void)
 
 	// 画面を初期化する
 	ClearDrawScreen();
+
+	// ロード中はロード画面のみ描画する
+	if (IsLoading())
+	{
+		load_->Draw();
+		return;
+	}
 
 	// カメラの描画前設定を行う
 	camera_->SetBeforeDraw();
@@ -169,11 +171,104 @@ void SceneManager::Draw(void)
 
 void SceneManager::Release(void)
 {
+	// 残っているシーンの解放
+	ReleaseAllScenes();
+
 	// カメラの解放
 	camera_->Release();
 
 	// ロード画面の削除
 	load_->Release();
+}
+
+void SceneManager::DoChangeScene(SCENE_ID sceneId)
+{
+	// 積まれている全シーンを解放する
+	// (ポーズ中にタイトルへ戻った時などに、下のゲームシーンが残らないように)
+	ReleaseAllScenes();
+
+	// SE・BGM解放
+	SoundManager::GetInstance().Release();
+
+	// リソース解放
+	ResourceManager::GetInstance().Release();
+
+	// 当たり判定情報解放
+	CollisionManager::GetInstance().Release();
+
+	// 前のシーンのオブジェクトを指しているカメラの情報をリセット
+	camera_->ResetForScene();
+
+	// 入力管理のマウスフラグを有効化
+	InputManager::GetInstance().SetMouseFlage(true);
+
+	// ロード画面の表示開始
+	nextSceneId_ = sceneId;
+	sceneId_ = sceneId;
+	load_->StartLoading();
+	isSceneLoadPending_ = true;
+}
+
+void SceneManager::DoPopScene(void)
+{
+	// 最後の1シーンは残す
+	if (scenes_.size() <= 1) return;
+
+	// 末尾のシーンを解放して削除する
+	scenes_.back()->Release();
+	scenes_.pop_back();
+	sceneIds_.pop_back();
+
+	// 現在のシーンIDを戻す
+	sceneId_ = sceneIds_.back();
+
+	// ゲームシーンに戻った時はカメラ操作を再開する
+	if (sceneId_ == SCENE_ID::GAME)
+	{
+		camera_->SetIsMouseInput(true);
+		InputManager::GetInstance().SetMouseFlage(false);
+	}
+}
+
+void SceneManager::UpdateLoading(void)
+{
+	// ロード画面を表示した次のフレームでシーンを生成・読み込みする
+	if (isSceneLoadPending_)
+	{
+		isSceneLoadPending_ = false;
+
+		scenes_.push_back(CreateScene(nextSceneId_));
+		sceneIds_.push_back(nextSceneId_);
+
+		// 非同期読み込みでシーンのリソースを読み込む
+		load_->StartAsyncLoad();
+		scenes_.back()->Load();
+		load_->EndAsyncLoad();
+		return;
+	}
+
+	// ロード画面の更新
+	load_->Update();
+
+	// ロードが完了したら、読み込み後の初期化を行う
+	if (!load_->IsLoading())
+	{
+		scenes_.back()->LoadEnd();
+	}
+}
+
+void SceneManager::ReleaseAllScenes(void)
+{
+	// 上に積まれているシーンから順に解放する
+	for (auto it = scenes_.rbegin(); it != scenes_.rend(); ++it)
+	{
+		if (*it)
+		{
+			(*it)->Release();
+		}
+	}
+	scenes_.clear();
+	sceneIds_.clear();
 }
 
 std::unique_ptr<SceneBase> SceneManager::CreateScene(SCENE_ID sceneId)
@@ -197,6 +292,10 @@ std::unique_ptr<SceneBase> SceneManager::CreateScene(SCENE_ID sceneId)
 
 SceneManager::SceneManager(void) :
 	sceneId_(SCENE_ID::TITLE)
+	, nextSceneId_(SCENE_ID::TITLE)
+	, isChangeRequest_(false)
+	, isPopRequest_(false)
+	, isSceneLoadPending_(false)
 	, deltaTime_(0.0f)
 {
 }

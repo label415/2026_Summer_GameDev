@@ -125,6 +125,10 @@ public:
 
 	// マウス入力の有効無効取得
 	bool GetIsMouseInput(void) { return isMouseInput_; }
+
+	// シーン切り替え時のリセット
+	// (前のシーンのオブジェクトを指すポインタを破棄し、リソースと当たり判定を再登録する)
+	void ResetForScene(void);
 protected:
 	// リソースロード
 	void InitLoad(void) override;

@@ -99,12 +99,14 @@ void Resource::Release(void)
 
 	case Resource::TYPE::IMGS:
 	{
+		if (handleIds_ == nullptr) break;
 		int num = numX_ * numY_;
 		for (int i = 0; i < num; i++)
 		{
 			DeleteGraph(handleIds_[i]);
 		}
 		delete[] handleIds_;
+		handleIds_ = nullptr;
 	}
 		break;
 
@@ -116,6 +118,8 @@ void Resource::Release(void)
 		{
 			MV1DeleteModel(id);
 		}
+		// 削除済みのハンドルを保持し続けないようにクリア
+		duplicateModelIds_.clear();
 	}
 		break;
 
@@ -142,6 +146,9 @@ void Resource::Release(void)
 		break;
 
 	}
+
+	// 解放済みのハンドルを使わないようにリセット
+	handleId_ = -1;
 }
 
 void Resource::CopyHandle(int* imgs) const

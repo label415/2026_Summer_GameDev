@@ -1,3 +1,4 @@
+#include <string>
 #include <DxLib.h>
 #include "../../Manager/ResourceManager.h"
 #include "../../Manager/FontManager.h"
@@ -66,24 +67,27 @@ void Loading::Draw(void)
 // 解放
 void Loading::Release(void)
 {
-	// フォントのハンドル解放
-	DeleteFontToHandle(pauseFont_);
+	// フォントハンドルはFontManagerが管理・削除するため、ここでは参照を外すだけ
+	pauseFont_ = -1;
 }
 
 void Loading::StartLoading(void)
 {
+	// ロード画面の表示開始
 	isLoading_ = true;
 	loadTimer_ = 0;
+
+	// シーン切り替え時にフォントリソースも解放されるため再登録する
+	ResourceManager::GetInstance().Load(ResourceManager::SRC::FONT);
 }
 
 // 非同期読み込みに切り替える
 void Loading::StartAsyncLoad(void)
 {
-	// ロード時間リセット
-	isLoading_ = true;
-
 	// 非同期読み込み開始
-	SetUseASyncLoadFlag(false);
+	// (これ以降のLoadGraph・MV1LoadModel等は裏で読み込まれ、
+	//  GetASyncLoadNum()が0になるまでロード画面を表示する)
+	SetUseASyncLoadFlag(true);
 }
 
 // 同期読み込みに切り替える
