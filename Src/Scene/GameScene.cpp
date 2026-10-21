@@ -83,18 +83,6 @@ void GameScene::LoadEnd(void)
 	// エネミー初期化
 	enemys_->Init();
 
-	// 追尾対象追加
-	for (auto& enemy : enemys_->GetEnemys())
-	{
-		enemy->SetTargetPos(&player_->GetTransform().pos);
-		for (const auto& collider
-			: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE)))
-		{
-			auto enemyCapsule = std::dynamic_pointer_cast<ColliderCapsule>(collider);
-			camera_->AddTargetPos(&enemyCapsule->GetCenter());
-		}
-	}
-
 	// シャドーマップ初期化
 	shadowMap_->AddShadowMapLight(GetLightDirection());
 	VECTOR playerPos = player_->GetTransform().pos;
@@ -211,6 +199,18 @@ void GameScene::UpdateAutoLockOn(void)
 
 	// カメラが現在ロックオンしている対象のTransformをプレイヤーに渡す
 	player_->SetTargetPos(camera->GetLockOnTargetPos());
+
+	// 追尾対象追加
+	for (auto& enemy : enemys_->GetEnemys())
+	{
+		enemy->SetTargetPos(&player_->GetTransform().pos);
+		for (const auto& collider
+			: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE)))
+		{
+			auto enemyCapsule = std::dynamic_pointer_cast<ColliderCapsule>(collider);
+			camera_->AddTargetPos(&enemyCapsule->GetCenter());
+		}
+	}
 }
 
 void GameScene::UpdateResult(void)

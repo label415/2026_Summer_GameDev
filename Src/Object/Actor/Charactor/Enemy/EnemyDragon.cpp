@@ -257,6 +257,20 @@ void EnemyDragon::UpdateProcess(void)
 		}
 	}
 
+	bool isAction = false;
+	if(state_ == STATE::CHARGE
+		|| state_ == STATE::MELEE_ATTACK)
+	{
+		isAction = true;
+	}
+
+	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
+	for (const auto& col : ownColliders_.at(capsuleType))
+	{
+		auto colliderCapsule = std::dynamic_pointer_cast<ColliderCapsule>(col);
+		colliderCapsule->SetIsAction(isAction);
+	}
+
 	// 状態別更新
 	stateUpdate_();
 
@@ -589,7 +603,9 @@ void EnemyDragon::ChangeStateFallingAttack(void)
 
 	// アニメーション再生
 	animationController_->Play(
-		static_cast<int>(ANIM_TYPE::FALLING_ATTACK), false);
+		static_cast<int>(ANIM_TYPE::FLYING_ATTACK), false);
+
+	animationController_->SetStateTime(FLYING_ATTACK_ANIM_STATE_TIME);
 }
 
 void EnemyDragon::ChangeStateFlyingAttack(void)
@@ -737,17 +753,15 @@ void EnemyDragon::UpdateCharge(void)
 		ChangeState(STATE::DEAD);
 	}
 
-	if (step_ < 0.0f)
-	{
-		effect_->Stop(static_cast<int>(effectType_));
-		isAttack_ = false;
-		ChangeState(STATE::IDLE);
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_WAKE);
-		return;
-	}
+	effect_->Stop(static_cast<int>(effectType_));
+	isAttack_ = false;
+	ChangeState(STATE::IDLE);
+	SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_WAKE);
+	return;
 
 	if (animationController_->GetPlayAnim().step >= CHARGE_SE_START_STEP
-		&& animationController_->GetPlayAnim().step <= CHARGE_SE_END_STEP) {
+		&& animationController_->GetPlayAnim().step <= CHARGE_SE_END_STEP)
+	{
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_WAKE).handleId_;
 		SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_WAKE, bgm_, SE_VOLUME_PATROL);
 		SoundManager::GetInstance().SetSESpeed(SoundManager::SeId::ENEMY_WAKE, SE_SPEED_PATROL);
@@ -892,7 +906,9 @@ void EnemyDragon::UpdateFlyingAttack(void)
 		}
 	}
 
-	if (attackCnt_ > 0.0f && (currentStep >= FLYING_ATTACK_END_STEP || animationController_->IsEnd()))
+	if (attackCnt_ > 0.0f
+		&& (currentStep >= FLYING_ATTACK_END_STEP
+			|| animationController_->IsEnd()))
 	{
 		ChangeState(STATE::HOVER);
 	}

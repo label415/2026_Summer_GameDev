@@ -121,7 +121,8 @@ bool CollisionUtility::IsValidPoly(
 
 VECTOR CollisionUtility::CalcPushCapsuleCapsule(
 	const ColliderCapsule& a,
-	const ColliderCapsule& b)
+	const ColliderCapsule& b,
+	float distanc)
 {
 	VECTOR targetPos =
 		b.GetFollow() ? b.GetFollow()->pos : b.GetPosDown();
@@ -145,7 +146,7 @@ VECTOR CollisionUtility::CalcPushCapsuleCapsule(
 		distance = 1e-6f;
 	}
 
-	float overlap = totalRadius - distance;
+	float overlap = (totalRadius - distance) * distanc;
 	VECTOR pushDir = VNorm(vBA);
 	pushDir.y = 0.0f;
 

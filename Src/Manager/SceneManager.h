@@ -67,6 +67,9 @@ public:
 	// シーン解放
 	void PopScene(void);
 
+	// シーンリセット
+	void ResetScene(SCENE_ID sceneId);
+
 	// デルタタイムの取得
 	float GetDeltaTime(void) const { return 1.0f / 60.0f; }
 
@@ -76,26 +79,8 @@ public:
 	//現在のシーンID
 	const SCENE_ID GetSceneID(void)const { return sceneId_; }
 private:
-	// シーン遷移とロードの進行状態
-	enum class LOAD_STATE
-	{
-		NONE,
-		WAIT_DRAW_LOADING,
-		EXECUTE_LOAD,
-		WAIT_ASYNC_LOAD,
-	};
-
 	// 現在のシーンID
 	SCENE_ID sceneId_;
-
-	// 次に遷移する予約シーンID
-	SCENE_ID nextSceneId_;
-
-	// 遷移種別
-	bool isClearScenes_ = true;
-
-	// 現在のロード進行状態
-	LOAD_STATE loadState_ = LOAD_STATE::NONE;
 
 	// 各種シーン
 	std::vector<std::unique_ptr<SceneBase>> scenes_;
@@ -108,6 +93,7 @@ private:
 
 	// デルタタイム
 	std::chrono::system_clock::time_point preTime_;
+
 	// フレーム間の経過時間（デルタタイム）
 	float deltaTime_;
 
@@ -119,36 +105,6 @@ private:
 
 	// デストラクタ
 	~SceneManager(void) = default;
-
-	// 現在ロード処理中かどうかを判定する
-	bool IsLoadingState(void) const;
-
-	// 次のシーン遷移を予約し、ロード画面を開始する
-	void ReserveSceneChange(SCENE_ID sceneId, bool isClearScenes);
-
-	// ロード画面を挟まず即座にシーンを追加する（ポーズ画面用）
-	void PushSceneImmediate(SCENE_ID sceneId);
-
-	// カメラとマウス入力の状態をリセットする
-	void ResetCameraAndInput(void);
-
-	// ロード中の更新処理
-	void UpdateLoading(void);
-
-	// 非同期ロードを開始する
-	void ExecuteSceneLoad(void);
-
-	// 非同期ロード完了後の初期化
-	void FinishSceneLoad(void);
-
-	// 通常時更新処理
-	void UpdateNormal(void);
-
-	// 通常時描画処理
-	void DrawScenes(void) const;
-
-	// サウンド・リソース・当たり判定解放
-	void ReleaseSceneResources(void);
 
 	// 指定されたシーンIDのインスタンスを生成する
 	std::unique_ptr<SceneBase> CreateScene(SCENE_ID sceneId);

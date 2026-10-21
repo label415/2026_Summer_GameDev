@@ -54,7 +54,8 @@ public:
     // カプセル同士の押し出し計算
     static VECTOR CalcPushCapsuleCapsule(
         const ColliderCapsule& a,
-        const ColliderCapsule& b);
+        const ColliderCapsule& b, 
+        float distance = 0.5f);
 
     // カプセルの複数ポリゴンからの総押し戻しベクトル計算
     static VECTOR CalcPushCapsuleModel(

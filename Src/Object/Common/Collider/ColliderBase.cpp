@@ -9,7 +9,7 @@ ColliderBase::ColliderBase(
 	:
 	shape_(shape), tag_(tag),
 	targetTags_(targetTags), patrTag_(patrTag),
-	follow_(follow), isCollier_(true)
+	follow_(follow), isCollier_(true), isAction_(false)
 {
 }
 ColliderBase::~ColliderBase(void)

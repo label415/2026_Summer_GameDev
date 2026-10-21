@@ -303,15 +303,6 @@ void Player::ProcessMove(void)
 		state_ = STATE::RUN;
 		moveDir_ = inputDir; // 最終移動方向を保持
 
-		// ターゲットに向かって回転（ターゲット時のみ）
-		if (targetPos_ != nullptr)
-		{
-			VECTOR targetDir = GetTargetDir();
-			float targetAngleY = atan2f(targetDir.x, targetDir.z);
-			Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
-			transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetRot, ROT_TARGET_SLERP_RATE);
-		}
-
 		// ダッシュ入力判定
 		auto& ins = InputManager::GetInstance();
 		bool isR = ins.IsNew(KEY_INPUT_LSHIFT)
@@ -354,7 +345,8 @@ void Player::ProcessAttack(void)
 	// 攻撃入力判定
 	if (uiSt_->GetSt() >= 0) {
 		isAttackInput = ins.IsClickMouseLeft()
-			|| ins.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
+			|| ins.IsPadBtnTrgDown(
+				InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
 	}
 
 	// 通常状態（移動中など）からの新規攻撃開始
@@ -495,7 +487,8 @@ void Player::ProcessEvasion(void)
 
 	if (uiSt_->GetSt() >= 0) {
 		isP = ins.IsTrgDown(KEY_INPUT_SPACE)
-			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT);
+			|| ins.IsPadBtnNew(
+				InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT);
 	}
 
 	if (isP && !isJump_
@@ -505,7 +498,9 @@ void Player::ProcessEvasion(void)
 		lastQrot_ = transform_.quaRotLocal;
 		transform_.quaRotLocal =
 			Quaternion::Mult(transform_.quaRotLocal,
-				Quaternion::AngleAxis(AsoUtility::Deg2RadF(AVOIDANCE_ANGLE_AXIS_Y), AsoUtility::AXIS_Y));
+				Quaternion::AngleAxis(
+					AsoUtility::Deg2RadF(AVOIDANCE_ANGLE_AXIS_Y), AsoUtility::AXIS_Y));
+
 		uiSt_->SetSt(CONSUMPTION_ST_EVASION);
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_EVASION).handleId_;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_AVE, bgm_, SE_VOLUME_EVASION);
@@ -588,7 +583,8 @@ void Player::ProcessRecovery(void)
 		state_ = STATE::RECOVERY;
 		effect_->Play(
 			static_cast<int>(EFFECT::HP_ABSOLUTE),
-			VGet(transform_.pos.x, transform_.pos.y + EFFECT_RECOVERY_OFFSET_Y, transform_.pos.z),
+			VGet(transform_.pos.x, transform_.pos.y 
+				+ EFFECT_RECOVERY_OFFSET_Y, transform_.pos.z),
 			AsoUtility::VECTOR_ZERO,
 			VScale(AsoUtility::VECTOR_ONE, EFFECT_RECOVERY_SCALE));
 	}
@@ -604,7 +600,8 @@ void Player::ProcessRecovery(void)
 		uiHp_->SetHpAbsolute(HEAL_HP_AMOUNT);
 		uiRecovery_->SetBottleCnt(CONSUME_RECOVERY_BOTTLE_COUNT);
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_RECOVERY).handleId_;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_HER, bgm_, SE_VOLUME_RECOVERY);
+		SoundManager::GetInstance().PlaySE(
+			SoundManager::SeId::PLAYER_HER, bgm_, SE_VOLUME_RECOVERY);
 	}
 
 	// 回復アニメーションが終了したら通常状態に遷移
@@ -617,7 +614,8 @@ void Player::ProcessRecovery(void)
 void Player::ProcessDie(void)
 {
 	// 死亡アニメーション再生
-	deathAnimationTime_ += DIE_FADE_SPEED * SceneManager::GetInstance().GetDeltaTime();
+	deathAnimationTime_ += DIE_FADE_SPEED 
+		* SceneManager::GetInstance().GetDeltaTime();
 	if (deathAnimationTime_ > DIE_END_THRESHOLD) {
 		deathAnimationTime_ = DIE_END_THRESHOLD;
 		state_ = STATE::END;
@@ -635,7 +633,8 @@ void Player::ApplyDamage(float damageAmount)
 	effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
-	SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
+	SoundManager::GetInstance().PlaySE(
+		SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
 }
 
 void Player::UpdateProcess(void)
@@ -671,7 +670,8 @@ void Player::UpdateProcess(void)
 		|| state_ == STATE::DOWN
 		|| state_ == STATE::UP
 		|| state_ == STATE::RECOVERY) {
-		uiSt_->SetHpAbsolute(RECOVERY_ST_SPEED * SceneManager::GetInstance().GetDeltaTime());
+		uiSt_->SetHpAbsolute(RECOVERY_ST_SPEED 
+			* SceneManager::GetInstance().GetDeltaTime());
 	}
 
 	// スタミナ回復クールタイムの処理
@@ -730,7 +730,18 @@ void Player::UpdateProcess(void)
 	SetFrameUserLocalPos(animLockPos_, LOCK_FRAME_NO);
 }
 
-void Player::UpdateProcessPost(void) {}
+void Player::UpdateProcessPost(void)
+{
+	if (targetPos_ == nullptr)return;
+
+	// ターゲットに向かって回転
+	VECTOR targetDir = GetTargetDir();
+	float targetAngleY = atan2f(targetDir.x, targetDir.z);
+	Quaternion targetRot =
+		Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
+	transform_.quaRot =
+		Quaternion::Slerp(transform_.quaRot, targetRot, ROT_TARGET_SLERP_RATE);
+}
 
 void Player::UpdateHitCollider(void)
 {
@@ -761,6 +772,15 @@ void Player::UpdateHitCollider(void)
 			if (tag == ColliderBase::TAG::ENEMY
 				&& shape == ColliderBase::SHAPE::CAPSULE)
 			{
+				auto enemyCapsule = std::dynamic_pointer_cast<ColliderCapsule>(targetCol);
+
+				transform_.pos =
+					VAdd(transform_.pos,
+						CollisionUtility::CalcPushCapsuleCapsule(
+							*playerCapsule, *enemyCapsule));
+
+				if (!enemyCapsule->GetIsAction())continue;
+
 				// 複数同時に当たった場合は大きい方のダメージを優先
 				damage = DAMAGE_ENEMY_BODY;
 				continue;
@@ -769,15 +789,14 @@ void Player::UpdateHitCollider(void)
 			// タグが敵武器でないときは処理しない
 			if (tag != ColliderBase::TAG::ENEMY_WEPON) continue;
 
-			if (targetCol->GetPatrTag() 
-				!= static_cast<int>(EnemyDragon::PATR_TAG::HEAD))continue;
-
-			auto enemyCapsule = std::dynamic_pointer_cast<ColliderCapsule>(targetCol);
-			if (enemyCapsule == nullptr)continue;
-
-			if (CollisionManager::GetInstance().CheckWallOcclusion(
-				enemyCapsule.get()->GetFollow()->pos,
-				playerCapsule.get()->GetFollow()->pos)) continue;
+			// 壁による遮蔽チェック
+			if (targetCol->GetFollow() != nullptr
+				&& playerCapsule->GetFollow() != nullptr)
+			{
+				if (CollisionManager::GetInstance().CheckWallOcclusion(
+					targetCol->GetFollow()->pos,
+					playerCapsule->GetFollow()->pos)) continue;
+			}
 
 			// 敵武器との当たり判定
 			if (shape == ColliderBase::SHAPE::CAPSULE
@@ -793,6 +812,7 @@ void Player::UpdateHitCollider(void)
 	{
 		ApplyDamage(damage);
 	}
+
 }
 
 VECTOR Player::GetInputDirection(void)

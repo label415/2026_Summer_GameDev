@@ -69,6 +69,12 @@ public:
 	// 当たり判定フラグを取得
 	bool GetIsCollier(void)const { return isCollier_; }
 
+	// 行動フラグを設定
+	void SetIsAction(bool isAction){ isAction_ = isAction; }
+
+	// 行動フラグを取得
+	bool GetIsAction(void)const { return isAction_; }
+
 	// 当たり判定対象タグの判定
 	bool IsTargetTag(TAG tag) const
 	{
@@ -111,6 +117,9 @@ protected:
 
 	// 有効フラグ
 	bool isCollier_;
+
+	// 行動フラグ
+	bool isAction_;
 
 	// 衝突した当たり判定
 	std::vector<std::weak_ptr<ColliderBase>> hitCollider_;

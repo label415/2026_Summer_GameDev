@@ -6,6 +6,7 @@
 #include "../Manager/InputManager.h"
 #include "../Manager/SceneManager.h"
 #include "../Manager/CollisionManager.h"
+#include "../Libs/ImGui/imgui.h"
 #include "../Object/Common/Transform.h"
 #include "../Object/Common/Collider/ColliderModel.h"
 #include "../Object/Common/Collider/ColliderSphere.h"
@@ -19,8 +20,6 @@ Camera::Camera(void)
 	angles_(AsoUtility::VECTOR_ZERO),
 	rotY_(Quaternion::Identity()),
 	fixationPos_(AsoUtility::VECTOR_ZERO),
-	delayedFollowPos_(AsoUtility::VECTOR_ZERO),
-	prevFollowPos_(AsoUtility::VECTOR_ZERO),
 	prevStickX_(0.0f),
 	prevStickZ_(0.0f)
 {
@@ -76,7 +75,9 @@ void Camera::DrawDebug(void)
 	SetUseZBuffer3D(TRUE);
 }
 
-void Camera::Release(void) {}
+void Camera::Release(void)
+{
+}
 
 void Camera::InitLoad(void) {}
 
@@ -328,8 +329,6 @@ void Camera::UpdateLockOn(void)
 		const VECTOR* newTarget = FindLockOnTarget(SWITCH_DIR::NONE);
 		if (newTarget != nullptr) {
 			targetPos_ = newTarget;
-			delayedFollowPos_ = followTransform_->pos;
-			prevFollowPos_ = followTransform_->pos;
 			ChangeMode(MODE::TARGET_ROCKE);
 		}
 	}
@@ -346,6 +345,8 @@ void Camera::SetDefault(void)
 
 	// 注視点
 	fixationPos_ = AsoUtility::VECTOR_ZERO;
+
+	targetPoss_.clear();
 }
 
 void Camera::SyncFollow(void)
@@ -371,58 +372,34 @@ void Camera::SyncFollow(void)
 
 void Camera::SynLockOn(void)
 {
-	if (followTransform_ == nullptr || targetPos_ == nullptr) return;
+	// それぞれの座標がnullptrの時は処理しない
+	if (followTransform_ == nullptr
+		|| targetPos_ == nullptr) return;
 
-	// 現在のプレイヤー座標とターゲット座標の取得
-	const VECTOR& currentFollowPos = followTransform_->pos;
-	VECTOR targetCenterPos = *targetPos_;
+	// プレイヤーからターゲットへのベクトル
+	VECTOR followPos = followTransform_->pos;
+	VECTOR targetPos = *targetPos_;
+	VECTOR toTarget = VSub(targetPos, followPos);
 
-	// プレイヤーの移動量を計測
-	VECTOR playerMoveVec = VSub(currentFollowPos, prevFollowPos_);
-	playerMoveVec.y = 0.0f;
-	float moveSpeed = VSize(playerMoveVec);
-	prevFollowPos_ = currentFollowPos;
-
-	bool isPlayerMoving = (moveSpeed > PLAYER_MOVE_THRESHOLD);
-
-	// 仮想のプレイヤー基準点を追従させる
-	delayedFollowPos_ = AsoUtility::Lerp(
-		delayedFollowPos_, currentFollowPos, LOCKON_PIVOT_FOLLOW_RATE);
-
-	// 目標となる注視点を計算
-	VECTOR idealFixationPos = AsoUtility::Lerp(
-		delayedFollowPos_, targetCenterPos, LOCKON_LOOKAT_WEIGHT);
-
-	// 現在の注視点を目標注視点へ遅れて移動させる
-	fixationPos_ = AsoUtility::Lerp(
-		fixationPos_, idealFixationPos, LOCKON_FIXATION_LERP_RATE);
-
-	// 正面にとらえるための目標角度を計算
-	VECTOR toTargetDir = VSub(targetCenterPos, delayedFollowPos_);
-	if (!AsoUtility::EqualsVZero(toTargetDir))
+	float horizontalSq = toTarget.x * toTarget.x + toTarget.z * toTarget.z;
+	if (horizontalSq > 1.0f)
 	{
-		toTargetDir = VNorm(toTargetDir);
-		float targetAngleY = atan2f(toTargetDir.x, toTargetDir.z);
-		Quaternion targetRotY = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
-
-		float rotLerpRate = isPlayerMoving ? LOCKON_ROT_RATE_MOVING : LOCKON_ROT_RATE_STOPPED;
-		rotY_ = Quaternion::Slerp(rotY_, targetRotY, rotLerpRate);
-
-		// X軸もロックオン用の見やすい角度へ緩やかに補間
-		angles_.x = AsoUtility::Lerp(angles_.x, LOCKON_DEFAULT_ANGLE_X, rotLerpRate);
-		Quaternion targetQuaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
-		transform_.quaRot = Quaternion::Slerp(transform_.quaRot, targetQuaRot, rotLerpRate);
-
-		// ロックオン解除時にカメラがガクッと飛ばないよう、現在のY角度をangles_.yにも同期しておく
-		VECTOR forward = transform_.quaRot.PosAxis(AsoUtility::DIR_F);
-		angles_.y = atan2f(forward.x, forward.z);
+		angles_.y = atan2f(toTarget.x, toTarget.z);
 	}
 
-	// カメラ本体の座標も、遅延させた基準点の背後へ遅れて追従させる
+	// 回転を角度から再構築
+	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
+	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
+
+	// 注視点
+	VECTOR basePos = transform_.quaRot.PosAxis(LOCKON_TARGET_LOCAL_POS);
+	VECTOR nextFixationPos = VAdd(followPos, VAdd(basePos, VScale(toTarget, CAMERA_LOCKON_RATE)));
+	fixationPos_ = AsoUtility::Lerp(fixationPos_, nextFixationPos, CAMERA_LOCKON_RATE);
+
+	// カメラ位置
 	VECTOR localPos = transform_.quaRot.PosAxis(LOCKON_CAMERA_LOCAL_POS);
-	VECTOR nextCameraPos = VAdd(delayedFollowPos_, localPos);
-	transform_.pos = AsoUtility::Lerp(
-		transform_.pos, nextCameraPos, LOCKON_POS_LERP_RATE);
+	VECTOR nextCameraPos = VAdd(followPos, localPos);
+	transform_.pos = AsoUtility::Lerp(transform_.pos, nextCameraPos, CAMERA_LOCKON_RATE);
 }
 
 void Camera::ProcessRot(bool isLimit)

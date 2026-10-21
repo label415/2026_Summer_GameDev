@@ -12,9 +12,9 @@ class Camera : public ActorBase
 public:
 	// カメラの初期座標
 	static constexpr VECTOR DERFAULT_POS = { 0.0f, 200.0f, -500.0f };
-	
+
 	// カメラの初期角度
-	static constexpr VECTOR DERFAULT_ANGLES = { 
+	static constexpr VECTOR DERFAULT_ANGLES = {
 		0.0f, 0.0f, 0.0f
 	};
 
@@ -49,12 +49,12 @@ public:
 	// 追従位置からカメラ位置までの相対座標
 	static constexpr VECTOR LOCKON_CAMERA_LOCAL_POS = { 0.0f, 200.0f, -350.0f };
 	// 追従位置から注視点までの相対座標
-	static constexpr VECTOR LOCKON_TARGET_LOCAL_POS = { 0.0f, -500.0f, 100.0f };
+	static constexpr VECTOR LOCKON_TARGET_LOCAL_POS = { 0.0f, 100.0f, 0.0f };
 
 	// カメラのX回転上限度角
 	static constexpr float LIMIT_X_UP_RAD = 60.0f * (DX_PI_F / 180.0f);
 	static constexpr float LIMIT_X_DW_RAD = 40.0f * (DX_PI_F / 180.0f);
-	
+
 	// カメラモード
 	enum class MODE
 	{
@@ -89,10 +89,10 @@ public:
 	// 角度の取得
 	const VECTOR& GetAngles(void) const;
 	const Quaternion& GetQuaRot(void) const;
-	
+
 	// X回転を抜いたY軸のみのカメラ角度
 	const Quaternion& GetQuaRotY(void) const;
-	
+
 	// 注視点の取得
 	const VECTOR& GetTargetPos(void) const;
 
@@ -130,13 +130,13 @@ protected:
 	void InitLoad(void) override;
 
 	// 大きさ、回転、座標の初期化
-	void InitTransform(void) override{}
+	void InitTransform(void) override {}
 
 	// 衝突判定の初期化
 	void InitCollider(void) override;
 
 	// アニメーションの初期化
-	void InitAnimation(void) override{}
+	void InitAnimation(void) override {}
 
 	// 初期化後の個別処理
 	void InitPost(void) override;
@@ -156,29 +156,8 @@ private:
 	// 追尾時のカメラ補間率
 	static constexpr float CAMERA_FOLLOW_RATE = 0.5f;
 
-	// 理想注視点の内分率（0.0:プレイヤー ～ 1.0:ターゲット。0.6前後で敵を少し重視）
-	static constexpr float LOCKON_LOOKAT_WEIGHT = 0.35f;
-
-	// プレイヤー移動に対するカメラ基準点の遅延追従率（小さいほど移動時に遅れてついてくる）
-	static constexpr float LOCKON_PIVOT_FOLLOW_RATE = 0.12f;
-	// カメラ本体座標の追従補間率
-	static constexpr float LOCKON_POS_LERP_RATE = 0.15f;
-	// 注視点(fixationPos_)の追従補間率
-	static constexpr float LOCKON_FIXATION_LERP_RATE = 0.10f;
-
-	// プレイヤーが「移動している」とみなす1フレームあたりの移動量閾値
-	static constexpr float PLAYER_MOVE_THRESHOLD = 1.0f;
-	// プレイヤー移動中の正面回り込み回転率（小さくして斜めアングルを許容＝半ロックオン感）
-	static constexpr float LOCKON_ROT_RATE_MOVING = 0.018f;
-	// プレイヤー停止中の正面回り込み回転率（止まったあと遅れて正面にとらえる）
-	static constexpr float LOCKON_ROT_RATE_STOPPED = 0.08f;
-	// ロックオン時の基本見下ろし角(X軸角度・ラジアン)
-	static constexpr float LOCKON_DEFAULT_ANGLE_X = 15.0f * (DX_PI_F / 180.0f);
-
-	// 遅延追従用の仮想プレイヤー座標（カメラの回転・位置基準点）
-	VECTOR delayedFollowPos_;
-	// プレイヤーの移動判定用（前フレームのプレイヤー座標）
-	VECTOR prevFollowPos_;
+	// ロックオン時のカメラ補間率
+	static constexpr float CAMERA_LOCKON_RATE = 0.1f;
 
 	// 衝突時の押し戻し試行回数
 	static constexpr int CNT_TRY_COLLISION_CAMERA = 10;
@@ -225,7 +204,7 @@ private:
 
 	// マウス入力の有効無効フラグ
 	bool isMouseInput_;
-	
+
 	// カメラを初期位置に戻す
 	void SetDefault(void);
 
