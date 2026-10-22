@@ -4,6 +4,7 @@
 #include "../Manager/ResourceManager.h"
 #include "../Manager/SoundManager.h"
 #include "../Manager/FontManager.h"
+#include "../Manager/Camera.h"
 #include "../Utility/AsoUtility.h"
 #include "PauseScene.h"
 
@@ -36,6 +37,9 @@ void PauseScene::LoadEnd(void)
 				(Application::HALF_SCREEN_SIZE_Y - BOX_ADJUST_Y) + (BOX_Y_INTERVAL * i)),
 			BOX_WIDTH, BOX_HEIGHT);
 	}
+
+	sceMng_.GetCamera().get()->SetIsMouseInput(false);
+	InputManager::GetInstance().SetMouseFlage(true);
 }
 
 void PauseScene::Update(void)

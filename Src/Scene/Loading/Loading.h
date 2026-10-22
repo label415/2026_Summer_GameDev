@@ -33,7 +33,10 @@ public:
 	void EndAsyncLoad(void);
 
 	// ロード中かを返す
-	bool IsLoading(void) const { return isLoading_; }
+	bool GetIsLoading(void) const { return isLoading_; }
+
+	// ロードが終わったか返す
+	bool GetIsLoadEnd(void) const { return isLoadEnd_; }
 private:
 	// フォント名
 	static constexpr const wchar_t* FONT_NAME = L"KazukiReiwa";
@@ -52,6 +55,9 @@ private:
 
 	// 現在ロード中かどうかのフラグ
 	bool isLoading_;
+
+	// ロードが終わったフレームだけ立つフラグ
+	bool isLoadEnd_;
 
 	// 最低でもロード画面を表示する時間の範囲
 	int loadTimer_;

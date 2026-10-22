@@ -26,7 +26,7 @@ bool Application::Init(void)
 	// ウィンドウサイズ
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, COLOR_BIT);
 	ChangeWindowMode(true);
-
+	SetMultiThreadFlag(true);
 	// FPS制御初期化
 	fpsController_ = std::make_unique<FpsController>(FRAME_RATE);
 

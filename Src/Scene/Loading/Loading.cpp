@@ -8,8 +8,9 @@
 // コンストラクタ
 Loading::Loading()
 	: pauseFont_(-1)
-	, loadTimer_(0),
-	isLoading_(false)
+	, loadTimer_(0)
+	, isLoading_(false)
+	, isLoadEnd_(false)
 {}
 
 // デストラクタ
@@ -18,8 +19,6 @@ Loading::~Loading(){}
 // 読み込み
 void Loading::Load(void)
 {
-	SetUseASyncLoadFlag(false);
-
 	// リソース取得
 	auto& res = ResourceManager::GetInstance();
 	res.Load(ResourceManager::SRC::FONT);
@@ -32,16 +31,21 @@ void Loading::Load(void)
 // 更新
 void Loading::Update(void)
 {
+	// 前フレームで立てた完了フラグを下ろす
+	isLoadEnd_ = false;
+
 	// ロード中でないときは処理しない
-	if (!IsLoading())return;
+	if (!isLoading_) return;
 
 	// ロード時間更新
 	loadTimer_++;
 
-	// 非同期読み込みがすべて完了し、かつ最低表示時間を過ぎたらロード終了
+	// 非同期読み込みがすべて完了し、
+	// かつ最低表示時間を過ぎたらロード終了
 	if (GetASyncLoadNum() == 0 && loadTimer_ >= MIN_LOAD_TIME)
 	{
 		isLoading_ = false;
+		isLoadEnd_ = true;
 	}
 }
 
@@ -67,7 +71,7 @@ void Loading::Draw(void)
 // 解放
 void Loading::Release(void)
 {
-	// フォントハンドルはFontManagerが管理・削除するため、ここでは参照を外すだけ
+	// フォントハンドル削除
 	pauseFont_ = -1;
 }
 
@@ -76,17 +80,12 @@ void Loading::StartLoading(void)
 	// ロード画面の表示開始
 	isLoading_ = true;
 	loadTimer_ = 0;
-
-	// シーン切り替え時にフォントリソースも解放されるため再登録する
-	ResourceManager::GetInstance().Load(ResourceManager::SRC::FONT);
 }
 
 // 非同期読み込みに切り替える
 void Loading::StartAsyncLoad(void)
 {
 	// 非同期読み込み開始
-	// (これ以降のLoadGraph・MV1LoadModel等は裏で読み込まれ、
-	//  GetASyncLoadNum()が0になるまでロード画面を表示する)
 	SetUseASyncLoadFlag(true);
 }
 
