@@ -75,11 +75,11 @@ void GameScene::LoadEnd(void)
 	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
 
 	// スカイドーム初期化
-	skydome_->Init();
+	skydome_->LoadEnd();
 	// ステージ初期化
-	stage_->Init();
+	stage_->LoadEnd();
 	// プレイヤー初期化
-	player_->Init();
+	player_->LoadEnd();
 	// エネミー初期化
 	enemys_->Init();
 

@@ -21,7 +21,7 @@ void EnemyManager::Init(void)
 	// エネミーの初期化
 	for (auto& enemy : enemys_)
 	{
-		enemy->Init();
+		enemy->LoadEnd();
 	}
 }
 

@@ -17,13 +17,13 @@ public:
 	ActorBase(void);
 
 	// デストラクタ
-	virtual ~ActorBase(void);
+	virtual ~ActorBase(void){}
 
 	//読み込み
 	void Load(void);
 
-	// 初期化
-	void Init(void);
+	// 読み取り後
+	void LoadEnd(void);
 
 	// 更新
 	virtual void Update(void) = 0;

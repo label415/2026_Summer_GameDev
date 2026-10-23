@@ -2,10 +2,6 @@
 #include "../../../Utility/AsoUtility.h"
 #include "SkyDome.h"
 
-SkyDome::SkyDome(void){}
-
-SkyDome::~SkyDome(void){}
-
 void SkyDome::Update(void)
 {
 	// スカイドームをゆっくり回転させる
@@ -43,10 +39,6 @@ void SkyDome::InitTransform(void)
 	transform_.pos = { 0.0f, 0.0f, 0.0f };
 	transform_.Update();
 }
-
-void SkyDome::InitCollider(void){}
-
-void SkyDome::InitAnimation(void){}
 
 void SkyDome::InitPost(void)
 {

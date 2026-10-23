@@ -23,7 +23,7 @@ void SceneManager::Init(void)
 
 	// カメラ
 	camera_ = std::make_shared<Camera>();
-	camera_->Init();
+	camera_->LoadEnd();
 
 	// デルタタイム
 	preTime_ = std::chrono::system_clock::now();

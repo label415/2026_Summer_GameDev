@@ -24,9 +24,6 @@ public:
     // 解放
     virtual void Release(void) override;
 
-    //攻撃フラグの取得
-    const bool GetIsAttack(void) const { return isAttack_; }
-
 	//HP描画
     virtual void DrawHp(void){}
 
@@ -74,14 +71,8 @@ protected:
     // ジャンプ判定
     bool isJump_;
 
-    //ダメージフラグ
-    bool isDamage_;
-
-    //攻撃フラグ
-    bool isAttack_;
-
     // リソースロード
-    virtual void InitLoad(void) override;
+    virtual void InitLoad(void) override{}
 
     // 更新系
     virtual void UpdateProcess(void) = 0;

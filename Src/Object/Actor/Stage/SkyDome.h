@@ -6,10 +6,10 @@ class SkyDome :public ActorBase
 {
 public:
 	// コンストラクタ
-	SkyDome(void);
+	SkyDome(void){}
 
 	// デストラクタ
-	~SkyDome(void);
+	~SkyDome(void){}
 
 	// 更新
 	void Update(void)override;
@@ -24,10 +24,10 @@ protected:
 	void InitTransform(void)override;
 
 	// 衝突判定の初期化
-	void InitCollider(void)override;
+	void InitCollider(void)override{}
 
 	// アニメーションの初期化
-	void InitAnimation(void)override;
+	void InitAnimation(void)override{}
 
 	// 初期化後の個別処理
 	void InitPost(void)override;

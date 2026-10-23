@@ -10,25 +10,22 @@
 #include "CharactorBase.h"
 
 CharactorBase::CharactorBase(void)
-	:
-	ActorBase(),
-	targetPos_(nullptr),
-	uiHp_(nullptr),
-	animationController_(nullptr),
-	moveDir_(AsoUtility::VECTOR_ZERO),
-	movePow_(AsoUtility::VECTOR_ZERO),
-	prevPos_(AsoUtility::VECTOR_ZERO),
-	jumpPow_(AsoUtility::VECTOR_ZERO),
-	moveSpeed_(0.0f),
-	stepJump_(0.0f),
-	isJump_(false),
-	isDamage_(false),
-	isAttack_(false)
+	: ActorBase()
+	, targetPos_(nullptr)
+	, uiHp_(nullptr)
+	, animationController_(nullptr)
+	, moveDir_(AsoUtility::VECTOR_ZERO)
+	, movePow_(AsoUtility::VECTOR_ZERO)
+	, prevPos_(AsoUtility::VECTOR_ZERO)
+	, jumpPow_(AsoUtility::VECTOR_ZERO)
+	, moveSpeed_(0.0f)
+	, stepJump_(0.0f)
+	, isJump_(false)
 {
 	weapons_.clear();
 }
 
-CharactorBase::~CharactorBase(void){}
+CharactorBase::~CharactorBase(void) {}
 
 void CharactorBase::Update(void)
 {
@@ -37,8 +34,6 @@ void CharactorBase::Update(void)
 
 	// 移動前座標を更新
 	prevPos_ = transform_.pos;
-	isAttack_ = false;
-	isDamage_ = false;
 
 	// 各キャラクターごとの更新処理
 	UpdateProcess();
@@ -100,8 +95,6 @@ VECTOR CharactorBase::GetTargetDir(void)
 	return targetdir;
 }
 
-void CharactorBase::InitLoad(void){}
-
 void CharactorBase::DelayRotate(void)
 {
 	// 移動方向から回転に変換する
@@ -109,7 +102,6 @@ void CharactorBase::DelayRotate(void)
 	// 回転の補間
 	transform_.quaRot =
 		Quaternion::Slerp(transform_.quaRot, goalRot, 0.2f);
-
 }
 
 void CharactorBase::CalcGravityPow(void)

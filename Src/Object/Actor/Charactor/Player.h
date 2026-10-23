@@ -124,9 +124,9 @@ public:
 	static constexpr float AVOIDANCE_ANGLE_AXIS_Y = 100.0f;
 
 	// 移動速度(通常)
-	static constexpr float SPEED_MOVE = 6.0f;
+	static constexpr float SPEED_MOVE = 2.0f;
 	// 移動速度(ダッシュ)
-	static constexpr float SPEED_DASH = 12.0f;
+	static constexpr float SPEED_DASH = 4.0f;
 	// 移動速度(回避)
 	static constexpr float SPEED_EVASION = 10.0f;
 
@@ -347,7 +347,7 @@ private:
 	// 無敵時間
 	static constexpr float INVINCIBLE_TIME = 2.0f;
 
-	// 移動入力判定および移動処理（通常歩行・ダッシュ）
+	// 移動入力判定および移動処理
 	void ProcessMove(void);
 
 	// 攻撃アクションおよびコンボ継続処理
@@ -365,6 +365,7 @@ private:
 	// 死亡演出処理
 	void ProcessDie(void);
 
+	// ダメージ処理
 	void ApplyDamage(float damageAmount);
 
 	// 無敵

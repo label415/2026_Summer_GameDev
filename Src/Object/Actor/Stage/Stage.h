@@ -1,5 +1,5 @@
 #pragma once
-#include<vector>
+#include <vector>
 #include <string>
 #include "../../Common/Transform.h"
 #include "../ActorBase.h"
@@ -10,10 +10,10 @@ class Stage :public ActorBase
 {
 public:
 	// コンストラクタ
-	Stage(void);
+	Stage(void){}
 
 	// デストラクタ
-	~Stage(void);
+	~Stage(void){}
 
 	// 更新
 	void Update(void)override;
@@ -31,13 +31,13 @@ protected:
 	void InitCollider(void)override;
 
 	// アニメーションの初期化
-	void InitAnimation(void)override;
+	void InitAnimation(void)override{}
 
 	// 初期化後の個別処理
-	void InitPost(void)override;
+	void InitPost(void)override{}
 
 	// 当たり判定衝突時の更新処理
-	void UpdateHitCollider(void)override;
+	void UpdateHitCollider(void)override{}
 private:
 	// ステージモデル座標
 	static constexpr VECTOR STAGE_POS = { 0.0f, -100.0f, 0.0f };

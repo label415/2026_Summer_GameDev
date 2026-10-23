@@ -5,10 +5,6 @@
 #include "../../Common/Collider/ColliderSphere.h"
 #include "Stage.h"
 
-Stage::Stage(void){}
-
-Stage::~Stage(void){}
-
 void Stage::Update(void)
 {
 	// è’ìÀîªíË
@@ -77,12 +73,6 @@ void Stage::InitCollider(void)
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::MODEL)].push_back(colModel_);
 	CollisionManager::GetInstance().AddCollider(colModel_);
 }
-
-void Stage::InitAnimation(void){}
-
-void Stage::InitPost(void){}
-
-void Stage::UpdateHitCollider(void){}
 
 void Stage::RateFrameIds(const std::wstring& name)
 {

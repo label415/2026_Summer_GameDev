@@ -187,14 +187,14 @@ void Player::InitPost(void)
 
 	// 武器
 	for (const auto& weapon : weapons_) {
-		weapon->Init();
+		weapon->LoadEnd();
 	}
 
 	// HPUI
-	uiHp_->Init();
+	uiHp_->LoadEnd();
 
 	// スタミナUI
-	uiSt_->Init();
+	uiSt_->LoadEnd();
 
 	// クールタイム
 	stRecoverTime_ = 0.0f;
@@ -206,7 +206,7 @@ void Player::InitPost(void)
 	invincibleTimer_ = 0.0f;
 
 	// 回復瓶UI
-	uiRecovery_->Init();
+	uiRecovery_->LoadEnd();
 
 	// エフェクト
 	effType_ = EFFECT::NONE;
@@ -301,7 +301,7 @@ void Player::ProcessMove(void)
 	if (!AsoUtility::EqualsVZero(inputDir))
 	{
 		state_ = STATE::RUN;
-		moveDir_ = inputDir; // 最終移動方向を保持
+		moveDir_ = inputDir;
 
 		// ダッシュ入力判定
 		auto& ins = InputManager::GetInstance();
@@ -326,7 +326,12 @@ void Player::ProcessMove(void)
 			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_WAKE, bgm_, SE_VOLUME_WALK);
 		}
 
-		movePow_ = VScale(moveDir_, moveSpeed_);
+		movePow_ = VAdd(movePow_, VScale(moveDir_, moveSpeed_));
+		float currentSpeed = VSize(movePow_);
+		if (currentSpeed > 100.0f)
+		{
+			movePow_ = VScale(VNorm(movePow_), 100.0f);
+		}
 	}
 	else {
 		state_ = STATE::IDLE;
@@ -334,6 +339,9 @@ void Player::ProcessMove(void)
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
 		animationController_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 	}
+
+	//移動量の減速処理
+	movePow_ = AsoUtility::Lerp(movePow_, AsoUtility::VECTOR_ZERO, 0.0001f);
 }
 
 void Player::ProcessAttack(void)

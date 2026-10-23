@@ -230,11 +230,11 @@ void EnemyDragon::InitPost(void)
 		static_cast<int>(EFFECT::BLOOD),
 		(Application::PATH_EFFECT + L"Blood.efkefc"));
 
-	uiHp_->Init();
+	uiHp_->LoadEnd();
 
 	// •Ší
 	for (const auto& weapon : weapons_) {
-		weapon->Init();
+		weapon->LoadEnd();
 	}
 
 	// ‰Šúó‘ÔÝ’è
@@ -754,7 +754,6 @@ void EnemyDragon::UpdateCharge(void)
 	}
 
 	effect_->Stop(static_cast<int>(effectType_));
-	isAttack_ = false;
 	ChangeState(STATE::IDLE);
 	SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_WAKE);
 	return;
@@ -785,7 +784,6 @@ void EnemyDragon::UpdateCharge(void)
 	else if (animationController_->GetPlayType() == static_cast<int>(ANIM_TYPE::CHARGE)) {
 		moveDir_ = preMoverDir_;
 		step_ -= scnMng_.GetDeltaTime();
-		isAttack_ = true;
 		moveSpeed_ = SPEED_DASH;
 		movePow_ = VScale(moveDir_, moveSpeed_);
 
@@ -985,10 +983,6 @@ void EnemyDragon::UpdateMeleeAttack(void)
 		&& animationController_->GetPlayAnim().step <= MELEE_ATTACK_CILLIDER) {
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ATTCEK).handleId_;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ATTCEK, bgm_, SE_VOLUME_DEFAULT);
-	}
-
-	if (animationController_->GetPlayAnim().step >= MELEE_ATTACK_CILLIDER) {
-		isAttack_ = true;
 	}
 
 	if (animationController_->GetPlayAnim().step >= MELEE_MOVE_DIR_LOCK_STEP)
