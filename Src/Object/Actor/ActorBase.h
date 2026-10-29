@@ -3,21 +3,21 @@
 #include <memory>
 #include <vector>
 #include "../Common/Transform.h"
-#include "../Common/EffectController.h"
-#include "../Common/Collider/ColliderBase.h"
 
 class ResourceManager;
 class SceneManager;
 class EffectController;
+class ColliderBase;
 
 class ActorBase
 {
 public:
+
 	// コンストラクタ
 	ActorBase(void);
 
 	// デストラクタ
-	virtual ~ActorBase(void){}
+	virtual ~ActorBase(void);
 
 	//読み込み
 	void Load(void);
@@ -42,23 +42,24 @@ public:
 
 	// 特定の自身の衝突情報取得
 	const std::vector<std::shared_ptr<ColliderBase>> GetOwnCollider(int key) const;
+
 protected:
-	// 生存フラグ
-	bool isAlive_;
+
+	// 所有しているコライダー
+	std::map<int, std::vector<std::shared_ptr<ColliderBase>>> ownColliders_;
+
+	//エフェクトコントローラ
+	std::unique_ptr<EffectController> effect_;
 
 	// シングルトン参照
 	ResourceManager& resMng_;
-
 	SceneManager& scnMng_;
 
 	// モデル制御の基本情報
 	Transform transform_;
 
-	//エフェクトコントローラ
-	std::unique_ptr<EffectController> effect_;
-
-	// 所有しているコライダー
-	std::map<int, std::vector<std::shared_ptr<ColliderBase>>> ownColliders_;
+	// 生存フラグ
+	bool isAlive_;
 
 	// リソースロード
 	virtual void InitLoad(void) = 0;
@@ -77,5 +78,8 @@ protected:
 
 	// 当たり判定衝突時の更新処理
 	virtual void Collision(void);
+
+	// 衝突したコライダーの更新
 	virtual void UpdateHitCollider(void){}
+
 };

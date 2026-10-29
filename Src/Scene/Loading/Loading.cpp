@@ -52,15 +52,19 @@ void Loading::Update(void)
 // 描画
 void Loading::Draw(void)
 {
+	// ロード中でないときは処理しない
 	if (!isLoading_) return;
 
+	// ロード中のドットアニメーションを作成
 	int dotCount = (loadTimer_ / 20) % 4;
 	std::wstring text = 
 		std::wstring(LOADING_TEXT) + std::wstring(dotCount, L'.');
 
+	// 描画位置を計算
 	const int x = Application::SCREEN_SIZE_X - FONT_ADJUST_X;
 	const int y = Application::SCREEN_SIZE_Y - FONT_ADJUST_Y;
 
+	// ロード中の文字列を描画
 	DrawStringToHandle(
 		x, y,
 		text.c_str(),

@@ -4,6 +4,8 @@
 class Quaternion
 {
 public:
+
+	// クォータニオンの正規化に使用する最小値
 	static constexpr float kEpsilonNormalSqrt = 1e-15F;
 
 	double w;
@@ -17,7 +19,7 @@ public:
 	Quaternion(double w, double x, double y, double z);
 
 	// デストラクタ
-	~Quaternion(void){}
+	~Quaternion(void) {}
 
 	// オイラー角からクォータニオンへ変換
 	static Quaternion Euler(const VECTOR& rad);
@@ -86,10 +88,13 @@ public:
 
 	// 対象方向の回転
 	void ToAngleAxis(float* angle, VECTOR* axis);
+
 private:
+
 	// 基本ベクトルを取得
 	VECTOR GetDir(VECTOR dir) const;
 
 	Quaternion operator*(float rhs);
 	Quaternion operator+(const Quaternion& rhs);
+
 };

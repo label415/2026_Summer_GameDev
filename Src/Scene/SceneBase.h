@@ -9,6 +9,7 @@ class SoundManager;
 class SceneBase
 {
 public:
+
 	// コンストラクタ
 	SceneBase(void);
 
@@ -29,7 +30,9 @@ public:
 
 	// 解放
 	virtual void Release(void) = 0;
+
 protected:
+
 	// リソース管理
 	ResourceManager& resMng_;
 
@@ -47,4 +50,5 @@ protected:
 
 	// BGMの音量
 	int volume_;
+
 };

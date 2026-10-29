@@ -1,3 +1,4 @@
+#include "../../../../Utility/AsoUtility.h"
 #include "EnemyBase.h"
 
 EnemyBase::EnemyBase(const EnemyBase::EnemyData& data)
@@ -35,9 +36,11 @@ void EnemyBase::ChangeState(int state)
 bool EnemyBase::InMovableRange(void) const
 {
 	bool ret = false;
+
 	// ‰ŠúˆÊ’u‚©‚ç‚Ì‹——£
 	float dis = static_cast<float>(
 		AsoUtility::SqrMagnitude(defaultPos_, transform_.pos));
+
 	// w’è‹——£”»’è
 	if (dis < moveRadius_ * moveRadius_)
 	{

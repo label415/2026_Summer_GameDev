@@ -8,13 +8,19 @@
 #include "TitleScene.h"
 
 TitleScene::TitleScene(void)
-	:
-	selectIndex_(0),
-	isHovered(true)
+	: SceneBase()
+	, selectIndex_(0)
+	, isHovered(true)
+	, isStickInput_(false)
+	, titleImg_(-1)
+	, selectImg_(-1)
+	, pauseFont_(-1)
 {
 }
 
-TitleScene::~TitleScene(void) {}
+TitleScene::~TitleScene(void)
+{
+}
 
 void TitleScene::Load(void)
 {
@@ -133,7 +139,7 @@ void TitleScene::Draw(void)
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
 		// 文字描画
-		int strW = GetDrawStringWidthToHandle(pasueList_[i].c_str(), -1, pauseFont_);
+		int strW = GetDrawStringWidthToHandle(pauseList_[i].c_str(), -1, pauseFont_);
 		int posX = static_cast<int>(Application::SCREEN_SIZE_X - strW) / FONT_ADJUST_X;
 		int posY = static_cast<int>(
 			(Application::HALF_SCREEN_SIZE_Y + FONT_ADJUST_Y) + (FONT_INTERVAL * i));
@@ -142,15 +148,13 @@ void TitleScene::Draw(void)
 			posX, posY,
 			FONT_COLOR,
 			pauseFont_,
-			pasueList_[i].c_str());
+			pauseList_[i].c_str());
 
 	}
 }
 
 void TitleScene::Release(void)
 {
-	// フォントハンドルはFontManagerが共有管理しているため削除しない
-	// (ここで削除すると、次にタイトルやポーズを開いた時に
-	//  削除済みのハンドルが返されて文字が表示されなくなる)
+	// フォントハンドル削除
 	pauseFont_ = -1;
 }

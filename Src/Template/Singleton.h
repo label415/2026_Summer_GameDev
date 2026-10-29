@@ -6,6 +6,7 @@ template <typename T>
 class Singleton
 {
 public:
+
     // インスタンスの生成
     static void CreateInstance()
     {
@@ -38,13 +39,18 @@ public:
 
     // コピー代入演算子を削除
     Singleton& operator=(const Singleton&) = delete;
+
 protected:
+
     // デフォルトコンストラクタは protected にして外部生成を防止
     Singleton() = default;
 
     // デストラクタも protected
     virtual ~Singleton() = default;
+
 private:
+
     //静的メンバ初期化
     inline static T* instance_ = nullptr;
+
 };

@@ -6,6 +6,7 @@ class Transform;
 class WeponFlameThrower :public WeponBase
 {
 public:
+
 	//攻撃エフェクト
 	enum class EFFECT_TYPE
 	{
@@ -37,9 +38,12 @@ public:
 
 	// 発射処理（向きと位置をセットして開始）
 	void Shot(const VECTOR& dir);
+
 protected:
+
 	// 最小衝突判定用カプセル球体半径
 	static constexpr float MIN_RADIUS = 50.0f;
+
 	// 最大衝突判定用カプセル球体半径
 	static constexpr float MAX_RADIUS = 1100.0f;
 
@@ -60,15 +64,23 @@ protected:
 
 	// 初期化後の個別処理
 	void InitPost(void) override;
+
 private:
+
 	// 移動スピード
 	static constexpr float SPEED = 30.0f;
+
+	//　球体半径増加量
+	static constexpr float RADIUS_INCREASE = 50.0f;
 
 	// エフェクトタイプ
 	EFFECT_TYPE effectType_;
 
 	// 移動方向
 	VECTOR moveDir_;
+
+	// 前フレームの座標
+	VECTOR prePos_;
 
 	// 移動スピード
 	float moveSpeed_;
@@ -79,13 +91,11 @@ private:
 	// 爆発開始時間
 	float exState_;
 
-	// 前フレームの座標
-	VECTOR prePos_;
-
 	// 移動処理
 	void Move(void);
 
 	// エフェクト切り替え
 	void ChangerEffect(EFFECT_TYPE effectType);
+
 };
 

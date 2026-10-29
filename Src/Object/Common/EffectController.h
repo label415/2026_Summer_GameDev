@@ -7,6 +7,7 @@
 class EffectController
 {
 public:
+
 	// アニメーションデータ
 	struct EFFECT
 	{
@@ -65,8 +66,11 @@ public:
 
 	// エフェクトの再生が終了しているかを返す
 	bool IsEnd(int type);
+
 private:
+
 	// 種類別のアニメーションデータ
 	std::map<int, std::unique_ptr<EFFECT>> effects_;
+
 };
 

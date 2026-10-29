@@ -9,6 +9,7 @@ class Transform;
 class ColliderBase
 {
 public:
+
 	// 形状
 	enum class SHAPE
 	{
@@ -36,8 +37,7 @@ public:
 
 	// コンストラクタ
 	ColliderBase(
-		SHAPE shape,
-		TAG tag,
+		SHAPE shape, TAG tag,
 		const std::vector<TAG>& targetTags,
 		const Transform* follow,
 		int patrTag = 0);
@@ -95,13 +95,18 @@ public:
 
 	// 衝突したコライダーの取得
 	const std::vector<std::weak_ptr<ColliderBase>>& GetHitColliders(void) { return hitCollider_; }
+
 protected:
+
 	// デバッグ表示の色
 	static constexpr int COLOR_VALID = 0xff0000;
 	static constexpr int COLOR_INVALID = 0xaaaaaa;
 
 	// 衝突判定対象とするタグ一覧
 	std::vector<TAG> targetTags_;
+
+	// 追従先
+	const Transform* follow_;
 
 	// 形状
 	SHAPE shape_;
@@ -111,9 +116,6 @@ protected:
 
 	//各部位のタグ番号
 	int patrTag_;
-
-	// 追従先
-	const Transform* follow_;
 
 	// 有効フラグ
 	bool isCollier_;
@@ -129,4 +131,5 @@ protected:
 
 	// デバッグ用描画
 	virtual void DrawDebug(int color) = 0;
+
 };

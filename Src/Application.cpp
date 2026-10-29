@@ -50,25 +50,13 @@ bool Application::Init(void)
 	// 設定する数値によって、ランダムの出方が変わる
 	SRand(date.Year + date.Mon + date.Day + date.Hour + date.Min + date.Sec);
 
-	// 入力制御初期化
+	// 各インスタンス生成
 	InputManager::CreateInstance();
-
-	// リソース管理初期化
 	ResourceManager::CreateInstance();
-
-	// フォント管理クラス生成
 	FontManager::CreateInstance();
-
-	// サウンド管理初期化
 	SoundManager::CreateInstance();
-
-	// デバッグ描画初期化
 	ImGuiWrapper::CreateInstance();
-
-	// コリジョンマネージャーインスタンス生成
 	CollisionManager::CreateInstance();
-
-	// シーン管理初期化
 	SceneManager::CreateInstance();
 	SceneManager::GetInstance().Init();
 
@@ -77,7 +65,7 @@ bool Application::Init(void)
 
 void Application::Run(void)
 {
-	//インスタンス取得
+	// 各インスタンス取得
 	InputManager& inputManager = InputManager::GetInstance();
 	ImGuiWrapper& imGuiWrapper = ImGuiWrapper::GetInstance();
 	CollisionManager& collisionManager = CollisionManager::GetInstance();
@@ -86,27 +74,18 @@ void Application::Run(void)
 	// ゲームループ
 	while (ProcessMessage() == 0 && !isGameEnd_)
 	{
-		// 入力更新処理
+		// 各シングルトン更新
 		inputManager.Update();
-
-		//GUI更新処理
 		imGuiWrapper.Update();
-
 		collisionManager.Update();
-
-		// シーン更新処理
 		sceneManager.Update();
 
-		// シーン描画処理
+		// 各シングルトン描画
 		sceneManager.Draw();
-
 		collisionManager.DrawDebug();
-
-		RenderVertex();
-
-		// GUI描画処理
 		imGuiWrapper.Draw();
 
+		RenderVertex();
 		ScreenFlip();
 
 		// 理想FPS経過待ち
@@ -116,13 +95,15 @@ void Application::Run(void)
 
 bool Application::Release(void)
 {
-	//インスタンス破棄
-	InputManager::GetInstance().Destroy();
+	// 各インスタンス解放
 	CollisionManager::GetInstance().Release();
-	CollisionManager::GetInstance().Destroy();
 	SceneManager::GetInstance().Release();
-	SceneManager::GetInstance().Destroy();
 	SoundManager::GetInstance().Release();
+
+	// 各インスタンス破棄
+	InputManager::GetInstance().Destroy();
+	CollisionManager::GetInstance().Destroy();
+	SceneManager::GetInstance().Destroy();
 	SoundManager::GetInstance().Destroy();
 	ResourceManager::GetInstance().Destroy();
 	FontManager::GetInstance().Destroy();
@@ -141,8 +122,7 @@ bool Application::Release(void)
 }
 
 Application::Application(void)
-	:
-	isGameEnd_(false)
+	: isGameEnd_(false)
 {
 }
 
@@ -153,7 +133,6 @@ void Application::InitEffekseer(void)
 	{
 		DxLib_End();
 	}
-
 	SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
 	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
 }

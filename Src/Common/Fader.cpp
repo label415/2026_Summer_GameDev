@@ -3,14 +3,14 @@
 #include "Fader.h"
 
 Fader::Fader(void)
-	:
-	state_(STATE::NONE),
-	alpha_(0.0f),
-	isPreEnd_(true),
-	isEnd_(true)
-{}
+	: state_(STATE::NONE)
+	, alpha_(0.0f)
+	, isPreEnd_(true)
+	, isEnd_(true)
+{
+}
 
-Fader::~Fader(void){}
+Fader::~Fader(void) {}
 
 void Fader::SetFade(STATE state)
 {
@@ -22,7 +22,7 @@ void Fader::SetFade(STATE state)
 	}
 }
 
-void Fader::Init(void){}
+void Fader::Init(void) {}
 
 void Fader::Update(void)
 {

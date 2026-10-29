@@ -1,6 +1,8 @@
 #include <algorithm>
 #include "../../Manager/ResourceManager.h"
 #include "../../Manager/SceneManager.h"
+#include "../Common/Collider/ColliderBase.h"
+#include "../Common/EffectController.h"
 #include "ActorBase.h"
 
 ActorBase::ActorBase(void)
@@ -8,7 +10,13 @@ ActorBase::ActorBase(void)
 	, scnMng_(SceneManager::GetInstance())
 	, transform_(Transform())
 	, isAlive_(true)
-{}
+{
+	ownColliders_.clear();
+}
+
+ActorBase::~ActorBase(void)
+{
+}
 
 void ActorBase::Load(void)
 {

@@ -5,14 +5,13 @@
 #include "SceneBase.h"
 
 SceneBase::SceneBase(void) 
-	: 
-	resMng_(ResourceManager::GetInstance()),
-	sceMng_(SceneManager::GetInstance()),
-	fontMng_(FontManager::GetInstance()),
-	sonMng_(SoundManager::GetInstance())
+	: resMng_(ResourceManager::GetInstance())
+	, sceMng_(SceneManager::GetInstance())
+	, fontMng_(FontManager::GetInstance())
+	, sonMng_(SoundManager::GetInstance())
+	, bgm_(-1)
+	, volume_(0)
 {
 }
 
-SceneBase::~SceneBase(void)
-{
-}
+SceneBase::~SceneBase(void){}

@@ -5,18 +5,14 @@
 #include "ColliderModel.h"
 
 ColliderCapsule::ColliderCapsule(
-	TAG tag,
-	const std::vector<TAG>& targetTags,
-	const Transform* follow,
-	const VECTOR& localPosTop,
-	const VECTOR& localPosDown,
+	TAG tag, const std::vector<TAG>& targetTags, const Transform* follow,
+	const VECTOR& localPosTop, const VECTOR& localPosDown,
 	float radius, int patrTag)
-	:
-	ColliderBase(SHAPE::CAPSULE, tag, targetTags, follow, patrTag),
-	localPosTop_(localPosTop),
-	localPosDown_(localPosDown),
-	radius_(radius),
-	center_(AsoUtility::VECTOR_ZERO)
+	: ColliderBase(SHAPE::CAPSULE, tag, targetTags, follow, patrTag)
+	, localPosTop_(localPosTop)
+	, localPosDown_(localPosDown)
+	, radius_(radius)
+	, center_(AsoUtility::VECTOR_ZERO)
 {
 }
 

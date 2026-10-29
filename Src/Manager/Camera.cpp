@@ -13,27 +13,33 @@
 #include "Camera.h"
 
 Camera::Camera(void)
-	:
-	followTransform_(nullptr),
-	targetPos_(nullptr),
-	mode_(MODE::NONE),
-	angles_(AsoUtility::VECTOR_ZERO),
-	rotY_(Quaternion::Identity()),
-	fixationPos_(AsoUtility::VECTOR_ZERO),
-	prevStickX_(0.0f),
-	prevStickZ_(0.0f)
+	: followTransform_(nullptr)
+	, targetPos_(nullptr)
+	, mode_(MODE::NONE)
+	, angles_(AsoUtility::VECTOR_ZERO)
+	, rotY_(Quaternion::Identity())
+	, fixationPos_(AsoUtility::VECTOR_ZERO)
+	, prevStickX_(0.0f)
+	, prevStickZ_(0.0f)
+	, isMouseInput_(false)
+	, lockOnImg_(-1)
+	, mouseX(0.0f)
+	, mouseY(0.0f)
+	, preMouseX(0.0f)
+	, preMouseY(0.0f)
 {
 }
 
 Camera::~Camera(void) {}
 
-void Camera::Update(void){}
+void Camera::Update(void) {}
 
 void Camera::SetBeforeDraw(void)
 {
 	// クリップ距離を設定する
 	SetCameraNearFar(VIEW_NEAR, VIEW_FAR);
 
+	// カメラモードごとの処理
 	switch (mode_)
 	{
 	case Camera::MODE::FIXED_POINT:
@@ -66,6 +72,7 @@ void Camera::DrawDebug(void)
 	// ロックオンUI描画
 	if (mode_ != MODE::TARGET_ROCKE || targetPos_ == nullptr) return;
 
+	// 3D描画時のZバッファを無効化して、ロックオンUIを描画する
 	SetUseZBuffer3D(FALSE);
 	DrawBillboard3D(
 		*targetPos_,
@@ -75,9 +82,7 @@ void Camera::DrawDebug(void)
 	SetUseZBuffer3D(TRUE);
 }
 
-void Camera::Release(void)
-{
-}
+void Camera::Release(void){}
 
 void Camera::ResetForScene(void)
 {
@@ -114,6 +119,7 @@ void Camera::InitCollider(void)
 		ColliderBase::TAG::STAGE
 	};
 
+	// 球体コライダーを生成して登録
 	auto colliderSphere = std::make_shared<ColliderSphere>(
 		ColliderBase::TAG::CAMERA,
 		targetTags,
@@ -121,8 +127,8 @@ void Camera::InitCollider(void)
 		AsoUtility::VECTOR_ZERO,
 		COL_CAPSULE_SPHERE
 	);
-	colliderSphere->SetIsCollier(true);
 
+	// コライダーを所有コライダーに登録
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::SPHERE)].push_back(colliderSphere);
 	CollisionManager::GetInstance().AddCollider(colliderSphere);
 }
@@ -139,8 +145,6 @@ void Camera::InitPost(void)
 
 	// ロックオン画像ロード
 	lockOnImg_ = resMng_.Load(ResourceManager::SRC::UI_LOCKON).handleId_;
-
-	isMouseInput_ = false;
 }
 
 void Camera::UpdateHitCollider(void)
@@ -156,29 +160,32 @@ void Camera::UpdateHitCollider(void)
 	VECTOR startPos = followTransform_->pos;
 	for (const auto& col : ownColliders_.at(sphereType))
 	{
+		// コライダーが有効でなければ処理しない
 		if (!col->GetIsCollier()) continue;
 
 		// 形状はSPHEREと確定しているため static_pointer_cast でダウンキャスト
 		auto colliderSphere = std::static_pointer_cast<ColliderSphere>(col);
 		if (colliderSphere == nullptr) continue;
 
+		// 衝突したコライダーを取得して押し戻し計算
 		for (const auto& hit : col->GetHitColliders())
 		{
 			// weak_ptr を1度だけ lock() して有効性を確認
 			auto hitCol = hit.lock();
+
+			// 衝突したコライダーが有効でなければ処理しない
 			if (!hitCol || hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
 
+			// 衝突したコライダー
 			const auto* colliderModel = static_cast<const ColliderModel*>(hitCol.get());
 
+			// カメラの座標を押し戻す
 			transform_.pos = CollisionUtility::CalcCameraPushBack(
-				*colliderSphere,
-				*colliderModel,
-				startPos,
-				transform_.pos,
+				*colliderSphere, *colliderModel,
+				startPos, transform_.pos,
 				CNT_TRY_COLLISION_CAMERA,
 				COLLISION_BACK_DIS,
-				false,
-				false
+				false,false
 			);
 		}
 	}
@@ -207,8 +214,10 @@ const VECTOR* Camera::FindLockOnTarget(SWITCH_DIR switchDir) const
 		if (acosf(dot) >= maxAngleRad) continue;
 
 		// 左右切り替え時の外積判定
-		if (switchDir == SWITCH_DIR::LEFT && VCross(camForward, toEnemy).y > 0.0f) continue;
-		if (switchDir == SWITCH_DIR::RIGHT && VCross(camForward, toEnemy).y < 0.0f) continue;
+		if (switchDir == SWITCH_DIR::LEFT 
+			&& VCross(camForward, toEnemy).y > 0.0f) continue;
+		if (switchDir == SWITCH_DIR::RIGHT 
+			&& VCross(camForward, toEnemy).y < 0.0f) continue;
 
 		diffMin = lockonDiff;
 		bestTarget = candidatePos;
@@ -442,7 +451,6 @@ void Camera::ProcessRot(bool isLimit)
 void Camera::ProcessMove(void)
 {
 	auto& ins = InputManager::GetInstance();
-
 	VECTOR moveDir = AsoUtility::VECTOR_ZERO;
 
 	if (GetJoypadNum() == 0)
@@ -501,9 +509,7 @@ void Camera::SetBeforeDrawFollow(void)
 	// 追従対象がいなければ処理しない
 	if (followTransform_ == nullptr) return;
 
-	// カメラ操作(回転)はマウス入力が有効な時だけ行う
-	// (追従自体は常に行わないと、カメラが初期位置に残り
-	//  プレイヤーが画面外になってしまう)
+	// カメラ操作はマウス入力が有効な時だけ行う
 	if (isMouseInput_)
 	{
 		ProcessRot(true);

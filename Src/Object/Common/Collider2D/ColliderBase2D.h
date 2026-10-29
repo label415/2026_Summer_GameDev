@@ -5,6 +5,7 @@
 class ColliderBase2D
 {
 public:
+
 	// 形状
 	enum class SHAPE
 	{
@@ -36,7 +37,9 @@ public:
 
 	//色変更
 	void SetValid(bool isValid);
+
 protected:
+
 	// デバッグ表示の色
 	static constexpr int COLOR_VALID = 0xff0000;
 	static constexpr int COLOR_INVALID = 0xaaaaaa;
@@ -52,4 +55,5 @@ protected:
 
 	// デバッグ用描画
 	virtual void DrawDebug(int color) = 0;
+
 };

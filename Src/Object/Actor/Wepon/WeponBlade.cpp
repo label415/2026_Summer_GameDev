@@ -62,6 +62,7 @@ void WeponBlade::InitCollider(void)
 	// 初期状態は当たり判定を無効化
 	colliderCapsule->SetIsCollier(false);
 
+	// コライダーを所有コライダーに登録
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colliderCapsule);
 	CollisionManager::GetInstance().AddCollider(colliderCapsule);
 }

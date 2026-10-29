@@ -5,6 +5,7 @@
 class AnimationController
 {
 public:
+
 	// アニメーションデータ
 	struct Animation
 	{
@@ -58,15 +59,12 @@ public:
 
 	// アニメーションを止めるフラグを設定
 	void SetIsStopFlager(bool isStop);
-private:
-	// アニメーションするモデルのハンドルID
-	int modelId_;
 
+private:
 	// 種類別のアニメーションデータ
 	std::map<int, Animation> animations_;
 
-	// 再生中のアニメーション
-	int playType_;
+	// 再生中のアニメーション情報
 	Animation playAnim_;
 
 	//特定の開始時間
@@ -75,18 +73,24 @@ private:
 	//特定の終了時間
 	float SpEnd_;
 
+	// アニメーションするモデルのハンドルID
+	int modelId_;
+
+	// 再生中のアニメーション
+	int playType_;
+
 	//特定の時間をループする
 	bool SpecificLoop_;
 
 	// アニメーションをループするかしないか
 	bool isLoop_;
 
-	// アニメーション追加の共通処理
-	void Add(int type, float speed, Animation& animation);
-
 	// アニメーションの再生を開始する共通処理
 	bool isReversing_;
 
 	// アニメーションを止めるフラグ
 	bool isStop_;
+
+	// アニメーション追加の共通処理
+	void Add(int type, float speed, Animation& animation);
 };

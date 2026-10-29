@@ -4,9 +4,11 @@
 #include "Quaternion.h"
 
 Quaternion::Quaternion(void)
+	: w(1)
+	, x(0)
+	, y(0)
+	, z(0)
 {
-	w = 1;
-	x = y = z = 0;
 }
 
 Quaternion::Quaternion(const VECTOR& rad)
@@ -132,7 +134,6 @@ Quaternion Quaternion::AngleAxis(double rad, VECTOR axis)
 VECTOR Quaternion::PosAxis(const Quaternion& q, VECTOR pos)
 {
 	// ˆÊ’uî•ñ‚É‰ñ“]î•ñ‚ğ”½‰f‚³‚¹‚é
-	// pos' = qEposEq(-1)
 	Quaternion tmp = Quaternion();
 	tmp = tmp.Mult(q);
 	tmp = tmp.Mult(Quaternion(0.0f, pos.x, pos.y, pos.z));

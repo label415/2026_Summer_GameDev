@@ -7,6 +7,7 @@ class ColliderModel;
 class ColliderSphere : public ColliderBase
 {
 public:
+
     // コンストラクタ
     ColliderSphere(
         TAG tag,
@@ -31,11 +32,16 @@ public:
     // 半径
     float GetRadius(void) const { return radius_; }
 
+	// 半径の設定
     void SetRadius(float radius) { radius_ = radius; }
+
 protected:
+
     // デバッグ用描画
     void DrawDebug(int color) override;
+
 private:
+
     // デバッグ表示の球体ポリゴン分割数
     static constexpr int DIV_NUM = 6;
 
@@ -44,5 +50,6 @@ private:
 
     // 半径
     float radius_;
+
 };
 

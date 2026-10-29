@@ -4,17 +4,21 @@
 ColliderBase::ColliderBase(
 	SHAPE shape, TAG tag,
 	const std::vector<TAG>& targetTags,
-	const Transform* follow,
-	int patrTag)
-	:
-	shape_(shape), tag_(tag),
-	targetTags_(targetTags), patrTag_(patrTag),
-	follow_(follow), isCollier_(true), isAction_(false)
+	const Transform* follow, int patrTag)
+	: shape_(shape)
+	, tag_(tag)
+	, targetTags_(targetTags)
+	, patrTag_(patrTag)
+	, follow_(follow)
+	, isCollier_(true)
+	, isAction_(false)
 {
 }
+
 ColliderBase::~ColliderBase(void)
 {
 }
+
 void ColliderBase::Draw(void)
 {
 	int color = COLOR_INVALID;
@@ -24,6 +28,7 @@ void ColliderBase::Draw(void)
 	}
 	DrawDebug(color);
 }
+
 void ColliderBase::SetFollow(const Transform* follow)
 {
 	follow_ = follow;

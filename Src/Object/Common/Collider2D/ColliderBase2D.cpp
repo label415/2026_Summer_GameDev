@@ -1,10 +1,9 @@
 #include "ColliderBase2D.h"
 
 ColliderBase2D::ColliderBase2D(SHAPE shape, TAG tag)
-	:
-	shape_(shape),
-	tag_(tag),
-	isValid_(true)
+	: shape_(shape)
+	, tag_(tag)
+	, isValid_(true)
 {
 }
 

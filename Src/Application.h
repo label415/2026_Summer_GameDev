@@ -7,8 +7,11 @@ class FpsController;
 
 class Application : public Singleton<Application>
 {
+
 	friend class Singleton<Application>;
+
 public:
+
 	// スクリーンサイズ
 	static constexpr int SCREEN_SIZE_X = 1280;
 	static constexpr int SCREEN_SIZE_Y = 720;
@@ -59,7 +62,9 @@ public:
 
 	// ゲーム終了フラグ設定
 	void SetIsEnd(void);
+
 private:
+
 	// FPSコントローラー
 	std::unique_ptr<FpsController> fpsController_;
 
@@ -75,4 +80,5 @@ private:
 
 	// デストラクタも同様
 	~Application(void) = default;
+
 };

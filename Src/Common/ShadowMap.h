@@ -3,6 +3,7 @@
 class ShadowMap
 {
 public:
+
 	// コンストラクタ
 	ShadowMap(int x, int y);
 
@@ -35,8 +36,11 @@ public:
 
 	// シャドウマップの解放
 	void Release(void);
+
 private:
+
 	// シャドウマップのID
 	int shadowId_;
+
 };
 

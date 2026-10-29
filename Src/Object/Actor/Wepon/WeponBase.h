@@ -7,6 +7,7 @@ class Transform;
 class WeponBase : public ActorBase
 {
 public:
+
 	// 武器種別
 	enum class WEAPON_TYPE
 	{
@@ -18,6 +19,7 @@ public:
 
 	// コンストラクタ
 	WeponBase(WEAPON_TYPE weaponType, const Transform& followTransform, int followFrameId);
+
 	// デストラクタ
 	virtual ~WeponBase(void) override;
 
@@ -38,12 +40,14 @@ public:
 
 	// 武器種
 	WEAPON_TYPE GetWeaponType(void) const { return weapontype_; }
+
 protected:
+
+	// 武器種
+	WEAPON_TYPE weapontype_;
+
 	// 追従先Transform
 	const Transform& followTransform_;
-
-	// 追従対象のフレームID
-	int followFrameId_;
 
 	// ローカル座標
 	VECTOR localPos_;
@@ -51,9 +55,10 @@ protected:
 	// ローカル回転
 	VECTOR localRot_;
 
-	// 武器種
-	WEAPON_TYPE weapontype_;
+	// 追従対象のフレームID
+	int followFrameId_;
 
 	// 当たり判定衝突時の更新処理
 	void Collision(void) override;
+
 };

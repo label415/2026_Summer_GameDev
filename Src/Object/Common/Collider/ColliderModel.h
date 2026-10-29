@@ -6,6 +6,7 @@
 class ColliderModel : public ColliderBase
 {
 public:
+
 	// コンストラクタ
 	ColliderModel(
 		TAG tag, const std::vector<TAG>& targetTags,
@@ -31,7 +32,9 @@ public:
 
 	// 対象フレーム判定
 	bool IsTargetFrame(int frameIdx) const;
+
 protected:
+
 	// 衝突判定から除外するフレーム番号
 	std::vector<int> excludeFrameIds_;
 
@@ -40,5 +43,6 @@ protected:
 
 	// デバッグ用描画
 	void DrawDebug(int color) override {};
+
 };
 

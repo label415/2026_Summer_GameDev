@@ -7,6 +7,7 @@ class Transform;
 class ColliderCapsule : public ColliderBase
 {
 public:
+
 	// コンストラクタ
 	ColliderCapsule(
 		TAG tag,
@@ -40,18 +41,22 @@ public:
 
 	// カプセルの中心座標
 	VECTOR& GetCenter(void);
+
 protected:
+
 	// デバッグ用描画
 	void DrawDebug(int color) override;
+
 private:
-	// 親Transformからの相対位置(上側)
+
+	// 親Transformからの相対位置
 	VECTOR localPosTop_;
-	// 親Transformからの相対位置(下側)
 	VECTOR localPosDown_;
+
+	// カプセルの中心
+	VECTOR center_;
 
 	// 半径
 	float radius_;
 
-	// カプセルの中心
-	VECTOR center_;
 };

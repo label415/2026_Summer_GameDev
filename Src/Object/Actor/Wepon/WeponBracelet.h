@@ -8,15 +8,12 @@ class Transform;
 class WeponBracelet : public WeponBase
 {
 public:
+
 	//攻撃エフェクト
 	enum class EFFECT_TYPE
 	{
 		BRACELET,
 	};
-
-	// 回転調整
-	static constexpr VECTOR DEFAULT_ROT =
-	{ 0.0f, -(90.0f * DX_PI_F / 180.0f), 0.0f };
 
 	// コンストラクタ
 	WeponBracelet(
@@ -38,6 +35,7 @@ public:
 	// 衝突判定の設定
 	void SetCollider(void) override;
 
+	// 衝突判定のクリア
 	void ClearCollider(void) override;
 
 	// 攻撃フラグの設定
@@ -46,8 +44,11 @@ public:
 	// 終了フラグの設定
 	void SetIsEnd(bool isEnd) override { isEnd_ = isEnd; }
 
+	// 移動方向の設定
 	void SetMoveDir(const VECTOR& dir) { moveDir_ = dir; }
+
 protected:
+
 	// リソースロード
 	void InitLoad(void) override;
 
@@ -62,14 +63,15 @@ protected:
 
 	// 初期化後の個別処理
 	void InitPost(void) override;
-private:
-	// 	// モデルの大きさ
-	static constexpr float SCALE = 0.4f;
 
-	// 衝突判定用カプセル上部球体
+private:
+
+	// 衝突判定用カプセル初期ローカル座標
 	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 0.0f, 300.0f };
-	// 衝突判定用カプセル下部球体
 	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 0.0f, 300.0f };
+
+	// 初期角度
+	static constexpr VECTOR DEFAULT_ROT = { 0.0f, -(90.0f * DX_PI_F / 180.0f), 0.0f };
 
 	// 衝突判定用カプセル球体半径
 	static constexpr float COL_CAPSULE_RADIUS = 200.0f;
@@ -80,9 +82,11 @@ private:
 	// 移動距離
 	static constexpr float LENGTH = 2000.0f;
 
-	// 衝突判定用座標上部
+	// モデルの大きさ
+	static constexpr float SCALE = 0.4f;
+
+	// 衝突判定用座標
 	VECTOR topPos_;
-	// 衝突判定用座標下部
 	VECTOR downPos_;
 
 	// 移動方向

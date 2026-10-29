@@ -299,30 +299,6 @@ protected:
 	// 当たり判定衝突時の更新処理
 	void UpdateHitCollider(void) override;
 private:
-	// スタミナ UI
-	std::unique_ptr<UISt> uiSt_;
-
-	// 回復
-	std::unique_ptr<UIRecovery> uiRecovery_;
-
-	// 状態
-	STATE state_;
-
-	// 攻撃コンボデータ
-	std::map<STATE_ATTACK_COMBO, ATTACK_COMBO> atkComboData_;
-
-	// 現在の攻撃コンボ状態
-	STATE_ATTACK_COMBO stateAtkCombo_;
-
-	// 攻撃コンボの更新ステップ
-	bool isComboNext_;
-
-	// 初期角度を保存
-	Quaternion lastQrot_;
-
-	// エフェクト種別
-	EFFECT effType_;
-
 	//アニメーションを固定化する座標
 	static constexpr VECTOR LOCK_POS1 = { 0.0f, 78.0f, 0.0f };
 	static constexpr VECTOR LOCK_POS2 = { 0.0f, 20.0f, 0.0f };
@@ -347,41 +323,47 @@ private:
 	// 無敵時間
 	static constexpr float INVINCIBLE_TIME = 2.0f;
 
-	// 移動入力判定および移動処理
-	void ProcessMove(void);
-
-	// 攻撃アクションおよびコンボ継続処理
-	void ProcessAttack(void);
-
-	// 回避アクション処理
-	void ProcessEvasion(void);
-
-	// ダウンおよび起き上がり復帰処理
-	void ProcessDownUp(void);
-
-	// 回復処理
-	void ProcessRecovery(void);
-
-	// 死亡演出処理
-	void ProcessDie(void);
-
-	// ダメージ処理
-	void ApplyDamage(float damageAmount);
-
+	// スタミナ UI
+	std::unique_ptr<UISt> uiSt_;
+	// 回復
+	std::unique_ptr<UIRecovery> uiRecovery_;
+	// 攻撃コンボデータ
+	std::map<STATE_ATTACK_COMBO, ATTACK_COMBO> atkComboData_;
+	// 状態
+	STATE state_;
+	// 初期角度を保存
+	Quaternion lastQrot_;
+	// エフェクト種別
+	EFFECT effType_;
+	// 現在の攻撃コンボ状態
+	STATE_ATTACK_COMBO stateAtkCombo_;
+	// 攻撃コンボの更新ステップ
+	bool isComboNext_;
 	// 無敵
 	bool isVinclible_;
+	// アニメーションを固定化する座標
+	VECTOR animLockPos_;
 	// 無敵時間
 	float invincibleTimer_;
-
 	// スタミナ回復時間
 	float stRecoverTime_;
-
 	// 死亡演出時間
 	float deathAnimationTime_;
 
-	// アニメーションを固定化する座標
-	VECTOR animLockPos_;
-
+	// 移動入力判定および移動処理
+	void ProcessMove(void);
+	// 攻撃アクションおよびコンボ継続処理
+	void ProcessAttack(void);
+	// 回避アクション処理
+	void ProcessEvasion(void);
+	// ダウンおよび起き上がり復帰処理
+	void ProcessDownUp(void);
+	// 回復処理
+	void ProcessRecovery(void);
+	// 死亡演出処理
+	void ProcessDie(void);
+	// ダメージ処理
+	void ApplyDamage(float damageAmount);
 	// 入力方向を取得
 	VECTOR GetInputDirection(void);
 };

@@ -3,10 +3,11 @@
 class Fader
 {
 public:
+
 	// 状態
 	enum class STATE
 	{
-		NONE, 
+		NONE,
 		FADE_OUT,	// 徐々に暗転
 		FADE_IN		// 徐々に明転
 	};
@@ -34,8 +35,10 @@ public:
 
 	// 描画
 	void Draw(void);
+
 private:
-	//透明度最大値
+
+	// 透明度最大値
 	static constexpr float MAX_ALPHA = 255.0f;
 
 	// フェードが進む速さ
@@ -47,10 +50,10 @@ private:
 	// 透明度
 	float alpha_;
 
-	// 状態(STATE)を保ったまま終了判定を行うため、
-	// Update->Draw->Updateの1フレーム判定用
+	// フェード処理の開始判定
 	bool isPreEnd_;
 
 	// フェード処理の終了判定
 	bool isEnd_;
+
 };

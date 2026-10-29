@@ -1,9 +1,12 @@
 #pragma once
 #include <DxLib.h>
+
 class Transform;
+
 class ModelFrameUtility
 {
 public:
+
 	// 対象フレームのワールド行列を大きさ・回転・位置に分解してを取得する
 	static void GetFrameWorldMatrix(
 		int modelId, int frameIdx, VECTOR& scl, MATRIX& matRot, VECTOR& pos);
@@ -13,5 +16,6 @@ public:
 	static void SetFrameWorldMatrix(
 		const Transform& follow, int followFrameIdx,
 		Transform& target, VECTOR localPos, VECTOR localRot);
+
 };
 

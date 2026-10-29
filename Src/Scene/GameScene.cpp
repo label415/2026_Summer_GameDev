@@ -1,10 +1,10 @@
 #include <DxLib.h>
-#include "../Object/Actor/Charactor/Player.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyManager.h"
 #include "../Object/Actor/Charactor/Enemy/EnemyDragon.h"
+#include "../Object/Actor/Charactor/Player.h"
+#include "../Object/Common/Collider/ColliderCapsule.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/Stage/SkyDome.h"
-#include "../Object/Common/Collider/ColliderCapsule.h"
 #include "../Common/ShadowMap.h"
 #include "../Manager/Camera.h"
 #include "../Manager/SceneManager.h"
@@ -17,17 +17,16 @@
 #include "GameScene.h"
 
 GameScene::GameScene(void)
-	:
-	SceneBase(),
-	isResultUI_(false),
-	resultAlpha_(0.0f),
-	resultImg_(-1),
-	gameClearImg_(-1),
-	gameOverImg_(-1)
+	: SceneBase()
+	, isResultUI_(false)
+	, resultAlpha_(-1)
+	, resultImg_(-1)
+	, gameClearImg_(-1)
+	, gameOverImg_(-1)
 {
 }
 
-GameScene::~GameScene(void) {}
+GameScene::~GameScene(void){}
 
 void GameScene::Load(void)
 {
@@ -96,7 +95,9 @@ void GameScene::LoadEnd(void)
 			(playerPos.z + SHADOW_MAP_DIFF))
 	);
 
+	// マウス入力有効化
 	camera_->SetIsMouseInput(true);
+	// マウスカーソル非表示
 	InputManager::GetInstance().SetMouseFlage(false);
 }
 
@@ -192,6 +193,7 @@ void GameScene::Release(void)
 
 void GameScene::UpdateAutoLockOn(void)
 {
+	// カメラのインスタンス取得
 	std::shared_ptr<Camera> camera = SceneManager::GetInstance().GetCamera();
 
 	// カメラ側でロックオン対象の選別・切り替えを更新
@@ -203,10 +205,12 @@ void GameScene::UpdateAutoLockOn(void)
 	// 追尾対象追加
 	for (auto& enemy : enemys_->GetEnemys())
 	{
+		// 敵にプレイヤーの位置を渡す
 		enemy->SetTargetPos(&player_->GetTransform().pos);
 		for (const auto& collider
 			: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE)))
 		{
+			// カプセルコライダーの中心座標をカメラに渡す
 			auto enemyCapsule = std::dynamic_pointer_cast<ColliderCapsule>(collider);
 			camera_->AddTargetPos(&enemyCapsule->GetCenter());
 		}
@@ -216,27 +220,25 @@ void GameScene::UpdateAutoLockOn(void)
 void GameScene::UpdateResult(void)
 {
 	bool isResult = false;
-	// プレイヤー死亡判定
-	if (player_->GetState() == Player::STATE::END)isResult = true;
-	// 敵全滅判定
-	for (const auto& enemy : enemys_->GetEnemys())
-	{
-		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::END))isResult = true;
-	}
-	// タイトルシーンに遷移
-	if (isResult) 
-	{
-		sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
-	}
 
 	// ポーズメニューの表示切り替え
 	bool isSelect = InputManager::GetInstance().IsTrgDown(KEY_INPUT_ESCAPE)
 		|| InputManager::GetInstance().IsPadBtnTrgDown(
 			InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::START);
-	if (isSelect)
+
+	// プレイヤー死亡判定
+	if (player_->GetState() == Player::STATE::END)isResult = true;
+
+	// 敵全滅判定
+	for (const auto& enemy : enemys_->GetEnemys())
 	{
-		sceMng_.PushScene(SceneManager::SCENE_ID::PAUSE);
+		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::END))isResult = true;
 	}
+
+	// タイトルシーンに遷移
+	if (isResult) { sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE); }
+	// ポーズメニューの表示
+	if (isSelect) { sceMng_.PushScene(SceneManager::SCENE_ID::PAUSE); }
 }
 
 void GameScene::DrawUI(void)

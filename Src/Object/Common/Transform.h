@@ -5,15 +5,20 @@
 class Transform
 {
 public:
+
 	// モデルのハンドルID
 	int modelId;
 
 	// 大きさ
 	VECTOR scl;
+
 	// 回転
 	VECTOR rot;
+
 	// 位置
 	VECTOR pos;
+
+	// ローカル大きさ
 	VECTOR localPos;
 
 	// 行列
@@ -62,4 +67,5 @@ public:
 
 	// 対象方向を取得
 	VECTOR GetDir(const VECTOR& dir) const;
+
 };

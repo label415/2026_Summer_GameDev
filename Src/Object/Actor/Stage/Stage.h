@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "../../Common/Transform.h"
 #include "../ActorBase.h"
 
 class ColliderModel;

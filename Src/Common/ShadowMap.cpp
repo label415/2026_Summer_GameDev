@@ -3,11 +3,12 @@
 #include "ShadowMap.h"
 
 ShadowMap::ShadowMap(int x, int y)
+	: shadowId_(-1)
 {
 	shadowId_ = MakeShadowMap(x, y);
 }
 
-ShadowMap::~ShadowMap(void){}
+ShadowMap::~ShadowMap(void) {}
 
 void ShadowMap::AddShadowMapLight(VECTOR lightPos)
 {

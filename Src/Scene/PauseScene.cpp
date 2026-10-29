@@ -9,14 +9,19 @@
 #include "PauseScene.h"
 
 PauseScene::PauseScene(void)
-	:
-	selectIndex_(0),
-	isHovered(true),
-	isPauseScene_(false)
+	: SceneBase()
+	, selectIndex_(0)
+	, isHovered(true)
+	, isPauseScene_(false)
+	, isStickInput_(false)
+	, pauseFont_(-1)
+	, selectImg_(-1)
+	, uiBoxs_()
+{}
+
+PauseScene::~PauseScene(void)
 {
 }
-
-PauseScene::~PauseScene(void){}
 
 void PauseScene::LoadEnd(void)
 {
@@ -38,7 +43,9 @@ void PauseScene::LoadEnd(void)
 			BOX_WIDTH, BOX_HEIGHT);
 	}
 
+	// カメラのマウス入力を無効化
 	sceMng_.GetCamera().get()->SetIsMouseInput(false);
+	// マウス入力を有効化
 	InputManager::GetInstance().SetMouseFlage(true);
 }
 
@@ -54,8 +61,10 @@ void PauseScene::Update(void)
 	Vector2 mPos = ins.GetMousePos();
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
+		// マウスがUIコライダー内にあるか判定
 		if (uiBoxs_[i] && uiBoxs_[i]->Contains(mPos.x, mPos.y))
 		{
+			// マウス入力を有効化
 			ins.SetMouseFlage(true);
 			selectIndex_ = i;
 			isHovered = true;
@@ -71,16 +80,20 @@ void PauseScene::Update(void)
 	// スティック入力があった場合、選択インデックスを更新
 	if (dirY != 0)
 	{
+		// マウス入力を無効化
 		ins.SetMouseFlage(false);
 
+		// スティック入力が初めての入力である場合、選択インデックスを更新
 		if (!isStickInput_)
 		{
+			// 選択インデックスを更新し、スティック入力フラグを立てる
 			selectIndex_ = (selectIndex_ + dirY + LIST_MAX) % LIST_MAX;
 			isStickInput_ = isHovered = true;
 		}
 	}
 	else
 	{
+		// スティック入力がない場合、フラグをリセット
 		isStickInput_ = false;
 	}
 
@@ -94,10 +107,12 @@ void PauseScene::Update(void)
 		{
 			sceMng_.PopScene();
 		}
+		// タイトルに戻るを選択した場合、タイトルシーンに遷移する
 		else if (selectIndex_ == static_cast<int>(LIST::タイトルに戻る))
 		{
 			sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE);
 		}
+		// ゲーム終了を選択した場合、アプリケーションを終了する
 		else if (selectIndex_ == static_cast<int>(LIST::ゲーム終了))
 		{
 			Application::GetInstance().SetIsEnd();
@@ -132,11 +147,13 @@ void PauseScene::Draw(void)
 	// カーソル画像
 	if (isHovered && uiBoxs_[selectIndex_])
 	{
+		// カーソル画像の中心座標を計算
 		float centerY =
 			uiBoxs_[selectIndex_]->Top()
 			+ (uiBoxs_[selectIndex_]->Bottom()
 				- uiBoxs_[selectIndex_]->Top()) * SELECT_IMG_ADJUST_Y;
 
+		// カーソル画像描画
 		DrawRotaGraph(
 			Application::HALF_SCREEN_SIZE_X,
 			static_cast<int>(centerY),
@@ -144,15 +161,16 @@ void PauseScene::Draw(void)
 		);
 	}
 
-	// 文字とコライダー描画
+	// 各ポーズフォント
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
-		// 文字描画
+		// 文字の描画位置を計算
 		int strW = GetDrawStringWidthToHandle(pasueList_[i].c_str(), -1, pauseFont_);
 		int posX = static_cast<int>(Application::SCREEN_SIZE_X - strW) / FONT_ADJUST_X;
 		int posY = static_cast<int>(
 			(Application::HALF_SCREEN_SIZE_Y - FONT_ADJUST_Y) + (FONT_INTERVAL * i));
 
+		// ポーズフォント描画
 		DrawFormatStringToHandle(
 			posX, posY,
 			FONT_COLOR,
@@ -161,4 +179,7 @@ void PauseScene::Draw(void)
 	}
 }
 
-void PauseScene::Release(void){}
+void PauseScene::Release(void)
+{
+	pauseFont_ = -1;
+}

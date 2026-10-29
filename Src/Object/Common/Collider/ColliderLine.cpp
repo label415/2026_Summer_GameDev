@@ -6,10 +6,9 @@
 ColliderLine::ColliderLine(
 	TAG tag, const std::vector<TAG>& targetTags, const Transform* follow,
 	const VECTOR& localPosStart, const VECTOR& localPosEnd, int patrTag)
-	:
-	ColliderBase(SHAPE::LINE, tag, targetTags, follow, patrTag),
-	localPosStart_(localPosStart),
-	localPosEnd_(localPosEnd)
+	: ColliderBase(SHAPE::LINE, tag, targetTags, follow, patrTag)
+	, localPosStart_(localPosStart)
+	, localPosEnd_(localPosEnd)
 {
 }
 

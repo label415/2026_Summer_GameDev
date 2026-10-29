@@ -3,15 +3,12 @@
 #include "ColliderSphere.h"
 
 ColliderSphere::ColliderSphere(
-	TAG tag,
-	const std::vector<TAG>& targetTags,
-	const Transform* follow,
-	const VECTOR& localPos, 
+	TAG tag, const std::vector<TAG>& targetTags,
+	const Transform* follow, const VECTOR& localPos, 
 	float radius, int patrTag)
-	:
-	ColliderBase(SHAPE::SPHERE, tag, targetTags, follow, patrTag),
-	localPos_(localPos),
-	radius_(radius)
+	: ColliderBase(SHAPE::SPHERE, tag, targetTags, follow, patrTag)
+	, localPos_(localPos)
+	, radius_(radius)
 {
 }
 

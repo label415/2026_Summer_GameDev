@@ -3,13 +3,16 @@
 #include "AnimationController.h"
 
 AnimationController::AnimationController(int modelId)
-	:
-	modelId_(modelId),
-	playType_(-1),
-	playAnim_(),
-	isLoop_(true)
+	: modelId_(modelId)
+	, playType_(-1)
+	, playAnim_()
+	, isLoop_(true)
+	, SpecificLoop_(false)
+	, isReversing_(false)
+	, isStop_(false)
+	, SpState_(0.0f)
+	, SpEnd_(0.0f)
 {
-	isStop_ = false;
 }
 
 AnimationController::~AnimationController(void)

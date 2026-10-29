@@ -5,6 +5,7 @@ template <typename T>
 class Vector2Template
 {
 public:
+
 	// テンプレート変数
 	T x;
 	T y;
@@ -17,8 +18,10 @@ public:
 
 	// デストラクタ
 	~Vector2Template(void) = default;
+
 };
 
 using Vector2 = Vector2Template<int>;
+
 using Vector2F = Vector2Template<float>;
 
