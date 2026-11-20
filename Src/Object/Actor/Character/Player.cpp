@@ -14,7 +14,7 @@
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "../../Common/Collider/ColliderSphere.h"
 #include "../../Common/Collider/ColliderModel.h"
-#include "../Wepon/WeponBlade.h"
+#include "../Weapon/WeaponBlade.h"
 #include "../UI/UISt.h"
 #include "../UI/UIHp.h"
 #include "../UI/UIRecovery.h"
@@ -28,7 +28,7 @@ Player::Player(void)
 	, deathAnimationTime_(0.0f)
 	, invincibleTimer_(0.0f)
 	, isComboNext_(false)
-	, isVinclible_(false)
+	, isInvincible_(false)
 	, stateAtkCombo_(STATE_ATTACK_COMBO::COMBO_1)
 	, state_(STATE::IDLE)
 	, uiRecovery_(nullptr)
@@ -41,7 +41,7 @@ Player::~Player(void) {}
 void Player::Draw(void)
 {
 	// 基底クラスの描画処理
-	CharactorBase::Draw();
+	CharacterBase::Draw();
 
 	// 武器描画
 	for (const auto& weapon : weapons_) {
@@ -52,7 +52,7 @@ void Player::Draw(void)
 void Player::Release(void)
 {
 	// 基底クラスの解放処理
-	CharactorBase::Release();
+	CharacterBase::Release();
 }
 
 void Player::DrawHp(void)
@@ -68,14 +68,14 @@ void Player::DrawHp(void)
 void Player::InitLoad(void)
 {
 	// 基底クラスのリソースロード
-	CharactorBase::InitLoad();
+	CharacterBase::InitLoad();
 
 	//プレイヤー
 	transform_.SetModel(resMng_.LoadModelDuplicate(
 		ResourceManager::SRC::MODEL_PLAYER));
 
 	// 武器
-	auto weaponBlade = std::make_unique<WeponBlade>(transform_, WEAPON_ATTACH_FRAME_NO);
+	auto weaponBlade = std::make_unique<WeaponBlade>(transform_, WEAPON_ATTACH_FRAME_NO);
 	weapons_.push_back(std::move(weaponBlade));
 	for (const auto& weapon : weapons_) {
 		weapon->Load();
@@ -87,13 +87,15 @@ void Player::InitLoad(void)
 
 	// HP UI を画面左上に表示
 	uiHp_ = std::make_unique<UIHp>(
-		Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV, UI_HP_POS_Y,
+		static_cast<float>(Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV),
+		static_cast<float>(UI_HP_POS_Y),
 		UI_SCALE_X, UI_SCALE_Y, UI_SCALE_Z);
 	uiHp_->Load();
 
 	// スタミナUIを HP の下に表示
 	uiSt_ = std::make_unique<UISt>(
-		Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV, UI_ST_POS_Y,
+		static_cast<float>(Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV),
+		static_cast<float>(UI_ST_POS_Y),
 		UI_SCALE_X, UI_SCALE_Y, UI_SCALE_Z);
 	uiSt_->Load();
 
@@ -131,7 +133,7 @@ void Player::InitCollider(void)
 	// カプセルコライダ
 	std::vector<ColliderBase::TAG> CapsuleTags = {
 	ColliderBase::TAG::ENEMY,
-	ColliderBase::TAG::ENEMY_WEPON,
+	ColliderBase::TAG::ENEMY_WEAPON,
 	ColliderBase::TAG::STAGE
 	};
 
@@ -157,11 +159,11 @@ void Player::InitAnimation(void)
 	animationController_->Add(static_cast<int>(ANIM_TYPE::FAST_RUN),
 		ANIM_SPEED_FAST_RUN, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_RUN));
 	animationController_->Add(static_cast<int>(ANIM_TYPE::ATTACK_1),
-		ANIM_SPEED_ATTACK_1, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_1));
+		ANIM_SPEED_ATTACK_1, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_ATTACK_1));
 	animationController_->Add(static_cast<int>(ANIM_TYPE::ATTACK_2),
-		ANIM_SPEED_ATTACK_2, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_2));
+		ANIM_SPEED_ATTACK_2, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_ATTACK_2));
 	animationController_->Add(static_cast<int>(ANIM_TYPE::ATTACK_3),
-		ANIM_SPEED_ATTACK_3, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLSYER_ATTACK_3));
+		ANIM_SPEED_ATTACK_3, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_ATTACK_3));
 	animationController_->Add(static_cast<int>(ANIM_TYPE::EVASION),
 		ANIM_SPEED_EVASION, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_EVASION));
 	animationController_->Add(static_cast<int>(ANIM_TYPE::DOWN),
@@ -423,7 +425,7 @@ void Player::ProcessAttack(void)
 	}
 
 	// 衝突判定の処理
-	if (comboData.IsValidCollsion(currentStep)) {
+	if (comboData.IsValidCollision(currentStep)) {
 		for (const auto& weapon : weapons_) {
 			weapon->SetCollider();
 		}
@@ -439,7 +441,7 @@ void Player::ProcessAttack(void)
 	if (currentStep == ATTACK_SE_TRIGGER_STEP) {
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_WEAPON_1).handleId_;
 		SoundManager::GetInstance().PlaySE(
-			SoundManager::SeId::PLAYER_WEPON_SE1, bgm_, SE_VOLUME_ATTACK);
+			SoundManager::SeId::PLAYER_WEAPON_SE1, bgm_, SE_VOLUME_ATTACK);
 	}
 
 	// コンボ遷移チェック
@@ -513,7 +515,7 @@ void Player::ProcessEvasion(void)
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_EVASION).handleId_;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_AVE, bgm_, SE_VOLUME_EVASION);
 
-		isVinclible_ = true;
+		isInvincible_ = true;
 	}
 
 	if (state_ != STATE::EVASION) return;
@@ -526,7 +528,7 @@ void Player::ProcessEvasion(void)
 	{
 		transform_.quaRotLocal = lastQrot_;
 		state_ = STATE::IDLE;
-		isVinclible_ = false;
+		isInvincible_ = false;
 	}
 }
 
@@ -535,7 +537,7 @@ void Player::ProcessDownUp(void)
 	// ダウン状態の処理
 	if (state_ == STATE::DOWN)
 	{
-		isVinclible_ = true;
+		isInvincible_ = true;
 		state_ = STATE::DOWN;
 
 		effect_->SetEffectPos(
@@ -658,13 +660,13 @@ void Player::UpdateProcess(void)
 	effect_->SetEffectPos(static_cast<int>(effType_), transform_.pos);
 
 	// 無敵時間の処理
-	if (isVinclible_ && invincibleTimer_ >= 0.0f)
+	if (isInvincible_ && invincibleTimer_ >= 0.0f)
 	{
 		invincibleTimer_ -= 1.0f * SceneManager::GetInstance().GetDeltaTime();
 	}
 	else {
 		// 無敵時間が終了したら無敵状態を解除
-		isVinclible_ = false;
+		isInvincible_ = false;
 	}
 
 	// スタミナ回復処理
@@ -753,7 +755,7 @@ void Player::UpdateProcessPost(void)
 
 void Player::UpdateHitCollider(void)
 {
-	if (isVinclible_) return;
+	if (isInvincible_) return;
 
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	if (ownColliders_.count(capsuleType) == 0) return;
@@ -795,7 +797,7 @@ void Player::UpdateHitCollider(void)
 			}
 
 			// タグが敵武器でないときは処理しない
-			if (tag != ColliderBase::TAG::ENEMY_WEPON) continue;
+			if (tag != ColliderBase::TAG::ENEMY_WEAPON) continue;
 
 			// 壁による遮蔽チェック
 			if (targetCol->GetFollow() != nullptr

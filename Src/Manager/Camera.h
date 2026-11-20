@@ -119,10 +119,11 @@ private:
 	//ロックオンUIの大きさ
 	static constexpr float LOCON_UI_SIZE = 50.0f;
 
-	// カメラの回転量
+	// カメラの回転量（キーボード・パッド）
 	const float ROT_POW_DEG = 2.0f;
 	const float ROT_POW_RAD = ROT_POW_DEG * DX_PI_F / 180.0f;
 
+	// カメラの回転量（マウス）
 	const float MROT_POW_DEG = 0.1f;
 	const float MROT_POW_RAD = MROT_POW_DEG * DX_PI_F / 180.0f;
 

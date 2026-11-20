@@ -1,9 +1,9 @@
 #pragma once
-#include "WeponBase.h"
+#include "WeaponBase.h"
 
 class Transform;
 
-class WeponFlameThrower :public WeponBase
+class WeaponFlameThrower :public WeaponBase
 {
 public:
 
@@ -16,12 +16,12 @@ public:
 	};
 
 	// コンストラクタ
-	WeponFlameThrower(
+	WeaponFlameThrower(
 		const Transform& followTransform,
-		const VECTOR moverDir, int followFrameId);
+		const VECTOR moveDir, int followFrameId);
 
 	// デストラクタ
-	~WeponFlameThrower(void) override;
+	~WeaponFlameThrower(void) override;
 
 	// 更新
 	void Update(void) override;
@@ -48,7 +48,7 @@ protected:
 	static constexpr float MAX_RADIUS = 1100.0f;
 
 	// 爆破開始時間
-	static constexpr float EXPLOSION_STATO_TIME = 1.0f;
+	static constexpr float EXPLOSION_START_TIME = 1.0f;
 
 	// リソースロード
 	void InitLoad(void) override;
@@ -95,7 +95,7 @@ private:
 	void Move(void);
 
 	// エフェクト切り替え
-	void ChangerEffect(EFFECT_TYPE effectType);
+	void ChangeEffect(EFFECT_TYPE effectType);
 
 };
 

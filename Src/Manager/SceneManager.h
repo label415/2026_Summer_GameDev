@@ -15,6 +15,7 @@ class SceneManager : public Singleton<SceneManager>
 {
 	friend class Singleton<SceneManager>;
 public:
+
 	// シーン名
 	enum class SCENE_ID
 	{
@@ -75,7 +76,9 @@ public:
 
 	//現在のシーンID
 	const SCENE_ID GetSceneID(void)const { return sceneId_; }
+
 private:
+
 	// ロード状態
 	enum class LOAD_STATE
 	{
@@ -138,9 +141,7 @@ private:
 	// リソース解放
 	void ResetResource(void);
 
-	// ロード中の更新
-	void UpdateLoading(void);
-
 	// ロード中か
 	bool IsLoading(void) const { return loadState_ != LOAD_STATE::NONE; }
+
 };

@@ -30,7 +30,8 @@ void TitleScene::Load(void)
 
 	// フォントのロード
 	resMng_.Load(ResourceManager::SRC::FONT);
-	pauseFont_ = fontMng_.GetInstance().CreateMyFont(fontName_, FONT_SIZE, FONT_THICKNESS);
+	pauseFont_ = fontMng_.GetInstance().CreateMyFont(
+		fontName_, static_cast<int>(FONT_SIZE), static_cast<int>(FONT_THICKNESS));
 
 	// 画像のロード
 	titleImg_ = resMng_.Load(ResourceManager::SRC::IMG_TITLE).handleId_;
@@ -63,7 +64,7 @@ void TitleScene::Update(void)
 	Vector2 mPos = ins.GetMousePos();
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
-		if (uiBoxs_[i] && uiBoxs_[i]->Contains(mPos.x, mPos.y))
+		if (uiBoxs_[i] && uiBoxs_[i]->Contains(static_cast<float>(mPos.x), static_cast<float>(mPos.y)))
 		{
 			ins.SetMouseFlage(true);
 			selectIndex_ = i;
@@ -117,7 +118,7 @@ void TitleScene::Draw(void)
 	// タイトル画像
 	DrawRotaGraph(
 		Application::HALF_SCREEN_SIZE_X,
-		Application::HALF_SCREEN_SIZE_Y - TITLE_IMG_ADJUST_Y,
+		static_cast<int>(Application::HALF_SCREEN_SIZE_Y - TITLE_IMG_ADJUST_Y),
 		TITLE_IMG_SIZE, 0.0f, titleImg_, true);
 
 	// カーソル画像
@@ -140,7 +141,7 @@ void TitleScene::Draw(void)
 	{
 		// 文字描画
 		int strW = GetDrawStringWidthToHandle(pauseList_[i].c_str(), -1, pauseFont_);
-		int posX = static_cast<int>(Application::SCREEN_SIZE_X - strW) / FONT_ADJUST_X;
+		int posX = static_cast<int>((Application::SCREEN_SIZE_X - strW) / FONT_ADJUST_X);
 		int posY = static_cast<int>(
 			(Application::HALF_SCREEN_SIZE_Y + FONT_ADJUST_Y) + (FONT_INTERVAL * i));
 

@@ -1,14 +1,15 @@
 #pragma once
 #include <DxLib.h>
 #include <functional>
-#include "../CharactorBase.h"
+#include "../CharacterBase.h"
 
-class WeponBase;
+class WeaponBase;
 
 class EnemyBase :
-    public CharactorBase
+    public CharacterBase
 {
 public:
+
     // 種別
     enum class TYPE
     {
@@ -45,8 +46,10 @@ public:
     const int GetState(void)const { return stateBase_; }
 
 	// 死亡演出タイム取得
-    const float GetDesath(void)const { return deathAnimationTime_; }
+    const float GetDeath(void)const { return deathAnimationTime_; }
+
 protected:
+
     // 状態管理
     int stateBase_;
 
@@ -97,4 +100,5 @@ protected:
 
     // 移動可能範囲判定
     bool InMovableRange(void) const;
+
 };

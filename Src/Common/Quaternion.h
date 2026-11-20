@@ -8,6 +8,7 @@ public:
 	// クォータニオンの正規化に使用する最小値
 	static constexpr float kEpsilonNormalSqrt = 1e-15F;
 
+	// クォータニオン成分（実部w、虚部x, y, z）
 	double w;
 	double x;
 	double y;
@@ -76,14 +77,26 @@ public:
 
 	// ２つのベクトル間の回転量を取得する
 	static Quaternion FromToRotation(const VECTOR& fromDir, const VECTOR& toDir);
+
+	// 指定角度上限で目標回転へ近づける
 	static Quaternion RotateTowards(const Quaternion& from, const Quaternion& to, float maxDegreesDelta);
+
+	// ２つのクォータニオン間の角度を取得
 	static double Angle(const Quaternion& q1, const Quaternion& q2);
+
+	// クランプなしの球面補間
 	static Quaternion SlerpUnclamped(Quaternion a, Quaternion b, float t);
+
+	// 単位クォータニオンを取得
 	static Quaternion Identity(void);
 
 	// 長さ
 	double Length(void) const;
+
+	// 長さの2乗
 	double LengthSquared(void) const;
+
+	// 虚部ベクトル(x, y, z)を取得
 	VECTOR xyz(void) const;
 
 	// 対象方向の回転
@@ -94,7 +107,10 @@ private:
 	// 基本ベクトルを取得
 	VECTOR GetDir(VECTOR dir) const;
 
+	// スカラー乗算演算子
 	Quaternion operator*(float rhs);
+
+	// 加算演算子
 	Quaternion operator+(const Quaternion& rhs);
 
 };

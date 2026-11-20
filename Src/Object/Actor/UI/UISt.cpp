@@ -7,7 +7,7 @@
 UISt::UISt(float posX, float posY, float flameScl,
 	float stSclX, float stSclY, float st)
 	:
-	stPos_(posX, posY),
+	stPos_(static_cast<int>(posX), static_cast<int>(posY)),
 	stCurrent_(st),
 	flameScl_(flameScl),
 	stSclX_(stSclX),
@@ -33,9 +33,9 @@ void UISt::Draw(void)
 	float realHalfWidth = IMG_SIZE_X / stSclX_;
 	float realHalfHeight = IMG_SIZE_Y / stSclY_;
 
-	float left = stPos_.x - realHalfWidth;
-	float top = stPos_.y - realHalfHeight;
-	float bottom = stPos_.y + realHalfHeight;
+	float left = static_cast<float>(stPos_.x) - realHalfWidth;
+	float top = static_cast<float>(stPos_.y) - realHalfHeight;
+	float bottom = static_cast<float>(stPos_.y) + realHalfHeight;
 
 	int srcWidth = static_cast<int>(IMG_SIZE_X * hpRate);
 	float currentBarRight = left + (realHalfWidth * 2.0f * hpRate);

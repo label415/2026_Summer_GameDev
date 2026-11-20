@@ -1,7 +1,7 @@
 #include <DxLib.h>
-#include "../Object/Actor/Charactor/Enemy/EnemyManager.h"
-#include "../Object/Actor/Charactor/Enemy/EnemyDragon.h"
-#include "../Object/Actor/Charactor/Player.h"
+#include "../Object/Actor/Character/Enemy/EnemyManager.h"
+#include "../Object/Actor/Character/Enemy/EnemyDragon.h"
+#include "../Object/Actor/Character/Player.h"
 #include "../Object/Common/Collider/ColliderCapsule.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/Stage/SkyDome.h"
@@ -255,7 +255,7 @@ void GameScene::DrawUI(void)
 		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::DEAD))
 		{
 			resultAlpha_ = static_cast<int>(
-				enemy->GetDesath() * RESULT_UI_ALPHA_MAGNIFICATION);
+				enemy->GetDeath() * RESULT_UI_ALPHA_MAGNIFICATION);
 			resultImg_ = gameClearImg_;
 			isResultUI_ = true;
 		}
@@ -265,7 +265,7 @@ void GameScene::DrawUI(void)
 	if (player_->GetState() == Player::STATE::DIE)
 	{
 		resultAlpha_ = static_cast<int>(
-			player_->GetDesath() * RESULT_UI_ALPHA_MAGNIFICATION);
+			player_->GetDeath() * RESULT_UI_ALPHA_MAGNIFICATION);
 		resultImg_ = gameOverImg_;
 		isResultUI_ = true;
 	}

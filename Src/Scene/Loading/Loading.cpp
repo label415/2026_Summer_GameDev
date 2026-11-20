@@ -25,7 +25,8 @@ void Loading::Load(void)
 
 	// フォントハンドルの作成
 	auto& font = FontManager::GetInstance();
-	pauseFont_ = font.CreateMyFont(FONT_NAME, FONT_SIZE, FONT_THICKNESS);
+	pauseFont_ = font.CreateMyFont(
+		FONT_NAME, static_cast<int>(FONT_SIZE), static_cast<int>(FONT_THICKNESS));
 }
 
 // 更新
@@ -61,8 +62,8 @@ void Loading::Draw(void)
 		std::wstring(LOADING_TEXT) + std::wstring(dotCount, L'.');
 
 	// 描画位置を計算
-	const int x = Application::SCREEN_SIZE_X - FONT_ADJUST_X;
-	const int y = Application::SCREEN_SIZE_Y - FONT_ADJUST_Y;
+	const int x = static_cast<int>(Application::SCREEN_SIZE_X - FONT_ADJUST_X);
+	const int y = static_cast<int>(Application::SCREEN_SIZE_Y - FONT_ADJUST_Y);
 
 	// ロード中の文字列を描画
 	DrawStringToHandle(

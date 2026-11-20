@@ -5,6 +5,7 @@
 class UIHp : public UIBase
 {
 public:
+
     // コンストラクタ
     UIHp(float posX, float posY,float flameScl = 1.0f,
         float hpSclX = 1.0f, float hpSclY = 1.0f, float hp = MAX_HP);
@@ -23,7 +24,9 @@ public:
 
     //回復
     void SetHpAbsolute(float hp);
+
 protected:
+
     // リソースロード
     void InitLoad(void) override;
 
@@ -38,7 +41,9 @@ protected:
 
     // 初期化後の個別処理
     void InitPost(void) override;
+
 private:
+
     //最大HP
     static constexpr float MAX_HP = 100.0f;
 
@@ -62,5 +67,6 @@ private:
 	// HPの大きさ
     float hpSclX_;
     float hpSclY_;
+
 };
 

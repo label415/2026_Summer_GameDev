@@ -1,20 +1,20 @@
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Utility/ModelFrameUtility.h"
 #include "../../Common/Transform.h"
-#include "WeponBase.h"
+#include "WeaponBase.h"
 
-WeponBase::WeponBase(WEAPON_TYPE weaponType, const Transform& followTransform, int followFrameId)
+WeaponBase::WeaponBase(WEAPON_TYPE weaponType, const Transform& followTransform, int followFrameId)
 	:
-	weapontype_(weaponType),
+	weaponType_(weaponType),
 	followTransform_(followTransform),
 	followFrameId_(followFrameId),
 	localPos_(AsoUtility::VECTOR_ZERO),
 	localRot_(AsoUtility::VECTOR_ZERO)
 {}
 
-WeponBase::~WeponBase(void){}
+WeaponBase::~WeaponBase(void){}
 
-void WeponBase::Update(void)
+void WeaponBase::Update(void)
 {
 	// 対象フレームの位置にtargetを配置し、
 	// 対象フレームの回転に加え、指定した相対座標・回転を加える
@@ -28,7 +28,7 @@ void WeponBase::Update(void)
 	transform_.Update();
 }
 
-void WeponBase::Collision(void)
+void WeaponBase::Collision(void)
 {
 	UpdateHitCollider();
 }

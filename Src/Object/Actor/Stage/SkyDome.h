@@ -5,6 +5,7 @@
 class SkyDome :public ActorBase
 {
 public:
+
 	// コンストラクタ
 	SkyDome(void){}
 
@@ -16,7 +17,9 @@ public:
 
 	// 描画
 	void Draw(void)override;
+
 protected:
+
 	// リソースロード
 	void InitLoad(void)override;
 
@@ -34,5 +37,6 @@ protected:
 
 	// 衝突時の更新
 	void UpdateHitCollider(void)override{}
+
 };
 

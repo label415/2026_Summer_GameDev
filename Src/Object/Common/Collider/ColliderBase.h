@@ -30,8 +30,8 @@ public:
 		CAMERA,
 		ENEMY,
 		VIEW_RANGE,
-		PLAYER_WEPON,
-		ENEMY_WEPON,
+		PLAYER_WEAPON,
+		ENEMY_WEAPON,
 		GROUND
 	};
 
@@ -40,7 +40,7 @@ public:
 		SHAPE shape, TAG tag,
 		const std::vector<TAG>& targetTags,
 		const Transform* follow,
-		int patrTag = 0);
+		int partTag = 0);
 
 	// デストラクタ
 	virtual ~ColliderBase(void);
@@ -61,7 +61,7 @@ public:
 	TAG GetTag(void) const { return tag_; }
 
 	//各部位衝突種別
-	int GetPatrTag(void)const { return patrTag_; }
+	int GetPartTag(void)const { return partTag_; }
 
 	// 当たり判定フラグを設定する
 	void SetIsCollier(bool isIsCollier);
@@ -115,7 +115,7 @@ protected:
 	TAG tag_;
 
 	//各部位のタグ番号
-	int patrTag_;
+	int partTag_;
 
 	// 有効フラグ
 	bool isCollier_;

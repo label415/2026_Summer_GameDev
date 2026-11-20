@@ -9,23 +9,23 @@
 #include "../../../Manager/SceneManager.h"
 #include "../../../Application.h"
 #include "../../../Libs/ImGui/imgui.h"
-#include "WeponFlameThrower.h"
+#include "WeaponFlameThrower.h"
 
-WeponFlameThrower::WeponFlameThrower(
+WeaponFlameThrower::WeaponFlameThrower(
 	const Transform& followTransform,
-	const VECTOR moverDir, int followFrameId)
-	: WeponBase(WeponBase::WEAPON_TYPE::FLAME,followTransform,followFrameId)
-	, moveDir_(moverDir)
+	const VECTOR moveDir, int followFrameId)
+	: WeaponBase(WeaponBase::WEAPON_TYPE::FLAME,followTransform,followFrameId)
+	, moveDir_(moveDir)
 	, prePos_(AsoUtility::VECTOR_ZERO)
 	, radius_(MIN_RADIUS)
 	, effectType_(EFFECT_TYPE::NONE)
-	, exState_(EXPLOSION_STATO_TIME)
+	, exState_(EXPLOSION_START_TIME)
 	, moveSpeed_(SPEED)
 {}
 
-WeponFlameThrower::~WeponFlameThrower(void){}
+WeaponFlameThrower::~WeaponFlameThrower(void){}
 
-void WeponFlameThrower::Update(void)
+void WeaponFlameThrower::Update(void)
 {
 	// 生存フラグが立っていなければ処理しない
 	if (!isAlive_) return;
@@ -45,11 +45,11 @@ void WeponFlameThrower::Update(void)
 	effect_->Update(static_cast<int>(effectType_));
 }
 
-void WeponFlameThrower::InitLoad(void){}
+void WeaponFlameThrower::InitLoad(void){}
 
-void WeponFlameThrower::InitTransform(void){}
+void WeaponFlameThrower::InitTransform(void){}
 
-void WeponFlameThrower::InitCollider(void)
+void WeaponFlameThrower::InitCollider(void)
 {
 	// 衝突判定の対象タグを設定
 	std::vector<ColliderBase::TAG> targetTags = {
@@ -59,7 +59,7 @@ void WeponFlameThrower::InitCollider(void)
 
 	// 球体コライダーを作成
 	auto colliderSphere = std::make_shared<ColliderSphere>(
-		ColliderBase::TAG::ENEMY_WEPON,
+		ColliderBase::TAG::ENEMY_WEAPON,
 		targetTags,
 		&transform_,
 		AsoUtility::VECTOR_ZERO,
@@ -74,9 +74,9 @@ void WeponFlameThrower::InitCollider(void)
 	CollisionManager::GetInstance().AddCollider(colliderSphere);
 }
 
-void WeponFlameThrower::InitAnimation(void){}
+void WeaponFlameThrower::InitAnimation(void){}
 
-void WeponFlameThrower::InitPost(void)
+void WeaponFlameThrower::InitPost(void)
 {
 	// 追従元の座標へリセット
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
@@ -94,7 +94,7 @@ void WeponFlameThrower::InitPost(void)
 	isAlive_ = false;
 }
 
-void WeponFlameThrower::Move(void)
+void WeaponFlameThrower::Move(void)
 {
 	bool isHitStage = false;
 
@@ -130,7 +130,7 @@ void WeponFlameThrower::Move(void)
 
 			// 爆発エフェクトに切り替え
 			transform_.pos = prePos_;
-			ChangerEffect(EFFECT_TYPE::EXPLOSION);
+			ChangeEffect(EFFECT_TYPE::EXPLOSION);
 		}
 
 		// 爆発中の処理
@@ -157,7 +157,7 @@ void WeponFlameThrower::Move(void)
 	}
 }
 
-void WeponFlameThrower::ChangerEffect(EFFECT_TYPE effectType)
+void WeaponFlameThrower::ChangeEffect(EFFECT_TYPE effectType)
 {
 	// すでに同じエフェクトが再生中なら何もしない
 	if (effectType_ == effectType)return;
@@ -178,19 +178,19 @@ void WeponFlameThrower::ChangerEffect(EFFECT_TYPE effectType)
 	effectType_ = effectType;
 }
 
-void WeponFlameThrower::Draw(void)
+void WeaponFlameThrower::Draw(void)
 {
 	// 基底クラスの描画処理
 	ActorBase::Draw();
 }
 
-void WeponFlameThrower::Release(void)
+void WeaponFlameThrower::Release(void)
 {
 	// 基底クラスの解放処理
 	ActorBase::Release();
 }
 
-void WeponFlameThrower::SetCollider(void)
+void WeaponFlameThrower::SetCollider(void)
 {
 	// 球体コライダーの当たり判定を有効化
 	int colliderType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
@@ -201,7 +201,7 @@ void WeponFlameThrower::SetCollider(void)
 	}
 }
 
-void WeponFlameThrower::ClearCollider(void)
+void WeaponFlameThrower::ClearCollider(void)
 {
 	// 球体コライダーの当たり判定を無効化
 	int colliderType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
@@ -231,7 +231,7 @@ void WeponFlameThrower::ClearCollider(void)
 	isAlive_ = false;
 }
 
-void WeponFlameThrower::Shot(const VECTOR& dir)
+void WeaponFlameThrower::Shot(const VECTOR& dir)
 {
 	// コライダーをクリアして初期状態に戻す
 	ClearCollider();
@@ -245,5 +245,5 @@ void WeponFlameThrower::Shot(const VECTOR& dir)
 	// 生存フラグを立ててコライダーを有効化
 	isAlive_ = true;
 	SetCollider();
-	ChangerEffect(EFFECT_TYPE::BULLET);
+	ChangeEffect(EFFECT_TYPE::BULLET);
 }

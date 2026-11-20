@@ -6,6 +6,7 @@
 class ResourceManager
 {
 public:
+
 	// リソース名
 	enum class SRC
 	{
@@ -21,9 +22,9 @@ public:
 		MODEL_WEAPON_BLADE,
 		ANIM_PLAYER_IDLE,
 		ANIM_PLAYER_RUN,
-		ANIM_PLSYER_ATTACK_1,
-		ANIM_PLSYER_ATTACK_2,
-		ANIM_PLSYER_ATTACK_3,
+		ANIM_PLAYER_ATTACK_1,
+		ANIM_PLAYER_ATTACK_2,
+		ANIM_PLAYER_ATTACK_3,
 		ANIM_PLAYER_EVASION,
 		ANIM_PLAYER_DOWN,
 		ANIM_PLAYER_UP,
@@ -100,7 +101,9 @@ public:
 
 	// リソースの複製ロード(モデル用)
 	int LoadModelDuplicate(SRC src);
+
 private:
+
 	// 静的インスタンス
 	static ResourceManager* instance_;
 
@@ -116,9 +119,12 @@ private:
 	// デフォルトコンストラクタをprivateにして、
 	// 外部から生成できない様にする
 	ResourceManager(void);
+	// コピーコンストラクタ
 	ResourceManager(const ResourceManager& manager) = default;
+	// デストラクタ
 	~ResourceManager(void) = default;
 
 	// 内部ロード
 	Resource& _Load(SRC src);
+
 };

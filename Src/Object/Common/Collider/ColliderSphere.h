@@ -15,7 +15,7 @@ public:
         const Transform* follow,
         const VECTOR& localPos,
         float radius,
-        int patrTag = 0);
+        int partTag = 0);
 
     // デストラクタ
     ~ColliderSphere(void);

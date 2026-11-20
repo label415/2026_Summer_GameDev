@@ -92,7 +92,7 @@ void EnemyManager::LoadCsvData(void)
 		stof(strSplit[idx1++])
 		};
 		//移動可能範囲
-		data.moveRadius = stoi(strSplit[idx1++]);
+		data.moveRadius = stof(strSplit[idx1++]);
 
 		// エネミー生成
 		Create(data);

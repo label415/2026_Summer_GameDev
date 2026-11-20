@@ -8,14 +8,15 @@ class EffectController
 {
 public:
 
-	// アニメーションデータ
+	// エフェクトデータ
 	struct EFFECT
 	{
 		// エフェクトリソースID
 		int ResId = -1;
+		// エフェクト再生ハンドルID
 		int PlayId_ = -1;
 
-		// コンストラクタ
+		// デストラクタ
 		~EFFECT() {
 			// 再生中のエフェクトがあれば停止する
 			if (PlayId_ != -1 && IsEffekseer3DEffectPlaying(PlayId_) == 0) {

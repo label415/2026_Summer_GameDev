@@ -7,9 +7,9 @@
 #include "../../Common/Collider/ColliderModel.h"
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "../Stage/Stage.h"
-#include "CharactorBase.h"
+#include "CharacterBase.h"
 
-CharactorBase::CharactorBase(void)
+CharacterBase::CharacterBase(void)
 	: ActorBase()
 	, targetPos_(nullptr)
 	, uiHp_(nullptr)
@@ -25,9 +25,9 @@ CharactorBase::CharactorBase(void)
 	weapons_.clear();
 }
 
-CharactorBase::~CharactorBase(void) {}
+CharacterBase::~CharacterBase(void) {}
 
-void CharactorBase::Update(void)
+void CharacterBase::Update(void)
 {
 	// 生存していなければ更新しない
 	if (!isAlive_)return;
@@ -57,7 +57,7 @@ void CharactorBase::Update(void)
 	UpdateProcessPost();
 }
 
-void CharactorBase::Draw(void)
+void CharacterBase::Draw(void)
 {
 	// 基底クラスの描画処理
 	ActorBase::Draw();
@@ -68,7 +68,7 @@ void CharactorBase::Draw(void)
 	}
 }
 
-void CharactorBase::Release(void)
+void CharacterBase::Release(void)
 {
 	// 基底クラスの解放処理
 	transform_.Release();
@@ -83,7 +83,7 @@ void CharactorBase::Release(void)
 	weapons_.clear();
 }
 
-VECTOR CharactorBase::GetTargetDir(void)
+VECTOR CharacterBase::GetTargetDir(void)
 {
 	//自分と相手のベクトルを計算
 	VECTOR targetVec = VSub(*targetPos_, transform_.pos);
@@ -95,7 +95,7 @@ VECTOR CharactorBase::GetTargetDir(void)
 	return targetdir;
 }
 
-void CharactorBase::DelayRotate(void)
+void CharacterBase::DelayRotate(void)
 {
 	// 移動方向から回転に変換する
 	Quaternion goalRot = Quaternion::LookRotation(moveDir_);
@@ -104,7 +104,7 @@ void CharactorBase::DelayRotate(void)
 		Quaternion::Slerp(transform_.quaRot, goalRot, 0.2f);
 }
 
-void CharactorBase::CalcGravityPow(void)
+void CharacterBase::CalcGravityPow(void)
 {
 	// 重力方向
 	VECTOR dirGravity = AsoUtility::DIR_D;
@@ -122,7 +122,7 @@ void CharactorBase::CalcGravityPow(void)
 	}
 }
 
-void CharactorBase::Collision(void)
+void CharacterBase::Collision(void)
 {
 	// 移動処理
 	transform_.pos = VAdd(transform_.pos, movePow_);
@@ -140,7 +140,7 @@ void CharactorBase::Collision(void)
 	UpdateHitCollider();
 }
 
-void CharactorBase::CollisionGravity(void)
+void CharacterBase::CollisionGravity(void)
 {
 	// 落下中しか判定しない
 	if (!(VDot(AsoUtility::DIR_D, jumpPow_) > 0.9f))return;
@@ -181,7 +181,7 @@ void CharactorBase::CollisionGravity(void)
 	}
 }
 
-void CharactorBase::CollisionCapsule(void)
+void CharacterBase::CollisionCapsule(void)
 {
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	if (ownColliders_.count(capsuleType) == 0) return;
@@ -213,7 +213,7 @@ void CharactorBase::CollisionCapsule(void)
 	}
 }
 
-void CharactorBase::SetFrameUserLocalPos(VECTOR locakPos, int frameNo)
+void CharacterBase::SetFrameUserLocalPos(VECTOR localPos, int frameNo)
 {
 	// 対象フレームのローカル行列を初期値にリセットする
 	MV1ResetFrameUserLocalMatrix(transform_.modelId, frameNo);
@@ -231,7 +231,7 @@ void CharactorBase::SetFrameUserLocalPos(VECTOR locakPos, int frameNo)
 	mix = MMult(mix, rot); // 回転
 	// ここでローカル座標を行列に、そのまま戻さず、
 	// 調整したローカル座標を設定する
-	mix = MMult(mix, MGetTranslate(locakPos));
+	mix = MMult(mix, MGetTranslate(localPos));
 	// 合成した行列を対象フレームにセットし直して、
 	// アニメーションの移動値を無効化
 	MV1SetFrameUserLocalMatrix(transform_.modelId, frameNo, mix);

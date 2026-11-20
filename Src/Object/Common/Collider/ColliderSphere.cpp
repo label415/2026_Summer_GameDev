@@ -5,8 +5,8 @@
 ColliderSphere::ColliderSphere(
 	TAG tag, const std::vector<TAG>& targetTags,
 	const Transform* follow, const VECTOR& localPos, 
-	float radius, int patrTag)
-	: ColliderBase(SHAPE::SPHERE, tag, targetTags, follow, patrTag)
+	float radius, int partTag)
+	: ColliderBase(SHAPE::SPHERE, tag, targetTags, follow, partTag)
 	, localPos_(localPos)
 	, radius_(radius)
 {

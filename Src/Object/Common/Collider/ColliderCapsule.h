@@ -15,7 +15,7 @@ public:
 		const Transform* follow,
 		const VECTOR& localPosTop,
 		const VECTOR& localPosDown,
-		float radius, int patrTag = 0);
+		float radius, int partTag = 0);
 
 	// デストラクタ
 	~ColliderCapsule(void);

@@ -3,7 +3,7 @@
 
 EnemyBase::EnemyBase(const EnemyBase::EnemyData& data)
 	:
-	CharactorBase(),
+	CharacterBase(),
 	type_(data.type),
 	hp_(data.hp),
 	defaultPos_(data.defaultPos),
@@ -19,7 +19,7 @@ EnemyBase::~EnemyBase(void){}
 
 void EnemyBase::Draw(void)
 {
-	CharactorBase::Draw();
+	CharacterBase::Draw();
 #ifdef _DEBUG
 	// 移動可能範囲のデバッグ描画
 	/*DrawSphere3D(defaultPos_, moveRadius_, 16, 0x000099, 0x000099, false);*/

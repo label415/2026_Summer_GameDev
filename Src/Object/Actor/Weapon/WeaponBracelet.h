@@ -1,11 +1,10 @@
 #pragma once
-#pragma once
 #include <DxLib.h>
-#include "WeponBase.h"
+#include "WeaponBase.h"
 
 class Transform;
 
-class WeponBracelet : public WeponBase
+class WeaponBracelet : public WeaponBase
 {
 public:
 
@@ -16,12 +15,12 @@ public:
 	};
 
 	// コンストラクタ
-	WeponBracelet(
+	WeaponBracelet(
 		const Transform& followTransform,
-		const VECTOR moverDir, int followFrameId);
+		const VECTOR moveDir, int followFrameId);
 
 	// デストラクタ
-	~WeponBracelet(void) override;
+	~WeaponBracelet(void) override;
 
 	// 更新
 	void Update(void) override;

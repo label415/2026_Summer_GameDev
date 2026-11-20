@@ -1,17 +1,17 @@
 #pragma once
 #include <DxLib.h>
-#include "WeponBase.h"
+#include "WeaponBase.h"
 
 class Transform;
 
-class WeponBlade : public WeponBase
+class WeaponBlade : public WeaponBase
 {
 public:
 	// コンストラクタ
-	WeponBlade(const Transform& followTransform, int followFrameId);
+	WeaponBlade(const Transform& followTransform, int followFrameId);
 
 	// デストラクタ
-	~WeponBlade(void) override;
+	~WeaponBlade(void) override;
 	// 更新
 	void Update(void) override;
 

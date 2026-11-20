@@ -7,8 +7,8 @@
 ColliderCapsule::ColliderCapsule(
 	TAG tag, const std::vector<TAG>& targetTags, const Transform* follow,
 	const VECTOR& localPosTop, const VECTOR& localPosDown,
-	float radius, int patrTag)
-	: ColliderBase(SHAPE::CAPSULE, tag, targetTags, follow, patrTag)
+	float radius, int partTag)
+	: ColliderBase(SHAPE::CAPSULE, tag, targetTags, follow, partTag)
 	, localPosTop_(localPosTop)
 	, localPosDown_(localPosDown)
 	, radius_(radius)

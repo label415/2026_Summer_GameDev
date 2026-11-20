@@ -1,19 +1,20 @@
 #pragma once
 #include "../../Common/AnimationController.h"
 #include "../../Common/EffectController.h"
-#include "../Wepon/WeponBase.h"
+#include "../Weapon/WeaponBase.h"
 #include "../UI/UIHp.h"
 #include "../ActorBase.h"
 
-class CharactorBase :
+class CharacterBase :
     public ActorBase
 {
 public:
+
     // コンストラクタ
-    CharactorBase(void);
+    CharacterBase(void);
 
     // デストラクタ
-    virtual ~CharactorBase(void) override;
+    virtual ~CharacterBase(void) override;
 
     // 更新
     virtual void Update(void) override;
@@ -29,7 +30,9 @@ public:
 
     // 追尾対象の取得
     void SetTargetPos(const VECTOR* targetTrans) { targetPos_ = targetTrans; }
+
 protected:
+
     // 最大落下速度
     static constexpr float MAX_FALL_SPEED = -30.0f;
 
@@ -45,7 +48,7 @@ protected:
     std::unique_ptr<AnimationController> animationController_;
 
     // 武器
-    std::vector<std::unique_ptr<WeponBase>> weapons_;
+    std::vector<std::unique_ptr<WeaponBase>> weapons_;
 
     // 追尾対象のTransform
     const VECTOR* targetPos_;
@@ -74,8 +77,10 @@ protected:
     // リソースロード
     virtual void InitLoad(void) override{}
 
-    // 更新系
+    // 更新処理（派生クラス個別）
     virtual void UpdateProcess(void) = 0;
+
+    // 更新後処理（派生クラス個別）
     virtual void UpdateProcessPost(void) = 0;
 
     // 移動方向に応じた遅延回転
@@ -89,10 +94,15 @@ protected:
 
     // 衝突判定
     void Collision(void)override;
+
+    // 重力による地面衝突判定
     void CollisionGravity(void);
+
+    // カプセル衝突判定
     virtual void CollisionCapsule(void);
 
     //キャラクター移動量の無効
-    void SetFrameUserLocalPos(VECTOR locakPos, int frameNo);
+    void SetFrameUserLocalPos(VECTOR localPos, int frameNo);
+
 };
 

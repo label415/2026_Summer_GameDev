@@ -4,6 +4,7 @@
 class UIRecovery : public UIBase
 {
 public:
+
     // コンストラクタ
     UIRecovery(int cnt);
 
@@ -24,7 +25,9 @@ public:
 
 	//回復瓶の数を取得
     const int GetBottlcCnt(void)const{ return bottleCount_; }
+
 protected:
+
     // リソースロード
     void InitLoad(void) override;
 
@@ -39,7 +42,9 @@ protected:
 
     // 初期化後の個別処理
     void InitPost(void) override;
+
 private:
+
     //　使用するフォント
     std::wstring fontName_ = L"KazukiReiwa";
     // フォントのサイズ
@@ -76,5 +81,6 @@ private:
 
     // フォント
     int font_;
+
 };
 

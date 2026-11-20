@@ -5,6 +5,7 @@
 class UISt : public UIBase
 {
 public:
+
     //スタミナ最大値
     static constexpr float MAX_ST = 100.0f;
     //スタミナ最小値
@@ -31,7 +32,9 @@ public:
 
 	// スタミナの取得
     const float GetSt(void)const { return stCurrent_; }
+
 protected:
+
     // リソースロード
     void InitLoad(void) override;
 
@@ -46,11 +49,12 @@ protected:
 
     // 初期化後の個別処理
     void InitPost(void) override;
+
 private:
 
     //画像サイズ
-    static constexpr int IMG_SIZE_X = 866;
-    static constexpr int IMG_SIZE_Y = 288;
+    static constexpr float IMG_SIZE_X = 866.0f;
+    static constexpr float IMG_SIZE_Y = 288.0f;
 
     // スタミナの座標
     Vector2 stPos_;
@@ -70,6 +74,7 @@ private:
     // スタミナバーのスケール
     float stSclX_;
     float stSclY_;
+
 };
 
 

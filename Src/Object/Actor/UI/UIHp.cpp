@@ -7,7 +7,7 @@
 UIHp::UIHp(float posX, float posY,
 	float flameScl, float hpSclX, float hpSclY, float hp)
 	:
-	uiPos_(posX, posY),
+	uiPos_(static_cast<int>(posX), static_cast<int>(posY)),
 	hpCurrent_(hp),
 	flameScl_(flameScl),
 	hpSclX_(hpSclX),
@@ -34,9 +34,9 @@ void UIHp::Draw(void)
 	float realHalfWidth  = IMG_SIZE_X / hpSclX_;
 	float realHalfHeight = IMG_SIZE_Y / hpSclY_;
 
-	float left   = uiPos_.x - realHalfWidth;
-	float top    = uiPos_.y - realHalfHeight;
-	float bottom = uiPos_.y + realHalfHeight;
+	float left   = static_cast<float>(uiPos_.x) - realHalfWidth;
+	float top    = static_cast<float>(uiPos_.y) - realHalfHeight;
+	float bottom = static_cast<float>(uiPos_.y) + realHalfHeight;
 
 	int srcWidth = static_cast<int>(IMG_SIZE_X * hpRate);
 	float currentBarRight = left + (realHalfWidth * 2.0f * hpRate);

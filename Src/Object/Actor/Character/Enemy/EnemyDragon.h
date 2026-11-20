@@ -3,12 +3,13 @@
 #include <vector>
 #include "EnemyBase.h"
 
-class WeponBracelet;
-class WeponFlameThrower;
+class WeaponBracelet;
+class WeaponFlameThrower;
 
 class EnemyDragon : public EnemyBase
 {
 public:
+
 	// 状態
 	enum class STATE
 	{
@@ -30,6 +31,7 @@ public:
 		END				//終了
 	};
 
+	// 行動属性（地上・空中）
 	enum class ATTRIBUTE
 	{
 		NONE,
@@ -56,7 +58,7 @@ public:
 	};
 
 	//各部位のタグ
-	enum class PATR_TAG {
+	enum class PART_TAG {
 		HEAD,
 		TAIL,
 		BODY,
@@ -68,7 +70,7 @@ public:
 	// エフェクト
 	enum class EFFECT {
 		NONE,
-		ROAT,
+		ROAR,
 		FALLING_ATTACK,
 		CHARGE,
 		BLOOD
@@ -76,8 +78,11 @@ public:
 
 	//部位のカプセルフレーム
 	struct FramePair {
-		PATR_TAG patrTag;
+		// 部位タグ
+		PART_TAG partTag;
+		// 上部フレーム番号
 		int top;
+		// 下部フレーム番号
 		int down;
 	};
 
@@ -113,6 +118,7 @@ public:
 	static constexpr float AI_DIST_MID = 1000.0f;
 	static constexpr float AI_DIST_FAR = 2000.0f;
 
+	// AI行動確率閾値
 	static constexpr int AI_PROB_TAKEOFF = 30;
 	static constexpr int AI_PROB_MELEE_IN_NEAR = 40;
 	static constexpr int AI_PROB_PATROL_IN_MID = 20;
@@ -194,7 +200,9 @@ public:
 
 	// HPUI表示
 	void DrawHp(void) override;
+
 protected:
+
 	// ロード
 	void InitLoad(void) override;
 
@@ -221,7 +229,9 @@ protected:
 
 	// 当たり判定衝突時の更新処理
 	void UpdateHitCollider(void) override;
+
 private:
+
 	// モデルの大きさ
 	static constexpr float SCALE = 0.4f;
 	// モデルの回転調整
@@ -250,7 +260,7 @@ private:
 	static constexpr float MAX_TAKE = 500.0f;
 
 	//噛みつき攻撃判定発生時間
-	static constexpr float MELEE_ATTACK_CILLIDER = 22.0f;
+	static constexpr float MELEE_ATTACK_COLLIDER = 22.0f;
 
 	//アニメーションを固定化する座標
 	static constexpr VECTOR LOCK_POS = { 0.0f, 2.0f, 0.0f };
@@ -267,17 +277,17 @@ private:
 	static constexpr FramePair ENEMY_CAPSULE_FRAMES[] =
 	{
 		// 胴体
-		{ PATR_TAG::BODY, 1, 8 },
+		{ PART_TAG::BODY, 1, 8 },
 		// 首上
-		{ PATR_TAG::NECK, 10, 14 },
+		{ PART_TAG::NECK, 10, 14 },
 		// 頭
-		{ PATR_TAG::HEAD, 15, 30 },
+		{ PART_TAG::HEAD, 15, 30 },
 		// 尻尾
-		{ PATR_TAG::TAIL, 117, 125 }, { PATR_TAG::TAIL, 125, 132 },
+		{ PART_TAG::TAIL, 117, 125 }, { PART_TAG::TAIL, 125, 132 },
 		// 手
-		{ PATR_TAG::HAND, 75, 76 }, { PATR_TAG::HAND, 37, 38 },
+		{ PART_TAG::HAND, 75, 76 }, { PART_TAG::HAND, 37, 38 },
 		// 足
-		{ PATR_TAG::LEG, 2, 4 }, { PATR_TAG::LEG, 111, 113 }
+		{ PART_TAG::LEG, 2, 4 }, { PART_TAG::LEG, 111, 113 }
 	};
 
 	// ボスの選択距離
@@ -348,14 +358,18 @@ private:
 	void UpdateDebugImGui(void);
 
 	// 前回の移動方向
-	VECTOR preMoverDir_;
+	VECTOR preMoveDir_;
 
 	// 被弾後の無敵時間（秒）
 	static constexpr float INVINCIBLE_TIME = 1.0f;
 
-	// 無敵フラグとタイマー
+	// 無敵フラグ
 	bool isInvincible_ = false;
+
+	// 無敵タイマー
 	float invincibleTimer_ = 0.0f;
 
+	// 被ダメージ適用処理
 	void ApplyDamage(const VECTOR& hitPos, float damageAmount);
+
 };

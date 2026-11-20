@@ -4,11 +4,11 @@
 ColliderBase::ColliderBase(
 	SHAPE shape, TAG tag,
 	const std::vector<TAG>& targetTags,
-	const Transform* follow, int patrTag)
+	const Transform* follow, int partTag)
 	: shape_(shape)
 	, tag_(tag)
 	, targetTags_(targetTags)
-	, patrTag_(patrTag)
+	, partTag_(partTag)
 	, follow_(follow)
 	, isCollier_(true)
 	, isAction_(false)

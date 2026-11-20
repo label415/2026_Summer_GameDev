@@ -233,7 +233,8 @@ const AnimationController::Animation& AnimationController::GetPlayAnim(int type)
 	// 指定されたアニメーションが存在しない場合は処理しない
 	auto it = animations_.find(type);
 	if (it == animations_.end()) {
-		return Animation();
+		static const Animation emptyAnim;
+		return emptyAnim;
 	}
 	return playAnim_;
 }

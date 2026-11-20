@@ -7,6 +7,7 @@
 class InputManager
 {
 public:
+
 	// アナログキーの最大値
 	static constexpr float AKEY_VAL_MAX = 1000.0f;
 
@@ -56,16 +57,16 @@ public:
 	// ゲームコントローラーの入力情報
 	struct JOYPAD_IN_STATE
 	{
-		unsigned char ButtonsOld[static_cast<int>(JOYPAD_BTN::MAX)];
-		unsigned char ButtonsNew[static_cast<int>(JOYPAD_BTN::MAX)];
-		bool IsOld[static_cast<int>(JOYPAD_BTN::MAX)];
-		bool IsNew[static_cast<int>(JOYPAD_BTN::MAX)];
-		bool IsTrgDown[static_cast<int>(JOYPAD_BTN::MAX)];
-		bool IsTrgUp[static_cast<int>(JOYPAD_BTN::MAX)];
-		int AKeyLX;
-		int AKeyLY;
-		int AKeyRX;
-		int AKeyRY;
+		unsigned char ButtonsOld[static_cast<int>(JOYPAD_BTN::MAX)]; // 1フレーム前のボタン入力値
+		unsigned char ButtonsNew[static_cast<int>(JOYPAD_BTN::MAX)]; // 現フレームのボタン入力値
+		bool IsOld[static_cast<int>(JOYPAD_BTN::MAX)];               // 1フレーム前の押下状態
+		bool IsNew[static_cast<int>(JOYPAD_BTN::MAX)];               // 現フレームの押下状態
+		bool IsTrgDown[static_cast<int>(JOYPAD_BTN::MAX)];           // 現フレームで押下されたか
+		bool IsTrgUp[static_cast<int>(JOYPAD_BTN::MAX)];             // 現フレームで離されたか
+		int AKeyLX; // 左スティックX入力値
+		int AKeyLY; // 左スティックY入力値
+		int AKeyRX; // 右スティックX入力値
+		int AKeyRY; // 右スティックY入力値
 	};
 
 	// インスタンスを明示的に生成
@@ -125,9 +126,13 @@ public:
 	// コントローラの入力情報を取得する
 	JOYPAD_IN_STATE GetJPadInputState(JOYPAD_NO no);
 
-	// ボタンが押された
+	// ボタンが押されているか判定
 	bool IsPadBtnNew(JOYPAD_NO no, JOYPAD_BTN btn) const;
+
+	// ボタンが押された瞬間か判定
 	bool IsPadBtnTrgDown(JOYPAD_NO no, JOYPAD_BTN btn) const;
+
+	// ボタンが離された瞬間か判定
 	bool IsPadBtnTrgUp(JOYPAD_NO no, JOYPAD_BTN btn) const;
 
 	// アナログキーの入力値から方向(正規化済み)を取得
@@ -141,7 +146,9 @@ public:
 
 	// マウスカーソルの入力状態を設定する
 	void SetMouseFlage(bool isFlage);
+
 private:
+
 	// キー情報
 	struct Info
 	{
@@ -220,4 +227,5 @@ private:
 
 	// コントローラの入力情報を更新する
 	void SetJPadInState(JOYPAD_NO jpNo);
+
 };

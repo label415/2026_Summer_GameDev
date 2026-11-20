@@ -129,7 +129,7 @@ void EffectController::Draw(int type, const VECTOR pos)
 	}
 
 	// エフェクト描画
-	DrawRotaGraph(pos.x, pos.y, 1.0f, 0.0f, effects_[type]->PlayId_, true);
+	DrawRotaGraph(static_cast<int>(pos.x), static_cast<int>(pos.y), 1.0f, 0.0f, effects_[type]->PlayId_, true);
 }
 
 void EffectController::SetEffectScl(int type, VECTOR scale)

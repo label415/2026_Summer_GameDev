@@ -6,11 +6,12 @@ class SoundManager : public Singleton<SoundManager>
 {
     friend class Singleton<SoundManager>;
 public:
+
 	// SEのID（名前）を定義するenum
     enum class SeId
     {
-        PLAYER_WEPON_SE1,
-        PLAYER_WEPON_SE2,
+        PLAYER_WEAPON_SE1,
+        PLAYER_WEAPON_SE2,
         PLAYER_WAKE,
         PLAYER_RAN,
         PLAYER_HER,
@@ -29,8 +30,8 @@ public:
         Max,
     };
 
-    void Init(void); // 内部変数の初期化
-    void Release(void);
+    void Init(void);    // 内部変数の初期化
+    void Release(void); // リソースの解放
 
     // --- 定数定義 ---
     static constexpr int MaxVolumeValue = 100;   // ユーザーが指定する最大音量
@@ -46,16 +47,19 @@ public:
 
     // --- SE機能 ---
     void PlaySE(SeId id, int handle, int volume = MaxVolumeValue);      // SEの再生
-    void PlayLoopSE(SeId id, int handle, int volume = MaxVolumeValue);      // SEの再生
+    void PlayLoopSE(SeId id, int handle, int volume = MaxVolumeValue);      // SEのループ再生
     void PlaySlowSE(SeId id, int handle, int volume = MaxVolumeValue,int slow=2);  // スローSE再生
     void StopSE(SeId id);                                               // 特定のSEを停止
     void AllStopSE();                                                   // 全てのSEを停止
-    void SetSESpeed(SeId id, float speed);
+    void SetSESpeed(SeId id, float speed);                              // SEの再生速度を設定
+
 private:
-	// シングルトンインスタンス
+
+	// コンストラクタ
     SoundManager(void);
-    // コピーコンストラクタも同様
+    // コピーコンストラクタ
     SoundManager(const SoundManager& instance) = default;
+    // デストラクタ
     ~SoundManager(void) = default;
 
     int bgm_;           // 再生中BGMの複製ハンドル
@@ -69,4 +73,5 @@ private:
     int CalcVolume(int volume) const {
         return (DxLibMaxVolume * volume) / MaxVolumeValue;
     }
+
 };

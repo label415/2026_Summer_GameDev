@@ -9,11 +9,17 @@ public:
 	// アニメーションデータ
 	struct Animation
 	{
+		// アニメーションモデルハンドルID
 		int model = -1;
+		// アタッチ番号
 		int attachNo = -1;
+		// アニメーションインデックス
 		int animIndex = 0;
+		// 再生速度
 		float speed = 0.0f;
+		// 総再生時間
 		float totalTime = 0.0f;
+		// 現在の再生ステップ
 		float step = 0.0f;
 	};
 
@@ -61,6 +67,7 @@ public:
 	void SetIsStopFlager(bool isStop);
 
 private:
+
 	// 種類別のアニメーションデータ
 	std::map<int, Animation> animations_;
 
@@ -93,4 +100,5 @@ private:
 
 	// アニメーション追加の共通処理
 	void Add(int type, float speed, Animation& animation);
+
 };

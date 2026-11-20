@@ -7,13 +7,13 @@
 #include "../../../Libs/ImGui/imgui.h"
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "../../Common/EffectController.h"
-#include "WeponBracelet.h"
+#include "WeaponBracelet.h"
 
-WeponBracelet::WeponBracelet(
+WeaponBracelet::WeaponBracelet(
 	const Transform& followTransform,
-	const VECTOR moverDir, int followFrameId)
-	: WeponBase(WeponBase::WEAPON_TYPE::BRACKELET, followTransform, followFrameId)
-	, moveDir_(moverDir)
+	const VECTOR moveDir, int followFrameId)
+	: WeaponBase(WeaponBase::WEAPON_TYPE::BRACELET, followTransform, followFrameId)
+	, moveDir_(moveDir)
 	, isAttack_(false)
 	, isEnd_(false)
 	, topPos_(COL_CAPSULE_TOP_LOCAL_POS)
@@ -22,9 +22,9 @@ WeponBracelet::WeponBracelet(
 {
 }
 
-WeponBracelet::~WeponBracelet(void) {}
+WeaponBracelet::~WeaponBracelet(void) {}
 
-void WeponBracelet::Update(void)
+void WeaponBracelet::Update(void)
 {
 	// 生存していない時は処理しない
 	if (!isAlive_) return;
@@ -38,11 +38,11 @@ void WeponBracelet::Update(void)
 	}
 }
 
-void WeponBracelet::InitLoad(void) {}
+void WeaponBracelet::InitLoad(void) {}
 
-void WeponBracelet::InitTransform(void) {}
+void WeaponBracelet::InitTransform(void) {}
 
-void WeponBracelet::InitCollider(void)
+void WeaponBracelet::InitCollider(void)
 {
 	// 衝突判定のターゲットタグを設定
 	std::vector<ColliderBase::TAG> targetTags = {
@@ -51,7 +51,7 @@ void WeponBracelet::InitCollider(void)
 
 	// カプセルコライダーを作成して登録
 	auto colliderCapsule = std::make_shared<ColliderCapsule>(
-		ColliderBase::TAG::ENEMY_WEPON,
+		ColliderBase::TAG::ENEMY_WEAPON,
 		targetTags,
 		&transform_,
 		COL_CAPSULE_TOP_LOCAL_POS,
@@ -67,9 +67,9 @@ void WeponBracelet::InitCollider(void)
 	CollisionManager::GetInstance().AddCollider(colliderCapsule);
 }
 
-void WeponBracelet::InitAnimation(void) {}
+void WeaponBracelet::InitAnimation(void) {}
 
-void WeponBracelet::InitPost(void)
+void WeaponBracelet::InitPost(void)
 {
 	// 初期座標を設定
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
@@ -85,7 +85,7 @@ void WeponBracelet::InitPost(void)
 	ClearCollider();
 }
 
-void WeponBracelet::SetCollider(void)
+void WeaponBracelet::SetCollider(void)
 {
 	// カプセルコライダーを有効化
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
@@ -95,7 +95,7 @@ void WeponBracelet::SetCollider(void)
 	}
 }
 
-void WeponBracelet::ClearCollider(void)
+void WeaponBracelet::ClearCollider(void)
 {
 	// カプセルコライダーを無効化して初期座標に戻す
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
@@ -115,7 +115,7 @@ void WeponBracelet::ClearCollider(void)
 	isEnd_ = false;
 }
 
-void WeponBracelet::SetIsAttack(bool isAttack)
+void WeaponBracelet::SetIsAttack(bool isAttack)
 {
 	// 攻撃フラグが切り替わった場合にエフェクトを再生
 	if (!isAttack_ && isAttack) {
@@ -127,7 +127,7 @@ void WeponBracelet::SetIsAttack(bool isAttack)
 		float yaw = atan2f(moveDir_.x, moveDir_.z);
 		float pitch = -asinf(moveDir_.y);
 		VECTOR euler = { pitch, yaw, 0.0f };
-		euler = VAdd(euler, WeponBracelet::DEFAULT_ROT);
+		euler = VAdd(euler, WeaponBracelet::DEFAULT_ROT);
 		VECTOR effPos = transform_.pos;
 		effPos.y -= 250.0f;
 
@@ -145,7 +145,7 @@ void WeponBracelet::SetIsAttack(bool isAttack)
 	isAttack_ = isAttack;
 }
 
-void WeponBracelet::Move(void)
+void WeaponBracelet::Move(void)
 {
 	// 追従対象のフレーム座標を取得して武器の座標を更新
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
@@ -179,12 +179,12 @@ void WeponBracelet::Move(void)
 	}
 }
 
-void WeponBracelet::Draw(void)
+void WeaponBracelet::Draw(void)
 {
 	ActorBase::Draw();
 }
 
-void WeponBracelet::Release(void)
+void WeaponBracelet::Release(void)
 {
 	ActorBase::Release();
 }

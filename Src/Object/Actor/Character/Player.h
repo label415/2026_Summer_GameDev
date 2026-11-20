@@ -2,17 +2,18 @@
 #include <map>
 #include <vector>
 #include <functional>
-#include "CharactorBase.h"
+#include "CharacterBase.h"
 
-class Camara;
-class WeponBase;
+class Camera;
+class WeaponBase;
 class UISt;
 class UIRecovery;
 
 class Player :
-	public CharactorBase
+	public CharacterBase
 {
 public:
+
 	// アニメーションタイプ
 	enum class ANIM_TYPE
 	{
@@ -104,7 +105,7 @@ public:
 		}
 
 		// 衝突判定有効ステップ
-		bool IsValidCollsion(float step) const
+		bool IsValidCollision(float step) const
 		{
 			return step > stepCollisionStart
 				&& step < stepCollisionEnd;
@@ -249,7 +250,7 @@ public:
 	static constexpr VECTOR INITIAL_POS = { 0.0f, 0.0f, -1000.0f };
 
 	// 攻撃判定発生時間
-	static constexpr float STATE_ATTACK_CILLIDER = 18.0f;
+	static constexpr float STATE_ATTACK_COLLIDER = 18.0f;
 
 	// コンストラクタ
 	Player(void);
@@ -270,11 +271,13 @@ public:
 	const STATE GetState(void) const { return state_; }
 
 	// 無敵状態かどうかを取得
-	const bool GetIsInvincible(void) const { return isVinclible_; }
+	const bool GetIsInvincible(void) const { return isInvincible_; }
 
 	// 死亡演出タイム取得
-	const float GetDesath(void)const { return deathAnimationTime_; }
+	const float GetDeath(void)const { return deathAnimationTime_; }
+
 protected:
+
 	// プレイヤーリソースロード
 	void InitLoad(void) override;
 
@@ -298,7 +301,9 @@ protected:
 
 	// 当たり判定衝突時の更新処理
 	void UpdateHitCollider(void) override;
+
 private:
+
 	//アニメーションを固定化する座標
 	static constexpr VECTOR LOCK_POS1 = { 0.0f, 78.0f, 0.0f };
 	static constexpr VECTOR LOCK_POS2 = { 0.0f, 20.0f, 0.0f };
@@ -340,7 +345,7 @@ private:
 	// 攻撃コンボの更新ステップ
 	bool isComboNext_;
 	// 無敵
-	bool isVinclible_;
+	bool isInvincible_;
 	// アニメーションを固定化する座標
 	VECTOR animLockPos_;
 	// 無敵時間
@@ -366,4 +371,5 @@ private:
 	void ApplyDamage(float damageAmount);
 	// 入力方向を取得
 	VECTOR GetInputDirection(void);
+
 };

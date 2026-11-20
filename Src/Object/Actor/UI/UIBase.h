@@ -4,6 +4,7 @@
 class UIBase : public ActorBase
 {
 public:
+
     // コンストラクタ
     UIBase(void);
 
@@ -18,7 +19,9 @@ public:
 
     // 更新ステップ
     float GetStep(void) const;
+
 protected:
+
     // 画像のハンドルID
     int img_;
 
@@ -27,5 +30,6 @@ protected:
 
     // 更新ステップ
     float step_;
+
 };
 

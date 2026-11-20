@@ -5,6 +5,7 @@
 class FontManager 
 {
 public:
+
 	// インスタンスを明示的に生成
 	static void CreateInstance(void);
 
@@ -22,15 +23,20 @@ public:
 
 	// リソースの破棄
 	void Destroy(void);
+
 private:
+
 	// 静的インスタンス
 	static FontManager* instance_;
 
 	// フォント設定情報をまとめた構造体
 	struct FontKey
 	{
+		// フォント名
 		std::wstring fontName;
+		// フォントサイズ
 		int size;
+		// フォントの太さ
 		int thickness;
 
 		// map用の比較演算子
@@ -48,6 +54,9 @@ private:
 	// デフォルトコンストラクタをprivateにして、
 	// 外部から生成できない様にする
 	FontManager(void);
+	// コピーコンストラクタ
 	FontManager(const FontManager& manager) = default;
+	// デストラクタ
 	~FontManager(void) = default;
+
 };

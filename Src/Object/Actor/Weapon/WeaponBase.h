@@ -4,7 +4,7 @@
 
 class Transform;
 
-class WeponBase : public ActorBase
+class WeaponBase : public ActorBase
 {
 public:
 
@@ -12,16 +12,16 @@ public:
 	enum class WEAPON_TYPE
 	{
 		BLADE,
-		BRACKELET,
+		BRACELET,
 		FLAME,
 		MAX
 	};
 
 	// コンストラクタ
-	WeponBase(WEAPON_TYPE weaponType, const Transform& followTransform, int followFrameId);
+	WeaponBase(WEAPON_TYPE weaponType, const Transform& followTransform, int followFrameId);
 
 	// デストラクタ
-	virtual ~WeponBase(void) override;
+	virtual ~WeaponBase(void) override;
 
 	// 更新
 	virtual void Update(void) override;
@@ -39,12 +39,12 @@ public:
 	virtual void SetIsEnd(bool isEnd){}
 
 	// 武器種
-	WEAPON_TYPE GetWeaponType(void) const { return weapontype_; }
+	WEAPON_TYPE GetWeaponType(void) const { return weaponType_; }
 
 protected:
 
 	// 武器種
-	WEAPON_TYPE weapontype_;
+	WEAPON_TYPE weaponType_;
 
 	// 追従先Transform
 	const Transform& followTransform_;

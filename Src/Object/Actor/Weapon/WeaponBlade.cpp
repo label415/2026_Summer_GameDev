@@ -2,32 +2,32 @@
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/CollisionManager.h"
 #include "../../Common/Collider/ColliderCapsule.h"
-#include "WeponBlade.h"
+#include "WeaponBlade.h"
 
-WeponBlade::WeponBlade(const Transform& followTransform, int followFrameId)
+WeaponBlade::WeaponBlade(const Transform& followTransform, int followFrameId)
 	:
-	WeponBase(WeponBase::WEAPON_TYPE::BLADE, followTransform, followFrameId)
+	WeaponBase(WeaponBase::WEAPON_TYPE::BLADE, followTransform, followFrameId)
 {
 	// 生存フラグを無効にする
 	isAlive_ = false;
 }
 
-WeponBlade::~WeponBlade(void){}
+WeaponBlade::~WeaponBlade(void){}
 
-void WeponBlade::Update(void)
+void WeaponBlade::Update(void)
 {
 	// 基底クラスを更新
-	WeponBase::Update();
+	WeaponBase::Update();
 }
 
-void WeponBlade::InitLoad(void)
+void WeaponBlade::InitLoad(void)
 {
 	// モデルのロード
 	transform_.SetModel(
 		resMng_.Load(ResourceManager::SRC::MODEL_WEAPON_BLADE).handleId_);
 }
 
-void WeponBlade::InitTransform(void)
+void WeaponBlade::InitTransform(void)
 {
 	// モデルの大きさ、回転、座標の初期化
 	transform_.scl = VScale(AsoUtility::VECTOR_ONE, SCALE);
@@ -42,7 +42,7 @@ void WeponBlade::InitTransform(void)
 	};
 }
 
-void WeponBlade::InitCollider(void)
+void WeaponBlade::InitCollider(void)
 {
 	// 攻撃対象タグ（敵本体など）
 	std::vector<ColliderBase::TAG> targetTags = {
@@ -51,7 +51,7 @@ void WeponBlade::InitCollider(void)
 
 	// 武器コライダーを初期化時に生成
 	auto colliderCapsule = std::make_shared<ColliderCapsule>(
-		ColliderBase::TAG::PLAYER_WEPON,
+		ColliderBase::TAG::PLAYER_WEAPON,
 		targetTags,
 		&transform_,
 		COL_CAPSULE_TOP_LOCAL_POS,
@@ -67,11 +67,11 @@ void WeponBlade::InitCollider(void)
 	CollisionManager::GetInstance().AddCollider(colliderCapsule);
 }
 
-void WeponBlade::InitAnimation(void){}
+void WeaponBlade::InitAnimation(void){}
 
-void WeponBlade::InitPost(void){}
+void WeaponBlade::InitPost(void){}
 
-void WeponBlade::SetCollider(void)
+void WeaponBlade::SetCollider(void)
 {
 	isAlive_ = true;
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
@@ -81,7 +81,7 @@ void WeponBlade::SetCollider(void)
 	}
 }
 
-void WeponBlade::ClearCollider(void)
+void WeaponBlade::ClearCollider(void)
 {
 	isAlive_ = false;
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);

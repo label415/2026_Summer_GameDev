@@ -13,9 +13,9 @@
 #include "../../../../Libs/ImGui/imgui.h"
 #include "../../../../Utility/ModelFrameUtility.h"
 #include "../../../../Common/Quaternion.h"
-#include "../../Wepon/WeponBracelet.h"
-#include "../../Wepon/WeponBase.h"
-#include "../../Wepon/WeponFlameThrower.h"
+#include "../../Weapon/WeaponBracelet.h"
+#include "../../Weapon/WeaponBase.h"
+#include "../../Weapon/WeaponFlameThrower.h"
 #include "../../UI/UIHp.h"
 #include "../../../../Application.h"
 #include "../../../Common/EffectController.h"
@@ -37,38 +37,38 @@ EnemyDragon::~EnemyDragon(void)
 void EnemyDragon::Draw(void)
 {
 	// 基底クラスの描画処理
-	CharactorBase::Draw();
+	CharacterBase::Draw();
 }
 
 void EnemyDragon::Release(void)
 {
 	// 基底クラスの解放処理
-	CharactorBase::Release();
+	CharacterBase::Release();
 }
 
 void EnemyDragon::InitLoad(void)
 {
 	// 基底クラスのリソースロード
-	CharactorBase::InitLoad();
+	CharacterBase::InitLoad();
 	// モデルのロード
 	transform_.SetModel(
 		resMng_.LoadModelDuplicate(ResourceManager::SRC::MODEL_ENEMY_DRAGON));
 
 	// 敵HP
 	uiHp_ = std::make_unique<UIHp>(
-		Application::SCREEN_SIZE_X / 2,
-		Application::SCREEN_SIZE_Y - UI_HP_OFFSET_Y,
+		static_cast<float>(Application::SCREEN_SIZE_X) / 2.0f,
+		static_cast<float>(Application::SCREEN_SIZE_Y) - UI_HP_OFFSET_Y,
 		UI_HP_SCALE_X, UI_HP_SCALE_Y, UI_HP_SCALE_Z);
 	uiHp_->Load();
 
 	// 2つの武器を初期化時に生成
 	VECTOR defaultDir = transform_.GetForward();
 
-	auto weponBracelet = std::make_unique<WeponBracelet>(transform_, defaultDir, FRAME_NO_MOUTH);
-	weapons_.push_back(std::move(weponBracelet));
+	auto weaponBracelet = std::make_unique<WeaponBracelet>(transform_, defaultDir, FRAME_NO_MOUTH);
+	weapons_.push_back(std::move(weaponBracelet));
 
-	auto weponFlame = std::make_unique<WeponFlameThrower>(transform_, defaultDir, FRAME_NO_MOUTH);
-	weapons_.push_back(std::move(weponFlame));
+	auto weaponFlame = std::make_unique<WeaponFlameThrower>(transform_, defaultDir, FRAME_NO_MOUTH);
+	weapons_.push_back(std::move(weaponFlame));
 
 	for (const auto& weapon : weapons_) {
 		weapon->Load();
@@ -101,7 +101,7 @@ void EnemyDragon::InitCollider(void)
 	// 各部位の当たり判定カプセル（敵本体・被弾・攻撃用）
 	std::vector<ColliderBase::TAG> bodyTargets = {
 		ColliderBase::TAG::PLAYER,
-		ColliderBase::TAG::PLAYER_WEPON,
+		ColliderBase::TAG::PLAYER_WEAPON,
 		ColliderBase::TAG::STAGE
 	};
 
@@ -114,7 +114,7 @@ void EnemyDragon::InitCollider(void)
 			AsoUtility::VECTOR_ZERO,
 			AsoUtility::VECTOR_ZERO,
 			HIT_RADIUS,
-			static_cast<int>(ENEMY_CAPSULE_FRAMES[i].patrTag)
+			static_cast<int>(ENEMY_CAPSULE_FRAMES[i].partTag)
 		);
 		ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(hitCapsule);
 		CollisionManager::GetInstance().AddCollider(hitCapsule);
@@ -221,7 +221,7 @@ void EnemyDragon::InitPost(void)
 		static_cast<int>(EFFECT::FALLING_ATTACK),
 		(Application::PATH_EFFECT + L"Fall.efkefc"));
 	effect_->Add(
-		static_cast<int>(EFFECT::ROAT),
+		static_cast<int>(EFFECT::ROAR),
 		(Application::PATH_EFFECT + L"RoarEff.efkefc"));
 	effect_->Add(
 		static_cast<int>(EFFECT::CHARGE),
@@ -244,7 +244,7 @@ void EnemyDragon::InitPost(void)
 void EnemyDragon::UpdateProcess(void)
 {
 	effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
-	preMoverDir_ = moveDir_;
+	preMoveDir_ = moveDir_;
 	//ターゲットの方向更新
 	moveDir_ = GetTargetDir();
 
@@ -291,13 +291,13 @@ void EnemyDragon::UpdateProcess(void)
 			VECTOR tFramePos = MV1GetFramePosition(transform_.modelId, topFrame);
 			VECTOR dFramePos = MV1GetFramePosition(transform_.modelId, downFrame);
 
-			if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::BODY)) {
+			if (colliderCapsule->GetPartTag() == static_cast<int>(PART_TAG::BODY)) {
 				colliderCapsule->SetRadius(BODY_RADIUS);
 				tFramePos.y += BODY_COL_OFFSET_Y;
 				dFramePos.y += BODY_COL_OFFSET_Y;
 			}
-			else if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::NECK)
-				|| colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::TAIL)) {
+			else if (colliderCapsule->GetPartTag() == static_cast<int>(PART_TAG::NECK)
+				|| colliderCapsule->GetPartTag() == static_cast<int>(PART_TAG::TAIL)) {
 				colliderCapsule->SetRadius(NECK_TAIL_RADIUS);
 				tFramePos.y += NECK_TAIL_COL_OFFSET_Y;
 				dFramePos.y += NECK_TAIL_COL_OFFSET_Y;
@@ -307,7 +307,7 @@ void EnemyDragon::UpdateProcess(void)
 			colliderCapsule->SetLocalPosDown(dFramePos);
 
 			// 攻撃中でない場合、頭や手などの攻撃判定を不用意に発動させない制御例
-			if (colliderCapsule->GetPatrTag() == static_cast<int>(PATR_TAG::HEAD)) {
+			if (colliderCapsule->GetPartTag() == static_cast<int>(PART_TAG::HEAD)) {
 				// 噛みつき・突進中のみ頭部判定を有効化
 				colliderCapsule->SetIsCollier(!isInvincible_);
 			}
@@ -392,7 +392,7 @@ void EnemyDragon::UpdateHitCollider(void)
 			if (!targetCol || !targetCol->GetIsCollier()) continue;
 
 			// プレイヤーの武器から攻撃を受けた場合
-			if (targetCol->GetTag() != ColliderBase::TAG::PLAYER_WEPON) continue;
+			if (targetCol->GetTag() != ColliderBase::TAG::PLAYER_WEAPON) continue;
 			damage = DAMAGE_HIT_PLAYER_WEAPON;
 
 			// ヒットしたカプセルの中心座標を計算して保持
@@ -427,7 +427,7 @@ void EnemyDragon::ApplyDamage(const VECTOR& hitPos, float damageAmount)
 
 	// 被弾SEの再生
 	int seHandle = resMng_.Load(ResourceManager::SRC::SE_ENEMY_HIT_DAMAGE).handleId_;
-	SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEPON_SE2, seHandle, SE_VOLUME_DEFAULT);
+	SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEAPON_SE2, seHandle, SE_VOLUME_DEFAULT);
 }
 
 void EnemyDragon::ChangeState(STATE state)
@@ -538,7 +538,7 @@ void EnemyDragon::ChangeStateRoar(void)
 	// 移動量ゼロ
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	effectType_ = EFFECT::ROAT;
+	effectType_ = EFFECT::ROAR;
 	effect_->Play(static_cast<int>(effectType_));
 	effect_->SetEffectScl(static_cast<int>(effectType_), EFFECT_ROAR_SCALE);
 
@@ -633,11 +633,11 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 
 	for (const auto& weapon : weapons_)
 	{
-		if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::BRACKELET) continue;
+		if (weapon->GetWeaponType() != WeaponBase::WEAPON_TYPE::BRACELET) continue;
 
-		WeponBracelet* weponBracelet = dynamic_cast<WeponBracelet*>(weapon.get());
-		weponBracelet->ClearCollider();
-		weponBracelet->SetMoveDir(dir);
+		WeaponBracelet* weaponBracelet = dynamic_cast<WeaponBracelet*>(weapon.get());
+		weaponBracelet->ClearCollider();
+		weaponBracelet->SetMoveDir(dir);
 	}
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_BREASE_1).handleId_;
@@ -782,7 +782,7 @@ void EnemyDragon::UpdateCharge(void)
 			euler, EFFECT_CHARGE_SCALE);
 	}
 	else if (animationController_->GetPlayType() == static_cast<int>(ANIM_TYPE::CHARGE)) {
-		moveDir_ = preMoverDir_;
+		moveDir_ = preMoveDir_;
 		step_ -= scnMng_.GetDeltaTime();
 		moveSpeed_ = SPEED_DASH;
 		movePow_ = VScale(moveDir_, moveSpeed_);
@@ -823,7 +823,7 @@ void EnemyDragon::UpdateFallingAttack(void)
 
 	isJump_ = true;
 	transform_.pos.y = MAX_TAKE;
-	moveDir_ = preMoverDir_;
+	moveDir_ = preMoveDir_;
 
 	const float currentStep = animationController_->GetPlayAnim().step;
 
@@ -837,10 +837,10 @@ void EnemyDragon::UpdateFallingAttack(void)
 
 		for (const auto& weapon : weapons_)
 		{
-			if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::FLAME) continue;
+			if (weapon->GetWeaponType() != WeaponBase::WEAPON_TYPE::FLAME) continue;
 
-			auto* weponFlame = static_cast<WeponFlameThrower*>(weapon.get());
-			weponFlame->Shot(dir);
+			auto* weaponFlame = static_cast<WeaponFlameThrower*>(weapon.get());
+			weaponFlame->Shot(dir);
 		}
 	}
 
@@ -883,7 +883,7 @@ void EnemyDragon::UpdateFlyingAttack(void)
 
 	isJump_ = true;
 	transform_.pos.y = MAX_TAKE;
-	moveDir_ = preMoverDir_;
+	moveDir_ = preMoveDir_;
 
 	const float currentStep = animationController_->GetPlayAnim().step;
 
@@ -897,10 +897,10 @@ void EnemyDragon::UpdateFlyingAttack(void)
 
 		for (const auto& weapon : weapons_)
 		{
-			if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::FLAME) continue;
+			if (weapon->GetWeaponType() != WeaponBase::WEAPON_TYPE::FLAME) continue;
 
-			auto* weponFlame = static_cast<WeponFlameThrower*>(weapon.get());
-			weponFlame->Shot(dir);
+			auto* weaponFlame = static_cast<WeaponFlameThrower*>(weapon.get());
+			weaponFlame->Shot(dir);
 		}
 	}
 
@@ -919,7 +919,7 @@ void EnemyDragon::UpdateBreathAttack(void)
 		return;
 	}
 
-	moveDir_ = preMoverDir_;
+	moveDir_ = preMoveDir_;
 	const float currentStep = animationController_->GetPlayAnim().step;
 
 	if (currentStep >= BREATH_SE2_START_STEP && currentStep <= BREATH_SE2_END_STEP)
@@ -938,10 +938,10 @@ void EnemyDragon::UpdateBreathAttack(void)
 
 			for (const auto& weapon : weapons_)
 			{
-				if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::BRACKELET) continue;
+				if (weapon->GetWeaponType() != WeaponBase::WEAPON_TYPE::BRACELET) continue;
 
-				auto* weponBracelet = static_cast<WeponBracelet*>(weapon.get());
-				weponBracelet->SetIsAttack(true);
+				auto* weaponBracelet = static_cast<WeaponBracelet*>(weapon.get());
+				weaponBracelet->SetIsAttack(true);
 			}
 		}
 		else {
@@ -953,10 +953,10 @@ void EnemyDragon::UpdateBreathAttack(void)
 		// ステップ40以降になったらブレスの根元を縮め始める
 		for (const auto& weapon : weapons_)
 		{
-			if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::BRACKELET) continue;
+			if (weapon->GetWeaponType() != WeaponBase::WEAPON_TYPE::BRACELET) continue;
 
-			auto* weponBracelet = static_cast<WeponBracelet*>(weapon.get());
-			weponBracelet->SetIsEnd(true);
+			auto* weaponBracelet = static_cast<WeaponBracelet*>(weapon.get());
+			weaponBracelet->SetIsEnd(true);
 		}
 	}
 
@@ -965,7 +965,7 @@ void EnemyDragon::UpdateBreathAttack(void)
 	{
 		for (const auto& weapon : weapons_)
 		{
-			if (weapon->GetWeaponType() != WeponBase::WEAPON_TYPE::BRACKELET) continue;
+			if (weapon->GetWeaponType() != WeaponBase::WEAPON_TYPE::BRACELET) continue;
 			weapon->ClearCollider();
 		}
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_BREASE2);
@@ -980,14 +980,14 @@ void EnemyDragon::UpdateMeleeAttack(void)
 	}
 
 	if (animationController_->GetPlayAnim().step >= MELEE_ATTACK_SE_START_STEP
-		&& animationController_->GetPlayAnim().step <= MELEE_ATTACK_CILLIDER) {
+		&& animationController_->GetPlayAnim().step <= MELEE_ATTACK_COLLIDER) {
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ATTCEK).handleId_;
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ATTCEK, bgm_, SE_VOLUME_DEFAULT);
 	}
 
 	if (animationController_->GetPlayAnim().step >= MELEE_MOVE_DIR_LOCK_STEP)
 	{
-		moveDir_ = preMoverDir_;
+		moveDir_ = preMoveDir_;
 	}
 
 	if (animationController_->IsEnd())
@@ -1047,7 +1047,7 @@ void EnemyDragon::UpdateLands(void)
 
 void EnemyDragon::UpdateDead(void)
 {
-	moveDir_ = preMoverDir_;
+	moveDir_ = preMoveDir_;
 
 	if (animationController_->IsEnd())
 	{
@@ -1061,7 +1061,7 @@ void EnemyDragon::UpdateDead(void)
 
 void EnemyDragon::UpdateEnd(void)
 {
-	moveDir_ = preMoverDir_;
+	moveDir_ = preMoveDir_;
 }
 
 void EnemyDragon::SetTargetCollider(void)

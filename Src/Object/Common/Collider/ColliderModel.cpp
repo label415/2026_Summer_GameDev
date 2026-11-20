@@ -2,9 +2,9 @@
 #include "ColliderModel.h"
 ColliderModel::ColliderModel(
 	TAG tag, const std::vector<TAG>& targetTags,
-	const Transform* follow, int patrTag)
+	const Transform* follow, int partTag)
 	:
-	ColliderBase(SHAPE::MODEL, tag, targetTags, follow, patrTag)
+	ColliderBase(SHAPE::MODEL, tag, targetTags, follow, partTag)
 {
 }
 

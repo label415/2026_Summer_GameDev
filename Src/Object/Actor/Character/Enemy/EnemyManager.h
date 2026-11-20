@@ -8,6 +8,7 @@ class ColliderBase;
 class EnemyManager
 {
 public:
+
 	// コンストラクタ
 	EnemyManager(void);
 
@@ -37,8 +38,11 @@ public:
 
 	// エネミー生成
 	void Create(const EnemyBase::EnemyData& data);
+
 private:
+
 	// エネミー
 	std::vector<std::shared_ptr<EnemyBase>> enemys_;
+
 };
 

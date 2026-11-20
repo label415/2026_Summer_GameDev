@@ -10,7 +10,7 @@ public:
 	// コンストラクタ
 	ColliderModel(
 		TAG tag, const std::vector<TAG>& targetTags,
-		const Transform*, int patrTag = 0);
+		const Transform*, int partTag = 0);
 
 	// デストラクタ
 	~ColliderModel(void) override;

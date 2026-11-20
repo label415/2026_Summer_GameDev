@@ -8,6 +8,7 @@ class ColliderModel;
 class Stage :public ActorBase
 {
 public:
+
 	// コンストラクタ
 	Stage(void){}
 
@@ -19,7 +20,9 @@ public:
 
 	//描画処理
 	void Draw(void)override;
+
 protected:
+
 	// リソースロード
 	void InitLoad(void)override;
 
@@ -37,7 +40,9 @@ protected:
 
 	// 当たり判定衝突時の更新処理
 	void UpdateHitCollider(void)override{}
+
 private:
+
 	// ステージモデル座標
 	static constexpr VECTOR STAGE_POS = { 0.0f, -100.0f, 0.0f };
 	// ステージモデル大きさ
@@ -57,5 +62,6 @@ private:
 
 	// 対象フレームかどうかを判定
 	bool IsRateFrame(int frameIdx) const;
+
 };
 

@@ -27,7 +27,8 @@ void PauseScene::LoadEnd(void)
 {
 	// フォントハンドルの作成
 	resMng_.Load(ResourceManager::SRC::FONT);
-	pauseFont_ = fontMng_.GetInstance().CreateMyFont(fontName_, FONT_SIZE, FONT_THICKNESS);
+	pauseFont_ = fontMng_.GetInstance().CreateMyFont(
+		fontName_, static_cast<int>(FONT_SIZE), static_cast<int>(FONT_THICKNESS));
 
 	// 画像のロード
 	selectImg_ = resMng_.Load(ResourceManager::SRC::UI_SELECTION_CURSOR).handleId_;
@@ -62,7 +63,7 @@ void PauseScene::Update(void)
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
 		// マウスがUIコライダー内にあるか判定
-		if (uiBoxs_[i] && uiBoxs_[i]->Contains(mPos.x, mPos.y))
+		if (uiBoxs_[i] && uiBoxs_[i]->Contains(static_cast<float>(mPos.x), static_cast<float>(mPos.y)))
 		{
 			// マウス入力を有効化
 			ins.SetMouseFlage(true);
@@ -166,7 +167,7 @@ void PauseScene::Draw(void)
 	{
 		// 文字の描画位置を計算
 		int strW = GetDrawStringWidthToHandle(pasueList_[i].c_str(), -1, pauseFont_);
-		int posX = static_cast<int>(Application::SCREEN_SIZE_X - strW) / FONT_ADJUST_X;
+		int posX = static_cast<int>((Application::SCREEN_SIZE_X - strW) / FONT_ADJUST_X);
 		int posY = static_cast<int>(
 			(Application::HALF_SCREEN_SIZE_Y - FONT_ADJUST_Y) + (FONT_INTERVAL * i));
 

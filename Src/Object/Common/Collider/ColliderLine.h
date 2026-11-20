@@ -12,7 +12,7 @@ public:
 	// コンストラクタ
 	ColliderLine(
 		TAG tag, const std::vector<TAG>& targetTags, const Transform* follow,
-		const VECTOR& localPosStart, const VECTOR& localPosEnd, int patrTag = 0);
+		const VECTOR& localPosStart, const VECTOR& localPosEnd, int partTag = 0);
 
 	// デストラクタ
 	~ColliderLine(void) override;
