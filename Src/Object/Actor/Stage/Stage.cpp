@@ -1,6 +1,5 @@
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/SceneManager.h"
-#include "../../../Manager/CollisionManager.h"
 #include "../../Common/Collider/ColliderModel.h"
 #include "../../Common/Collider/ColliderSphere.h"
 #include "Stage.h"
@@ -13,7 +12,7 @@ void Stage::Update(void)
 void Stage::Draw(void)
 {
 #ifdef _DEBUG
-	// Š—L‚µ‚Ä‚¢‚éƒRƒ‰ƒCƒ_‚Ì•`‰æ
+	// æ‰€æœ‰ã—ã¦ã„ã‚‹ã‚³ãƒ©ã‚¤ãƒ€ã®æç”»
 	for (const auto& own : ownColliders_){
 		for (const auto& collider : own.second){
 			if (collider)
@@ -24,7 +23,7 @@ void Stage::Draw(void)
 	}
 #endif // _DEBUG
 
-	// ƒ‚ƒfƒ‹•`‰æ
+	// ãƒ¢ãƒ‡ãƒ«æç”»
 	if (transform_.modelId != -1)
 	{
 		MV1DrawModel(transform_.modelId);
@@ -33,14 +32,14 @@ void Stage::Draw(void)
 
 void Stage::InitLoad(void)
 {
-	// ƒ‚ƒfƒ‹‚Ìƒ[ƒh
+	// ãƒ¢ãƒ‡ãƒ«ã®ãƒ­ãƒ¼ãƒ‰
 	transform_.SetModel(resMng_.LoadModelDuplicate(
 		ResourceManager::SRC::MODEL_MAIN_STAGE));
 }
 
 void Stage::InitTransform(void)
 {
-	// ‘å‚«‚³A‰ñ“]AÀ•W‚Ì‰Šú‰»
+	// å¤§ãã•ã€å›è»¢ã€åº§æ¨™ã®åˆæœŸåŒ–
 	transform_.scl = STAGE_SCALE;
 	transform_.pos = STAGE_POS;
 	transform_.Update();
@@ -50,7 +49,7 @@ void Stage::InitCollider(void)
 {
 	MV1SetupCollInfo(transform_.modelId);
 
-	// ƒXƒe[ƒWƒ‚ƒfƒ‹‚ª”½‰‚·‚é‘ÎÛƒ^ƒO
+	// ã‚¹ãƒ†ãƒ¼ã‚¸ãƒ¢ãƒ‡ãƒ«ãŒåå¿œã™ã‚‹å¯¾è±¡ã‚¿ã‚°
 	std::vector<ColliderBase::TAG> targetTags = { ColliderBase::TAG::NONE };
 
 	auto colModel_ = std::make_shared<ColliderModel>(
@@ -70,20 +69,19 @@ void Stage::InitCollider(void)
 	}
 
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::MODEL)].push_back(colModel_);
-	CollisionManager::GetInstance().AddCollider(colModel_);
 }
 
 void Stage::AddOpacityFrameIds(const std::wstring& name)
 {
-	// ƒtƒŒ[ƒ€”‚ğæ“¾
+	// ãƒ•ãƒ¬ãƒ¼ãƒ æ•°ã‚’å–å¾—
 	int num = MV1GetFrameNum(transform_.modelId);
 	for (int i = 0; i < num; i++)
 	{
-		// ƒtƒŒ[ƒ€–¼Ì‚ğæ“¾
+		// ãƒ•ãƒ¬ãƒ¼ãƒ åç§°ã‚’å–å¾—
 		std::wstring frameName = MV1GetFrameName(transform_.modelId, i);
 		if (frameName.find(name) != std::string::npos)
 		{
-			// œŠOƒtƒŒ[ƒ€‚É’Ç‰Á
+			// é™¤å¤–ãƒ•ãƒ¬ãƒ¼ãƒ ã«è¿½åŠ 
 			frameOpacityRate_.emplace_back(i);
 		}
 	}
@@ -91,13 +89,13 @@ void Stage::AddOpacityFrameIds(const std::wstring& name)
 
 bool Stage::IsOpacityFrame(int frameIdx) const
 {
-	// œŠO”»’è
+	// é™¤å¤–åˆ¤å®š
 	if (std::find(
 		frameOpacityRate_.begin(),
 		frameOpacityRate_.end(),
 		frameIdx) != frameOpacityRate_.end())
 	{
-		// œŠO‚ÉŠY“–‚·‚é
+		// é™¤å¤–ã«è©²å½“ã™ã‚‹
 		return true;
 	}
 	return false;

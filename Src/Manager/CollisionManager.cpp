@@ -6,22 +6,11 @@
 #include "../Object/Common/Transform.h"
 #include "CollisionManager.h"
 
-void CollisionManager::DrawDebug(void)
-{
-#ifdef _DEBUG
-	for (auto& collider : colliders_)
-	{
-		if (collider.lock() && collider.lock()->GetIsCollider())
-		{
-			collider.lock()->Draw();
-		}
-	}
-#endif
-}
+CollisionManager::CollisionManager(void){}
 
 void CollisionManager::Update(void)
 {
-	// —LŒøŠúŒÀØ‚êƒRƒ‰ƒCƒ_[‚ğ”z—ñ‚©‚çœŠO‚·‚é
+	// æœ‰åŠ¹æœŸé™åˆ‡ã‚Œã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’é…åˆ—ã‹ã‚‰é™¤å¤–ã™ã‚‹
 	colliders_.erase(
 		std::remove_if(colliders_.begin(), colliders_.end(),
 			[](const std::weak_ptr<ColliderBase>& wp) {
@@ -32,10 +21,16 @@ void CollisionManager::Update(void)
 
 	if (colliders_.empty()) return;
 
-	// ‘O‰ñ‚ÌÕ“ËŒ‹‰Ê‚ğ‘SƒRƒ‰ƒCƒ_[ƒNƒŠƒA
-	for (auto& col : colliders_) { col.lock()->ClearHitCollider(); }
+	// å‰å›ã®è¡çªçµæœã‚’å…¨ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚¯ãƒªã‚¢
+	for (auto& col : colliders_)
+	{
+		if (auto locked = col.lock())
+		{
+			locked->ClearHitCollider();
+		}
+	}
 
-	// ‘“–‚½‚è”»’è
+	// ç·å½“ãŸã‚Šåˆ¤å®š
 	for (size_t i = 0; i < colliders_.size(); ++i)
 	{
 		for (size_t j = i + 1; j < colliders_.size(); ++j)
@@ -43,24 +38,39 @@ void CollisionManager::Update(void)
 			auto colA = colliders_[i].lock();
 			auto colB = colliders_[j].lock();
 
-			// ƒRƒ‰ƒCƒ_[‚ª–³Œø‰»‚³‚ê‚Ä‚¢‚éê‡‚ÍƒXƒLƒbƒv
-			if (!colA->GetIsCollider()
+			// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ãŒç„¡åŠ¹åŒ–ã•ã‚Œã¦ã„ã‚‹å ´åˆã¯ã‚¹ã‚­ãƒƒãƒ—
+			if (!colA || !colB
+				|| !colA->GetIsCollider()
 				|| !colB->GetIsCollider()) continue;
 
-			// ‚¨Œİ‚¢‚ª‘ÎÛƒ^ƒO‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚é‚©Šm”F
+			// ãŠäº’ã„ãŒå¯¾è±¡ã‚¿ã‚°ã«å«ã¾ã‚Œã¦ã„ã‚‹ã‹ç¢ºèª
 			if (!CanCollide(*colA, *colB))continue;
 
-			// ”»’è‚¨‚æ‚ÑŒ‹‰Ê‚ÌŠi”[
+			// åˆ¤å®šãŠã‚ˆã³çµæœã®æ ¼ç´
 			ResolveCollision(colA, colB);
 		}
 	}
+}
+
+void CollisionManager::DrawDebug(void)
+{
+#ifdef _DEBUG
+	for (auto& collider : colliders_)
+	{
+		auto locked = collider.lock();
+		if (locked && locked->GetIsCollider())
+		{
+			locked->Draw();
+		}
+	}
+#endif
 }
 
 bool CollisionManager::CanCollide(
 	const ColliderBase& a,
 	const ColliderBase& b) const
 {
-	// ‚Ç‚¿‚ç‚©‚ÌÕ“Ë‘ÎÛ‚Æ‚È‚Á‚Ä‚¢‚é‚Æ‚«Às
+	// ã©ã¡ã‚‰ã‹ã®è¡çªå¯¾è±¡ã¨ãªã£ã¦ã„ã‚‹ã¨ãå®Ÿè¡Œ
 	return a.IsTargetTag(b.GetTag())
 		|| b.IsTargetTag(a.GetTag());
 }
@@ -72,7 +82,7 @@ void CollisionManager::ResolveCollision(
 	auto colA = argA;
 	auto colB = argB;
 
-	// Œ`ó‚É‚æ‚éƒ\[ƒgiƒXƒƒbƒvj
+	// å½¢çŠ¶ã«ã‚ˆã‚‹ã‚½ãƒ¼ãƒˆï¼ˆã‚¹ãƒ¯ãƒƒãƒ—ï¼‰
 	if (colA->GetShape() > colB->GetShape())
 	{
 		std::swap(colA, colB);
@@ -82,7 +92,7 @@ void CollisionManager::ResolveCollision(
 	auto shape2 = colB->GetShape();
 	bool isHit = false;
 
-	// ƒJƒvƒZƒ‹ vs ƒJƒvƒZƒ‹
+	// ã‚«ãƒ—ã‚»ãƒ« vs ã‚«ãƒ—ã‚»ãƒ«
 	if (shape1 == ColliderBase::SHAPE::CAPSULE
 		&& shape2 == ColliderBase::SHAPE::CAPSULE)
 	{
@@ -90,7 +100,7 @@ void CollisionManager::ResolveCollision(
 		auto cap2 = std::static_pointer_cast<ColliderCapsule>(colB);
 		isHit = CollisionUtility::IsHit(*cap1, *cap2);
 	}
-	// ƒXƒtƒBƒA vs ƒJƒvƒZƒ‹
+	// ã‚¹ãƒ•ã‚£ã‚¢ vs ã‚«ãƒ—ã‚»ãƒ«
 	else if (shape1 == ColliderBase::SHAPE::SPHERE
 		&& shape2 == ColliderBase::SHAPE::CAPSULE)
 	{
@@ -98,7 +108,7 @@ void CollisionManager::ResolveCollision(
 		auto cap = std::static_pointer_cast<ColliderCapsule>(colB);
 		isHit = CollisionUtility::IsHit(*cap, *sphere);
 	}
-	// ƒJƒvƒZƒ‹ vs ƒ‚ƒfƒ‹
+	// ã‚«ãƒ—ã‚»ãƒ« vs ãƒ¢ãƒ‡ãƒ«
 	else if (shape1 == ColliderBase::SHAPE::CAPSULE
 		&& shape2 == ColliderBase::SHAPE::MODEL)
 	{
@@ -106,7 +116,7 @@ void CollisionManager::ResolveCollision(
 		auto model = std::static_pointer_cast<ColliderModel>(colB);
 		isHit = CollisionUtility::IsHit(*cap, *model);
 	}
-	// ƒXƒtƒBƒA vs ƒ‚ƒfƒ‹
+	// ã‚¹ãƒ•ã‚£ã‚¢ vs ãƒ¢ãƒ‡ãƒ«
 	else if (shape1 == ColliderBase::SHAPE::SPHERE
 		&& shape2 == ColliderBase::SHAPE::MODEL)
 	{
@@ -114,7 +124,7 @@ void CollisionManager::ResolveCollision(
 		auto model = std::static_pointer_cast<ColliderModel>(colB);
 		isHit = CollisionUtility::IsHit(*sphere, *model);
 	}
-	// ƒ‰ƒCƒ“ vs ƒ‚ƒfƒ‹
+	// ãƒ©ã‚¤ãƒ³ vs ãƒ¢ãƒ‡ãƒ«
 	else if (shape1 == ColliderBase::SHAPE::LINE
 		&& shape2 == ColliderBase::SHAPE::MODEL)
 	{
@@ -125,12 +135,27 @@ void CollisionManager::ResolveCollision(
 
 	if (isHit)
 	{
-		// ‘ÎÛƒ^ƒO‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚½‚çŠi”[
+		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨æ•µæ­¦å™¨ã®æ¥è§¦æ™‚ã¯å£ã«ã‚ˆã‚‹é®è”½ãƒã‚§ãƒƒã‚¯ã‚’è¡Œã†
+		bool isPlayerVsEnemyWeapon =
+			(colA->GetTag() == ColliderBase::TAG::PLAYER
+				&& colB->GetTag() == ColliderBase::TAG::ENEMY_WEAPON)
+			|| (colB->GetTag() == ColliderBase::TAG::PLAYER
+				&& colA->GetTag() == ColliderBase::TAG::ENEMY_WEAPON);
+
+		if (isPlayerVsEnemyWeapon
+			&& colA->GetFollow() != nullptr
+			&& colB->GetFollow() != nullptr
+			&& CheckWallOcclusion(colA->GetFollow()->pos, colB->GetFollow()->pos))
+		{
+			return;
+		}
+
+		// å¯¾è±¡ã‚¿ã‚°ã«å«ã¾ã‚Œã¦ã„ãŸã‚‰æ ¼ç´
 		if (colA->IsTargetTag(colB->GetTag())) {
 			colA->SetHitCollider(colB);
 		}
 
-		// ‘ÎÛƒ^ƒO‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚½‚çŠi”[
+		// å¯¾è±¡ã‚¿ã‚°ã«å«ã¾ã‚Œã¦ã„ãŸã‚‰æ ¼ç´
 		if (colB->IsTargetTag(colA->GetTag())) {
 			colB->SetHitCollider(colA);
 		}
@@ -139,23 +164,25 @@ void CollisionManager::ResolveCollision(
 
 bool CollisionManager::CheckWallOcclusion(const VECTOR& start, const VECTOR& end)
 {
-	// ƒvƒŒƒCƒ„[‚Æ“G‚ÌŠÔ‚Ì’¼ü‚ğŒ‹‚Ôˆê“I‚ÈüƒRƒ‰ƒCƒ_[‚ğ¶¬
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨æ•µã®é–“ã®ç›´ç·šã‚’çµã¶ä¸€æ™‚çš„ãªç·šã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’ç”Ÿæˆ
 	std::vector<ColliderBase::TAG> targetTags = { ColliderBase::TAG::STAGE };
 
 	ColliderLine tempLine(
 		ColliderBase::TAG::NONE,
 		targetTags, nullptr, start,end);
 
-	// ƒXƒe[ƒWƒRƒ‰ƒCƒ_[‚ğ’T‚µ‚ÄüƒRƒ‰ƒCƒ_[‚Æ‚ÌŒğ·‚ğ”»’è
+	// ã‚¹ãƒ†ãƒ¼ã‚¸ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’æ¢ã—ã¦ç·šã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã¨ã®äº¤å·®ã‚’åˆ¤å®š
 	for (const auto& col : colliders_)
 	{
-		if (col.lock()->GetShape() != ColliderBase::SHAPE::MODEL
-			|| col.lock()->GetTag() != ColliderBase::TAG::STAGE)continue;
+		auto locked = col.lock();
+		if (!locked
+			|| locked->GetShape() != ColliderBase::SHAPE::MODEL
+			|| locked->GetTag() != ColliderBase::TAG::STAGE)continue;
 
-		auto modelCol = std::static_pointer_cast<ColliderModel>(col.lock());
+		auto modelCol = std::static_pointer_cast<ColliderModel>(locked);
 		if (!modelCol || !modelCol->GetIsCollider()) continue;
 
-		// CollisionUtility ‚Ìü•ª vs ƒ‚ƒfƒ‹Œğ·”»’è
+		// CollisionUtility ã®ç·šåˆ† vs ãƒ¢ãƒ‡ãƒ«äº¤å·®åˆ¤å®š
 		if (CollisionUtility::IsHit(
 			tempLine, *modelCol))return true;
 	}

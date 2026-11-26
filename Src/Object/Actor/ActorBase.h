@@ -13,73 +13,76 @@ class ActorBase
 {
 public:
 
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	ActorBase(void);
 
-	// ƒfƒXƒgƒ‰ƒNƒ^
+	// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	virtual ~ActorBase(void);
 
-	// “Ç‚İ‚İ
+	// èª­ã¿è¾¼ã¿
 	void Load(void);
 
-	// “Ç‚İæ‚èŒã
+	// èª­ã¿å–ã‚Šå¾Œ
 	void LoadEnd(void);
 
-	// XV
+	// æ›´æ–°
 	virtual void Update(void) = 0;
 
-	// •`‰æ
+	// æç”»
 	virtual void Draw(void);
 
-	// ‰ğ•ú
+	// è§£æ”¾
 	virtual void Release(void);
 
-	// ‘å‚«‚³A‰ñ“]AÀ•W“™‚Ìæ“¾
+	// å¤§ãã•ã€å›è»¢ã€åº§æ¨™ç­‰ã®å–å¾—
 	const Transform& GetTransform(void) const { return transform_; }
 
-	// ¶‘¶ƒtƒ‰ƒOæ“¾
+	// ç”Ÿå­˜ãƒ•ãƒ©ã‚°å–å¾—
 	const bool GetIsAlive(void)const { return isAlive_; }
 
-	// “Á’è‚Ì©g‚ÌÕ“Ëî•ñæ“¾
+	// ç‰¹å®šã®è‡ªèº«ã®è¡çªæƒ…å ±å–å¾—
 	const std::vector<std::shared_ptr<ColliderBase>> GetOwnCollider(int key) const;
+
+	// æ‰€æœ‰ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ãƒãƒƒãƒ—å–å¾—
+	const std::map<int, std::vector<std::shared_ptr<ColliderBase>>>& GetOwnColliders(void) const { return ownColliders_; }
 
 protected:
 
-	// Š—L‚µ‚Ä‚¢‚éƒRƒ‰ƒCƒ_[
+	// æ‰€æœ‰ã—ã¦ã„ã‚‹ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼
 	std::map<int, std::vector<std::shared_ptr<ColliderBase>>> ownColliders_;
 
-	//ƒGƒtƒFƒNƒgƒRƒ“ƒgƒ[ƒ‰
+	//ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©
 	std::unique_ptr<EffectController> effect_;
 
-	// ƒVƒ“ƒOƒ‹ƒgƒ“QÆ
+	// ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³å‚ç…§
 	ResourceManager& resMng_;
 	SceneManager& scnMng_;
 
-	// ƒ‚ƒfƒ‹§Œä‚ÌŠî–{î•ñ
+	// ãƒ¢ãƒ‡ãƒ«åˆ¶å¾¡ã®åŸºæœ¬æƒ…å ±
 	Transform transform_;
 
-	// ¶‘¶ƒtƒ‰ƒO
+	// ç”Ÿå­˜ãƒ•ãƒ©ã‚°
 	bool isAlive_;
 
-	// ƒŠƒ\[ƒXƒ[ƒh
+	// ãƒªã‚½ãƒ¼ã‚¹ãƒ­ãƒ¼ãƒ‰
 	virtual void InitLoad(void) = 0;
 
-	// ‘å‚«‚³A‰ñ“]AÀ•W‚Ì‰Šú‰»
+	// å¤§ãã•ã€å›è»¢ã€åº§æ¨™ã®åˆæœŸåŒ–
 	virtual void InitTransform(void) = 0;
 
-	// Õ“Ë”»’è‚Ì‰Šú‰»
+	// è¡çªåˆ¤å®šã®åˆæœŸåŒ–
 	virtual void InitCollider(void) = 0;
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì‰Šú‰»
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®åˆæœŸåŒ–
 	virtual void InitAnimation(void) = 0;
 
-	// ‰Šú‰»Œã‚ÌŒÂ•Êˆ—
+	// åˆæœŸåŒ–å¾Œã®å€‹åˆ¥å‡¦ç†
 	virtual void InitPost(void) = 0;
 
-	// “–‚½‚è”»’èÕ“Ë‚ÌXVˆ—
+	// å½“ãŸã‚Šåˆ¤å®šè¡çªæ™‚ã®æ›´æ–°å‡¦ç†
 	virtual void Collision(void);
 
-	// Õ“Ë‚µ‚½ƒRƒ‰ƒCƒ_[‚ÌXV
+	// è¡çªã—ãŸã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®æ›´æ–°
 	virtual void UpdateHitCollider(void){}
 
 };

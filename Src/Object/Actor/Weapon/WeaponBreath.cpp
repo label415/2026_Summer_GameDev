@@ -2,7 +2,6 @@
 #include "../../../Utility/ModelFrameUtility.h"
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/SceneManager.h"
-#include "../../../Manager/CollisionManager.h"
 #include "../../../Application.h"
 #include "../../../Libs/ImGui/imgui.h"
 #include "../../Common/Collider/ColliderCapsule.h"
@@ -24,13 +23,13 @@ WeaponBreath::WeaponBreath(
 
 void WeaponBreath::Update(void)
 {
-	// ¶‘¶‚µ‚Ä‚¢‚È‚¢‚Íˆ—‚µ‚È‚¢
+	// ç”Ÿå­˜ã—ã¦ã„ãªã„æ™‚ã¯å‡¦ç†ã—ãªã„
 	if (!isAlive_) return;
 
-	// ˆÚ“®ˆ—
+	// ç§»å‹•å‡¦ç†
 	Move();
 
-	// ƒGƒtƒFƒNƒgXV
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆæ›´æ–°
 	if (effect_) {
 		effect_->Update(static_cast<int>(EFFECT_TYPE::BREATH));
 	}
@@ -48,12 +47,12 @@ void WeaponBreath::Release(void)
 
 void WeaponBreath::InitCollider(void)
 {
-	// Õ“Ë”»’è‚Ìƒ^[ƒQƒbƒgƒ^ƒO‚ğİ’è
+	// è¡çªåˆ¤å®šã®ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚¿ã‚°ã‚’è¨­å®š
 	std::vector<ColliderBase::TAG> targetTags = {
 		ColliderBase::TAG::PLAYER
 	};
 
-	// ƒJƒvƒZƒ‹ƒRƒ‰ƒCƒ_[‚ğì¬‚µ‚Ä“o˜^
+	// ã‚«ãƒ—ã‚»ãƒ«ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’ä½œæˆã—ã¦ç™»éŒ²
 	auto colliderCapsule = std::make_shared<ColliderCapsule>(
 		ColliderBase::TAG::ENEMY_WEAPON,
 		targetTags,
@@ -63,33 +62,32 @@ void WeaponBreath::InitCollider(void)
 		COL_CAPSULE_RADIUS
 	);
 
-	// ‰Šúó‘Ô‚Å‚Í“–‚½‚è”»’è‚ğ–³Œø‰»
+	// åˆæœŸçŠ¶æ…‹ã§ã¯å½“ãŸã‚Šåˆ¤å®šã‚’ç„¡åŠ¹åŒ–
 	colliderCapsule->SetIsCollider(false);
 
-	// ƒRƒ‰ƒCƒ_[‚ğŠ—LƒRƒ‰ƒCƒ_[‚É’Ç‰Á
+	// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’æ‰€æœ‰ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã«è¿½åŠ 
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colliderCapsule);
-	CollisionManager::GetInstance().AddCollider(colliderCapsule);
 }
 
 void WeaponBreath::InitPost(void)
 {
-	// ‰ŠúÀ•W‚ğİ’è
+	// åˆæœŸåº§æ¨™ã‚’è¨­å®š
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
 
-	// ƒGƒtƒFƒNƒgƒRƒ“ƒgƒ[ƒ‰‚ğì¬‚µ‚ÄƒGƒtƒFƒNƒg‚ğ“o˜^
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã‚’ä½œæˆã—ã¦ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’ç™»éŒ²
 	effect_ = std::make_unique<EffectController>();
 	effect_->Add(
 		static_cast<int>(EFFECT_TYPE::BREATH),
 		(Application::PATH_EFFECT + L"Breath.efkefc"));
 	effect_->Stop(static_cast<int>(EFFECT_TYPE::BREATH));
 
-	// ƒRƒ‰ƒCƒ_[‚ğ‰Šú‰»
+	// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’åˆæœŸåŒ–
 	ClearCollider();
 }
 
 void WeaponBreath::SetCollider(void)
 {
-	// ƒJƒvƒZƒ‹ƒRƒ‰ƒCƒ_[‚ğ—LŒø‰»
+	// ã‚«ãƒ—ã‚»ãƒ«ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’æœ‰åŠ¹åŒ–
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	for (const auto& col : ownColliders_.at(capsuleType))
 	{
@@ -99,7 +97,7 @@ void WeaponBreath::SetCollider(void)
 
 void WeaponBreath::ClearCollider(void)
 {
-	// ƒJƒvƒZƒ‹ƒRƒ‰ƒCƒ_[‚ğ–³Œø‰»‚µ‚Ä‰ŠúÀ•W‚É–ß‚·
+	// ã‚«ãƒ—ã‚»ãƒ«ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’ç„¡åŠ¹åŒ–ã—ã¦åˆæœŸåº§æ¨™ã«æˆ»ã™
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	for (const auto& col : ownColliders_.at(capsuleType))
 	{
@@ -110,7 +108,7 @@ void WeaponBreath::ClearCollider(void)
 		capsule->SetRadius(COL_CAPSULE_RADIUS);
 	}
 
-	// ‰ŠúÀ•W‚Æ‚·‚×‚Ä‚Ìƒtƒ‰ƒO‚ğƒŠƒZƒbƒg
+	// åˆæœŸåº§æ¨™ã¨ã™ã¹ã¦ã®ãƒ•ãƒ©ã‚°ã‚’ãƒªã‚»ãƒƒãƒˆ
 	topPos_ = COL_CAPSULE_TOP_LOCAL_POS;
 	downPos_ = COL_CAPSULE_DOWN_LOCAL_POS;
 	isAttack_ = false;
@@ -119,13 +117,13 @@ void WeaponBreath::ClearCollider(void)
 
 void WeaponBreath::SetIsAttack(bool isAttack)
 {
-	// UŒ‚ƒtƒ‰ƒO‚ªØ‚è‘Ö‚í‚Á‚½ê‡‚ÉƒGƒtƒFƒNƒg‚ğÄ¶
+	// æ”»æ’ƒãƒ•ãƒ©ã‚°ãŒåˆ‡ã‚Šæ›¿ã‚ã£ãŸå ´åˆã«ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’å†ç”Ÿ
 	if (!isAttack_ && isAttack) {
 
-		// ƒRƒ‰ƒCƒ_[‚ğƒNƒŠƒA
+		// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’ã‚¯ãƒªã‚¢
 		ClearCollider();
 
-		// ƒGƒtƒFƒNƒgŠp“x‚ÆÀ•W‚ğŒvZ
+		// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆè§’åº¦ã¨åº§æ¨™ã‚’è¨ˆç®—
 		float yaw = atan2f(moveDir_.x, moveDir_.z);
 		float pitch = -asinf(moveDir_.y);
 		VECTOR euler = { pitch, yaw, 0.0f };
@@ -133,26 +131,26 @@ void WeaponBreath::SetIsAttack(bool isAttack)
 		VECTOR effPos = transform_.pos;
 		effPos.y -= EFFECT_OFFSET_Y;
 
-		// ƒGƒtƒFƒNƒg‚ğÄ¶
+		// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’å†ç”Ÿ
 		effect_->Play(
 			static_cast<int>(EFFECT_TYPE::BREATH),
 			effPos,
 			euler, VGet(EFFECT_SCALE_XY, EFFECT_SCALE_XY, LENGTH / EFFECT_LENGTH_DIV));
 
-		// UŒ‚ŠJn‚ÉƒRƒ‰ƒCƒ_[‚ğİ’è
+		// æ”»æ’ƒé–‹å§‹æ™‚ã«ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’è¨­å®š
 		SetCollider();
 	}
 
-	// UŒ‚ƒtƒ‰ƒO‚ğXV
+	// æ”»æ’ƒãƒ•ãƒ©ã‚°ã‚’æ›´æ–°
 	isAttack_ = isAttack;
 }
 
 void WeaponBreath::Move(void)
 {
-	// ’Ç]‘ÎÛ‚ÌƒtƒŒ[ƒ€À•W‚ğæ“¾‚µ‚Ä•Ší‚ÌÀ•W‚ğXV
+	// è¿½å¾“å¯¾è±¡ã®ãƒ•ãƒ¬ãƒ¼ãƒ åº§æ¨™ã‚’å–å¾—ã—ã¦æ­¦å™¨ã®åº§æ¨™ã‚’æ›´æ–°
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
 
-	// ƒtƒ‰ƒO‚ª‚Ç‚¿‚ç‚à—§‚Á‚Ä‚¢‚È‚¢ê‡‚ÍˆÚ“®ˆ—‚ğs‚í‚È‚¢
+	// ãƒ•ãƒ©ã‚°ãŒã©ã¡ã‚‰ã‚‚ç«‹ã£ã¦ã„ãªã„å ´åˆã¯ç§»å‹•å‡¦ç†ã‚’è¡Œã‚ãªã„
 	if (!isAttack_ && !isEnd_) return;
 
 	if (isAttack_ && !isEnd_)

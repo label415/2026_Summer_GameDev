@@ -8,7 +8,6 @@
 #include "../Scene/PauseScene.h"
 #include "../Manager/SoundManager.h"
 #include "../Manager/InputManager.h"
-#include "../Manager/CollisionManager.h"
 #include "../Application.h"
 #include "Camera.h"
 #include "ResourceManager.h"
@@ -17,62 +16,62 @@
 
 void SceneManager::Init(void)
 {
-	// ƒ[ƒh‰æ–Ê¶¬
+	// ãƒ­ãƒ¼ãƒ‰ç”»é¢ç”Ÿæˆ
 	load_ = std::make_unique<Loading>();
 	load_->Load();
 
-	// ƒJƒƒ‰
+	// ã‚«ãƒ¡ãƒ©
 	camera_ = std::make_shared<Camera>();
 	camera_->LoadEnd();
 
-	// ƒfƒ‹ƒ^ƒ^ƒCƒ€
+	// ãƒ‡ãƒ«ã‚¿ã‚¿ã‚¤ãƒ 
 	preTime_ = std::chrono::system_clock::now();
 
-	// 3D—p‚Ìİ’è
+	// 3Dç”¨ã®è¨­å®š
 	Init3D();
 
-	// ‰ŠúƒV[ƒ“
+	// åˆæœŸã‚·ãƒ¼ãƒ³
 	PushScene(SCENE_ID::TITLE);
 }
 
 void SceneManager::Init3D(void)
 {
-	// ”wŒiFİ’è
+	// èƒŒæ™¯è‰²è¨­å®š
 	SetBackgroundColor(
 		BACKGROUND_COLOR_R,
 		BACKGROUND_COLOR_G,
 		BACKGROUND_COLOR_B);
 
-	// Zƒoƒbƒtƒ@‚ğ—LŒø‚É‚·‚é
+	// Zãƒãƒƒãƒ•ã‚¡ã‚’æœ‰åŠ¹ã«ã™ã‚‹
 	SetUseZBuffer3D(true);
-	// Zƒoƒbƒtƒ@‚Ö‚Ì‘‚«‚İ‚ğ—LŒø‚É‚·‚é
+	// Zãƒãƒƒãƒ•ã‚¡ã¸ã®æ›¸ãè¾¼ã¿ã‚’æœ‰åŠ¹ã«ã™ã‚‹
 	SetWriteZBuffer3D(true);
-	// ƒoƒbƒNƒJƒŠƒ“ƒO‚ğ—LŒø‚É‚·‚é
+	// ãƒãƒƒã‚¯ã‚«ãƒªãƒ³ã‚°ã‚’æœ‰åŠ¹ã«ã™ã‚‹
 	SetUseBackCulling(true);
 
-	// ƒ‰ƒCƒg‚Ìİ’è
+	// ãƒ©ã‚¤ãƒˆã®è¨­å®š
 	SetUseLighting(true);
-	// ƒ‰ƒCƒg‚Ì•ûŒü
+	// ãƒ©ã‚¤ãƒˆã®æ–¹å‘
 	ChangeLightTypeDir(LIGHT_DIRECTION);
-	// ƒ‰ƒCƒg‚ÌƒfƒBƒtƒ…[ƒYƒJƒ‰[
+	// ãƒ©ã‚¤ãƒˆã®ãƒ‡ã‚£ãƒ•ãƒ¥ãƒ¼ã‚ºã‚«ãƒ©ãƒ¼
 	SetLightDifColor(LIGHT_DIFF_COLOR);
-	// ƒ‰ƒCƒg‚ÌƒAƒ“ƒrƒGƒ“ƒgƒJƒ‰[
+	// ãƒ©ã‚¤ãƒˆã®ã‚¢ãƒ³ãƒ“ã‚¨ãƒ³ãƒˆã‚«ãƒ©ãƒ¼
 	SetLightAmbColor(LIGHT_AMB_COLOR);
 
-	// ƒtƒHƒOİ’è
+	// ãƒ•ã‚©ã‚°è¨­å®š
 	SetFogEnable(true);
-	// ƒtƒHƒO‚ÌF
+	// ãƒ•ã‚©ã‚°ã®è‰²
 	SetFogColor(
 		FOG_COLOR_R,
 		FOG_COLOR_G,
 		FOG_COLOR_B);
-	// ƒtƒHƒO•\¦”ÍˆÍ
+	// ãƒ•ã‚©ã‚°è¡¨ç¤ºç¯„å›²
 	SetFogStartEnd(FOG_START, FOG_END);
 }
 
 void SceneManager::ChangeScene(SCENE_ID sceneId)
 {
-	// Às’†‚ÌƒV[ƒ“‚ğ”jŠü‚µ‚È‚¢‚æ‚¤A—v‹‚¾‚¯ó‚¯•t‚¯‚é
+	// å®Ÿè¡Œä¸­ã®ã‚·ãƒ¼ãƒ³ã‚’ç ´æ£„ã—ãªã„ã‚ˆã†ã€è¦æ±‚ã ã‘å—ã‘ä»˜ã‘ã‚‹
 	nextSceneId_ = sceneId;
 	DoChangeScene();
 }
@@ -87,20 +86,20 @@ void SceneManager::PushScene(SCENE_ID sceneId)
 
 void SceneManager::PopScene(void)
 {
-	// ÅŒã‚Ì1ƒV[ƒ“‚Íc‚·
+	// æœ€å¾Œã®1ã‚·ãƒ¼ãƒ³ã¯æ®‹ã™
 	if (scenes_.size() <= 1) return;
 
-	// ––”ö‚ÌƒV[ƒ“‚ğ‰ğ•ú‚µ‚Äíœ‚·‚é
+	// æœ«å°¾ã®ã‚·ãƒ¼ãƒ³ã‚’è§£æ”¾ã—ã¦å‰Šé™¤ã™ã‚‹
 	scenes_.back()->Release();
 	scenes_.pop_back();
 }
 
 void SceneManager::Update(void)
 {
-	// ƒ[ƒh‰æ–Ê‚ÌXV
+	// ãƒ­ãƒ¼ãƒ‰ç”»é¢ã®æ›´æ–°
 	load_->Update();
 
-	// ƒ[ƒh’†‚ÍƒV[ƒ“‚ğXV‚µ‚È‚¢
+	// ãƒ­ãƒ¼ãƒ‰ä¸­ã¯ã‚·ãƒ¼ãƒ³ã‚’æ›´æ–°ã—ãªã„
 	if (load_->GetIsLoading()) return;
 
 	if (!scenes_.empty())
@@ -113,19 +112,19 @@ void SceneManager::Update(void)
 
 void SceneManager::Draw(void)
 {
-	// •`‰ææƒOƒ‰ƒtƒBƒbƒN—Ìˆæ‚ğ— ‰æ–Ê‚Éw’è
+	// æç”»å…ˆã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯é ˜åŸŸã‚’è£ç”»é¢ã«æŒ‡å®š
 	SetDrawScreen(DX_SCREEN_BACK);
 
-	// ‰æ–Ê‚ğ‰Šú‰»‚·‚é
+	// ç”»é¢ã‚’åˆæœŸåŒ–ã™ã‚‹
 	ClearDrawScreen();
 
-	// ƒ[ƒh’†‚Íƒ[ƒh‰æ–Ê‚Ì‚İ•`‰æ‚·‚é
+	// ãƒ­ãƒ¼ãƒ‰ä¸­ã¯ãƒ­ãƒ¼ãƒ‰ç”»é¢ã®ã¿æç”»ã™ã‚‹
 	load_->Draw();
 
-	// ƒ[ƒh’†‚ÍƒV[ƒ“‚ğXV‚µ‚È‚¢
+	// ãƒ­ãƒ¼ãƒ‰ä¸­ã¯ã‚·ãƒ¼ãƒ³ã‚’æ›´æ–°ã—ãªã„
 	if (load_->GetIsLoading()) return;
 
-	// ƒJƒƒ‰‚Ì•`‰æ‘Oİ’è‚ğs‚¤
+	// ã‚«ãƒ¡ãƒ©ã®æç”»å‰è¨­å®šã‚’è¡Œã†
 	camera_->SetBeforeDraw();
 
 	for (auto& scene : scenes_)
@@ -138,22 +137,22 @@ void SceneManager::Draw(void)
 
 void SceneManager::Release(void)
 {
-	// c‚Á‚Ä‚¢‚éƒV[ƒ“‚Ì‰ğ•ú
+	// æ®‹ã£ã¦ã„ã‚‹ã‚·ãƒ¼ãƒ³ã®è§£æ”¾
 	ReleaseAllScenes();
 
-	// ƒJƒƒ‰‚Ì‰ğ•ú
+	// ã‚«ãƒ¡ãƒ©ã®è§£æ”¾
 	camera_->Release();
 
-	// ƒ[ƒh‰æ–Ê‚Ì‰ğ•ú
+	// ãƒ­ãƒ¼ãƒ‰ç”»é¢ã®è§£æ”¾
 	load_->Release();
 }
 
 std::unique_ptr<SceneBase> SceneManager::CreateScene(SCENE_ID sceneId)
 {
-	// Œ»İ‚ÌƒV[ƒ“ID‚ğXV
+	// ç¾åœ¨ã®ã‚·ãƒ¼ãƒ³IDã‚’æ›´æ–°
 	sceneId_ = sceneId;
 
-	// ƒV[ƒ“ID‚É‰‚¶‚½ƒCƒ“ƒXƒ^ƒ“ƒX‚ğ¶¬‚µ‚Ä•Ô‚·
+	// ã‚·ãƒ¼ãƒ³IDã«å¿œã˜ãŸã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã‚’ç”Ÿæˆã—ã¦è¿”ã™
 	switch (sceneId_)
 	{
 	case SCENE_ID::TITLE:
@@ -169,16 +168,16 @@ std::unique_ptr<SceneBase> SceneManager::CreateScene(SCENE_ID sceneId)
 
 void SceneManager::DoChangeScene(void)
 {
-	// Ï‚Ü‚ê‚Ä‚¢‚é‘SƒV[ƒ“‚ğ‰ğ•ú‚·‚é
+	// ç©ã¾ã‚Œã¦ã„ã‚‹å…¨ã‚·ãƒ¼ãƒ³ã‚’è§£æ”¾ã™ã‚‹
 	ReleaseAllScenes();
 
-	// ƒTƒEƒ“ƒhEƒŠƒ\[ƒXE“–‚½‚è”»’èEƒJƒƒ‰‚ÌƒŠƒZƒbƒg
+	// ã‚µã‚¦ãƒ³ãƒ‰ãƒ»ãƒªã‚½ãƒ¼ã‚¹ãƒ»å½“ãŸã‚Šåˆ¤å®šãƒ»ã‚«ãƒ¡ãƒ©ã®ãƒªã‚»ãƒƒãƒˆ
 	ResetSceneResources();
 
-	// V‚µ‚¢ƒV[ƒ“‚ğ¶¬
+	// æ–°ã—ã„ã‚·ãƒ¼ãƒ³ã‚’ç”Ÿæˆ
 	scenes_.push_back(CreateScene(nextSceneId_));
 
-	// “Ç‚İ‚İ
+	// èª­ã¿è¾¼ã¿
 	load_->StartAsyncLoad();
 	scenes_.back()->Load();
 	load_->EndAsyncLoad();
@@ -187,7 +186,7 @@ void SceneManager::DoChangeScene(void)
 
 void SceneManager::ReleaseAllScenes(void)
 {
-	// ã‚ÉÏ‚Ü‚ê‚Ä‚¢‚éƒV[ƒ“‚©‚ç‡‚É‰ğ•ú‚·‚é
+	// ä¸Šã«ç©ã¾ã‚Œã¦ã„ã‚‹ã‚·ãƒ¼ãƒ³ã‹ã‚‰é †ã«è§£æ”¾ã™ã‚‹
 	for (auto& scene : scenes_)
 	{
 		scene->Release();
@@ -200,7 +199,6 @@ void SceneManager::ResetSceneResources(void)
 {
 	SoundManager::GetInstance().Release();
 	ResourceManager::GetInstance().Release();
-	CollisionManager::GetInstance().Release();
 	Application::GetInstance().InitEffekseer();
 
 	camera_->Release();

@@ -2,11 +2,11 @@
 #include <DxLib.h>
 #include <EffekseerForDXLib.h>
 #include "../Utility/AsoUtility.h"
+#include "../Utility/CollisionUtility.h"
 #include "../Application.h"
 #include "ResourceManager.h"
 #include "../Manager/InputManager.h"
 #include "../Manager/SceneManager.h"
-#include "../Manager/CollisionManager.h"
 #include "../Libs/ImGui/imgui.h"
 #include "../Object/Common/Transform.h"
 #include "../Object/Common/Collider/ColliderCapsule.h"
@@ -27,13 +27,13 @@ Camera::Camera(void)
 
 void Camera::SetBeforeDraw(void)
 {
-	// ƒNƒŠƒbƒv‹——£‚ğİ’è‚·‚é
+	// ã‚¯ãƒªãƒƒãƒ—è·é›¢ã‚’è¨­å®šã™ã‚‹
 	SetCameraNearFar(VIEW_NEAR, VIEW_FAR);
 
-	// ƒ|[ƒY’†‚ÍƒJƒƒ‰‚Ìƒ‚[ƒh•ÊXV‚ğ’â~‚·‚é
+	// ãƒãƒ¼ã‚ºä¸­ã¯ã‚«ãƒ¡ãƒ©ã®ãƒ¢ãƒ¼ãƒ‰åˆ¥æ›´æ–°ã‚’åœæ­¢ã™ã‚‹
 	if (SceneManager::GetInstance().GetSceneID() != SceneManager::SCENE_ID::PAUSE)
 	{
-		// ƒJƒƒ‰ƒ‚[ƒh‚²‚Æ‚Ìˆ—
+		// ã‚«ãƒ¡ãƒ©ãƒ¢ãƒ¼ãƒ‰ã”ã¨ã®å‡¦ç†
 		switch (mode_)
 		{
 		case Camera::MODE::FIXED_POINT:
@@ -51,25 +51,25 @@ void Camera::SetBeforeDraw(void)
 		}
 	}
 
-	// ’ÊíƒJƒƒ‰‚ÍŠù‘¶‚Ì Up ƒxƒNƒgƒ‹‚ğg—p
+	// é€šå¸¸ã‚«ãƒ¡ãƒ©æ™‚ã¯æ—¢å­˜ã® Up ãƒ™ã‚¯ãƒˆãƒ«ã‚’ä½¿ç”¨
 	SetCameraPositionAndTargetAndUpVec(
 		transform_.pos,
 		fixationPos_,
 		transform_.quaRot.GetUp()
 	);
 
-	// DXƒ‰ƒCƒuƒ‰ƒŠ‚ÌƒJƒƒ‰‚ÆEffekseer‚ÌƒJƒƒ‰‚ğ“¯Šú‚·‚éB
+	// DXãƒ©ã‚¤ãƒ–ãƒ©ãƒªã®ã‚«ãƒ¡ãƒ©ã¨Effekseerã®ã‚«ãƒ¡ãƒ©ã‚’åŒæœŸã™ã‚‹ã€‚
 	Effekseer_Sync3DSetting();
 }
 
 void Camera::DrawDebug(void)
 {
-	// ƒƒbƒNƒIƒ“UI•`‰æ
+	// ãƒ­ãƒƒã‚¯ã‚ªãƒ³UIæç”»
 	if (mode_ != MODE::TARGET_LOCK) return;
 	auto target = targetCollider_.lock();
 	if (!target) return;
 
-	// 3D•`‰æ‚ÌZƒoƒbƒtƒ@‚ğ–³Œø‰»‚µ‚ÄAƒƒbƒNƒIƒ“UI‚ğ•`‰æ‚·‚é
+	// 3Dæç”»æ™‚ã®Zãƒãƒƒãƒ•ã‚¡ã‚’ç„¡åŠ¹åŒ–ã—ã¦ã€ãƒ­ãƒƒã‚¯ã‚ªãƒ³UIã‚’æç”»ã™ã‚‹
 	SetUseZBuffer3D(FALSE);
 	DrawBillboard3D(
 		target->GetCenter(),
@@ -93,18 +93,18 @@ void Camera::ClearTargetColliders(void)
 
 void Camera::InitLoad(void)
 {
-	// ƒV[ƒ“Ø‚è‘Ö‚¦‚ÅƒŠƒ\[ƒX‚ª‰ğ•ú‚³‚ê‚é‚½‚ßÄ“Ç‚İ‚İ
+	// ã‚·ãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆã§ãƒªã‚½ãƒ¼ã‚¹ãŒè§£æ”¾ã•ã‚Œã‚‹ãŸã‚å†èª­ã¿è¾¼ã¿
 	lockOnImg_ = resMng_.Load(ResourceManager::SRC::UI_LOCKON).handleId_;
 }
 
 void Camera::InitCollider(void)
 {
-	// Õ“Ë‘ÎÛFƒXƒe[ƒWƒ‚ƒfƒ‹
+	// è¡çªå¯¾è±¡ï¼šã‚¹ãƒ†ãƒ¼ã‚¸ãƒ¢ãƒ‡ãƒ«
 	std::vector<ColliderBase::TAG> targetTags = {
 		ColliderBase::TAG::STAGE
 	};
 
-	// ‹…‘ÌƒRƒ‰ƒCƒ_[‚ğ¶¬‚µ‚Ä“o˜^
+	// çƒä½“ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’ç”Ÿæˆã—ã¦ç™»éŒ²
 	auto colliderSphere = std::make_shared<ColliderSphere>(
 		ColliderBase::TAG::CAMERA,
 		targetTags,
@@ -113,54 +113,53 @@ void Camera::InitCollider(void)
 		COL_SPHERE_RADIUS
 	);
 
-	// ƒRƒ‰ƒCƒ_[‚ğŠ—LƒRƒ‰ƒCƒ_[‚É“o˜^
+	// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’æ‰€æœ‰ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã«ç™»éŒ²
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::SPHERE)].push_back(colliderSphere);
-	CollisionManager::GetInstance().AddCollider(colliderSphere);
 }
 
 void Camera::InitPost(void)
 {
-	// ƒJƒƒ‰ƒ‚[ƒh‚Ì‰Šú‰»
+	// ã‚«ãƒ¡ãƒ©ãƒ¢ãƒ¼ãƒ‰ã®åˆæœŸåŒ–
 	ChangeMode(MODE::FIXED_POINT);
 
-	// ƒƒbƒNƒIƒ“‰æ‘œƒ[ƒh
+	// ãƒ­ãƒƒã‚¯ã‚ªãƒ³ç”»åƒãƒ­ãƒ¼ãƒ‰
 	lockOnImg_ = resMng_.Load(ResourceManager::SRC::UI_LOCKON).handleId_;
 }
 
 void Camera::UpdateHitCollider(void)
 {
-	// ’Ç]‘ÎÛ‚ª‚¢‚È‚¯‚ê‚Îˆ—‚µ‚È‚¢
+	// è¿½å¾“å¯¾è±¡ãŒã„ãªã‘ã‚Œã°å‡¦ç†ã—ãªã„
 	auto follow = followActor_.lock();
 	if (!follow) return;
 
-	// ƒJƒƒ‰©g‚Ì‹…‘ÌƒRƒ‰ƒCƒ_[ƒŠƒXƒg‚ğæ“¾
+	// ã‚«ãƒ¡ãƒ©è‡ªèº«ã®çƒä½“ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ãƒªã‚¹ãƒˆã‚’å–å¾—
 	int sphereType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
 	if (ownColliders_.count(sphereType) == 0) return;
 
-	// ƒvƒŒƒCƒ„[‚ÌÀ•W‚ğæ“¾
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åº§æ¨™ã‚’å–å¾—
 	VECTOR startPos = follow->GetTransform().pos;
 	for (const auto& col : ownColliders_.at(sphereType))
 	{
-		// ƒRƒ‰ƒCƒ_[‚ª—LŒø‚Å‚È‚¯‚ê‚Îˆ—‚µ‚È‚¢
+		// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ãŒæœ‰åŠ¹ã§ãªã‘ã‚Œã°å‡¦ç†ã—ãªã„
 		if (!col->GetIsCollider()) continue;
 
-		// Œ`ó‚ÍSPHERE‚ÆŠm’è‚µ‚Ä‚¢‚é‚½‚ß static_pointer_cast ‚Åƒ_ƒEƒ“ƒLƒƒƒXƒg
+		// å½¢çŠ¶ã¯SPHEREã¨ç¢ºå®šã—ã¦ã„ã‚‹ãŸã‚ static_pointer_cast ã§ãƒ€ã‚¦ãƒ³ã‚­ãƒ£ã‚¹ãƒˆ
 		auto colliderSphere = std::static_pointer_cast<ColliderSphere>(col);
 		if (colliderSphere == nullptr) continue;
 
-		// Õ“Ë‚µ‚½ƒRƒ‰ƒCƒ_[‚ğæ“¾‚µ‚Ä‰Ÿ‚µ–ß‚µŒvZ
+		// è¡çªã—ãŸã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’å–å¾—ã—ã¦æŠ¼ã—æˆ»ã—è¨ˆç®—
 		for (const auto& hit : col->GetHitColliders())
 		{
-			// weak_ptr ‚ğ1“x‚¾‚¯ lock() ‚µ‚Ä—LŒø«‚ğŠm”F
+			// weak_ptr ã‚’1åº¦ã ã‘ lock() ã—ã¦æœ‰åŠ¹æ€§ã‚’ç¢ºèª
 			auto hitCol = hit.lock();
 
-			// Õ“Ë‚µ‚½ƒRƒ‰ƒCƒ_[‚ª—LŒø‚Å‚È‚¯‚ê‚Îˆ—‚µ‚È‚¢
+			// è¡çªã—ãŸã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ãŒæœ‰åŠ¹ã§ãªã‘ã‚Œã°å‡¦ç†ã—ãªã„
 			if (!hitCol || hitCol->GetShape() != ColliderBase::SHAPE::MODEL) continue;
 
-			// Õ“Ë‚µ‚½ƒRƒ‰ƒCƒ_[
+			// è¡çªã—ãŸã‚³ãƒ©ã‚¤ãƒ€ãƒ¼
 			const auto* colliderModel = static_cast<const ColliderModel*>(hitCol.get());
 
-			// ƒJƒƒ‰‚ÌÀ•W‚ğ‰Ÿ‚µ–ß‚·
+			// ã‚«ãƒ¡ãƒ©ã®åº§æ¨™ã‚’æŠ¼ã—æˆ»ã™
 			transform_.pos = CollisionUtility::CalcCameraPushBack(
 				*colliderSphere, *colliderModel,
 				startPos, transform_.pos,
@@ -186,7 +185,7 @@ std::weak_ptr<ColliderCapsule> Camera::FindLockOnTarget(SWITCH_DIR switchDir) co
 	std::weak_ptr<ColliderCapsule> bestTarget;
 
 	for (const auto& candidateWeak : targetColliders_) {
-		// ‘ŠúƒŠƒ^[ƒ“
+		// æ—©æœŸãƒªã‚¿ãƒ¼ãƒ³
 		auto candidate = candidateWeak.lock();
 		if (!candidate || candidate == currentTarget) continue;
 
@@ -194,12 +193,12 @@ std::weak_ptr<ColliderCapsule> Camera::FindLockOnTarget(SWITCH_DIR switchDir) co
 		float lockonDiff = VSize(toEnemy);
 		if (lockonDiff >= diffMin) continue;
 
-		// ‹–ìŠp”»’è
+		// è¦–é‡è§’åˆ¤å®š
 		float dot = VDot(camForward, VNorm(toEnemy));
 		dot = std::clamp(dot, -1.0f, 1.0f);
 		if (acosf(dot) >= maxAngleRad) continue;
 
-		// ¶‰EØ‚è‘Ö‚¦‚ÌŠOÏ”»’è
+		// å·¦å³åˆ‡ã‚Šæ›¿ãˆæ™‚ã®å¤–ç©åˆ¤å®š
 		if (switchDir == SWITCH_DIR::LEFT 
 			&& VCross(camForward, toEnemy).y > 0.0f) continue;
 		if (switchDir == SWITCH_DIR::RIGHT 
@@ -250,10 +249,10 @@ void Camera::HandleTargetSwitching(void)
 
 void Camera::ChangeMode(MODE mode)
 {
-	// ƒJƒƒ‰ƒ‚[ƒh‚Ì•ÏX
+	// ã‚«ãƒ¡ãƒ©ãƒ¢ãƒ¼ãƒ‰ã®å¤‰æ›´
 	mode_ = mode;
 
-	// •ÏX‚Ì‰Šú‰»ˆ—
+	// å¤‰æ›´æ™‚ã®åˆæœŸåŒ–å‡¦ç†
 	switch (mode_)
 	{
 	case Camera::MODE::FIXED_POINT:
@@ -274,7 +273,7 @@ void Camera::AddTargetCollider(const std::weak_ptr<ColliderCapsule>& target)
 	auto newTarget = target.lock();
 	if (!newTarget) return;
 
-	// ŠúŒÀØ‚ê‚ÌŒó•â‚ğƒŠƒXƒg‚©‚çœŠO‚·‚é
+	// æœŸé™åˆ‡ã‚Œã®å€™è£œã‚’ãƒªã‚¹ãƒˆã‹ã‚‰é™¤å¤–ã™ã‚‹
 	targetColliders_.erase(
 		std::remove_if(targetColliders_.begin(), targetColliders_.end(),
 			[](const std::weak_ptr<ColliderCapsule>& wp) {
@@ -283,7 +282,7 @@ void Camera::AddTargetCollider(const std::weak_ptr<ColliderCapsule>& target)
 		targetColliders_.end()
 	);
 
-	// ‚·‚Å‚É“¯‚¶ƒRƒ‰ƒCƒ_[‚ªŠi”[‚³‚ê‚Ä‚¢‚È‚¯‚ê‚Î’Ç‰Á
+	// ã™ã§ã«åŒã˜ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ãŒæ ¼ç´ã•ã‚Œã¦ã„ãªã‘ã‚Œã°è¿½åŠ 
 	auto it = std::find_if(targetColliders_.begin(), targetColliders_.end(),
 		[&newTarget](const std::weak_ptr<ColliderCapsule>& wp) {
 			return wp.lock() == newTarget;
@@ -305,7 +304,7 @@ const VECTOR* Camera::GetLockOnTargetPos(void) const
 
 void Camera::UpdateLockOn(void)
 {
-	// ŠúŒÀØ‚ê‚ÌƒƒbƒNƒIƒ“Œó•â‚ğƒŠƒXƒg‚©‚çœŠO‚·‚é
+	// æœŸé™åˆ‡ã‚Œã®ãƒ­ãƒƒã‚¯ã‚ªãƒ³å€™è£œã‚’ãƒªã‚¹ãƒˆã‹ã‚‰é™¤å¤–ã™ã‚‹
 	targetColliders_.erase(
 		std::remove_if(targetColliders_.begin(), targetColliders_.end(),
 			[](const std::weak_ptr<ColliderCapsule>& wp) {
@@ -314,7 +313,7 @@ void Camera::UpdateLockOn(void)
 		targetColliders_.end()
 	);
 
-	// ‘ŠúƒŠƒ^[ƒ“
+	// æ—©æœŸãƒªã‚¿ãƒ¼ãƒ³
 	auto follow = followActor_.lock();
 	if (!follow)
 	{
@@ -330,11 +329,11 @@ void Camera::UpdateLockOn(void)
 	bool isLockOnTrg = inp.IsTrgMouseMiddle()
 		|| inp.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
 
-	// ƒƒbƒNƒIƒ“’†‚Ìˆ—
+	// ãƒ­ãƒƒã‚¯ã‚ªãƒ³ä¸­ã®å‡¦ç†
 	if (mode_ == MODE::TARGET_LOCK)
 	{
 		auto target = targetCollider_.lock();
-		// ‘ŠúƒŠƒ^[ƒ“
+		// æ—©æœŸãƒªã‚¿ãƒ¼ãƒ³
 		if (!target ||
 			VSize(VSub(target->GetCenter(), follow->GetTransform().pos)) >= MAX_LOCKON_DIFF ||
 			isLockOnTrg)
@@ -344,12 +343,12 @@ void Camera::UpdateLockOn(void)
 			return;
 		}
 
-		// ƒXƒeƒBƒbƒNEƒzƒC[ƒ‹“ü—Í‚É‚æ‚éƒ^[ƒQƒbƒgØ‚è‘Ö‚¦ˆ—
+		// ã‚¹ãƒ†ã‚£ãƒƒã‚¯ãƒ»ãƒ›ã‚¤ãƒ¼ãƒ«å…¥åŠ›ã«ã‚ˆã‚‹ã‚¿ãƒ¼ã‚²ãƒƒãƒˆåˆ‡ã‚Šæ›¿ãˆå‡¦ç†
 		HandleTargetSwitching();
 		return;
 	}
 
-	// ’Êí’Ç]’†‚Ìˆ—
+	// é€šå¸¸è¿½å¾“ä¸­ã®å‡¦ç†
 	if (mode_ == MODE::FOLLOW && isLockOnTrg)
 	{
 		auto newTarget = FindLockOnTarget(SWITCH_DIR::NONE);
@@ -362,18 +361,18 @@ void Camera::UpdateLockOn(void)
 
 void Camera::SetDefault(void)
 {
-	// ƒJƒƒ‰‚Ì‰Šúİ’è
+	// ã‚«ãƒ¡ãƒ©ã®åˆæœŸè¨­å®š
 	transform_.pos = DEFAULT_POS;
 
-	// ƒJƒƒ‰Šp
+	// ã‚«ãƒ¡ãƒ©è§’
 	angles_ = DEFAULT_ANGLES;
 	transform_.quaRot = Quaternion::Identity();
 
-	// ’‹“_
+	// æ³¨è¦–ç‚¹
 	fixationPos_ = AsoUtility::VECTOR_ZERO;
 
-	// ƒƒbƒNƒIƒ“î•ñ‚ğƒNƒŠƒA
-	// (‘O‚ÌƒV[ƒ“‚Ì“G‚ğw‚µ‚½‚Ü‚Ü‚É‚È‚ç‚È‚¢‚æ‚¤‚É)
+	// ãƒ­ãƒƒã‚¯ã‚ªãƒ³æƒ…å ±ã‚’ã‚¯ãƒªã‚¢
+	// (å‰ã®ã‚·ãƒ¼ãƒ³ã®æ•µã‚’æŒ‡ã—ãŸã¾ã¾ã«ãªã‚‰ãªã„ã‚ˆã†ã«)
 	targetColliders_.clear();
 	targetCollider_.reset();
 }
@@ -383,20 +382,20 @@ void Camera::SyncFollow(void)
 	auto follow = followActor_.lock();
 	if (!follow) return;
 
-	// “¯Šúæ‚ÌˆÊ’u
+	// åŒæœŸå…ˆã®ä½ç½®
 	VECTOR pos = follow->GetTransform().pos;
 
-	// Y² + X²
+	// Yè»¸ + Xè»¸
 	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
 	VECTOR localPos;
-	// ’‹“_
+	// æ³¨è¦–ç‚¹
 	localPos = transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS);
 	VECTOR nextTargetPos = VAdd(pos, localPos);
 	fixationPos_ = AsoUtility::Lerp(transform_.pos, nextTargetPos, CAMERA_FOLLOW_RATE);
 
-	// ƒJƒƒ‰ˆÊ’u
+	// ã‚«ãƒ¡ãƒ©ä½ç½®
 	localPos = transform_.quaRot.PosAxis(FOLLOW_CAMERA_LOCAL_POS);
 	VECTOR nextCameraPos = VAdd(pos, localPos);
 	transform_.pos = AsoUtility::Lerp(transform_.pos, nextCameraPos, CAMERA_FOLLOW_RATE);
@@ -404,7 +403,7 @@ void Camera::SyncFollow(void)
 
 void Camera::SyncLockOn(void)
 {
-	// ‚»‚ê‚¼‚ê‚Ì‘ÎÛ‚ª”jŠü‚³‚ê‚Ä‚¢‚é‚Íˆ—‚µ‚È‚¢
+	// ãã‚Œãã‚Œã®å¯¾è±¡ãŒç ´æ£„ã•ã‚Œã¦ã„ã‚‹æ™‚ã¯å‡¦ç†ã—ãªã„
 	auto follow = followActor_.lock();
 	auto target = targetCollider_.lock();
 	if (!follow || !target)
@@ -414,28 +413,28 @@ void Camera::SyncLockOn(void)
 		return;
 	}
 
-	// ƒvƒŒƒCƒ„[‚©‚çƒ^[ƒQƒbƒg‚Ö‚ÌƒxƒNƒgƒ‹
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‹ã‚‰ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã¸ã®ãƒ™ã‚¯ãƒˆãƒ«
 	VECTOR followPos = follow->GetTransform().pos;
 	VECTOR targetPos = target->GetCenter();
 	VECTOR toTarget = VSub(targetPos, followPos);
 
-	// ƒvƒŒƒCƒ„[‚©‚çƒ^[ƒQƒbƒg‚Ö‚ÌƒxƒNƒgƒ‹‚Ì…•½‹——£‚Ì“ñæ‚ğŒvZ
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‹ã‚‰ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã¸ã®ãƒ™ã‚¯ãƒˆãƒ«ã®æ°´å¹³è·é›¢ã®äºŒä¹—ã‚’è¨ˆç®—
 	float horizontalSq = toTarget.x * toTarget.x + toTarget.z * toTarget.z;
 	if (horizontalSq > 1.0f)
 	{
 		angles_.y = atan2f(toTarget.x, toTarget.z);
 	}
 
-	// ‰ñ“]‚ğŠp“x‚©‚ç¶¬
+	// å›è»¢ã‚’è§’åº¦ã‹ã‚‰ç”Ÿæˆ
 	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
-	// ’‹“_
+	// æ³¨è¦–ç‚¹
 	VECTOR basePos = transform_.quaRot.PosAxis(LOCKON_TARGET_LOCAL_POS);
 	VECTOR nextFixationPos = VAdd(followPos, VAdd(basePos, VScale(toTarget, CAMERA_LOCKON_RATE)));
 	fixationPos_ = AsoUtility::Lerp(fixationPos_, nextFixationPos, CAMERA_LOCKON_RATE);
 
-	// ƒJƒƒ‰ˆÊ’u
+	// ã‚«ãƒ¡ãƒ©ä½ç½®
 	VECTOR localPos = transform_.quaRot.PosAxis(LOCKON_CAMERA_LOCAL_POS);
 	VECTOR nextCameraPos = VAdd(followPos, localPos);
 	transform_.pos = AsoUtility::Lerp(transform_.pos, nextCameraPos, CAMERA_LOCKON_RATE);
@@ -443,9 +442,9 @@ void Camera::SyncLockOn(void)
 
 void Camera::ProcessRot(bool isLimit)
 {
-	// •ûŒü‰ñ“]‚É‚æ‚éXYZ‚ÌˆÚ“®(ƒL[ƒ{[ƒh)
+	// æ–¹å‘å›è»¢ã«ã‚ˆã‚‹XYZã®ç§»å‹•(ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰)
 	RotMouse(isLimit);
-	// •ûŒü‰ñ“]‚É‚æ‚éXYZ‚ÌˆÚ“®(ƒQ[ƒ€ƒpƒbƒh)
+	// æ–¹å‘å›è»¢ã«ã‚ˆã‚‹XYZã®ç§»å‹•(ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰)
 	RotGamePad(isLimit);
 }
 
@@ -463,24 +462,24 @@ void Camera::ProcessMove(void)
 	}
 	else
 	{
-		// Ú‘±‚³‚ê‚Ä‚¢‚éƒQ[ƒ€ƒpƒbƒh‚P‚Ìî•ñ‚ğæ“¾
+		// æ¥ç¶šã•ã‚Œã¦ã„ã‚‹ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ï¼‘ã®æƒ…å ±ã‚’å–å¾—
 		InputManager::JOYPAD_IN_STATE padState =
 			ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
-		// ¶ƒXƒeƒBƒbƒN‚ÌŒX‚«
+		// å·¦ã‚¹ãƒ†ã‚£ãƒƒã‚¯ã®å‚¾ã
 		moveDir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
 	}
 
-	// ˆÚ“®ˆ—
+	// ç§»å‹•å‡¦ç†
 	if (!AsoUtility::EqualsVZero(moveDir))
 	{
-		// Œ»İ‚ÌŒü‚«‚©‚ç‚Ìis•ûŒü‚ğæ“¾
+		// ç¾åœ¨ã®å‘ãã‹ã‚‰ã®é€²è¡Œæ–¹å‘ã‚’å–å¾—
 		VECTOR direction = VNorm(transform_.quaRot.PosAxis(moveDir));
 
-		// ˆÚ“®‚³‚¹‚½‚¢•ûŒü‚ÉˆÚ“®—Ê‚ğ‚©‚¯‚é(=ˆÚ“®—Ê)
+		// ç§»å‹•ã•ã›ãŸã„æ–¹å‘ã«ç§»å‹•é‡ã‚’ã‹ã‘ã‚‹(=ç§»å‹•é‡)
 		VECTOR movePow = VScale(direction, SPEED);
 
-		// ƒJƒƒ‰ˆÊ’u‚à’‹“_‚àˆÚ“®‚³‚¹‚é
+		// ã‚«ãƒ¡ãƒ©ä½ç½®ã‚‚æ³¨è¦–ç‚¹ã‚‚ç§»å‹•ã•ã›ã‚‹
 		transform_.pos = VAdd(transform_.pos, movePow);
 		fixationPos_ = VAdd(fixationPos_, movePow);
 	}
@@ -488,53 +487,53 @@ void Camera::ProcessMove(void)
 
 void Camera::SetBeforeDrawFree(void)
 {
-	// ƒJƒƒ‰‘€ì(‰ñ“])
+	// ã‚«ãƒ¡ãƒ©æ“ä½œ(å›è»¢)
 	ProcessRot(false);
 
-	// ƒJƒƒ‰‘€ì(ˆÚ“®)
+	// ã‚«ãƒ¡ãƒ©æ“ä½œ(ç§»å‹•)
 	ProcessMove();
 
-	// Y²
+	// Yè»¸
 	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
 
-	// Y² + X²
+	// Yè»¸ + Xè»¸
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
-	// ’‹“_XV
+	// æ³¨è¦–ç‚¹æ›´æ–°
 	fixationPos_ = VAdd(transform_.pos, transform_.quaRot.PosAxis(FOLLOW_TARGET_LOCAL_POS));
 }
 
 void Camera::SetBeforeDrawFollow(void)
 {
-	// ’Ç]‘ÎÛ‚ª‚¢‚È‚¯‚ê‚ÎŒÅ’è‹“_‚É–ß‚µ‚Äˆ—‚µ‚È‚¢
+	// è¿½å¾“å¯¾è±¡ãŒã„ãªã‘ã‚Œã°å›ºå®šè¦–ç‚¹ã«æˆ»ã—ã¦å‡¦ç†ã—ãªã„
 	if (followActor_.expired())
 	{
 		ChangeMode(MODE::FIXED_POINT);
 		return;
 	}
 
-	// ƒJƒƒ‰‘€ì(‰ñ“])
+	// ã‚«ãƒ¡ãƒ©æ“ä½œ(å›è»¢)
 	ProcessRot(true);
 
-	// ’Ç]‘ÎÛ‚Æ‚Ì‘Š‘ÎˆÊ’u‚ğ“¯Šú
+	// è¿½å¾“å¯¾è±¡ã¨ã®ç›¸å¯¾ä½ç½®ã‚’åŒæœŸ
 	SyncFollow();
 
-	// Õ“Ë”»’è
+	// è¡çªåˆ¤å®š
 	Collision();
 }
 
 void Camera::SetBeforeDrawTargetLockOn(void)
 {
-	// ’Ç]‘ÎÛ‚Æ‚Ì‘Š‘ÎˆÊ’u‚ğ“¯Šú
+	// è¿½å¾“å¯¾è±¡ã¨ã®ç›¸å¯¾ä½ç½®ã‚’åŒæœŸ
 	SyncLockOn();
 
-	// Õ“Ë”»’è
+	// è¡çªåˆ¤å®š
 	Collision();
 }
 
 void Camera::RotMouse(bool isLimit)
 {
-	// ƒ}ƒEƒX‚ÌˆÚ“®—Ê‚ğæ“¾
+	// ãƒã‚¦ã‚¹ã®ç§»å‹•é‡ã‚’å–å¾—
 	auto& ins = InputManager::GetInstance();
 	if (ins.GetMouseFlag()) return;
 	auto mouseMove = ins.GetMousePosDistance();
@@ -545,7 +544,7 @@ void Camera::RotMouse(bool isLimit)
 		angles_.y += mouseMove.x * MROT_POW_RAD;
 	}
 
-	// Šp“x§ŒÀ
+	// è§’åº¦åˆ¶é™
 	if (isLimit && angles_.x < -LIMIT_X_DW_RAD)
 	{
 		angles_.x = -LIMIT_X_DW_RAD;
@@ -560,20 +559,20 @@ void Camera::RotGamePad(bool isLimit)
 {
 	auto& ins = InputManager::GetInstance();
 
-	// Ú‘±‚³‚ê‚Ä‚¢‚éƒQ[ƒ€ƒpƒbƒh‚P‚Ìî•ñ‚ğæ“¾
+	// æ¥ç¶šã•ã‚Œã¦ã„ã‚‹ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ï¼‘ã®æƒ…å ±ã‚’å–å¾—
 	InputManager::JOYPAD_IN_STATE padState =
 		ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
-	// ‰EƒXƒeƒBƒbƒN‚ÌŒX‚«
+	// å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯ã®å‚¾ã
 	VECTOR dir = ins.GetDirectionXZAKey(padState.AKeyRX, padState.AKeyRY);
 
-	// ‰EƒXƒeƒBƒbƒN¶‰E‚ÌŒX‚«
+	// å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯å·¦å³ã®å‚¾ã
 	angles_.y += dir.x * ROT_POW_RAD;
 
-	// ‰EƒXƒeƒBƒbƒNã‰º‚ÌŒX‚«
+	// å³ã‚¹ãƒ†ã‚£ãƒƒã‚¯ä¸Šä¸‹ã®å‚¾ã
 	angles_.x -= dir.z * ROT_POW_RAD;
 
-	// Šp“x§ŒÀ
+	// è§’åº¦åˆ¶é™
 	if (isLimit && angles_.x < -LIMIT_X_DW_RAD)
 	{
 		angles_.x = -LIMIT_X_DW_RAD;

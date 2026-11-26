@@ -1,6 +1,5 @@
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Manager/ResourceManager.h"
-#include "../../../Manager/CollisionManager.h"
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "WeaponBlade.h"
 
@@ -8,7 +7,7 @@ WeaponBlade::WeaponBlade(const Transform& followTransform, int followFrameId)
 	:
 	WeaponBase(WeaponBase::WEAPON_TYPE::BLADE, followTransform, followFrameId)
 {
-	// ¶‘¶ƒtƒ‰ƒO‚ğ–³Œø‚É‚·‚é
+	// ç”Ÿå­˜ãƒ•ãƒ©ã‚°ã‚’ç„¡åŠ¹ã«ã™ã‚‹
 	isAlive_ = false;
 }
 
@@ -19,14 +18,14 @@ void WeaponBlade::Update(void)
 
 void WeaponBlade::InitLoad(void)
 {
-	// ƒ‚ƒfƒ‹‚Ìƒ[ƒh
+	// ãƒ¢ãƒ‡ãƒ«ã®ãƒ­ãƒ¼ãƒ‰
 	transform_.SetModel(
 		resMng_.Load(ResourceManager::SRC::MODEL_WEAPON_BLADE).handleId_);
 }
 
 void WeaponBlade::InitTransform(void)
 {
-	// ƒ‚ƒfƒ‹‚Ì‘å‚«‚³A‰ñ“]AÀ•W‚Ì‰Šú‰»
+	// ãƒ¢ãƒ‡ãƒ«ã®å¤§ãã•ã€å›è»¢ã€åº§æ¨™ã®åˆæœŸåŒ–
 	transform_.scl = VScale(AsoUtility::VECTOR_ONE, SCALE);
 	transform_.quaRot = Quaternion();
 	transform_.quaRotLocal = Quaternion();
@@ -41,12 +40,12 @@ void WeaponBlade::InitTransform(void)
 
 void WeaponBlade::InitCollider(void)
 {
-	// UŒ‚‘ÎÛƒ^ƒOi“G–{‘Ì‚È‚Çj
+	// æ”»æ’ƒå¯¾è±¡ã‚¿ã‚°ï¼ˆæ•µæœ¬ä½“ãªã©ï¼‰
 	std::vector<ColliderBase::TAG> targetTags = {
 		ColliderBase::TAG::ENEMY
 	};
 
-	// •ŠíƒRƒ‰ƒCƒ_[‚ğ‰Šú‰»‚É¶¬
+	// æ­¦å™¨ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’åˆæœŸåŒ–æ™‚ã«ç”Ÿæˆ
 	auto colliderCapsule = std::make_shared<ColliderCapsule>(
 		ColliderBase::TAG::PLAYER_WEAPON,
 		targetTags,
@@ -56,12 +55,11 @@ void WeaponBlade::InitCollider(void)
 		COL_CAPSULE_RADIUS
 	);
 
-	// ‰Šúó‘Ô‚Í“–‚½‚è”»’è‚ğ–³Œø‰»
+	// åˆæœŸçŠ¶æ…‹ã¯å½“ãŸã‚Šåˆ¤å®šã‚’ç„¡åŠ¹åŒ–
 	colliderCapsule->SetIsCollider(false);
 
-	// ƒRƒ‰ƒCƒ_[‚ğŠ—LƒRƒ‰ƒCƒ_[‚É“o˜^
+	// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’æ‰€æœ‰ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã«ç™»éŒ²
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colliderCapsule);
-	CollisionManager::GetInstance().AddCollider(colliderCapsule);
 }
 
 void WeaponBlade::SetCollider(void)
@@ -81,10 +79,10 @@ void WeaponBlade::ClearCollider(void)
 	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
 		auto capsuleCollider = std::dynamic_pointer_cast<ColliderCapsule>(vec);
-		// “–‚½‚è”»’è‚ğƒIƒt‚É‚·‚é
+		// å½“ãŸã‚Šåˆ¤å®šã‚’ã‚ªãƒ•ã«ã™ã‚‹
 		capsuleCollider->SetIsCollider(false);
 
-		// ¶¬‚Ì‰ŠúÀ•WE‰ŠúƒTƒCƒY‚É–ß‚·
+		// ç”Ÿæˆæ™‚ã®åˆæœŸåº§æ¨™ãƒ»åˆæœŸã‚µã‚¤ã‚ºã«æˆ»ã™
 		capsuleCollider->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
 		capsuleCollider->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
 		capsuleCollider->SetRadius(COL_CAPSULE_RADIUS);

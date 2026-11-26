@@ -5,12 +5,11 @@
 #include "Manager/ResourceManager.h"
 #include "Manager/SceneManager.h"
 #include "Manager/FontManager.h"
-#include "Manager/CollisionManager.h"
 #include "Common/FpsController.h"
 #include "Libs/ImGuiWrapper.h"
 #include "Application.h"
 
-// ƒtƒ@ƒCƒ‹ƒpƒX
+// ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹
 const std::wstring Application::PATH_IMAGE = L"Data/Image/";
 const std::wstring Application::PATH_MODEL = L"Data/Model/";
 const std::wstring Application::PATH_EFFECT = L"Data/Effect/";
@@ -20,44 +19,43 @@ const std::wstring Application::PATH_SOUND = L"Data/Sound/";
 
 bool Application::Init(void)
 {
-	// ƒAƒvƒŠƒP[ƒVƒ‡ƒ“‚Ì‰Šúİ’è
+	// ã‚¢ãƒ—ãƒªã‚±ãƒ¼ã‚·ãƒ§ãƒ³ã®åˆæœŸè¨­å®š
 	SetWindowText(L"HOT SOULS");
 
-	// ƒEƒBƒ“ƒhƒEƒTƒCƒY
+	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚º
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, COLOR_BIT);
 	ChangeWindowMode(true);
 	SetMultiThreadFlag(true);
 
-	// FPS§Œä‰Šú‰»
+	// FPSåˆ¶å¾¡åˆæœŸåŒ–
 	fpsController_ = std::make_unique<FpsController>(FRAME_RATE);
 
-	// DxLib‚Ì‰Šú‰»
+	// DxLibã®åˆæœŸåŒ–
 	SetUseDirect3DVersion(DX_DIRECT3D_11);
 	if (DxLib_Init() == -1)
 	{
 		return false;
 	}
 
-	// Effekseer‚Ì‰Šú‰»
+	// Effekseerã®åˆæœŸåŒ–
 	InitEffekseer();
 
-	// —”‚ÌƒV[ƒh’l‚ğİ’è‚·‚é
+	// ä¹±æ•°ã®ã‚·ãƒ¼ãƒ‰å€¤ã‚’è¨­å®šã™ã‚‹
 	DATEDATA date;
 
-	// Œ»İ‚ğæ“¾‚·‚é
+	// ç¾åœ¨æ™‚åˆ»ã‚’å–å¾—ã™ã‚‹
 	GetDateTime(&date);
 
-	// —”‚Ì‰Šú’l‚ğİ’è‚·‚é
-	// İ’è‚·‚é”’l‚É‚æ‚Á‚ÄAƒ‰ƒ“ƒ_ƒ€‚Ìo•û‚ª•Ï‚í‚é
+	// ä¹±æ•°ã®åˆæœŸå€¤ã‚’è¨­å®šã™ã‚‹
+	// è¨­å®šã™ã‚‹æ•°å€¤ã«ã‚ˆã£ã¦ã€ãƒ©ãƒ³ãƒ€ãƒ ã®å‡ºæ–¹ãŒå¤‰ã‚ã‚‹
 	SRand(date.Year + date.Mon + date.Day + date.Hour + date.Min + date.Sec);
 
-	// ŠeƒCƒ“ƒXƒ^ƒ“ƒX¶¬
+	// å„ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ç”Ÿæˆ
 	InputManager::CreateInstance();
 	ResourceManager::CreateInstance();
 	FontManager::CreateInstance();
 	SoundManager::CreateInstance();
 	ImGuiWrapper::CreateInstance();
-	CollisionManager::CreateInstance();
 	SceneManager::CreateInstance();
 	SceneManager::GetInstance().Init();
 
@@ -66,54 +64,49 @@ bool Application::Init(void)
 
 void Application::Run(void)
 {
-	// ŠeƒCƒ“ƒXƒ^ƒ“ƒXæ“¾
+	// å„ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
 	InputManager& inputManager = InputManager::GetInstance();
 	ImGuiWrapper& imGuiWrapper = ImGuiWrapper::GetInstance();
-	CollisionManager& collisionManager = CollisionManager::GetInstance();
 	SceneManager& sceneManager = SceneManager::GetInstance();
 
-	// ƒQ[ƒ€ƒ‹[ƒv
+	// ã‚²ãƒ¼ãƒ ãƒ«ãƒ¼ãƒ—
 	while (ProcessMessage() == 0 && !isGameEnd_)
 	{
-		// ŠeƒVƒ“ƒOƒ‹ƒgƒ“XV
+		// å„ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³æ›´æ–°
 		inputManager.Update();
 		imGuiWrapper.Update();
-		collisionManager.Update();
 		sceneManager.Update();
 
-		// ŠeƒVƒ“ƒOƒ‹ƒgƒ“•`‰æ
+		// å„ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³æç”»
 		sceneManager.Draw();
-		collisionManager.DrawDebug();
 		imGuiWrapper.Draw();
 
 		RenderVertex();
 		ScreenFlip();
 
-		// —‘zFPSŒo‰ß‘Ò‚¿
+		// ç†æƒ³FPSçµŒéå¾…ã¡
 		fpsController_->Wait();
 	}
 }
 
 bool Application::Release(void)
 {
-	// ŠeƒCƒ“ƒXƒ^ƒ“ƒX‰ğ•ú
-	CollisionManager::GetInstance().Release();
+	// å„ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹è§£æ”¾
 	SceneManager::GetInstance().Release();
 	SoundManager::GetInstance().Release();
 
-	// ŠeƒCƒ“ƒXƒ^ƒ“ƒX”jŠü
+	// å„ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ç ´æ£„
 	InputManager::GetInstance().Destroy();
-	CollisionManager::GetInstance().Destroy();
 	SceneManager::GetInstance().Destroy();
 	SoundManager::GetInstance().Destroy();
 	ResourceManager::GetInstance().Destroy();
 	FontManager::GetInstance().Destroy();
 	ImGuiWrapper::GetInstance().Destroy();
 
-	// Effekseer‚ğI—¹‚·‚éB
+	// Effekseerã‚’çµ‚äº†ã™ã‚‹ã€‚
 	Effkseer_End();
 
-	// DxLibI—¹
+	// DxLibçµ‚äº†
 	if (DxLib_End() == -1)
 	{
 		return false;
@@ -129,7 +122,7 @@ Application::Application(void)
 
 void Application::InitEffekseer(void)
 {
-	// Effekseer‚Ì‰Šú‰»
+	// Effekseerã®åˆæœŸåŒ–
 	if (Effekseer_Init(EFFEKSEER_MAX_PARTICLES) == -1)
 	{
 		DxLib_End();

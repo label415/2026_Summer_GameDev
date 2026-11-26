@@ -10,105 +10,108 @@ class CharacterBase :
 {
 public:
 
-    // ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+    // ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
     CharacterBase(void);
 
-    // ƒfƒXƒgƒ‰ƒNƒ^
+    // ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
     virtual ~CharacterBase(void) override {}
 
-    // XV
+    // æ›´æ–°
     virtual void Update(void) override;
 
-    // •`‰æ
+    // æç”»
     virtual void Draw(void) override;
 
-    // ‰ğ•ú
+    // è§£æ”¾
     virtual void Release(void) override;
 
-	//HP•`‰æ
+	//HPæç”»
     virtual void DrawUI(void){}
 
-    // ’Ç”ö‘ÎÛ‚Ìæ“¾
+    // è¿½å°¾å¯¾è±¡ã®å–å¾—
     void SetTargetPos(const VECTOR* targetTrans) { targetPos_ = targetTrans; }
+
+    // æ‰€æœ‰æ­¦å™¨ä¸€è¦§å–å¾—
+    const std::vector<std::unique_ptr<WeaponBase>>& GetWeapons(void) const { return weapons_; }
 
 protected:
 
-    // Å‘å—‰º‘¬“x
+    // æœ€å¤§è½ä¸‹é€Ÿåº¦
     static constexpr float MAX_FALL_SPEED = -30.0f;
 
-    // Õ“Ë‚Ì‰Ÿ‚µ–ß‚µs‰ñ”
+    // è¡çªæ™‚ã®æŠ¼ã—æˆ»ã—è©¦è¡Œå›æ•°
     static constexpr int CNT_TRY_COLLISION = 20;
-    // Õ“Ë‚Ì‰Ÿ‚µ–ß‚µ—Ê
+    // è¡çªæ™‚ã®æŠ¼ã—æˆ»ã—é‡
     static constexpr float COLLISION_BACK_DIS = 1.0f;
 
-    // ‰ñ“]‚Ì‹…–ÊüŒ`•âŠÔ—¦
+    // å›è»¢ã®çƒé¢ç·šå½¢è£œé–“ç‡
     static constexpr float ROT_SLERP_RATE = 0.2f;
-    // —‰º”»’è‚Ì“àÏ‚µ‚«‚¢’l
+    // è½ä¸‹åˆ¤å®šã®å†…ç©ã—ãã„å€¤
     static constexpr float FALL_DOT_THRESHOLD = 0.9f;
-    // ’n–Ê‰Ÿ‚µã‚°ƒIƒtƒZƒbƒg—Ê
+    // åœ°é¢æŠ¼ã—ä¸Šã’ã‚ªãƒ•ã‚»ãƒƒãƒˆé‡
     static constexpr float GROUND_PUSH_UP_OFFSET = 2.0f;
 
 	//HP UI
 	std::unique_ptr<UIHp> uiHp_;
 
-    //ƒAƒjƒ[ƒVƒ‡ƒ“ƒRƒ“ƒgƒ[ƒ‰
+    //ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©
     std::unique_ptr<AnimationController> animationController_;
 
-    // •Ší
+    // æ­¦å™¨
     std::vector<std::unique_ptr<WeaponBase>> weapons_;
 
-    // ’Ç”ö‘ÎÛ‚ÌTransform
+    // è¿½å°¾å¯¾è±¡ã®Transform
     const VECTOR* targetPos_;
 
-    // ˆÚ“®•ûŒü
+    // ç§»å‹•æ–¹å‘
     VECTOR moveDir_;
 
-    // ˆÚ“®—Ê
+    // ç§»å‹•é‡
     VECTOR movePow_;
 
-    // ˆÚ“®‘O‚ÌÀ•W
+    // ç§»å‹•å‰ã®åº§æ¨™
     VECTOR prevPos_;
 
-    // ƒWƒƒƒ“ƒv—Ê
+    // ã‚¸ãƒ£ãƒ³ãƒ—é‡
     VECTOR jumpPow_;
 
-    // ˆÚ“®ƒXƒs[ƒh
+    // ç§»å‹•ã‚¹ãƒ”ãƒ¼ãƒ‰
     float moveSpeed_;
 
-    // ƒWƒƒƒ“ƒv‚Ì“ü—Íó•tŠÔ
+    // ã‚¸ãƒ£ãƒ³ãƒ—ã®å…¥åŠ›å—ä»˜æ™‚é–“
     float stepJump_;
 
-    // ƒWƒƒƒ“ƒv”»’è
+    // ã‚¸ãƒ£ãƒ³ãƒ—åˆ¤å®š
     bool isJump_;
 
-    // ƒŠƒ\[ƒXƒ[ƒh
+    // ãƒªã‚½ãƒ¼ã‚¹ãƒ­ãƒ¼ãƒ‰
     virtual void InitLoad(void) override{}
 
-    // XVˆ—i”h¶ƒNƒ‰ƒXŒÂ•Êj
+    // æ›´æ–°å‡¦ç†ï¼ˆæ´¾ç”Ÿã‚¯ãƒ©ã‚¹å€‹åˆ¥ï¼‰
     virtual void UpdateProcess(void) = 0;
 
-    // XVŒãˆ—i”h¶ƒNƒ‰ƒXŒÂ•Êj
+    // æ›´æ–°å¾Œå‡¦ç†ï¼ˆæ´¾ç”Ÿã‚¯ãƒ©ã‚¹å€‹åˆ¥ï¼‰
     virtual void UpdateProcessPost(void) = 0;
 
-    // ˆÚ“®•ûŒü‚É‰‚¶‚½’x‰„‰ñ“]
+    // ç§»å‹•æ–¹å‘ã«å¿œã˜ãŸé…å»¶å›è»¢
     void DelayRotate(void);
 
-    // d—ÍŒvZ
+    // é‡åŠ›è¨ˆç®—
     void CalcGravityPow(void);
 
-    // ƒ^[ƒQƒbƒg•ûŒü‚Ìæ“¾
+    // ã‚¿ãƒ¼ã‚²ãƒƒãƒˆæ–¹å‘ã®å–å¾—
     VECTOR GetTargetDir(void);
 
-    // Õ“Ë”»’è
+    // è¡çªåˆ¤å®š
     void Collision(void)override;
 
-    // d—Í‚É‚æ‚é’n–ÊÕ“Ë”»’è
+    // é‡åŠ›ã«ã‚ˆã‚‹åœ°é¢è¡çªåˆ¤å®š
     void CollisionGravity(void);
 
-    // ƒJƒvƒZƒ‹Õ“Ë”»’è
+    // ã‚«ãƒ—ã‚»ãƒ«è¡çªåˆ¤å®š
     virtual void CollisionCapsule(void);
 
-    //ƒLƒƒƒ‰ƒNƒ^[ˆÚ“®—Ê‚Ì–³Œø
+    //ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ç§»å‹•é‡ã®ç„¡åŠ¹
     void SetFrameUserLocalPos(VECTOR localPos, int frameNo);
 
 };

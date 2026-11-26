@@ -1,7 +1,6 @@
 #include <DxLib.h>
 #include "../../../Manager/ResourceManager.h"
 #include "../../../Manager/SceneManager.h"
-#include "../../../Manager/CollisionManager.h"
 #include "../../../Manager/Camera.h"
 #include "../../../Manager/InputManager.h"
 #include "../../../Manager/SoundManager.h"
@@ -40,10 +39,10 @@ Player::~Player(void) {}
 
 void Player::Draw(void)
 {
-	// Šî’êƒNƒ‰ƒX‚Ì•`‰æˆ—
+	// åŸºåº•ã‚¯ãƒ©ã‚¹ã®æç”»å‡¦ç†
 	CharacterBase::Draw();
 
-	// •Ší•`‰æ
+	// æ­¦å™¨æç”»
 	for (const auto& weapon : weapons_) {
 		weapon->Draw();
 	}
@@ -56,42 +55,42 @@ void Player::Release(void)
 
 void Player::DrawUI(void)
 {
-	// HP‚ÆƒXƒ^ƒ~ƒi‚ÌUI•`‰æ
+	// HPã¨ã‚¹ã‚¿ãƒŸãƒŠã®UIæç”»
 	if (uiHp_) { uiHp_->Draw(); }
 	if (uiSt_) { uiSt_->Draw(); }
 
-	// ‰ñ•œ•r‚ÌUI•`‰æ
+	// å›å¾©ç“¶ã®UIæç”»
 	if (uiRecovery_) { uiRecovery_->Draw(); }
 }
 
 void Player::InitLoad(void)
 {
-	// Šî’êƒNƒ‰ƒX‚ÌƒŠƒ\[ƒXƒ[ƒh
+	// åŸºåº•ã‚¯ãƒ©ã‚¹ã®ãƒªã‚½ãƒ¼ã‚¹ãƒ­ãƒ¼ãƒ‰
 	CharacterBase::InitLoad();
 
-	//ƒvƒŒƒCƒ„[
+	//ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
 	transform_.SetModel(resMng_.LoadModelDuplicate(
 		ResourceManager::SRC::MODEL_PLAYER));
 
-	// •Ší
+	// æ­¦å™¨
 	auto weaponBlade = std::make_unique<WeaponBlade>(transform_, WEAPON_ATTACH_FRAME_NO);
 	weapons_.push_back(std::move(weaponBlade));
 	for (const auto& weapon : weapons_) {
 		weapon->Load();
 	}
 
-	// ‰ñ•œ•rUI
+	// å›å¾©ç“¶UI
 	uiRecovery_ = std::make_unique<UIRecovery>(INITIAL_RECOVERY_BOTTLE_COUNT);
 	uiRecovery_->Load();
 
-	// HP UI ‚ğ‰æ–Ê¶ã‚É•\¦
+	// HP UI ã‚’ç”»é¢å·¦ä¸Šã«è¡¨ç¤º
 	uiHp_ = std::make_unique<UIHp>(
 		static_cast<float>(Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV),
 		static_cast<float>(UI_HP_POS_Y),
 		UI_SCALE_X, UI_SCALE_Y, UI_SCALE_Z);
 	uiHp_->Load();
 
-	// ƒXƒ^ƒ~ƒiUI‚ğ HP ‚Ì‰º‚É•\¦
+	// ã‚¹ã‚¿ãƒŸãƒŠUIã‚’ HP ã®ä¸‹ã«è¡¨ç¤º
 	uiSt_ = std::make_unique<UISt>(
 		static_cast<float>(Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV),
 		static_cast<float>(UI_ST_POS_Y),
@@ -103,7 +102,7 @@ void Player::InitLoad(void)
 
 void Player::InitTransform(void)
 {
-	// ƒgƒ‰ƒ“ƒXƒtƒH[ƒ€‚Ì‰Šú‰»
+	// ãƒˆãƒ©ãƒ³ã‚¹ãƒ•ã‚©ãƒ¼ãƒ ã®åˆæœŸåŒ–
 	transform_.scl = AsoUtility::VECTOR_ONE;
 	transform_.quaRot = Quaternion::Identity();
 	transform_.quaRotLocal = Quaternion::Identity();
@@ -116,7 +115,7 @@ void Player::InitTransform(void)
 
 void Player::InitCollider(void)
 {
-	// ü•ªƒRƒ‰ƒCƒ_
+	// ç·šåˆ†ã‚³ãƒ©ã‚¤ãƒ€
 	std::vector<ColliderBase::TAG> lineTags = { ColliderBase::TAG::STAGE };
 	auto colLine = std::make_shared<ColliderLine>(
 		ColliderBase::TAG::GROUND,
@@ -125,11 +124,10 @@ void Player::InitCollider(void)
 		COL_LINE_START_LOCAL_POS,
 		COL_LINE_END_LOCAL_POS);
 
-	// ƒ}ƒl[ƒWƒƒ[‚Ö“o˜^
+	// æ‰€æœ‰ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã¸ç™»éŒ²
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::LINE)].push_back(colLine);
-	CollisionManager::GetInstance().AddCollider(colLine);
 
-	// ƒJƒvƒZƒ‹ƒRƒ‰ƒCƒ_
+	// ã‚«ãƒ—ã‚»ãƒ«ã‚³ãƒ©ã‚¤ãƒ€
 	std::vector<ColliderBase::TAG> CapsuleTags = {
 	ColliderBase::TAG::ENEMY,
 	ColliderBase::TAG::ENEMY_WEAPON,
@@ -144,9 +142,8 @@ void Player::InitCollider(void)
 		COL_CAPSULE_DOWN_LOCAL_POS,
 		COL_CAPSULE_RADIUS);
 
-	// ƒ}ƒl[ƒWƒƒ[‚Ö“o˜^
+	// æ‰€æœ‰ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã¸ç™»éŒ²
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colCapsule);
-	CollisionManager::GetInstance().AddCollider(colCapsule);
 }
 
 void Player::InitAnimation(void)
@@ -176,17 +173,17 @@ void Player::InitAnimation(void)
 
 void Player::InitPost(void)
 {
-	// ˆÚ“®•ûŒü
+	// ç§»å‹•æ–¹å‘
 	moveDir_ = AsoUtility::DIR_F;
-	// ˆÚ“®ƒXƒs[ƒh
+	// ç§»å‹•ã‚¹ãƒ”ãƒ¼ãƒ‰
 	moveSpeed_ = 0.0f;
-	// ˆÚ“®—Ê
+	// ç§»å‹•é‡
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	// ó‘Ô
+	// çŠ¶æ…‹
 	state_ = STATE::IDLE;
 
-	// •Ší
+	// æ­¦å™¨
 	for (const auto& weapon : weapons_) {
 		weapon->LoadEnd();
 	}
@@ -194,22 +191,22 @@ void Player::InitPost(void)
 	// HPUI
 	uiHp_->LoadEnd();
 
-	// ƒXƒ^ƒ~ƒiUI
+	// ã‚¹ã‚¿ãƒŸãƒŠUI
 	uiSt_->LoadEnd();
 
-	// ƒN[ƒ‹ƒ^ƒCƒ€
+	// ã‚¯ãƒ¼ãƒ«ã‚¿ã‚¤ãƒ 
 	stRecoverTime_ = 0.0f;
 
-	// €–SƒAƒjƒ[ƒVƒ‡ƒ“Ä¶ŠÔ
+	// æ­»äº¡ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿæ™‚é–“
 	deathAnimationTime_ = 0.0f;
 
-	// –³“GŠÔ
+	// ç„¡æ•µæ™‚é–“
 	invincibleTimer_ = 0.0f;
 
-	// ‰ñ•œ•rUI
+	// å›å¾©ç“¶UI
 	uiRecovery_->LoadEnd();
 
-	// ƒGƒtƒFƒNƒg
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆ
 	effType_ = EFFECT::NONE;
 	effect_ = std::make_unique<EffectController>();
 	effect_->Add(
@@ -219,9 +216,9 @@ void Player::InitPost(void)
 		static_cast<int>(EFFECT::HP_ABSOLUTE),
 		(Application::PATH_EFFECT + L"Absolute.efkefc"));
 
-	// UŒ‚ƒRƒ“ƒ{ƒf[ƒ^‚Ì‰Šú‰»
+	// æ”»æ’ƒã‚³ãƒ³ãƒœãƒ‡ãƒ¼ã‚¿ã®åˆæœŸåŒ–
 	ATTACK_COMBO data;
-	// ‰¡Ø‚èUŒ‚
+	// æ¨ªåˆ‡ã‚Šæ”»æ’ƒ
 	data = {
 		ANIM_TYPE::ATTACK_1,
 		COMBO1_STEP_INPUT_START,
@@ -239,7 +236,7 @@ void Player::InitPost(void)
 	atkComboData_.emplace(
 		STATE_ATTACK_COMBO::COMBO_1, data);
 
-	// cØ‚èUŒ‚
+	// ç¸¦åˆ‡ã‚Šæ”»æ’ƒ
 	data = {
 		ANIM_TYPE::ATTACK_2,
 		COMBO2_STEP_INPUT_START,
@@ -257,7 +254,7 @@ void Player::InitPost(void)
 	atkComboData_.emplace(
 		STATE_ATTACK_COMBO::COMBO_2, data);
 
-	// ‰ñ“]UŒ‚
+	// å›è»¢æ”»æ’ƒ
 	data = {
 		ANIM_TYPE::ATTACK_3,
 		COMBO3_STEP_INPUT_START,
@@ -275,19 +272,19 @@ void Player::InitPost(void)
 	atkComboData_.emplace(
 		STATE_ATTACK_COMBO::COMBO_3, data);
 
-	// UŒ‚ƒRƒ“ƒ{ó‘Ô‚Ì‰Šú‰»
+	// æ”»æ’ƒã‚³ãƒ³ãƒœçŠ¶æ…‹ã®åˆæœŸåŒ–
 	stateAtkCombo_ = STATE_ATTACK_COMBO::COMBO_1;
-	// UŒ‚ƒRƒ“ƒ{‚ÌŸ‚ÌUŒ‚‚ğó‚¯•t‚¯‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO‚ğ‰Šú‰»
+	// æ”»æ’ƒã‚³ãƒ³ãƒœã®æ¬¡ã®æ”»æ’ƒã‚’å—ã‘ä»˜ã‘ã‚‹ã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 	isComboNext_ = false;
 }
 
 void Player::ProcessMove(void)
 {
-	// ˆÚ“®—Ê‚Ì‰Šú‰»
+	// ç§»å‹•é‡ã®åˆæœŸåŒ–
 	moveSpeed_ = 0.0f;
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	// ˆÚ“®ó‘ÔˆÈŠO‚Å‚ÍSE‚ğ’â~
+	// ç§»å‹•çŠ¶æ…‹ä»¥å¤–ã§ã¯SEã‚’åœæ­¢
 	if (state_ != STATE::IDLE
 		&& state_ != STATE::RUN
 		&& state_ != STATE::FAST_RUN) {
@@ -296,7 +293,7 @@ void Player::ProcessMove(void)
 		return;
 	}
 
-	// ‹¤’Ê‰»‚µ‚½ŠÖ”‚©‚ç•ûŒüiƒJƒƒ‰/ƒ^[ƒQƒbƒg•ÏŠ·Ï‚İj‚ğæ“¾
+	// å…±é€šåŒ–ã—ãŸé–¢æ•°ã‹ã‚‰æ–¹å‘ï¼ˆã‚«ãƒ¡ãƒ©/ã‚¿ãƒ¼ã‚²ãƒƒãƒˆå¤‰æ›æ¸ˆã¿ï¼‰ã‚’å–å¾—
 	VECTOR inputDir = GetInputDirection();
 
 	if (!AsoUtility::EqualsVZero(inputDir))
@@ -304,12 +301,12 @@ void Player::ProcessMove(void)
 		state_ = STATE::RUN;
 		moveDir_ = inputDir;
 
-		// ƒ_ƒbƒVƒ…“ü—Í”»’è
+		// ãƒ€ãƒƒã‚·ãƒ¥å…¥åŠ›åˆ¤å®š
 		auto& ins = InputManager::GetInstance();
 		bool isR = ins.IsNew(KEY_INPUT_LSHIFT)
 			|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
 
-		// ƒXƒ^ƒ~ƒi‚ª‰ñ•œ’†‚ÅA‚©‚ÂƒXƒ^ƒ~ƒi‚ªc‚Á‚Ä‚¢‚éê‡‚Íƒ_ƒbƒVƒ…‰Â”\
+		// ã‚¹ã‚¿ãƒŸãƒŠãŒå›å¾©ä¸­ã§ã€ã‹ã¤ã‚¹ã‚¿ãƒŸãƒŠãŒæ®‹ã£ã¦ã„ã‚‹å ´åˆã¯ãƒ€ãƒƒã‚·ãƒ¥å¯èƒ½
 		if (isR && stRecoverTime_ <= 0.0f) {
 			moveSpeed_ = SPEED_DASH;
 			state_ = STATE::FAST_RUN;
@@ -339,61 +336,61 @@ void Player::ProcessMove(void)
 
 void Player::ProcessAttack(void)
 {
-	// UŒ‚“ü—Í”»’è
+	// æ”»æ’ƒå…¥åŠ›åˆ¤å®š
 	auto& ins = InputManager::GetInstance();
 	bool isAttackInput = false;
 
-	// UŒ‚“ü—Í”»’è
+	// æ”»æ’ƒå…¥åŠ›åˆ¤å®š
 	if (uiSt_->GetSt() >= 0) {
 		isAttackInput = ins.IsClickMouseLeft()
 			|| ins.IsPadBtnTrgDown(
 				InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
 	}
 
-	// ’Êíó‘ÔiˆÚ“®’†‚È‚Çj‚©‚ç‚ÌV‹KUŒ‚ŠJn
+	// é€šå¸¸çŠ¶æ…‹ï¼ˆç§»å‹•ä¸­ãªã©ï¼‰ã‹ã‚‰ã®æ–°è¦æ”»æ’ƒé–‹å§‹
 	if (isAttackInput && !isJump_
 		&& (state_ == STATE::IDLE || state_ == STATE::RUN || state_ == STATE::FAST_RUN))
 	{
-		// UŒ‚ó‘Ô‚É‘JˆÚ
+		// æ”»æ’ƒçŠ¶æ…‹ã«é·ç§»
 		state_ = STATE::ATTACK;
 		stateAtkCombo_ = STATE_ATTACK_COMBO::COMBO_1;
 
-		// ƒf[ƒ^‚ÌQÆ‚Æ‰Šúİ’è
+		// ãƒ‡ãƒ¼ã‚¿ã®å‚ç…§ã¨åˆæœŸè¨­å®š
 		auto& comboData = atkComboData_.at(stateAtkCombo_);
 		comboData.isNextCombo = false;
 
 		uiSt_->ConsumeSt(CONSUMPTION_ST_ATTACK);
 
-		// ’Ç‰Á‚Ì‰Šúˆ—‚ª‚ ‚ê‚ÎÀs
+		// è¿½åŠ ã®åˆæœŸå‡¦ç†ãŒã‚ã‚Œã°å®Ÿè¡Œ
 		if (comboData.extraInit) {
 			comboData.extraInit();
 		}
 
-		// UŒ‚ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+		// æ”»æ’ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 		animationController_->Play(static_cast<int>(comboData.animType), false);
 	}
 
-	// UŒ‚ó‘Ô‚Å‚È‚¯‚ê‚Îˆ—I—¹
+	// æ”»æ’ƒçŠ¶æ…‹ã§ãªã‘ã‚Œã°å‡¦ç†çµ‚äº†
 	if (state_ != STATE::ATTACK) return;
 
-	// Œ»İ‚ÌƒRƒ“ƒ{ƒf[ƒ^‚ğæ“¾
+	// ç¾åœ¨ã®ã‚³ãƒ³ãƒœãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—
 	auto& comboData = atkComboData_.at(stateAtkCombo_);
 	float currentStep = animationController_->GetPlayAnim().step;
 
 	if (comboData.moveSpeed > 0.0f && currentStep < comboData.stepCollisionStart)
 	{
-		// “ü—Í•ûŒü‚ğæ“¾
+		// å…¥åŠ›æ–¹å‘ã‚’å–å¾—
 		VECTOR inputDir = GetInputDirection();
 
-		// “ü—Í•ûŒü‚ªƒ[ƒƒxƒNƒgƒ‹‚Å‚È‚¢ê‡‚Ì‚İˆ—
+		// å…¥åŠ›æ–¹å‘ãŒã‚¼ãƒ­ãƒ™ã‚¯ãƒˆãƒ«ã§ãªã„å ´åˆã®ã¿å‡¦ç†
 		if (!AsoUtility::EqualsVZero(inputDir))
 		{
-			// “ü—Í•ûŒü‚Ö‰ñ“]
+			// å…¥åŠ›æ–¹å‘ã¸å›è»¢
 			float targetAngleY = atan2f(inputDir.x, inputDir.z);
 			Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
 			transform_.quaRot = targetRot;
 
-			// Œü‚¢‚½³–Ê•ûŒü‚ÖŒü‚©‚Á‚Ä“¥‚İ‚İˆÚ“®
+			// å‘ã„ãŸæ­£é¢æ–¹å‘ã¸å‘ã‹ã£ã¦è¸ã¿è¾¼ã¿ç§»å‹•
 			VECTOR forward = transform_.GetForward();
 			VECTOR targetPos = VAdd(transform_.pos, VScale(forward, comboData.moveSpeed));
 
@@ -401,21 +398,21 @@ void Player::ProcessAttack(void)
 		}
 	}
 
-	// ’Ç‰ÁXVˆ—
+	// è¿½åŠ æ›´æ–°å‡¦ç†
 	if (comboData.extraUpdate) {
 		comboData.extraUpdate();
 	}
 
-	// ƒRƒ“ƒ{“ü—Íó•t”»’è
+	// ã‚³ãƒ³ãƒœå…¥åŠ›å—ä»˜åˆ¤å®š
 	if (comboData.IsValidCombo(currentStep)) {
-		// ’Êí‚ÌUŒ‚“ü—ÍA‚Ü‚½‚ÍŒÅ—L‚ÌğŒiactionNextComboj‚ğ–‚½‚µ‚½ê‡
+		// é€šå¸¸ã®æ”»æ’ƒå…¥åŠ›ã€ã¾ãŸã¯å›ºæœ‰ã®æ¡ä»¶ï¼ˆactionNextComboï¼‰ã‚’æº€ãŸã—ãŸå ´åˆ
 		bool isCustomAction = comboData.actionNextCombo ? comboData.actionNextCombo() : false;
 		if (isAttackInput || isCustomAction) {
 			comboData.isNextCombo = true;
 		}
 	}
 
-	// Õ“Ë”»’è‚Ìˆ—
+	// è¡çªåˆ¤å®šã®å‡¦ç†
 	if (comboData.IsValidCollision(currentStep)) {
 		for (const auto& weapon : weapons_) {
 			weapon->SetCollider();
@@ -428,34 +425,34 @@ void Player::ProcessAttack(void)
 		}
 	}
 
-	// SEÄ¶ˆ—
+	// SEå†ç”Ÿå‡¦ç†
 	if (currentStep == ATTACK_SE_TRIGGER_STEP) {
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_WEAPON_1).handleId_;
 		SoundManager::GetInstance().PlaySE(
 			SoundManager::SeId::PLAYER_WEAPON_SE1, bgm_, SE_VOLUME_ATTACK);
 	}
 
-	// ƒRƒ“ƒ{‘JˆÚƒ`ƒFƒbƒN
+	// ã‚³ãƒ³ãƒœé·ç§»ãƒã‚§ãƒƒã‚¯
 	bool canInterrupt = comboData.IsValidInterrupt(currentStep);
 	bool isAnimEnd = animationController_->IsEnd();
 
-	// ’Ç‰ÁŠ„ğŒ‚Ìƒ`ƒFƒbƒN
+	// è¿½åŠ å‰²è¾¼æ¡ä»¶ã®ãƒã‚§ãƒƒã‚¯
 	if (comboData.isExtraInterrupt && comboData.isExtraInterrupt(comboData)) {
 		canInterrupt = true;
 	}
 
-	// Ÿ‚ÌƒRƒ“ƒ{‚ÖŒq‚®ê‡A‚Ü‚½‚ÍƒAƒjƒ[ƒVƒ‡ƒ“‚ªI—¹‚µ‚½ê‡‚Éˆ—
+	// æ¬¡ã®ã‚³ãƒ³ãƒœã¸ç¹‹ãå ´åˆã€ã¾ãŸã¯ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒçµ‚äº†ã—ãŸå ´åˆã«å‡¦ç†
 	if ((canInterrupt && comboData.isNextCombo) || isAnimEnd) {
-		// Ÿ‚ÌƒRƒ“ƒ{‚ÖŒq‚®ê‡
+		// æ¬¡ã®ã‚³ãƒ³ãƒœã¸ç¹‹ãå ´åˆ
 		if (comboData.isNextCombo && comboData.nextCombo != STATE_ATTACK_COMBO::MAX) {
-			// Ÿ‚ÌƒRƒ“ƒ{‚Öó‘Ô‘JˆÚ
+			// æ¬¡ã®ã‚³ãƒ³ãƒœã¸çŠ¶æ…‹é·ç§»
 			stateAtkCombo_ = comboData.nextCombo;
 
 			for (const auto& weapon : weapons_) {
 				weapon->ClearCollider();
 			}
 
-			// V‚µ‚¢ƒRƒ“ƒ{ƒf[ƒ^‚ÌƒZƒbƒgƒAƒbƒv
+			// æ–°ã—ã„ã‚³ãƒ³ãƒœãƒ‡ãƒ¼ã‚¿ã®ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—
 			auto& nextData = atkComboData_.at(stateAtkCombo_);
 			nextData.isNextCombo = false;
 
@@ -467,7 +464,7 @@ void Player::ProcessAttack(void)
 
 			animationController_->Play(static_cast<int>(nextData.animType), false);
 		}
-		// ƒAƒjƒ[ƒVƒ‡ƒ“‚ªI—¹‚µ‚½ê‡A‚Ü‚½‚Í’Ç‰ÁI—¹ğŒ‚ğ–‚½‚µ‚½ê‡
+		// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒçµ‚äº†ã—ãŸå ´åˆã€ã¾ãŸã¯è¿½åŠ çµ‚äº†æ¡ä»¶ã‚’æº€ãŸã—ãŸå ´åˆ
 		else if (isAnimEnd || (comboData.isExtraEnd && comboData.isExtraEnd()))
 		{
 			state_ = STATE::IDLE;
@@ -525,7 +522,7 @@ void Player::ProcessEvasion(void)
 
 void Player::ProcessDownUp(void)
 {
-	// ƒ_ƒEƒ“ó‘Ô‚Ìˆ—
+	// ãƒ€ã‚¦ãƒ³çŠ¶æ…‹ã®å‡¦ç†
 	if (state_ == STATE::DOWN)
 	{
 		isInvincible_ = true;
@@ -550,7 +547,7 @@ void Player::ProcessDownUp(void)
 		}
 	}
 
-	// ƒAƒbƒvó‘Ô‚Ìˆ—
+	// ã‚¢ãƒƒãƒ—çŠ¶æ…‹ã®å‡¦ç†
 	if (state_ == STATE::UP)
 	{
 		state_ = STATE::UP;
@@ -562,7 +559,7 @@ void Player::ProcessDownUp(void)
 
 void Player::ProcessRecovery(void)
 {
-	// ‰ñ•œ“ü—Í”»’è
+	// å›å¾©å…¥åŠ›åˆ¤å®š
 	bool isP = false;
 	auto& ins = InputManager::GetInstance();
 	if (state_ != STATE::IDLE
@@ -572,11 +569,11 @@ void Player::ProcessRecovery(void)
 		return;
 	}
 
-	// ‰ñ•œ“ü—Í”»’è
+	// å›å¾©å…¥åŠ›åˆ¤å®š
 	isP = ins.IsTrgDown(KEY_INPUT_R)
 		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
 
-	// ‰ñ•œ“ü—Í‚ª‚ ‚èA‚©‚Â‰ñ•œ•r‚ªc‚Á‚Ä‚¢‚éê‡A‚©‚Â‰ñ•œƒAƒjƒ[ƒVƒ‡ƒ“‚ªÄ¶‚³‚ê‚Ä‚¢‚È‚¢ê‡‚É‰ñ•œŠJn
+	// å›å¾©å…¥åŠ›ãŒã‚ã‚Šã€ã‹ã¤å›å¾©ç“¶ãŒæ®‹ã£ã¦ã„ã‚‹å ´åˆã€ã‹ã¤å›å¾©ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒå†ç”Ÿã•ã‚Œã¦ã„ãªã„å ´åˆã«å›å¾©é–‹å§‹
 	if (isP && uiRecovery_->GetBottleCnt() > 0
 		&& animationController_->GetPlayType() != static_cast<int>(EFFECT::HP_ABSOLUTE)
 		&& state_ != STATE::RECOVERY) {
@@ -590,13 +587,13 @@ void Player::ProcessRecovery(void)
 			VScale(AsoUtility::VECTOR_ONE, EFFECT_RECOVERY_SCALE));
 	}
 
-	// ‰ñ•œó‘Ô‚Å‚È‚¯‚ê‚Îˆ—I—¹
+	// å›å¾©çŠ¶æ…‹ã§ãªã‘ã‚Œã°å‡¦ç†çµ‚äº†
 	if (state_ != STATE::RECOVERY) return;
 
-	// ‰ñ•œƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// å›å¾©ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(static_cast<int>(ANIM_TYPE::RECOVERY), false);
 
-	// ‰ñ•œƒAƒjƒ[ƒVƒ‡ƒ“‚Ì“Á’è‚ÌƒXƒeƒbƒv‚Å‰ñ•œˆ—‚ğÀs
+	// å›å¾©ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®ç‰¹å®šã®ã‚¹ãƒ†ãƒƒãƒ—ã§å›å¾©å‡¦ç†ã‚’å®Ÿè¡Œ
 	if (animationController_->GetPlayAnim().step == RECOVERY_TRIGGER_STEP) {
 		uiHp_->Heal(HEAL_HP_AMOUNT);
 		uiRecovery_->SetBottleCnt(CONSUME_RECOVERY_BOTTLE_COUNT);
@@ -605,7 +602,7 @@ void Player::ProcessRecovery(void)
 			SoundManager::SeId::PLAYER_HEAL, bgm_, SE_VOLUME_RECOVERY);
 	}
 
-	// ‰ñ•œƒAƒjƒ[ƒVƒ‡ƒ“‚ªI—¹‚µ‚½‚ç’Êíó‘Ô‚É‘JˆÚ
+	// å›å¾©ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒçµ‚äº†ã—ãŸã‚‰é€šå¸¸çŠ¶æ…‹ã«é·ç§»
 	if (animationController_->IsEnd()) {
 		state_ = STATE::IDLE;
 		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_HEAL);
@@ -614,7 +611,7 @@ void Player::ProcessRecovery(void)
 
 void Player::ProcessDie(void)
 {
-	// €–SƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// æ­»äº¡ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	deathAnimationTime_ += DIE_FADE_SPEED 
 		* SceneManager::GetInstance().GetDeltaTime();
 	if (deathAnimationTime_ > DIE_END_THRESHOLD) {
@@ -640,32 +637,32 @@ void Player::ApplyDamage(float damageAmount)
 
 void Player::UpdateProcess(void)
 {
-	// €–Só‘Ô‚Ìˆ—
+	// æ­»äº¡çŠ¶æ…‹ã®å‡¦ç†
 	if (state_ == STATE::DIE)
 	{
 		ProcessDie();
 		return;
 	}
 
-	// ƒGƒtƒFƒNƒg‚ÌˆÊ’u‚ğƒvƒŒƒCƒ„[‚ÌˆÊ’u‚Éİ’è
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®ä½ç½®ã‚’ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®ã«è¨­å®š
 	effect_->SetEffectPos(static_cast<int>(effType_), transform_.pos);
 
-	// –³“GŠÔ‚Ìˆ—
+	// ç„¡æ•µæ™‚é–“ã®å‡¦ç†
 	if (isInvincible_ && invincibleTimer_ >= 0.0f)
 	{
 		invincibleTimer_ -= 1.0f * SceneManager::GetInstance().GetDeltaTime();
 	}
 	else {
-		// –³“GŠÔ‚ªI—¹‚µ‚½‚ç–³“Gó‘Ô‚ğ‰ğœ
+		// ç„¡æ•µæ™‚é–“ãŒçµ‚äº†ã—ãŸã‚‰ç„¡æ•µçŠ¶æ…‹ã‚’è§£é™¤
 		isInvincible_ = false;
 	}
 
-	// ƒXƒ^ƒ~ƒi‰ñ•œˆ—
+	// ã‚¹ã‚¿ãƒŸãƒŠå›å¾©å‡¦ç†
 	if (uiSt_->GetSt() <= UISt::MIN_ST) {
 		stRecoverTime_ = CT;
 	}
 
-	// ƒXƒ^ƒ~ƒi‰ñ•œˆ—
+	// ã‚¹ã‚¿ãƒŸãƒŠå›å¾©å‡¦ç†
 	if (state_ == STATE::IDLE
 		|| state_ == STATE::RUN
 		|| state_ == STATE::DOWN
@@ -675,12 +672,12 @@ void Player::UpdateProcess(void)
 			* SceneManager::GetInstance().GetDeltaTime());
 	}
 
-	// ƒXƒ^ƒ~ƒi‰ñ•œƒN[ƒ‹ƒ^ƒCƒ€‚Ìˆ—
+	// ã‚¹ã‚¿ãƒŸãƒŠå›å¾©ã‚¯ãƒ¼ãƒ«ã‚¿ã‚¤ãƒ ã®å‡¦ç†
 	if (stRecoverTime_ > 0.0f) {
 		stRecoverTime_ -= 1.0f * SceneManager::GetInstance().GetDeltaTime();
 	}
 
-	// •Ší‚ÌƒRƒ‰ƒCƒ_[‚ğUŒ‚’†ˆÈŠO‚Å‚Í–³Œø‰»
+	// æ­¦å™¨ã®ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’æ”»æ’ƒä¸­ä»¥å¤–ã§ã¯ç„¡åŠ¹åŒ–
 	if (state_ != STATE::ATTACK)
 	{
 		for (const auto& weapon : weapons_)
@@ -689,28 +686,28 @@ void Player::UpdateProcess(void)
 		}
 	}
 
-	// ‰ñ•œˆ—
+	// å›å¾©å‡¦ç†
 	ProcessRecovery();
 
-	//UŒ‚ˆ—
+	//æ”»æ’ƒå‡¦ç†
 	ProcessAttack();
 
-	// ˆÚ“®‘€ì
+	// ç§»å‹•æ“ä½œ
 	ProcessMove();
 
-	//‰ñ”ğˆ—
+	//å›é¿å‡¦ç†
 	ProcessEvasion();
 
-	// ƒ_ƒEƒ“EƒAƒbƒvˆ—
+	// ãƒ€ã‚¦ãƒ³ãƒ»ã‚¢ãƒƒãƒ—å‡¦ç†
 	ProcessDownUp();
 
-	// •Šíˆ—
+	// æ­¦å™¨å‡¦ç†
 	for (const auto& weapon : weapons_)
 	{
 		weapon->Update();
 	}
 
-	// ƒRƒ‰ƒCƒ_[‚ÌˆÊ’u‚ğƒAƒjƒ[ƒVƒ‡ƒ“‚É‡‚í‚¹‚Ä•ÏX
+	// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®ä½ç½®ã‚’ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã«åˆã‚ã›ã¦å¤‰æ›´
 	if (STATE::DOWN == state_)
 	{
 		animLockPos_ = LOCK_POS2;
@@ -727,7 +724,7 @@ void Player::UpdateProcess(void)
 		animLockPos_ = LOCK_POS1;
 	}
 
-	//ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌˆÚ“®—Ê‚ğ–³Œø
+	//ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®ç§»å‹•é‡ã‚’ç„¡åŠ¹
 	SetFrameUserLocalPos(animLockPos_, LOCK_FRAME_NO);
 }
 
@@ -735,7 +732,7 @@ void Player::UpdateProcessPost(void)
 {
 	if (targetPos_ == nullptr)return;
 
-	// ƒ^[ƒQƒbƒg‚ÉŒü‚©‚Á‚Ä‰ñ“]
+	// ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã«å‘ã‹ã£ã¦å›è»¢
 	VECTOR targetDir = GetTargetDir();
 	float targetAngleY = atan2f(targetDir.x, targetDir.z);
 	Quaternion targetRot =
@@ -751,7 +748,7 @@ void Player::UpdateHitCollider(void)
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	if (ownColliders_.count(capsuleType) == 0) return;
 
-	// ó‚¯‚éƒ_ƒ[ƒW—Ê‚ğ•Û‚·‚é•Ï”
+	// å—ã‘ã‚‹ãƒ€ãƒ¡ãƒ¼ã‚¸é‡ã‚’ä¿æŒã™ã‚‹å¤‰æ•°
 	float damage = 0.0f;
 
 	for (const auto& vec : ownColliders_.at(capsuleType))
@@ -769,7 +766,7 @@ void Player::UpdateHitCollider(void)
 			auto shape = targetCol->GetShape();
 			auto tag = targetCol->GetTag();
 
-			// “G–{‘Ì‚Æ‚Ì“–‚½‚è”»’è
+			// æ•µæœ¬ä½“ã¨ã®å½“ãŸã‚Šåˆ¤å®š
 			if (tag == ColliderBase::TAG::ENEMY
 				&& shape == ColliderBase::SHAPE::CAPSULE)
 			{
@@ -782,24 +779,15 @@ void Player::UpdateHitCollider(void)
 
 				if (!enemyCapsule->GetIsAction())continue;
 
-				// •¡”“¯‚É“–‚½‚Á‚½ê‡‚Í‘å‚«‚¢•û‚Ìƒ_ƒ[ƒW‚ğ—Dæ
+				// è¤‡æ•°åŒæ™‚ã«å½“ãŸã£ãŸå ´åˆã¯å¤§ãã„æ–¹ã®ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’å„ªå…ˆ
 				damage = DAMAGE_ENEMY_BODY;
 				continue;
 			}
 
-			// ƒ^ƒO‚ª“G•Ší‚Å‚È‚¢‚Æ‚«‚Íˆ—‚µ‚È‚¢
+			// ã‚¿ã‚°ãŒæ•µæ­¦å™¨ã§ãªã„ã¨ãã¯å‡¦ç†ã—ãªã„
 			if (tag != ColliderBase::TAG::ENEMY_WEAPON) continue;
 
-			// •Ç‚É‚æ‚éÕ•Áƒ`ƒFƒbƒN
-			if (targetCol->GetFollow() != nullptr
-				&& playerCapsule->GetFollow() != nullptr)
-			{
-				if (CollisionManager::GetInstance().CheckWallOcclusion(
-					targetCol->GetFollow()->pos,
-					playerCapsule->GetFollow()->pos)) continue;
-			}
-
-			// “G•Ší‚Æ‚Ì“–‚½‚è”»’è
+			// æ•µæ­¦å™¨ã¨ã®å½“ãŸã‚Šåˆ¤å®š
 			if (shape == ColliderBase::SHAPE::CAPSULE
 				|| shape == ColliderBase::SHAPE::SPHERE)
 			{
@@ -808,7 +796,7 @@ void Player::UpdateHitCollider(void)
 		}
 	}
 
-	// ƒ_ƒ[ƒW‚ª”­¶‚µ‚Ä‚¢‚ê‚Îƒ‹[ƒv‚ÌŠO‚Å1‰ñ‚¾‚¯“K—p
+	// ãƒ€ãƒ¡ãƒ¼ã‚¸ãŒç™ºç”Ÿã—ã¦ã„ã‚Œã°ãƒ«ãƒ¼ãƒ—ã®å¤–ã§1å›ã ã‘é©ç”¨
 	if (damage > 0.0f)
 	{
 		ApplyDamage(damage);
@@ -821,19 +809,19 @@ VECTOR Player::GetInputDirection(void)
 	VECTOR dir = AsoUtility::VECTOR_ZERO;
 	auto& ins = InputManager::GetInstance();
 
-	// ƒQ[ƒ€ƒpƒbƒh‚Ì“ü—Í‚ğæ“¾
+	// ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ã®å…¥åŠ›ã‚’å–å¾—
 	InputManager::JOYPAD_IN_STATE padState =
 		ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 	VECTOR padDir = ins.GetDirectionXZAKey(padState.AKeyLX, padState.AKeyLY);
 
-	// —¼‘Î‰FƒQ[ƒ€ƒpƒbƒh—DæA–³‚¯‚ê‚ÎƒL[ƒ{[ƒh
+	// ä¸¡å¯¾å¿œï¼šã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰å„ªå…ˆã€ç„¡ã‘ã‚Œã°ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰
 	if (!AsoUtility::EqualsVZero(padDir))
 	{
 		dir = padDir;
 	}
 	else
 	{
-		// ƒL[ƒ{[ƒh“ü—ÍiWASDj
+		// ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰å…¥åŠ›ï¼ˆWASDï¼‰
 		bool isUp = ins.IsNew(KEY_INPUT_W);
 		bool isDown = ins.IsNew(KEY_INPUT_S);
 		bool isLeft = ins.IsNew(KEY_INPUT_A);
@@ -849,24 +837,24 @@ VECTOR Player::GetInputDirection(void)
 		if (isDown && isLeft) { dir = VAdd(AsoUtility::DIR_B, AsoUtility::DIR_L); }
 		if (isDown && isRight) { dir = VAdd(AsoUtility::DIR_B, AsoUtility::DIR_R); }
 
-		// Î‚ß“ü—Í‚Ì³‹K‰»
+		// æ–œã‚å…¥åŠ›ã®æ­£è¦åŒ–
 		if (!AsoUtility::EqualsVZero(dir)) {
 			dir = VNorm(dir);
 		}
 	}
 
-	// “ü—Í‚ª‚È‚¢ê‡‚Íƒ[ƒƒxƒNƒgƒ‹‚ğ•Ô‚·
+	// å…¥åŠ›ãŒãªã„å ´åˆã¯ã‚¼ãƒ­ãƒ™ã‚¯ãƒˆãƒ«ã‚’è¿”ã™
 	if (AsoUtility::EqualsVZero(dir))
 	{
 		return AsoUtility::VECTOR_ZERO;
 	}
 
-	// ƒ^[ƒQƒbƒg‚Ü‚½‚ÍƒJƒƒ‰Šî€‚Ìƒ[ƒ‹ƒh•ûŒü‚É•ÏŠ·
+	// ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã¾ãŸã¯ã‚«ãƒ¡ãƒ©åŸºæº–ã®ãƒ¯ãƒ¼ãƒ«ãƒ‰æ–¹å‘ã«å¤‰æ›
 	VECTOR worldDir = AsoUtility::VECTOR_ZERO;
 
 	if (targetPos_ != nullptr)
 	{
-		// ƒ^[ƒQƒbƒg‚ª‚¢‚éê‡
+		// ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒã„ã‚‹å ´åˆ
 		VECTOR targetDir = GetTargetDir();
 		float targetAngleY = atan2f(targetDir.x, targetDir.z);
 		Quaternion targetRot = Quaternion::AngleAxis(targetAngleY, AsoUtility::AXIS_Y);
@@ -874,7 +862,7 @@ VECTOR Player::GetInputDirection(void)
 	}
 	else
 	{
-		// ’ÊíFƒJƒƒ‰•ûŒü‚ğŠî€‚É•ÏŠ·
+		// é€šå¸¸æ™‚ï¼šã‚«ãƒ¡ãƒ©æ–¹å‘ã‚’åŸºæº–ã«å¤‰æ›
 		Quaternion cameraRot = scnMng_.GetCamera()->GetQuaRotY();
 		worldDir = Quaternion::PosAxis(cameraRot, dir);
 	}

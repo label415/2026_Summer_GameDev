@@ -1,7 +1,6 @@
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Utility/ModelFrameUtility.h"
 #include "../../../Manager/ResourceManager.h"
-#include "../../../Manager/CollisionManager.h"
 #include "../../../Manager/SoundManager.h"
 #include "../../Common/Collider/ColliderSphere.h"
 #include "../../Common/Collider/ColliderModel.h"
@@ -25,19 +24,19 @@ WeaponFireball::WeaponFireball(
 
 void WeaponFireball::Update(void)
 {
-	// ¶‘¶ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚¢‚È‚¯‚ê‚Îˆ—‚µ‚È‚¢
+	// ç”Ÿå­˜ãƒ•ãƒ©ã‚°ãŒç«‹ã£ã¦ã„ãªã‘ã‚Œã°å‡¦ç†ã—ãªã„
 	if (!isAlive_) return;
 
-	// ‘OƒtƒŒ[ƒ€‚ÌÀ•W‚ğ•Û‘¶
+	// å‰ãƒ•ãƒ¬ãƒ¼ãƒ ã®åº§æ¨™ã‚’ä¿å­˜
 	prePos_ = transform_.pos;
 
-	// ˆÚ“®ˆ—
+	// ç§»å‹•å‡¦ç†
 	Move();
 
-	// ƒGƒtƒFƒNƒgƒ^ƒCƒv‚ªNONE‚È‚çƒGƒtƒFƒNƒgˆ—‚ğs‚í‚È‚¢
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚¿ã‚¤ãƒ—ãŒNONEãªã‚‰ã‚¨ãƒ•ã‚§ã‚¯ãƒˆå‡¦ç†ã‚’è¡Œã‚ãªã„
 	if (effectType_ == EFFECT_TYPE::NONE) return;
 
-	// ƒGƒtƒFƒNƒgXV
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆæ›´æ–°
 	effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
 	effect_->SetEffectScl(static_cast<int>(effectType_), VScale(AsoUtility::VECTOR_ONE, radius_));
 	effect_->Update(static_cast<int>(effectType_));
@@ -55,13 +54,13 @@ void WeaponFireball::Release(void)
 
 void WeaponFireball::InitCollider(void)
 {
-	// Õ“Ë”»’è‚Ì‘ÎÛƒ^ƒO‚ğİ’è
+	// è¡çªåˆ¤å®šã®å¯¾è±¡ã‚¿ã‚°ã‚’è¨­å®š
 	std::vector<ColliderBase::TAG> targetTags = {
 		ColliderBase::TAG::PLAYER,
 		ColliderBase::TAG::STAGE
 	};
 
-	// ‹…‘ÌƒRƒ‰ƒCƒ_[‚ğì¬
+	// çƒä½“ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’ä½œæˆ
 	auto colliderSphere = std::make_shared<ColliderSphere>(
 		ColliderBase::TAG::ENEMY_WEAPON,
 		targetTags,
@@ -70,20 +69,19 @@ void WeaponFireball::InitCollider(void)
 		MIN_RADIUS
 	);
 
-	// ‰Šúó‘Ô‚Å‚Í“–‚½‚è”»’è‚ğ–³Œø‰»
+	// åˆæœŸçŠ¶æ…‹ã§ã¯å½“ãŸã‚Šåˆ¤å®šã‚’ç„¡åŠ¹åŒ–
 	colliderSphere->SetIsCollider(false);
 
-	// ƒRƒ‰ƒCƒ_[‚ğŠ—LƒRƒ‰ƒCƒ_[‚É’Ç‰Á
+	// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’æ‰€æœ‰ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã«è¿½åŠ 
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::SPHERE)].push_back(colliderSphere);
-	CollisionManager::GetInstance().AddCollider(colliderSphere);
 }
 
 void WeaponFireball::InitPost(void)
 {
-	// ’Ç]Œ³‚ÌÀ•W‚ÖƒŠƒZƒbƒg
+	// è¿½å¾“å…ƒã®åº§æ¨™ã¸ãƒªã‚»ãƒƒãƒˆ
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
 
-	// ƒGƒtƒFƒNƒgƒRƒ“ƒgƒ[ƒ‰‚Ìì¬‚ÆƒGƒtƒFƒNƒg‚Ì’Ç‰Á
+	// ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ã®ä½œæˆã¨ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®è¿½åŠ 
 	effect_ = std::make_unique<EffectController>();
 	effect_->Add(
 		static_cast<int>(EFFECT_TYPE::BULLET),
@@ -92,7 +90,7 @@ void WeaponFireball::InitPost(void)
 		static_cast<int>(EFFECT_TYPE::EXPLOSION),
 		(Application::PATH_EFFECT + L"FireBall_Explosion.efkefc"));
 
-	// ¶‘¶ƒtƒ‰ƒO‚ğ‰Šú‰»
+	// ç”Ÿå­˜ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 	isAlive_ = false;
 }
 
@@ -100,89 +98,89 @@ void WeaponFireball::Move(void)
 {
 	bool isHitStage = false;
 
-	// ‹…‘ÌƒRƒ‰ƒCƒ_[‚ÌÕ“Ë”»’è‚ğŠm”F
+	// çƒä½“ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®è¡çªåˆ¤å®šã‚’ç¢ºèª
 	int colliderType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
 	for (const auto& col : ownColliders_.at(colliderType))
 	{
-		// ©g‚ÌƒJƒvƒZƒ‹ƒRƒ‰ƒCƒ_[‚ğæ“¾
+		// è‡ªèº«ã®ã‚«ãƒ—ã‚»ãƒ«ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’å–å¾—
 		auto* sphere = static_cast<ColliderSphere*>(col.get());
 		for (const auto& hit : sphere->GetHitColliders())
 		{
-			// Õ“Ë‚µ‚½ƒRƒ‰ƒCƒ_[‚ğæ“¾
+			// è¡çªã—ãŸã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’å–å¾—
 			auto hitCol = hit.lock();
 			if (hitCol && hitCol->GetIsCollider()
 				&& hitCol->GetTag() == ColliderBase::TAG::STAGE)
 			{
-				// Õ“Ëƒtƒ‰ƒO‚ğ—§‚Ä‚é
+				// è¡çªãƒ•ãƒ©ã‚°ã‚’ç«‹ã¦ã‚‹
 				isHitStage = true;
 				break;
 			}
 		}
 	}
 
-	// ‚·‚Å‚É”š”­’†A‚Ü‚½‚ÍƒXƒe[ƒW‚É’…’e‚µ‚½uŠÔ
+	// ã™ã§ã«çˆ†ç™ºä¸­ã€ã¾ãŸã¯ã‚¹ãƒ†ãƒ¼ã‚¸ã«ç€å¼¾ã—ãŸç¬é–“
 	if (effectType_ == EFFECT_TYPE::EXPLOSION || isHitStage)
 	{
-		// ”š”­’†‚Å‚È‚¯‚ê‚Î”š”­ƒGƒtƒFƒNƒg‚ÉØ‚è‘Ö‚¦‚é
+		// çˆ†ç™ºä¸­ã§ãªã‘ã‚Œã°çˆ†ç™ºã‚¨ãƒ•ã‚§ã‚¯ãƒˆã«åˆ‡ã‚Šæ›¿ãˆã‚‹
 		if (effectType_ != EFFECT_TYPE::EXPLOSION)
 		{
-			// ’…’eSEÄ¶
+			// ç€å¼¾SEå†ç”Ÿ
 			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_AIR_BREATH_2).handleId_;
 			SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_AIR_BREATH2, bgm_, SoundManager::MaxVolumeValue);
 
-			// ”š”­ƒGƒtƒFƒNƒg‚ÉØ‚è‘Ö‚¦
+			// çˆ†ç™ºã‚¨ãƒ•ã‚§ã‚¯ãƒˆã«åˆ‡ã‚Šæ›¿ãˆ
 			transform_.pos = prePos_;
 			ChangeEffect(EFFECT_TYPE::EXPLOSION);
 		}
 
-		// ”š”­’†‚Ìˆ—
+		// çˆ†ç™ºä¸­ã®å‡¦ç†
 		if (radius_ <= MAX_RADIUS)
 		{
 			radius_ += RADIUS_INCREASE;
 			for (const auto& col : ownColliders_.at(colliderType))
 			{
-				// ‹…‘ÌƒRƒ‰ƒCƒ_[‚Ì”¼Œa‚ğXV
+				// çƒä½“ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®åŠå¾„ã‚’æ›´æ–°
 				auto* sphere = static_cast<ColliderSphere*>(col.get());
 				sphere->SetRadius(radius_);
 			}
 		}
 		else
 		{
-			// ”š”­‚ªI—¹‚µ‚½‚ç“–‚½‚è”»’è‚ğƒNƒŠƒA‚µ‚Ä”ñ•\¦‚É‚·‚é
+			// çˆ†ç™ºãŒçµ‚äº†ã—ãŸã‚‰å½“ãŸã‚Šåˆ¤å®šã‚’ã‚¯ãƒªã‚¢ã—ã¦éè¡¨ç¤ºã«ã™ã‚‹
 			ClearCollider();
 		}
 	}
 	else
 	{
-		// ”òãÄ’†
+		// é£›ç¿”ä¸­
 		transform_.pos = VAdd(transform_.pos, VScale(moveDir_, SPEED));
 	}
 }
 
 void WeaponFireball::ChangeEffect(EFFECT_TYPE effectType)
 {
-	// ‚·‚Å‚É“¯‚¶ƒGƒtƒFƒNƒg‚ªÄ¶’†‚È‚ç‰½‚à‚µ‚È‚¢
+	// ã™ã§ã«åŒã˜ã‚¨ãƒ•ã‚§ã‚¯ãƒˆãŒå†ç”Ÿä¸­ãªã‚‰ä½•ã‚‚ã—ãªã„
 	if (effectType_ == effectType)return;
 
-	// ‚·‚Å‚ÉÄ¶’†‚ÌƒGƒtƒFƒNƒg‚ª‚ ‚ê‚Î’â~‚·‚é
+	// ã™ã§ã«å†ç”Ÿä¸­ã®ã‚¨ãƒ•ã‚§ã‚¯ãƒˆãŒã‚ã‚Œã°åœæ­¢ã™ã‚‹
 	if(effectType_ != EFFECT_TYPE::NONE){
 		effect_->Stop(static_cast<int>(effectType_));
 	}
 
-	// V‚µ‚¢ƒGƒtƒFƒNƒg‚ğÄ¶‚·‚é
+	// æ–°ã—ã„ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’å†ç”Ÿã™ã‚‹
 	effect_->Play(
 		static_cast<int>(effectType),
 		transform_.pos,
 		VGet(0.0f, 0.0f, 0.0f),
 		VGet(radius_, radius_, radius_));
 
-	// Œ»İ‚ÌƒGƒtƒFƒNƒgƒ^ƒCƒv‚ğXV
+	// ç¾åœ¨ã®ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚¿ã‚¤ãƒ—ã‚’æ›´æ–°
 	effectType_ = effectType;
 }
 
 void WeaponFireball::SetCollider(void)
 {
-	// ‹…‘ÌƒRƒ‰ƒCƒ_[‚Ì“–‚½‚è”»’è‚ğ—LŒø‰»
+	// çƒä½“ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®å½“ãŸã‚Šåˆ¤å®šã‚’æœ‰åŠ¹åŒ–
 	int colliderType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
 	for (const auto& col : ownColliders_.at(colliderType))
 	{
@@ -193,46 +191,46 @@ void WeaponFireball::SetCollider(void)
 
 void WeaponFireball::ClearCollider(void)
 {
-	// ‹…‘ÌƒRƒ‰ƒCƒ_[‚Ì“–‚½‚è”»’è‚ğ–³Œø‰»
+	// çƒä½“ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®å½“ãŸã‚Šåˆ¤å®šã‚’ç„¡åŠ¹åŒ–
 	int colliderType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
 	for (const auto& col : ownColliders_.at(colliderType))
 	{
 		auto* sphere = static_cast<ColliderSphere*>(col.get());
-		// “–‚½‚è”»’è‚ğƒIƒt‚É‚·‚é
+		// å½“ãŸã‚Šåˆ¤å®šã‚’ã‚ªãƒ•ã«ã™ã‚‹
 		sphere->SetIsCollider(false);
 		sphere->SetRadius(MIN_RADIUS);
 	}
 
-	// ‘å‚«‚³‚ÆˆÊ’u‚ğ‰Šúó‘Ô‚ÖƒŠƒZƒbƒg
+	// å¤§ãã•ã¨ä½ç½®ã‚’åˆæœŸçŠ¶æ…‹ã¸ãƒªã‚»ãƒƒãƒˆ
 	radius_ = MIN_RADIUS;
 
-	// ’Ç]Œ³‚ÌÀ•W‚ÖƒŠƒZƒbƒg
+	// è¿½å¾“å…ƒã®åº§æ¨™ã¸ãƒªã‚»ãƒƒãƒˆ
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
 	prePos_ = transform_.pos;
 
-	// Ä¶’†‚ÌƒGƒtƒFƒNƒg‚ª‚ ‚ê‚Î’â~‚·‚é
+	// å†ç”Ÿä¸­ã®ã‚¨ãƒ•ã‚§ã‚¯ãƒˆãŒã‚ã‚Œã°åœæ­¢ã™ã‚‹
 	if (effectType_ != EFFECT_TYPE::NONE)
 	{
 		effect_->Stop(static_cast<int>(effectType_));
 		effectType_ = EFFECT_TYPE::NONE;
 	}
 
-	// ¶‘¶ƒtƒ‰ƒO‚ğƒŠƒZƒbƒg
+	// ç”Ÿå­˜ãƒ•ãƒ©ã‚°ã‚’ãƒªã‚»ãƒƒãƒˆ
 	isAlive_ = false;
 }
 
 void WeaponFireball::Shot(const VECTOR& dir)
 {
-	// ƒRƒ‰ƒCƒ_[‚ğƒNƒŠƒA‚µ‚Ä‰Šúó‘Ô‚É–ß‚·
+	// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’ã‚¯ãƒªã‚¢ã—ã¦åˆæœŸçŠ¶æ…‹ã«æˆ»ã™
 	ClearCollider();
 
-	// ˆÚ“®•ûŒü‚ğİ’è‚µ‚ÄÀ•W‚ğ’Ç]Œ³‚ÌÀ•W‚ÉƒŠƒZƒbƒg
+	// ç§»å‹•æ–¹å‘ã‚’è¨­å®šã—ã¦åº§æ¨™ã‚’è¿½å¾“å…ƒã®åº§æ¨™ã«ãƒªã‚»ãƒƒãƒˆ
 	moveDir_ = dir;
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
 	prePos_ = transform_.pos;
 	radius_ = MIN_RADIUS;
 
-	// ¶‘¶ƒtƒ‰ƒO‚ğ—§‚Ä‚ÄƒRƒ‰ƒCƒ_[‚ğ—LŒø‰»
+	// ç”Ÿå­˜ãƒ•ãƒ©ã‚°ã‚’ç«‹ã¦ã¦ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’æœ‰åŠ¹åŒ–
 	isAlive_ = true;
 	SetCollider();
 	ChangeEffect(EFFECT_TYPE::BULLET);

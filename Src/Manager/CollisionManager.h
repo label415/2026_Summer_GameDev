@@ -2,46 +2,49 @@
 #include <vector>
 #include <memory>
 #include <functional>
-#include "../Template/Singleton.h"
 #include "../Utility/CollisionUtility.h"
 
 class ActorBase;
 class ColliderBase;
 
-class CollisionManager : public Singleton<CollisionManager>
+class CollisionManager
 {
-
-	friend class Singleton<CollisionManager>;
 
 public:
 
-	// ƒRƒ‰ƒCƒ_[“o˜^
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+	CollisionManager(void);
+
+	// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+	~CollisionManager(void) = default;
+
+	// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ç™»éŒ²
 	void AddCollider(const std::shared_ptr<ColliderBase>& col) { colliders_.push_back(col); }
 
-	// ”»’èXV
+	// åˆ¤å®šæ›´æ–°
 	void Update(void);
 
-	// ƒfƒoƒbƒO•`‰æ
+	// ãƒ‡ãƒãƒƒã‚°æç”»
 	void DrawDebug(void);
 
-	// ‰ğ•úˆ—
+	// è§£æ”¾å‡¦ç†
 	void Release(void);
 
-	// •Ç‚É‚æ‚éÕ•Á”»’è
+	// å£ã«ã‚ˆã‚‹é®è”½åˆ¤å®š
 	bool CheckWallOcclusion(
 		const VECTOR& start, const VECTOR& end);
 
 private:
 
-	// ƒRƒ‰ƒCƒ_[”z—ñ
+	// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼é…åˆ—
 	std::vector<std::weak_ptr<ColliderBase>> colliders_;
 
-	// 2ÒŠÔ‚Ì”»’èE‰Ÿ‚µ–ß‚µŒvZ‚¨‚æ‚Ñ HitInfo ¶¬
+	// 2è€…é–“ã®åˆ¤å®šãƒ»æŠ¼ã—æˆ»ã—è¨ˆç®—ãŠã‚ˆã³ HitInfo ç”Ÿæˆ
 	void ResolveCollision(
 		const std::shared_ptr<ColliderBase>& argA,
 		const std::shared_ptr<ColliderBase>& argB);
 
-	// ‚Ç‚¿‚ç‚©ˆê•û‚Å‚à‘Šè‚ğ‘ÎÛ‚Æ‚µ‚Ä‚¢‚é‚©”»’è
+	// ã©ã¡ã‚‰ã‹ä¸€æ–¹ã§ã‚‚ç›¸æ‰‹ã‚’å¯¾è±¡ã¨ã—ã¦ã„ã‚‹ã‹åˆ¤å®š
 	bool CanCollide(
 		const ColliderBase& a,
 		const ColliderBase& b) const;

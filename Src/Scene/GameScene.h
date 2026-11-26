@@ -9,98 +9,108 @@ class EnemyManager;
 class EnemyBase;
 class ColliderCapsule;
 class ShadowMap;
+class CollisionManager;
+class ActorBase;
+class CharacterBase;
 
 class GameScene : public SceneBase
 {
 public:
 
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	GameScene(void);
 
-	// ƒfƒXƒgƒ‰ƒNƒ^
+	// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	~GameScene(void) override;
 
-	// “Ç‚İ‚İ
+	// èª­ã¿è¾¼ã¿
 	void Load(void)override;
 
-	// “Ç‚İ‚İŒã‚Ì‰Šú‰»
+	// èª­ã¿è¾¼ã¿å¾Œã®åˆæœŸåŒ–
 	void LoadEnd(void)override;
 
-	// XV
+	// æ›´æ–°
 	void Update(void) override;
 
-	// •`‰æ
+	// æç”»
 	void Draw(void) override;
 
-	// ƒIƒuƒWƒFƒNƒg•`‰æ
+	// ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆæç”»
 	void ObjectDraw(void);
 
-	// ‰ğ•ú
+	// è§£æ”¾
 	void Release(void) override;
 
 private:
 
-	// ƒVƒƒƒhƒEƒ}ƒbƒv”ÍˆÍ
+	// ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ç¯„å›²
 	static constexpr float SHADOW_MAP_DIFF = 1000.0f;
 
-	// ƒVƒƒƒhƒEƒ}ƒbƒvÅ‘å•`‰æ”{—¦
+	// ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—æœ€å¤§æç”»å€ç‡
 	static constexpr float SHADOW_MAP_MAX_DRAW = 1.5f;
 
-	// ƒVƒƒƒhƒEƒ}ƒbƒvÅ’á•`‰æ”{—¦
+	// ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—æœ€ä½æç”»å€ç‡
 	static constexpr float SHADOW_MAP_MIN_DRAW = -1.0f;
 
-	// ƒŠƒUƒ‹ƒg‰æ‘œ‚Ì‘å‚«‚³
+	// ãƒªã‚¶ãƒ«ãƒˆç”»åƒã®å¤§ãã•
 	static constexpr float RESULT_UI_SIZE = 1.0f;
 
-	// ƒŠƒUƒ‹ƒgƒuƒŒƒ“ƒhƒpƒ‰ƒ[ƒ^”{—¦
+	// ãƒªã‚¶ãƒ«ãƒˆãƒ–ãƒ¬ãƒ³ãƒ‰ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å€ç‡
 	static constexpr float RESULT_UI_ALPHA_MAGNIFICATION = 255.0f;
 
-	// BGM‚Ì‰¹—Ê
+	// BGMã®éŸ³é‡
 	static constexpr int BGM_VOLUME = 40;
 
-	// ƒVƒƒƒhƒEƒ}ƒbƒv‰ğ‘œ“x
+	// ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—è§£åƒåº¦
 	static constexpr int SHADOW_MAP_RESOLUTION = 2048;
 
-	// ƒŠƒUƒ‹ƒgUI•\¦ƒtƒ‰ƒO
+	// ãƒªã‚¶ãƒ«ãƒˆUIè¡¨ç¤ºãƒ•ãƒ©ã‚°
 	bool isResultUI_;
 
-	// ƒŠƒUƒ‹ƒgƒnƒ“ƒhƒ‹
+	// ãƒªã‚¶ãƒ«ãƒˆãƒãƒ³ãƒ‰ãƒ«
 	int resultImg_;
 
-	// ƒŠƒUƒ‹ƒgƒuƒŒƒ“ƒhƒpƒ‰ƒ[ƒ^
+	// ãƒªã‚¶ãƒ«ãƒˆãƒ–ãƒ¬ãƒ³ãƒ‰ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
 	int resultAlpha_;
 
-	// ƒQ[ƒ€ƒNƒŠƒAƒnƒ“ƒhƒ‹
+	// ã‚²ãƒ¼ãƒ ã‚¯ãƒªã‚¢ãƒãƒ³ãƒ‰ãƒ«
 	int gameClearImg_;
 
-	// ƒQ[ƒ€ƒI[ƒo[ƒnƒ“ƒhƒ‹
+	// ã‚²ãƒ¼ãƒ ã‚ªãƒ¼ãƒãƒ¼ãƒãƒ³ãƒ‰ãƒ«
 	int gameOverImg_;
 
-	// ƒXƒJƒCƒh[ƒ€
+	// ã‚¹ã‚«ã‚¤ãƒ‰ãƒ¼ãƒ 
 	std::unique_ptr<SkyDome> skydome_;
 
-	// ƒVƒƒƒhƒEƒ}ƒbƒv
+	// ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—
 	std::unique_ptr<ShadowMap> shadowMap_;
 
-	// ƒXƒe[ƒW
+	// ã‚¹ãƒ†ãƒ¼ã‚¸
 	std::unique_ptr<Stage> stage_;
 
-	// ƒvƒŒƒCƒ„[
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
 	std::shared_ptr<Player> player_;
 
-	// ƒGƒlƒ~[
+	// ã‚¨ãƒãƒŸãƒ¼
 	std::shared_ptr<EnemyManager> enemys_;
 
-	// ƒJƒƒ‰
+	// ã‚«ãƒ¡ãƒ©
 	std::shared_ptr<Camera> camera_;
 
-	// ’Ç”ö‘ÎÛXV
+	// è¡çªç®¡ç†
+	std::unique_ptr<CollisionManager> collisionManager_;
+
+	// è¿½å°¾å¯¾è±¡æ›´æ–°
 	void UpdateAutoLockOn(void);
 
-	// ƒV[ƒ“•ÏX
+	// ã‚·ãƒ¼ãƒ³å¤‰æ›´
 	void UpdateResult(void);
 
-	//UI•`‰æ
+	//UIæç”»
 	void DrawUI(void);
+
+	// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ç™»éŒ²
+	void RegisterActorColliders(const ActorBase& actor);
+	void RegisterCharacterColliders(const CharacterBase& character);
 
 };

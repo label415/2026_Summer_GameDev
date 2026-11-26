@@ -23,6 +23,7 @@ GameScene::GameScene(void)
 	, resultImg_(-1)
 	, gameClearImg_(-1)
 	, gameOverImg_(-1)
+	, collisionManager_(nullptr)
 {
 }
 
@@ -30,59 +31,74 @@ GameScene::~GameScene(void){}
 
 void GameScene::Load(void)
 {
-	// ƒJƒƒ‰‚ÌƒCƒ“ƒXƒ^ƒ“ƒXæ“¾
+	// è¡çªç®¡ç†ç”Ÿæˆ
+	collisionManager_ = std::make_unique<CollisionManager>();
+	// ã‚«ãƒ¡ãƒ©ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
 	camera_ = SceneManager::GetInstance().GetCamera();
 	camera_->ChangeMode(Camera::MODE::FIXED_POINT);
 
-	// ƒXƒJƒCƒh[ƒ€“Ç‚İ‚İ
+	// ã‚¹ã‚«ã‚¤ãƒ‰ãƒ¼ãƒ èª­ã¿è¾¼ã¿
 	skydome_ = std::make_unique<SkyDome>();
 	skydome_->Load();
 
-	// ƒXƒe[ƒW‰Šú‰»
+	// ã‚¹ãƒ†ãƒ¼ã‚¸åˆæœŸåŒ–
 	stage_ = std::make_unique<Stage>();
 	stage_->Load();
 
-	// ƒvƒŒƒCƒ„[“Ç‚İ‚İ
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼èª­ã¿è¾¼ã¿
 	player_ = std::make_shared<Player>();
 	player_->Load();
 
-	// ƒGƒlƒ~[“Ç‚İ‚İ
+	// ã‚¨ãƒãƒŸãƒ¼èª­ã¿è¾¼ã¿
 	enemys_ = std::make_shared<EnemyManager>();
 	enemys_->Load();
 
-	// ƒVƒƒƒh[ƒ}ƒbƒv“Ç‚İ‚İ
+	// ã‚·ãƒ£ãƒ‰ãƒ¼ãƒãƒƒãƒ—èª­ã¿è¾¼ã¿
 	shadowMap_ = std::make_unique<ShadowMap>(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
 
-	// ƒJƒƒ‰ƒ‚[ƒh•ÏX
+	// ã‚«ãƒ¡ãƒ©ãƒ¢ãƒ¼ãƒ‰å¤‰æ›´
 	camera_->SetFollow(player_);
 	camera_->ChangeMode(Camera::MODE::FOLLOW);
 
-	// “ü—ÍŠÇ—‚ÌƒCƒ“ƒXƒ^ƒ“ƒXæ“¾
+	// å…¥åŠ›ç®¡ç†ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
 	InputManager::GetInstance().SetMouseFlag(false);
 
-	// ƒQ[ƒ€ƒNƒŠƒA‰æ‘œƒ[ƒh
+	// ã‚²ãƒ¼ãƒ ã‚¯ãƒªã‚¢ç”»åƒãƒ­ãƒ¼ãƒ‰
 	gameClearImg_ = resMng_.Load(ResourceManager::SRC::IMG_GAMECLEAR).handleId_;
-	// ƒQ[ƒ€ƒI[ƒo[‰æ‘œƒ[ƒh
+	// ã‚²ãƒ¼ãƒ ã‚ªãƒ¼ãƒãƒ¼ç”»åƒãƒ­ãƒ¼ãƒ‰
 	gameOverImg_ = resMng_.Load(ResourceManager::SRC::IMG_GAMEOVER).handleId_;
 }
 
 void GameScene::LoadEnd(void)
 {
-	// BGMÄ¶
+	// BGMå†ç”Ÿ
 	bgm_ = resMng_.Load(ResourceManager::SRC::BGM_GAME).handleId_;
 	volume_ = BGM_VOLUME;
 	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
 
-	// ƒXƒJƒCƒh[ƒ€‰Šú‰»
+	// ã‚¹ã‚«ã‚¤ãƒ‰ãƒ¼ãƒ åˆæœŸåŒ–
 	skydome_->LoadEnd();
-	// ƒXƒe[ƒW‰Šú‰»
+	// ã‚¹ãƒ†ãƒ¼ã‚¸åˆæœŸåŒ–
 	stage_->LoadEnd();
-	// ƒvƒŒƒCƒ„[‰Šú‰»
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼åˆæœŸåŒ–
 	player_->LoadEnd();
-	// ƒGƒlƒ~[‰Šú‰»
+	// ã‚¨ãƒãƒŸãƒ¼åˆæœŸåŒ–
 	enemys_->Init();
 
-	// ƒVƒƒƒh[ƒ}ƒbƒv‰Šú‰»
+	// ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ç™»éŒ²
+	collisionManager_->Release();
+	RegisterActorColliders(*camera_);
+	RegisterActorColliders(*stage_);
+	RegisterCharacterColliders(*player_);
+	for (const auto& enemy : enemys_->GetEnemies())
+	{
+		if (enemy)
+		{
+			RegisterCharacterColliders(*enemy);
+		}
+	}
+
+	// ã‚·ãƒ£ãƒ‰ãƒ¼ãƒãƒƒãƒ—åˆæœŸåŒ–
 	shadowMap_->AddShadowMapLight(GetLightDirection());
 	VECTOR playerPos = player_->GetTransform().pos;
 	shadowMap_->AddShadowMapDrawArea(
@@ -95,34 +111,37 @@ void GameScene::LoadEnd(void)
 			(playerPos.z + SHADOW_MAP_DIFF))
 	);
 
-	// ƒ}ƒEƒX“ü—Í—LŒø‰»
+	// ãƒã‚¦ã‚¹å…¥åŠ›æœ‰åŠ¹åŒ–
 	InputManager::GetInstance().SetMouseFlag(false);
 }
 
 void GameScene::Update(void)
 {
-	// ƒV[ƒ“•ÏX
+	// å½“ãŸã‚Šåˆ¤å®šæ›´æ–°
+	collisionManager_->Update();
+
+	// ã‚·ãƒ¼ãƒ³å¤‰æ›´
 	UpdateResult();
 
-	// Effekseer‚É‚æ‚èÄ¶’†‚ÌƒGƒtƒFƒNƒg‚ğXV‚·‚éB
+	// Effekseerã«ã‚ˆã‚Šå†ç”Ÿä¸­ã®ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’æ›´æ–°ã™ã‚‹ã€‚
 	UpdateEffekseer3D();
 
-	// ’Ç”ö‘ÎÛXV
+	// è¿½å°¾å¯¾è±¡æ›´æ–°
 	UpdateAutoLockOn();
 
-	// ƒXƒJƒCƒh[ƒ€XV
+	// ã‚¹ã‚«ã‚¤ãƒ‰ãƒ¼ãƒ æ›´æ–°
 	skydome_->Update();
 
-	//ƒXƒe[ƒWXV
+	//ã‚¹ãƒ†ãƒ¼ã‚¸æ›´æ–°
 	stage_->Update();
 
-	// ƒGƒlƒ~[XV
+	// ã‚¨ãƒãƒŸãƒ¼æ›´æ–°
 	enemys_->Update();
 
-	// ƒvƒŒƒCƒ„[XV
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æ›´æ–°
 	player_->Update();
 	
-	// ƒVƒƒƒh[ƒ}ƒbƒvXV
+	// ã‚·ãƒ£ãƒ‰ãƒ¼ãƒãƒƒãƒ—æ›´æ–°
 	shadowMap_->AddShadowMapLight(GetLightDirection());
 	VECTOR playerPos = player_->GetTransform().pos;
 	shadowMap_->AddShadowMapDrawArea(
@@ -137,78 +156,87 @@ void GameScene::Update(void)
 
 void GameScene::Draw(void)
 {
-	// ƒVƒƒƒhƒE•`‰æ‚ÌƒZƒbƒgƒAƒbƒv
+	// ã‚·ãƒ£ãƒ‰ã‚¦æç”»ã®ã‚»ãƒƒãƒˆã‚¢ãƒƒãƒ—
 	shadowMap_->DrawSetup();
 	ObjectDraw();
-	// ƒVƒƒƒhƒE•`‰æ‚ÌI—¹
+	// ã‚·ãƒ£ãƒ‰ã‚¦æç”»ã®çµ‚äº†
 	shadowMap_->DrawEnd();
 
-	// ƒVƒƒƒhƒEƒ}ƒbƒv‚ğg—p‚µ‚Ä•`‰æ‚·‚é
+	// ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã‚’ä½¿ç”¨ã—ã¦æç”»ã™ã‚‹
 	shadowMap_->SetShadow();
 	ObjectDraw();
-	// ƒVƒƒƒhƒEƒ}ƒbƒv‚Ìg—p‚ğI—¹‚·‚é
+	// ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—ã®ä½¿ç”¨ã‚’çµ‚äº†ã™ã‚‹
 	shadowMap_->EndShadow();
 
-	// Effekseer‚É‚æ‚èÄ¶’†‚ÌƒGƒtƒFƒNƒg‚ğ•`‰æ‚·‚éB
+	// Effekseerã«ã‚ˆã‚Šå†ç”Ÿä¸­ã®ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚’æç”»ã™ã‚‹ã€‚
 	DrawEffekseer3D();
 
-	// ŠeUI•`‰æ
+	// å½“ãŸã‚Šåˆ¤å®šãƒ‡ãƒãƒƒã‚°æç”»
+	collisionManager_->DrawDebug();
+
+	// å„UIæç”»
 	DrawUI();
 }
 
 void GameScene::ObjectDraw(void)
 {
-	// ƒXƒJƒCƒh[ƒ€•`‰æ
+	// ã‚¹ã‚«ã‚¤ãƒ‰ãƒ¼ãƒ æç”»
 	skydome_->Draw();
 
-	// ƒvƒŒƒCƒ„[•`‰æ
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æç”»
 	player_->Draw();
 
-	// ƒGƒlƒ~[•`‰æ
+	// ã‚¨ãƒãƒŸãƒ¼æç”»
 	enemys_->Draw();
 
-	// ƒXƒe[ƒW•`‰æ
+	// ã‚¹ãƒ†ãƒ¼ã‚¸æç”»
 	stage_->Draw();
 }
 
 void GameScene::Release(void)
 {
-	// ƒXƒJƒCƒh[ƒ€‰ğ•ú
+	// ã‚¹ã‚«ã‚¤ãƒ‰ãƒ¼ãƒ è§£æ”¾
 	skydome_->Release();
 
-	// ƒXƒe[ƒW‰ğ•ú
+	// ã‚¹ãƒ†ãƒ¼ã‚¸è§£æ”¾
 	stage_->Release();
 
-	//ƒvƒŒƒCƒ„[‰ğ•ú
+	//ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼è§£æ”¾
 	player_->Release();
 
-	//ŠeƒGƒlƒ~[‰ğ•ú
+	//å„ã‚¨ãƒãƒŸãƒ¼è§£æ”¾
 	enemys_->Release();
 
-	//ƒVƒƒƒhƒEƒ}ƒbƒv‰ğ•ú
+	//ã‚·ãƒ£ãƒ‰ã‚¦ãƒãƒƒãƒ—è§£æ”¾
 	shadowMap_->Release();
+
+	// è¡çªç®¡ç†è§£æ”¾
+	if (collisionManager_)
+	{
+		collisionManager_->Release();
+	}
 }
 
 void GameScene::UpdateAutoLockOn(void)
 {
-	// ƒJƒƒ‰‚ÌƒCƒ“ƒXƒ^ƒ“ƒXæ“¾
+	// ã‚«ãƒ¡ãƒ©ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
 	std::shared_ptr<Camera> camera = SceneManager::GetInstance().GetCamera();
 
-	// ƒJƒƒ‰‘¤‚ÅƒƒbƒNƒIƒ“‘ÎÛ‚Ì‘I•ÊEØ‚è‘Ö‚¦‚ğXV
+	// ã‚«ãƒ¡ãƒ©å´ã§ãƒ­ãƒƒã‚¯ã‚ªãƒ³å¯¾è±¡ã®é¸åˆ¥ãƒ»åˆ‡ã‚Šæ›¿ãˆã‚’æ›´æ–°
 	camera->UpdateLockOn();
 
-	// ƒJƒƒ‰‚ªŒ»İƒƒbƒNƒIƒ“‚µ‚Ä‚¢‚é‘ÎÛ‚ÌTransform‚ğƒvƒŒƒCƒ„[‚É“n‚·
+	// ã‚«ãƒ¡ãƒ©ãŒç¾åœ¨ãƒ­ãƒƒã‚¯ã‚ªãƒ³ã—ã¦ã„ã‚‹å¯¾è±¡ã®Transformã‚’ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã«æ¸¡ã™
 	player_->SetTargetPos(camera->GetLockOnTargetPos());
 
-	// ’Ç”ö‘ÎÛ’Ç‰Á
+	// è¿½å°¾å¯¾è±¡è¿½åŠ 
 	for (auto& enemy : enemys_->GetEnemies())
 	{
-		// “G‚ÉƒvƒŒƒCƒ„[‚ÌˆÊ’u‚ğ“n‚·
+		// æ•µã«ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®ã‚’æ¸¡ã™
 		enemy->SetTargetPos(&player_->GetTransform().pos);
 		for (const auto& collider
 			: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE)))
 		{
-			// ƒJƒvƒZƒ‹ƒRƒ‰ƒCƒ_[‚ğƒJƒƒ‰‚É“n‚·
+			// ã‚«ãƒ—ã‚»ãƒ«ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’ã‚«ãƒ¡ãƒ©ã«æ¸¡ã™
 			auto enemyCapsule = std::dynamic_pointer_cast<ColliderCapsule>(collider);
 			if (enemyCapsule)
 			{
@@ -222,35 +250,35 @@ void GameScene::UpdateResult(void)
 {
 	bool isResult = false;
 
-	// ƒ|[ƒYƒƒjƒ…[‚Ì•\¦Ø‚è‘Ö‚¦
+	// ãƒãƒ¼ã‚ºãƒ¡ãƒ‹ãƒ¥ãƒ¼ã®è¡¨ç¤ºåˆ‡ã‚Šæ›¿ãˆ
 	bool isSelect = InputManager::GetInstance().IsTrgDown(KEY_INPUT_ESCAPE)
 		|| InputManager::GetInstance().IsPadBtnTrgDown(
 			InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::START);
 
-	// ƒvƒŒƒCƒ„[€–S”»’è
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æ­»äº¡åˆ¤å®š
 	if (player_->GetState() == Player::STATE::END)isResult = true;
 
-	// “G‘S–Å”»’è
+	// æ•µå…¨æ»…åˆ¤å®š
 	for (const auto& enemy : enemys_->GetEnemies())
 	{
 		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::END))isResult = true;
 	}
 
-	// ƒ^ƒCƒgƒ‹ƒV[ƒ“‚É‘JˆÚ
+	// ã‚¿ã‚¤ãƒˆãƒ«ã‚·ãƒ¼ãƒ³ã«é·ç§»
 	if (isResult) { sceMng_.ChangeScene(SceneManager::SCENE_ID::TITLE); }
-	// ƒ|[ƒYƒƒjƒ…[‚Ì•\¦
+	// ãƒãƒ¼ã‚ºãƒ¡ãƒ‹ãƒ¥ãƒ¼ã®è¡¨ç¤º
 	if (isSelect) { sceMng_.PushScene(SceneManager::SCENE_ID::PAUSE); }
 }
 
 void GameScene::DrawUI(void)
 {
-	// ƒvƒŒƒCƒ„[‚ÆƒGƒlƒ~[‚ÌHP•`‰æ
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¨ã‚¨ãƒãƒŸãƒ¼ã®HPæç”»
 	player_->DrawUI();
 	for (const auto& enemy : enemys_->GetEnemies()) {
 		enemy->DrawUI();
 	}
 
-	// ‚·‚×‚Ä‚Ì“G‚ª€–S‚µ‚½AƒQ[ƒ€ƒNƒŠƒAUI‚ğ•\¦‚·‚é
+	// ã™ã¹ã¦ã®æ•µãŒæ­»äº¡ã—ãŸæ™‚ã€ã‚²ãƒ¼ãƒ ã‚¯ãƒªã‚¢UIã‚’è¡¨ç¤ºã™ã‚‹
 	for (const auto& enemy : enemys_->GetEnemies())
 	{
 		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::DEAD))
@@ -262,7 +290,7 @@ void GameScene::DrawUI(void)
 		}
 	}
 
-	// ƒvƒŒƒCƒ„[‚ª€–S‚µ‚½AƒQ[ƒ€ƒI[ƒo[UI‚ğ•\¦‚·‚é
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒæ­»äº¡ã—ãŸæ™‚ã€ã‚²ãƒ¼ãƒ ã‚ªãƒ¼ãƒãƒ¼UIã‚’è¡¨ç¤ºã™ã‚‹
 	if (player_->GetState() == Player::STATE::DIE)
 	{
 		resultAlpha_ = static_cast<int>(
@@ -271,7 +299,7 @@ void GameScene::DrawUI(void)
 		isResultUI_ = true;
 	}
 
-	// ƒŠƒUƒ‹ƒgƒtƒ‰ƒO‚ªtrue‚ÌAUI‚ğ•\¦‚·‚é
+	// ãƒªã‚¶ãƒ«ãƒˆãƒ•ãƒ©ã‚°ãŒtrueã®æ™‚ã€UIã‚’è¡¨ç¤ºã™ã‚‹
 	if (isResultUI_)
 	{
 		SetDrawBlendMode(DX_BLENDMODE_ALPHA, resultAlpha_);
@@ -283,5 +311,31 @@ void GameScene::DrawUI(void)
 			resultImg_,
 			true);
 		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	}
+}
+
+void GameScene::RegisterActorColliders(const ActorBase& actor)
+{
+	for (const auto& [shape, colliders] : actor.GetOwnColliders())
+	{
+		for (const auto& collider : colliders)
+		{
+			if (collider)
+			{
+				collisionManager_->AddCollider(collider);
+			}
+		}
+	}
+}
+
+void GameScene::RegisterCharacterColliders(const CharacterBase& character)
+{
+	RegisterActorColliders(character);
+	for (const auto& weapon : character.GetWeapons())
+	{
+		if (weapon)
+		{
+			RegisterActorColliders(*weapon);
+		}
 	}
 }

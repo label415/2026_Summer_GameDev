@@ -1,9 +1,9 @@
 #include <DxLib.h>
 #include "../../../../Utility/AsoUtility.h"
+#include "../../../../Utility/CollisionUtility.h"
 #include "../../../../Manager/ResourceManager.h"
 #include "../../../../Manager/SoundManager.h"
 #include "../../../../Manager/SceneManager.h"
-#include "../../../../Manager/CollisionManager.h"
 #include "../../../Common/AnimationController.h"
 #include "../../../Common/Collider/ColliderLine.h"
 #include "../../../Common/Collider/ColliderCapsule.h"
@@ -32,20 +32,20 @@ EnemyDragon::EnemyDragon(const EnemyBase::EnemyData& data)
 
 void EnemyDragon::InitLoad(void)
 {
-	// Šî’êƒNƒ‰ƒX‚ÌƒŠƒ\[ƒXƒ[ƒh
+	// åŸºåº•ã‚¯ãƒ©ã‚¹ã®ãƒªã‚½ãƒ¼ã‚¹ãƒ­ãƒ¼ãƒ‰
 	CharacterBase::InitLoad();
-	// ƒ‚ƒfƒ‹‚Ìƒ[ƒh
+	// ãƒ¢ãƒ‡ãƒ«ã®ãƒ­ãƒ¼ãƒ‰
 	transform_.SetModel(
 		resMng_.LoadModelDuplicate(ResourceManager::SRC::MODEL_ENEMY_DRAGON));
 
-	// “GHP
+	// æ•µHP
 	uiHp_ = std::make_unique<UIHp>(
 		static_cast<float>(Application::HALF_SCREEN_SIZE_X),
 		static_cast<float>(Application::SCREEN_SIZE_Y) - UI_HP_OFFSET_Y,
 		UI_HP_SCALE_X, UI_HP_SCALE_Y, UI_HP_SCALE_Z);
 	uiHp_->Load();
 
-	// 2‚Â‚Ì•Ší‚ğ‰Šú‰»‚É¶¬
+	// 2ã¤ã®æ­¦å™¨ã‚’åˆæœŸåŒ–æ™‚ã«ç”Ÿæˆ
 	VECTOR defaultDir = transform_.GetForward();
 
 	auto weaponBreath = std::make_unique<WeaponBreath>(transform_, defaultDir, FRAME_NO_MOUTH);
@@ -61,7 +61,7 @@ void EnemyDragon::InitLoad(void)
 
 void EnemyDragon::InitTransform(void)
 {
-	// ƒƒ{ƒbƒg©g
+	// ãƒ­ãƒœãƒƒãƒˆè‡ªèº«
 	transform_.scl = VScale(AsoUtility::VECTOR_ONE, SCALE);
 	transform_.quaRot = Quaternion::Identity();
 	transform_.quaRotLocal = Quaternion::Euler(DEFAULT_LOCAL_ROT);
@@ -70,7 +70,7 @@ void EnemyDragon::InitTransform(void)
 
 void EnemyDragon::InitCollider(void)
 {
-	// ’n–ÊÕ“Ë—pƒ‰ƒCƒ“ƒRƒ‰ƒCƒ_[
+	// åœ°é¢è¡çªç”¨ãƒ©ã‚¤ãƒ³ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼
 	std::vector<ColliderBase::TAG> lineTargets = { ColliderBase::TAG::STAGE };
 	auto groundLine = std::make_shared<ColliderLine>(
 		ColliderBase::TAG::GROUND,
@@ -80,9 +80,8 @@ void EnemyDragon::InitCollider(void)
 		COL_LINE_END_LOCAL_POS
 	);
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::LINE)].push_back(groundLine);
-	CollisionManager::GetInstance().AddCollider(groundLine);
 
-	// Še•”ˆÊ‚Ì“–‚½‚è”»’èƒJƒvƒZƒ‹i“G–{‘ÌE”í’eEUŒ‚—pj
+	// å„éƒ¨ä½ã®å½“ãŸã‚Šåˆ¤å®šã‚«ãƒ—ã‚»ãƒ«ï¼ˆæ•µæœ¬ä½“ãƒ»è¢«å¼¾ãƒ»æ”»æ’ƒç”¨ï¼‰
 	std::vector<ColliderBase::TAG> bodyTargets = {
 		ColliderBase::TAG::PLAYER,
 		ColliderBase::TAG::PLAYER_WEAPON,
@@ -101,7 +100,6 @@ void EnemyDragon::InitCollider(void)
 			static_cast<int>(ENEMY_CAPSULE_FRAMES[i].partTag)
 		);
 		ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(hitCapsule);
-		CollisionManager::GetInstance().AddCollider(hitCapsule);
 	}
 
 	auto groundCapsule = std::make_shared<ColliderCapsule>(
@@ -113,13 +111,12 @@ void EnemyDragon::InitCollider(void)
 		COL_CAPSULE_RADIUS
 	);
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(groundCapsule);
-	CollisionManager::GetInstance().AddCollider(groundCapsule);
 }
 
 void EnemyDragon::InitAnimation(void)
 {
 	animationController_ = std::make_unique<AnimationController>(transform_.modelId);
-	// FBX“à‚ÌƒAƒjƒ[ƒVƒ‡ƒ“İ’è
+	// FBXå†…ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³è¨­å®š
 	int type = -1;
 
 	type = static_cast<int>(ANIM_TYPE::IDLE);
@@ -158,13 +155,13 @@ void EnemyDragon::InitAnimation(void)
 	type = static_cast<int>(ANIM_TYPE::MELEE_ATTACK);
 	animationController_->AddInFbx(type, ANIM_SPEED_MELEE_ATTACK, type);
 
-	// ‰ŠúƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// åˆæœŸã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(static_cast<int>(ANIM_TYPE::IDLE), true);
 }
 
 void EnemyDragon::InitPost(void)
 {
-	// ó‘Ô‘JˆÚ‰Šúˆ—“o˜^
+	// çŠ¶æ…‹é·ç§»åˆæœŸå‡¦ç†ç™»éŒ²
 	stateChanges_.emplace(static_cast<int>(STATE::NONE),
 		std::bind(&EnemyDragon::ChangeStateNone, this));
 	stateChanges_.emplace(static_cast<int>(STATE::THINK),
@@ -216,12 +213,12 @@ void EnemyDragon::InitPost(void)
 
 	uiHp_->LoadEnd();
 
-	// •Ší
+	// æ­¦å™¨
 	for (const auto& weapon : weapons_) {
 		weapon->LoadEnd();
 	}
 
-	// ‰Šúó‘Ôİ’è
+	// åˆæœŸçŠ¶æ…‹è¨­å®š
 	ChangeState(STATE::ROAR);
 }
 
@@ -229,10 +226,10 @@ void EnemyDragon::UpdateProcess(void)
 {
 	effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
 	preMoveDir_ = moveDir_;
-	//ƒ^[ƒQƒbƒg‚Ì•ûŒüXV
+	//ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®æ–¹å‘æ›´æ–°
 	moveDir_ = GetTargetDir();
 
-	// –³“Gƒ^ƒCƒ}[XV
+	// ç„¡æ•µã‚¿ã‚¤ãƒãƒ¼æ›´æ–°
 	if (isInvincible_) {
 		invincibleTimer_ -= scnMng_.GetDeltaTime();
 		if (invincibleTimer_ <= 0.0f) {
@@ -255,12 +252,12 @@ void EnemyDragon::UpdateProcess(void)
 		colliderCapsule->SetIsAction(isAction);
 	}
 
-	// ó‘Ô•ÊXV
+	// çŠ¶æ…‹åˆ¥æ›´æ–°
 	stateUpdate_();
 
 	/*UpdateDebugImGui();*/
 
-	// ƒ{[ƒ“’Ç]‚ÆUŒ‚”»’è‚Ì—LŒø^–³Œø§Œä
+	// ãƒœãƒ¼ãƒ³è¿½å¾“ã¨æ”»æ’ƒåˆ¤å®šã®æœ‰åŠ¹ï¼ç„¡åŠ¹åˆ¶å¾¡
 	const auto& cols = ownColliders_.at(static_cast<int>(ColliderBase::SHAPE::CAPSULE));
 	int cnt = 0;
 	for (const auto& col : cols) {
@@ -290,9 +287,9 @@ void EnemyDragon::UpdateProcess(void)
 			colliderCapsule->SetLocalPosTop(tFramePos);
 			colliderCapsule->SetLocalPosDown(dFramePos);
 
-			// UŒ‚’†‚Å‚È‚¢ê‡A“ª‚âè‚È‚Ç‚ÌUŒ‚”»’è‚ğ•s—pˆÓ‚É”­“®‚³‚¹‚È‚¢§Œä—á
+			// æ”»æ’ƒä¸­ã§ãªã„å ´åˆã€é ­ã‚„æ‰‹ãªã©ã®æ”»æ’ƒåˆ¤å®šã‚’ä¸ç”¨æ„ã«ç™ºå‹•ã•ã›ãªã„åˆ¶å¾¡ä¾‹
 			if (colliderCapsule->GetPartTag() == static_cast<int>(PART_TAG::HEAD)) {
-				// Šš‚İ‚Â‚«E“Ëi’†‚Ì‚İ“ª•””»’è‚ğ—LŒø‰»
+				// å™›ã¿ã¤ããƒ»çªé€²ä¸­ã®ã¿é ­éƒ¨åˆ¤å®šã‚’æœ‰åŠ¹åŒ–
 				colliderCapsule->SetIsCollider(!isInvincible_);
 			}
 			cnt++;
@@ -301,8 +298,8 @@ void EnemyDragon::UpdateProcess(void)
 
 	SetFrameUserLocalPos(LOCK_POS, LOCK_FRAME_NO);
 
-	// 2‚Â‚Ì•Ší‚ğ–ˆƒtƒŒ[ƒ€XV
-		// •Ší
+	// 2ã¤ã®æ­¦å™¨ã‚’æ¯ãƒ•ãƒ¬ãƒ¼ãƒ æ›´æ–°
+		// æ­¦å™¨
 	for (const auto& weapon : weapons_) {
 		weapon->Update();
 	}
@@ -319,14 +316,14 @@ void EnemyDragon::CollisionCapsule(void)
 
 		if (col->GetTag() != ColliderBase::TAG::GROUND) continue;
 
-		// ƒJƒvƒZƒ‹ƒRƒ‰ƒCƒ_î•ñ  
+		// ã‚«ãƒ—ã‚»ãƒ«ã‚³ãƒ©ã‚¤ãƒ€æƒ…å ±  
 		std::shared_ptr<ColliderCapsule> colliderCapsule =
 			std::dynamic_pointer_cast<ColliderCapsule>(col);
 		if (colliderCapsule == nullptr) return;
 
 		for (const auto& hit : col->GetHitColliders())
 		{
-			// ƒ‚ƒfƒ‹ˆÈŠO‚Íˆ—‚ğ”ò‚Î‚·  
+			// ãƒ¢ãƒ‡ãƒ«ä»¥å¤–ã¯å‡¦ç†ã‚’é£›ã°ã™  
 			if (hit.lock()->GetShape() != ColliderBase::SHAPE::MODEL) continue;
 
 			std::shared_ptr<ColliderModel> colliderModel =
@@ -344,7 +341,7 @@ void EnemyDragon::CollisionCapsule(void)
 
 void EnemyDragon::UpdateHitCollider(void)
 {
-	// –³“G’†‚È‚çƒ‹[ƒv‚ğ‰ñ‚·‘O‚ÉI—¹
+	// ç„¡æ•µä¸­ãªã‚‰ãƒ«ãƒ¼ãƒ—ã‚’å›ã™å‰ã«çµ‚äº†
 	if (isInvincible_) return;
 
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
@@ -362,22 +359,22 @@ void EnemyDragon::UpdateHitCollider(void)
 			auto targetCol = hit.lock();
 			if (!targetCol || !targetCol->GetIsCollider()) continue;
 
-			// ƒvƒŒƒCƒ„[‚Ì•Ší‚©‚çUŒ‚‚ğó‚¯‚½ê‡
+			// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ­¦å™¨ã‹ã‚‰æ”»æ’ƒã‚’å—ã‘ãŸå ´åˆ
 			if (targetCol->GetTag() != ColliderBase::TAG::PLAYER_WEAPON) continue;
 			damage = DAMAGE_HIT_PLAYER_WEAPON;
 
-			// ƒqƒbƒg‚µ‚½ƒJƒvƒZƒ‹‚Ì’†SÀ•W‚ğŒvZ‚µ‚Ä•Û
+			// ãƒ’ãƒƒãƒˆã—ãŸã‚«ãƒ—ã‚»ãƒ«ã®ä¸­å¿ƒåº§æ¨™ã‚’è¨ˆç®—ã—ã¦ä¿æŒ
 			auto cap = std::static_pointer_cast<ColliderCapsule>(col);
 			VECTOR diff = VSub(cap->GetPosTop(), cap->GetPosDown());
 			hitPos = VAdd(cap->GetPosDown(), VScale(diff, AsoUtility::HALF));
 			break;
 		}
 
-		// ‚·‚Å‚Éƒqƒbƒg‚ªŠm’è‚µ‚Ä‚¢‚ê‚ÎŠO‘¤‚Ìƒ‹[ƒv‚à”²‚¯‚é
+		// ã™ã§ã«ãƒ’ãƒƒãƒˆãŒç¢ºå®šã—ã¦ã„ã‚Œã°å¤–å´ã®ãƒ«ãƒ¼ãƒ—ã‚‚æŠœã‘ã‚‹
 		if (damage > 0.0f) break;
 	}
 
-	// ƒ_ƒ[ƒW‚ª”­¶‚µ‚Ä‚¢‚ê‚Îƒ‹[ƒv‚ÌŠO‚Å“K—p
+	// ãƒ€ãƒ¡ãƒ¼ã‚¸ãŒç™ºç”Ÿã—ã¦ã„ã‚Œã°ãƒ«ãƒ¼ãƒ—ã®å¤–ã§é©ç”¨
 	if (damage > 0.0f)
 	{
 		ApplyDamage(hitPos, damage);
@@ -386,17 +383,17 @@ void EnemyDragon::UpdateHitCollider(void)
 
 void EnemyDragon::ApplyDamage(const VECTOR& hitPos, float damageAmount)
 {
-	// HPŒ¸Z‚Æ–³“GŠÔ‚Ìİ’è
+	// HPæ¸›ç®—ã¨ç„¡æ•µæ™‚é–“ã®è¨­å®š
 	uiHp_->Damage(damageAmount);
 	isInvincible_ = true;
 	invincibleTimer_ = INVINCIBLE_TIME;
 
-	// oŒŒƒGƒtƒFƒNƒg‚ÌÄ¶EÀ•Wİ’è
+	// å‡ºè¡€ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®å†ç”Ÿãƒ»åº§æ¨™è¨­å®š
 	effect_->Play(static_cast<int>(EFFECT::BLOOD));
 	effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
 	effect_->SetEffectPos(static_cast<int>(EFFECT::BLOOD), hitPos);
 
-	// ”í’eSE‚ÌÄ¶
+	// è¢«å¼¾SEã®å†ç”Ÿ
 	int seHandle = resMng_.Load(ResourceManager::SRC::SE_ENEMY_HIT_DAMAGE).handleId_;
 	SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEAPON_SE2, seHandle, SE_VOLUME_DEFAULT);
 }
@@ -418,7 +415,7 @@ void EnemyDragon::ChangeStateThink(void)
 	float diff = VSize(VSub(targetPos, transform_.pos));
 	if (attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
-		// vl
+		// æ€è€ƒ
 		int rand = GetRand(STATE_RAND);
 		if (rand < AI_PROB_TAKEOFF) {
 			ChangeState(STATE::TAKEOFF);
@@ -438,7 +435,7 @@ void EnemyDragon::ChangeStateThink(void)
 			}
 		}
 		else if (diff >= AI_DIST_NEAR && diff <= AI_DIST_FAR) {
-			// vl
+			// æ€è€ƒ
 			rand = GetRand(STATE_RAND);
 			if (rand < AI_PROB_PATROL_IN_MID)
 			{
@@ -462,7 +459,7 @@ void EnemyDragon::ChangeStateThink(void)
 	}
 	if (attribute_ == ATTRIBUTE::AIR)
 	{
-		// vl
+		// æ€è€ƒ
 		int rand = GetRand(STATE_RAND);
 		if (rand < AI_PROB_LANDING) {
 			ChangeState(STATE::LANDING);
@@ -487,12 +484,12 @@ void EnemyDragon::ChangeStateThink(void)
 void EnemyDragon::ChangeStateIdle(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateIdle, this);
-	// ƒ‰ƒ“ƒ_ƒ€‚È‘Ò‹@ŠÔ (1.0f ? 3.0f)
+	// ãƒ©ãƒ³ãƒ€ãƒ ãªå¾…æ©Ÿæ™‚é–“ (1.0f ? 3.0f)
 	step_ = 1.0f + static_cast<float>(GetRand(STATE_END_RAND));
-	// ˆÚ“®—Êƒ[ƒ
+	// ç§»å‹•é‡ã‚¼ãƒ­
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	// ‘Ò‹@ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// å¾…æ©Ÿã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::IDLE), true);
 }
@@ -501,7 +498,7 @@ void EnemyDragon::ChangeStateRoar(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateRoar, this);
 
-	// ˆÚ“®—Êƒ[ƒ
+	// ç§»å‹•é‡ã‚¼ãƒ­
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
 	effectType_ = EFFECT::ROAR;
@@ -511,7 +508,7 @@ void EnemyDragon::ChangeStateRoar(void)
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ROAR).handleId_;
 	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ROAR, bgm_, SE_VOLUME_DEFAULT);
 
-	// ‘Ò‹@ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// å¾…æ©Ÿã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::ROAR), false);
 }
@@ -520,16 +517,16 @@ void EnemyDragon::ChangeStateCharge(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateCharge, this);
 
-	// ˆÚ“®—Êƒ[ƒ
+	// ç§»å‹•é‡ã‚¼ãƒ­
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	// ƒ‰ƒ“ƒ_ƒ€‚È‘Ò‹@ŠÔ (2.0f ? 4.0f)
+	// ãƒ©ãƒ³ãƒ€ãƒ ãªå¾…æ©Ÿæ™‚é–“ (2.0f ? 4.0f)
 	step_ = 1.0f + static_cast<float>(GetRand(STATE_END_RAND));
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ROAR).handleId_;
 	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ROAR, bgm_, SE_VOLUME_DEFAULT);
 
-	// •à‚«ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// æ­©ãã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::ROAR), false);
 }
@@ -538,13 +535,13 @@ void EnemyDragon::ChangeStatePatrol(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdatePatrol, this);
 
-	// ˆÚ“®—Êƒ[ƒ
+	// ç§»å‹•é‡ã‚¼ãƒ­
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_WALK).handleId_;
 	SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_WALK, bgm_, SE_VOLUME_PATROL);
 	SoundManager::GetInstance().SetSESpeed(SoundManager::SeId::ENEMY_WALK, SE_SPEED_PATROL);
-	// •à‚«ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// æ­©ãã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::WALK), true);
 }
@@ -553,10 +550,10 @@ void EnemyDragon::ChangeStateFlying(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateFlying, this);
 
-	// ˆÚ“®—Êƒ[ƒ
+	// ç§»å‹•é‡ã‚¼ãƒ­
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	// •à‚«ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// æ­©ãã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::FLYING), true);
 }
@@ -567,7 +564,7 @@ void EnemyDragon::ChangeStateFallingAttack(void)
 
 	attackCnt_ = 0.0f;
 
-	// ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::FLYING_ATTACK), false);
 
@@ -582,7 +579,7 @@ void EnemyDragon::ChangeStateFlyingAttack(void)
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_AIR_BREATH_1).handleId_;
 	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_AIR_BREATH1, bgm_, SE_VOLUME_DEFAULT);
 
-	// •à‚«ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// æ­©ãã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::FLYING_ATTACK), false);
 
@@ -616,7 +613,7 @@ void EnemyDragon::ChangeStateMeleeAttack(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateMeleeAttack, this);
 
-	// •à‚«ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// æ­©ãã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::MELEE_ATTACK), false);
 }
@@ -625,13 +622,13 @@ void EnemyDragon::ChangeStateHover(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateHover, this);
 
-	// ƒ‰ƒ“ƒ_ƒ€‚È‘Ò‹@ŠÔ (1.0f ? 3.0f)
+	// ãƒ©ãƒ³ãƒ€ãƒ ãªå¾…æ©Ÿæ™‚é–“ (1.0f ? 3.0f)
 	step_ = 1.0f + static_cast<float>(GetRand(STATE_END_RAND));
 
-	// ˆÚ“®—Êƒ[ƒ
+	// ç§»å‹•é‡ã‚¼ãƒ­
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	// •à‚«ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// æ­©ãã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::HOVER), true);
 }
@@ -651,7 +648,7 @@ void EnemyDragon::ChangeStateLanding(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateLanding, this);
 
-	// •à‚«ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// æ­©ãã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::LANDING), false);
 }
@@ -660,7 +657,7 @@ void EnemyDragon::ChangeStateDead(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateDead, this);
 
-	// •à‚«ƒAƒjƒ[ƒVƒ‡ƒ“Ä¶
+	// æ­©ãã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿ
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::DIE), false);
 }
@@ -681,7 +678,7 @@ void EnemyDragon::UpdateIdle(void)
 	step_ -= scnMng_.GetDeltaTime();
 	if (step_ < 0.0f)
 	{
-		// ‘Ò‹@I—¹
+		// å¾…æ©Ÿçµ‚äº†
 		ChangeState(STATE::THINK);
 		return;
 	}
@@ -697,7 +694,7 @@ void EnemyDragon::UpdateRoar(void)
 	effect_->Update(static_cast<int>(effectType_));
 
 	if (animationController_->IsEnd()) {
-		// ‘Ò‹@I—¹
+		// å¾…æ©Ÿçµ‚äº†
 		attribute_ = ATTRIBUTE::ABOVE_GROUND;
 		ChangeState(STATE::THINK);
 		return;
@@ -759,7 +756,7 @@ void EnemyDragon::UpdatePatrol(void)
 	moveSpeed_ = SPEED_MOVE;
 	movePow_ = VScale(moveDir_, moveSpeed_);
 
-	// vl
+	// æ€è€ƒ
 	int rand = GetRand(STATE_END_RAND);
 	const VECTOR& targetPos = *targetPos_;
 	float diff = VSize(VSub(targetPos, transform_.pos));
@@ -820,7 +817,7 @@ void EnemyDragon::UpdateFlying(void)
 	moveSpeed_ = SPEED_MOVE;
 	movePow_ = VScale(moveDir_, moveSpeed_);
 
-	// vl
+	// æ€è€ƒ
 	int rand = GetRand(STATE_END_RAND);
 	const VECTOR& targetPos = *targetPos_;
 	float diff = VSize(VSub(targetPos, transform_.pos));
@@ -846,7 +843,7 @@ void EnemyDragon::UpdateFlyingAttack(void)
 
 	if (currentStep >= FLYING_ATTACK_FIRE_STEP && attackCnt_ == 0.0f)
 	{
-		attackCnt_ = 1.0f; // ”­ËÏ‚İ
+		attackCnt_ = 1.0f; // ç™ºå°„æ¸ˆã¿
 
 		VECTOR mouthPos = MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH);
 		const VECTOR& targetPos = *targetPos_;
@@ -886,7 +883,7 @@ void EnemyDragon::UpdateBreathAttack(void)
 		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREATH2, bgm_, SE_VOLUME_DEFAULT);
 	}
 
-	// šC³FI—¹ƒXƒeƒbƒvi40.0fj‚æ‚è‘O‚Ì‚¾‚¯UŒ‚ƒ‹[ƒv‚ğs‚¤‚æ‚¤‚ÉğŒ‚ğ–¾Šm‰»
+	// â˜…ä¿®æ­£ï¼šçµ‚äº†ã‚¹ãƒ†ãƒƒãƒ—ï¼ˆ40.0fï¼‰ã‚ˆã‚Šå‰ã®æ™‚ã ã‘æ”»æ’ƒãƒ«ãƒ¼ãƒ—ã‚’è¡Œã†ã‚ˆã†ã«æ¡ä»¶ã‚’æ˜ç¢ºåŒ–
 	if (currentStep >= BREATH_ATTACK_START_STEP && currentStep < BREATH_WEAPON_END_STEP)
 	{
 		if (attackCnt_ <= BREATH_ATTACK_DURATION) {
@@ -907,7 +904,7 @@ void EnemyDragon::UpdateBreathAttack(void)
 	}
 	else if (currentStep >= BREATH_WEAPON_END_STEP)
 	{
-		// ƒXƒeƒbƒv40ˆÈ~‚É‚È‚Á‚½‚çƒuƒŒƒX‚ÌªŒ³‚ğk‚ßn‚ß‚é
+		// ã‚¹ãƒ†ãƒƒãƒ—40ä»¥é™ã«ãªã£ãŸã‚‰ãƒ–ãƒ¬ã‚¹ã®æ ¹å…ƒã‚’ç¸®ã‚å§‹ã‚ã‚‹
 		for (const auto& weapon : weapons_)
 		{
 			if (weapon->GetWeaponType() != WeaponBase::WEAPON_TYPE::BREATH) continue;
@@ -917,7 +914,7 @@ void EnemyDragon::UpdateBreathAttack(void)
 		}
 	}
 
-	// ƒ‚[ƒVƒ‡ƒ“I—¹‚Å‘Ò‹@ó‘Ô‚Ö‘JˆÚi–œ‚ªˆê”»’è‚ªc‚Á‚Ä‚¢‚Ä‚àŠmÀ‚ÉÁ‹‚·‚éj
+	// ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³çµ‚äº†ã§å¾…æ©ŸçŠ¶æ…‹ã¸é·ç§»ï¼ˆä¸‡ãŒä¸€åˆ¤å®šãŒæ®‹ã£ã¦ã„ã¦ã‚‚ç¢ºå®Ÿã«æ¶ˆå»ã™ã‚‹ï¼‰
 	if (currentStep >= BREATH_ATTACK_END_STEP || animationController_->IsEnd())
 	{
 		for (const auto& weapon : weapons_)
@@ -964,7 +961,7 @@ void EnemyDragon::UpdateHover(void)
 	step_ -= scnMng_.GetDeltaTime();
 	if (step_ < 0.0f)
 	{
-		// ‘Ò‹@I—¹
+		// å¾…æ©Ÿçµ‚äº†
 		ChangeState(STATE::THINK);
 		return;
 	}
