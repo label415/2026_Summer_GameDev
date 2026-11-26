@@ -7,8 +7,6 @@ ColliderBase2D::ColliderBase2D(SHAPE shape, TAG tag)
 {
 }
 
-ColliderBase2D::~ColliderBase2D(void){}
-
 void ColliderBase2D::Draw(void)
 {
 	// デバッグ用の色を決定
@@ -17,12 +15,7 @@ void ColliderBase2D::Draw(void)
 	{
 		color = COLOR_VALID;
 	}
+
 	// デバッグ用描画
 	DrawDebug(color);
-}
-
-void ColliderBase2D::SetValid(bool isValid)
-{
-	// 有効フラグを設定
-	isValid_ = isValid;
 }

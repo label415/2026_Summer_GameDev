@@ -59,7 +59,7 @@ public:
 
 		// プレイヤーSE
 		SE_PLAYER_WEAPON_1,
-		SE_PLAYER_WAKE,
+		SE_PLAYER_WALK,
 		SE_PLAYER_RUN,
 		SE_PLAYER_RECOVERY,
 		SE_PLAYER_EVASION,
@@ -67,14 +67,14 @@ public:
 
 		// エネミーSE
 		SE_ENEMY_ROAR,
-		SE_ENEMY_WAKE,
-		SE_ENEMY_ATTCEK,
-		SE_ENEMY_BREASE_1,
-		SE_ENEMY_BREASE_2,
+		SE_ENEMY_WALK,
+		SE_ENEMY_ATTACK,
+		SE_ENEMY_BREATH_1,
+		SE_ENEMY_BREATH_2,
 		SE_ENEMY_FALL,
 		SE_ENEMY_FLAP,
-		SE_ENEMY_ARE_BREASE_1,
-		SE_ENEMY_ARE_BREASE_2,
+		SE_ENEMY_AIR_BREATH_1,
+		SE_ENEMY_AIR_BREATH_2,
 		SE_ENEMY_HIT_DAMAGE,
 
 		// フォント
@@ -85,7 +85,7 @@ public:
 	static void CreateInstance(void);
 
 	// 静的インスタンスの取得
-	static ResourceManager& GetInstance(void);
+	static ResourceManager& GetInstance(void) { return *instance_; }
 
 	// 初期化
 	void Init(void);
@@ -118,7 +118,7 @@ private:
 
 	// デフォルトコンストラクタをprivateにして、
 	// 外部から生成できない様にする
-	ResourceManager(void);
+	ResourceManager(void) {}
 	// コピーコンストラクタ
 	ResourceManager(const ResourceManager& manager) = default;
 	// デストラクタ

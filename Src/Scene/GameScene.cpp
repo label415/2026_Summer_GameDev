@@ -54,11 +54,11 @@ void GameScene::Load(void)
 	shadowMap_ = std::make_unique<ShadowMap>(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
 
 	// カメラモード変更
-	camera_->SetFollow(&player_->GetTransform());
+	camera_->SetFollow(player_);
 	camera_->ChangeMode(Camera::MODE::FOLLOW);
 
 	// 入力管理のインスタンス取得
-	InputManager::GetInstance().SetMouseFlage(false);
+	InputManager::GetInstance().SetMouseFlag(false);
 
 	// ゲームクリア画像ロード
 	gameClearImg_ = resMng_.Load(ResourceManager::SRC::IMG_GAMECLEAR).handleId_;
@@ -96,9 +96,7 @@ void GameScene::LoadEnd(void)
 	);
 
 	// マウス入力有効化
-	camera_->SetIsMouseInput(true);
-	// マウスカーソル非表示
-	InputManager::GetInstance().SetMouseFlage(false);
+	InputManager::GetInstance().SetMouseFlag(false);
 }
 
 void GameScene::Update(void)
@@ -203,16 +201,19 @@ void GameScene::UpdateAutoLockOn(void)
 	player_->SetTargetPos(camera->GetLockOnTargetPos());
 
 	// 追尾対象追加
-	for (auto& enemy : enemys_->GetEnemys())
+	for (auto& enemy : enemys_->GetEnemies())
 	{
 		// 敵にプレイヤーの位置を渡す
 		enemy->SetTargetPos(&player_->GetTransform().pos);
 		for (const auto& collider
 			: enemy->GetOwnCollider(static_cast<int>(ColliderBase::SHAPE::CAPSULE)))
 		{
-			// カプセルコライダーの中心座標をカメラに渡す
+			// カプセルコライダーをカメラに渡す
 			auto enemyCapsule = std::dynamic_pointer_cast<ColliderCapsule>(collider);
-			camera_->AddTargetPos(&enemyCapsule->GetCenter());
+			if (enemyCapsule)
+			{
+				camera_->AddTargetCollider(enemyCapsule);
+			}
 		}
 	}
 }
@@ -230,7 +231,7 @@ void GameScene::UpdateResult(void)
 	if (player_->GetState() == Player::STATE::END)isResult = true;
 
 	// 敵全滅判定
-	for (const auto& enemy : enemys_->GetEnemys())
+	for (const auto& enemy : enemys_->GetEnemies())
 	{
 		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::END))isResult = true;
 	}
@@ -244,18 +245,18 @@ void GameScene::UpdateResult(void)
 void GameScene::DrawUI(void)
 {
 	// プレイヤーとエネミーのHP描画
-	player_->DrawHp();
-	for (const auto& enemy : enemys_->GetEnemys()) {
-		enemy->DrawHp();
+	player_->DrawUI();
+	for (const auto& enemy : enemys_->GetEnemies()) {
+		enemy->DrawUI();
 	}
 
 	// すべての敵が死亡した時、ゲームクリアUIを表示する
-	for (const auto& enemy : enemys_->GetEnemys())
+	for (const auto& enemy : enemys_->GetEnemies())
 	{
 		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::DEAD))
 		{
 			resultAlpha_ = static_cast<int>(
-				enemy->GetDeath() * RESULT_UI_ALPHA_MAGNIFICATION);
+				enemy->GetDeathAnimTime() * RESULT_UI_ALPHA_MAGNIFICATION);
 			resultImg_ = gameClearImg_;
 			isResultUI_ = true;
 		}
@@ -265,7 +266,7 @@ void GameScene::DrawUI(void)
 	if (player_->GetState() == Player::STATE::DIE)
 	{
 		resultAlpha_ = static_cast<int>(
-			player_->GetDeath() * RESULT_UI_ALPHA_MAGNIFICATION);
+			player_->GetDeathAnimTime() * RESULT_UI_ALPHA_MAGNIFICATION);
 		resultImg_ = gameOverImg_;
 		isResultUI_ = true;
 	}

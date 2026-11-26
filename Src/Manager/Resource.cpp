@@ -38,8 +38,6 @@ Resource::Resource(TYPE type, const std::wstring& path, int numX, int numY, int 
 	handleIds_(nullptr)
 {}
 
-Resource::~Resource(void){}
-
 void Resource::Load(void)
 {
 	// ƒŠƒ\[ƒX‚Ì“Ç‚İ‚İ

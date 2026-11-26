@@ -4,23 +4,23 @@
 
 class Transform;
 
-class WeaponBracelet : public WeaponBase
+class WeaponBreath : public WeaponBase
 {
 public:
 
 	//攻撃エフェクト
 	enum class EFFECT_TYPE
 	{
-		BRACELET,
+		BREATH,
 	};
 
 	// コンストラクタ
-	WeaponBracelet(
+	WeaponBreath(
 		const Transform& followTransform,
 		const VECTOR moveDir, int followFrameId);
 
 	// デストラクタ
-	~WeaponBracelet(void) override;
+	~WeaponBreath(void) override {}
 
 	// 更新
 	void Update(void) override;
@@ -49,16 +49,16 @@ public:
 protected:
 
 	// リソースロード
-	void InitLoad(void) override;
+	void InitLoad(void) override {}
 
 	// 大きさ、回転、座標の初期化
-	void InitTransform(void) override;
+	void InitTransform(void) override {}
 
 	// 衝突判定の初期化
 	void InitCollider(void) override;
 
 	// アニメーションの初期化
-	void InitAnimation(void) override;
+	void InitAnimation(void) override {}
 
 	// 初期化後の個別処理
 	void InitPost(void) override;
@@ -83,6 +83,11 @@ private:
 
 	// モデルの大きさ
 	static constexpr float SCALE = 0.4f;
+
+	// エフェクトYオフセット・スケール・長さ除数
+	static constexpr float EFFECT_OFFSET_Y = 250.0f;
+	static constexpr float EFFECT_SCALE_XY = 400.0f;
+	static constexpr float EFFECT_LENGTH_DIV = 2.2f;
 
 	// 衝突判定用座標
 	VECTOR topPos_;

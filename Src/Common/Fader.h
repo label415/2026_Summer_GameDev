@@ -16,7 +16,7 @@ public:
 	Fader(void);
 
 	// デストラクタ
-	~Fader(void);
+	~Fader(void) {}
 
 	// 状態の取得
 	STATE GetState(void) const { return state_; }
@@ -28,7 +28,7 @@ public:
 	void SetFade(STATE state);
 
 	// 初期化
-	void Init(void);
+	void Init(void) {}
 
 	// 更新
 	void Update(void);
@@ -43,6 +43,9 @@ private:
 
 	// フェードが進む速さ
 	static constexpr float SPEED_ALPHA = 15.0f;
+
+	// フェード描画色
+	static constexpr int FADE_COLOR = 0x000000;
 
 	// 状態
 	STATE state_;

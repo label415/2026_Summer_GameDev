@@ -17,8 +17,6 @@ Transform::Transform(void)
 {
 }
 
-Transform::~Transform(void){}
-
 void Transform::Update(void)
 {
 	// ‘å‚«‚³
@@ -43,46 +41,4 @@ void Transform::Update(void)
 	{
 		MV1SetMatrix(modelId, mat);
 	}
-}
-
-void Transform::Release(void){}
-
-void Transform::SetModel(int model)
-{
-	modelId = model;
-}
-
-VECTOR Transform::GetForward(void) const
-{
-	return GetDir(AsoUtility::DIR_F);
-}
-
-VECTOR Transform::GetBack(void) const
-{
-	return GetDir(AsoUtility::DIR_B);
-}
-
-VECTOR Transform::GetRight(void) const
-{
-	return GetDir(AsoUtility::DIR_R);
-}
-
-VECTOR Transform::GetLeft(void) const
-{
-	return GetDir(AsoUtility::DIR_L);
-}
-
-VECTOR Transform::GetUp(void) const
-{
-	return GetDir(AsoUtility::DIR_U);
-}
-
-VECTOR Transform::GetDown(void) const
-{
-	return GetDir(AsoUtility::DIR_D);
-}
-
-VECTOR Transform::GetDir(const VECTOR& dir) const
-{
-	return quaRot.PosAxis(dir);
 }

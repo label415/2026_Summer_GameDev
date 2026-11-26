@@ -53,6 +53,7 @@ void ModelFrameUtility::SetFrameWorldMatrix(
 	worldMat = MMult(worldMat, finalRotMat);
 	worldMat = MMult(worldMat, MGetTranslate(parentWorldPos));
 
+	// ローカル座標がある場合は、親の回転を考慮してワールド座標に変換する
 	if (VSize(localPos) > 0.0f)
 	{
 		VECTOR offsetPos = VTransform(localPos, parentRotMat);

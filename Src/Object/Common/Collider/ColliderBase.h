@@ -43,7 +43,7 @@ public:
 		int partTag = 0);
 
 	// デストラクタ
-	virtual ~ColliderBase(void);
+	virtual ~ColliderBase(void) {}
 
 	// 描画
 	void Draw(void);
@@ -52,7 +52,7 @@ public:
 	const Transform* GetFollow(void) const { return follow_; }
 
 	// 追従先の再設定
-	void SetFollow(const Transform* follow);
+	void SetFollow(const Transform* follow) { follow_ = follow; }
 
 	// 形状
 	SHAPE GetShape(void) const { return shape_; }
@@ -64,10 +64,10 @@ public:
 	int GetPartTag(void)const { return partTag_; }
 
 	// 当たり判定フラグを設定する
-	void SetIsCollier(bool isIsCollier);
+	void SetIsCollider(bool isCollider) { isCollider_ = isCollider; }
 
 	// 当たり判定フラグを取得
-	bool GetIsCollier(void)const { return isCollier_; }
+	bool GetIsCollider(void)const { return isCollider_; }
 
 	// 行動フラグを設定
 	void SetIsAction(bool isAction){ isAction_ = isAction; }
@@ -118,7 +118,7 @@ protected:
 	int partTag_;
 
 	// 有効フラグ
-	bool isCollier_;
+	bool isCollider_;
 
 	// 行動フラグ
 	bool isAction_;

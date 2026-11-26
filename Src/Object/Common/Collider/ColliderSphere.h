@@ -18,7 +18,7 @@ public:
         int partTag = 0);
 
     // デストラクタ
-    ~ColliderSphere(void);
+    ~ColliderSphere(void) {}
 
     // 親Transformからの相対位置を取得
     const VECTOR& GetLocalPos(void) const { return localPos_; }
@@ -38,7 +38,7 @@ public:
 protected:
 
     // デバッグ用描画
-    void DrawDebug(int color) override;
+    void DrawDebug(int color) override { DrawSphere3D(GetPos(), GetRadius(), DIV_NUM, color, color, false); }
 
 private:
 

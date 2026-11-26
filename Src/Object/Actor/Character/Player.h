@@ -125,11 +125,11 @@ public:
 	static constexpr float AVOIDANCE_ANGLE_AXIS_Y = 100.0f;
 
 	// 移動速度(通常)
-	static constexpr float SPEED_MOVE = 2.0f;
+	static constexpr float SPEED_MOVE = 8.0f;
 	// 移動速度(ダッシュ)
-	static constexpr float SPEED_DASH = 4.0f;
+	static constexpr float SPEED_DASH = 12.0f;
 	// 移動速度(回避)
-	static constexpr float SPEED_EVASION = 10.0f;
+	static constexpr float SPEED_EVASION = 16.0f;
 
 	// スタミナ回復速度
 	static constexpr float RECOVERY_ST_SPEED = 20.0f;
@@ -265,7 +265,7 @@ public:
 	void Release(void) override;
 
 	// HPおよび各種UIの描画
-	void DrawHp(void) override;
+	void DrawUI(void) override;
 
 	// 状態を取得
 	const STATE GetState(void) const { return state_; }
@@ -274,7 +274,7 @@ public:
 	const bool GetIsInvincible(void) const { return isInvincible_; }
 
 	// 死亡演出タイム取得
-	const float GetDeath(void)const { return deathAnimationTime_; }
+	const float GetDeathAnimTime(void)const { return deathAnimationTime_; }
 
 protected:
 
@@ -324,6 +324,11 @@ private:
 	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 30.0f, 0.0f };
 	// 衝突判定用カプセル球体半径
 	static constexpr float COL_CAPSULE_RADIUS = 20.0f;
+
+	// 移動速度上限
+	static constexpr float MAX_MOVE_SPEED = 100.0f;
+	// 移動量減衰の補間係数
+	static constexpr float MOVE_DECEL_RATE = 0.0001f;
 
 	// 無敵時間
 	static constexpr float INVINCIBLE_TIME = 2.0f;

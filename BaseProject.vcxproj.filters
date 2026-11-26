@@ -186,7 +186,7 @@
     <ClCompile Include="Src\Libs\ImGui\backends\imgui_impl_win32.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Object\Actor\Weapon\WeaponBracelet.cpp">
+    <ClCompile Include="Src\Object\Actor\Weapon\WeaponBreath.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Src\Common\ShadowMap.cpp">
@@ -195,7 +195,7 @@
     <ClCompile Include="Src\Object\Common\EffectController.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Object\Actor\Weapon\WeaponFlameThrower.cpp">
+    <ClCompile Include="Src\Object\Actor\Weapon\WeaponFireball.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Src\Manager\SoundManager.cpp">
@@ -225,7 +225,7 @@
     <ClCompile Include="Src\Manager\CollisionManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Utility\ColliderUtility.cpp">
+    <ClCompile Include="Src\Utility\CollisionUtility.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -270,9 +270,6 @@
       <Filter>ヘッダー ファイル\Manager</Filter>
     </ClInclude>
     <ClInclude Include="Src\Application.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\main.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Src\Object\Actor\ActorBase.h">
@@ -362,7 +359,7 @@
     <ClInclude Include="Src\Libs\ImGui\backends\imgui_impl_win32.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Object\Actor\Weapon\WeaponBracelet.h">
+    <ClInclude Include="Src\Object\Actor\Weapon\WeaponBreath.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Src\Common\ShadowMap.h">
@@ -371,7 +368,7 @@
     <ClInclude Include="Src\Object\Common\EffectController.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Object\Actor\Weapon\WeaponFlameThrower.h">
+    <ClInclude Include="Src\Object\Actor\Weapon\WeaponFireball.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Src\Manager\SoundManager.h">
@@ -407,7 +404,7 @@
     <ClInclude Include="Src\Manager\CollisionManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Utility\ColliderUtility.h">
+    <ClInclude Include="Src\Utility\CollisionUtility.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

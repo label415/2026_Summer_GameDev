@@ -15,17 +15,6 @@ EnemyBase::EnemyBase(const EnemyBase::EnemyData& data)
 	deathAnimationTime_ = 0.0f;
 }
 
-EnemyBase::~EnemyBase(void){}
-
-void EnemyBase::Draw(void)
-{
-	CharacterBase::Draw();
-#ifdef _DEBUG
-	// 移動可能範囲のデバッグ描画
-	/*DrawSphere3D(defaultPos_, moveRadius_, 16, 0x000099, 0x000099, false);*/
-#endif // _DEBUG
-}
-
 void EnemyBase::ChangeState(int state)
 {
 	stateBase_ = state;
@@ -47,4 +36,9 @@ bool EnemyBase::InMovableRange(void) const
 		return true;
 	}
 	return ret;
+}
+
+void EnemyBase::Draw(void)
+{
+	CharacterBase::Draw();
 }

@@ -38,5 +38,13 @@ protected:
 	// 衝突時の更新
 	void UpdateHitCollider(void)override{}
 
+private:
+
+	// 回転速度(deg)
+	static constexpr float ROT_SPEED_DEG = -0.01f;
+
+	// モデルスケール
+	static constexpr VECTOR DEFAULT_SCALE = { 100.0f, 100.0f, 100.0f };
+
 };
 

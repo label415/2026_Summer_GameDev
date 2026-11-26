@@ -9,16 +9,16 @@ public:
     UIBase(void);
 
     // デストラクタ
-    virtual ~UIBase(void) override;
+    virtual ~UIBase(void) override {}
 
     // 有効・無効判定
-    bool IsActive(void) const;
+    bool IsActive(void) const { return active_; }
 
     // 有効・無効設定
-    void SetActive(bool active);
+    void SetActive(bool active) { active_ = active; }
 
     // 更新ステップ
-    float GetStep(void) const;
+    float GetStep(void) const { return step_; }
 
 protected:
 

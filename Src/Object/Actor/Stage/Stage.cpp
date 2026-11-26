@@ -7,7 +7,6 @@
 
 void Stage::Update(void)
 {
-	// Õ“Ë”»’è
 	Collision();
 }
 
@@ -62,19 +61,19 @@ void Stage::InitCollider(void)
 
 	for (const std::wstring& name : EXCLUDE_FRAME_NAMES)
 	{
-		colModel_->AddExcludeFrameIds(name);
+		colModel_->AddExcludeFrameId(name);
 	}
 
 	for (const std::wstring& name : TARGET_FRAME_NAMES)
 	{
-		colModel_->AddTargetFrameIds(name);
+		colModel_->AddTargetFrameId(name);
 	}
 
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::MODEL)].push_back(colModel_);
 	CollisionManager::GetInstance().AddCollider(colModel_);
 }
 
-void Stage::RateFrameIds(const std::wstring& name)
+void Stage::AddOpacityFrameIds(const std::wstring& name)
 {
 	// ƒtƒŒ[ƒ€”‚ğæ“¾
 	int num = MV1GetFrameNum(transform_.modelId);
@@ -90,7 +89,7 @@ void Stage::RateFrameIds(const std::wstring& name)
 	}
 }
 
-bool Stage::IsRateFrame(int frameIdx) const
+bool Stage::IsOpacityFrame(int frameIdx) const
 {
 	// œŠO”»’è
 	if (std::find(

@@ -1,11 +1,21 @@
 #include <EffekseerForDXLib.h>
 #include "EffectController.h"
 
-EffectController::EffectController(void){}
+EffectController::EFFECT::~EFFECT(void)
+{
+	// 再生中のエフェクトがあれば停止する
+	if (PlayId_ != -1 && IsEffekseer3DEffectPlaying(PlayId_) == 0) {
+		StopEffekseer3DEffect(PlayId_);
+	}
+
+	// エフェクトリソースがあれば解放する
+	if (ResId != -1) {
+		DeleteEffekseerEffect(ResId);
+	}
+}
 
 EffectController::~EffectController(void)
 {
-	// エフェクトの解放
 	effects_.clear();
 }
 

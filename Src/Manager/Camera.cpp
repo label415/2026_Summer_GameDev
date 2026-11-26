@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <DxLib.h>
 #include <EffekseerForDXLib.h>
 #include "../Utility/AsoUtility.h"
@@ -8,52 +9,46 @@
 #include "../Manager/CollisionManager.h"
 #include "../Libs/ImGui/imgui.h"
 #include "../Object/Common/Transform.h"
+#include "../Object/Common/Collider/ColliderCapsule.h"
 #include "../Object/Common/Collider/ColliderModel.h"
 #include "../Object/Common/Collider/ColliderSphere.h"
 #include "Camera.h"
 
 Camera::Camera(void)
-	: followTransform_(nullptr)
-	, targetPos_(nullptr)
-	, mode_(MODE::NONE)
+	: mode_(MODE::NONE)
 	, angles_(AsoUtility::VECTOR_ZERO)
 	, rotY_(Quaternion::Identity())
 	, fixationPos_(AsoUtility::VECTOR_ZERO)
 	, prevStickX_(0.0f)
 	, prevStickZ_(0.0f)
-	, isMouseInput_(false)
 	, lockOnImg_(-1)
-	, mouseX(0.0f)
-	, mouseY(0.0f)
-	, preMouseX(0.0f)
-	, preMouseY(0.0f)
 {
 }
-
-Camera::~Camera(void) {}
-
-void Camera::Update(void) {}
 
 void Camera::SetBeforeDraw(void)
 {
 	// クリップ距離を設定する
 	SetCameraNearFar(VIEW_NEAR, VIEW_FAR);
 
-	// カメラモードごとの処理
-	switch (mode_)
+	// ポーズ中はカメラのモード別更新を停止する
+	if (SceneManager::GetInstance().GetSceneID() != SceneManager::SCENE_ID::PAUSE)
 	{
-	case Camera::MODE::FIXED_POINT:
-		SetBeforeDrawFixedPoint();
-		break;
-	case Camera::MODE::FREE:
-		SetBeforeDrawFree();
-		break;
-	case Camera::MODE::FOLLOW:
-		SetBeforeDrawFollow();
-		break;
-	case Camera::MODE::TARGET_ROCKE:
-		SetBeforeDrawTargetLockeOn();
-		break;
+		// カメラモードごとの処理
+		switch (mode_)
+		{
+		case Camera::MODE::FIXED_POINT:
+			SetBeforeDrawFixedPoint();
+			break;
+		case Camera::MODE::FREE:
+			SetBeforeDrawFree();
+			break;
+		case Camera::MODE::FOLLOW:
+			SetBeforeDrawFollow();
+			break;
+		case Camera::MODE::TARGET_LOCK:
+			SetBeforeDrawTargetLockOn();
+			break;
+		}
 	}
 
 	// 通常カメラ時は既存の Up ベクトルを使用
@@ -70,47 +65,37 @@ void Camera::SetBeforeDraw(void)
 void Camera::DrawDebug(void)
 {
 	// ロックオンUI描画
-	if (mode_ != MODE::TARGET_ROCKE || targetPos_ == nullptr) return;
+	if (mode_ != MODE::TARGET_LOCK) return;
+	auto target = targetCollider_.lock();
+	if (!target) return;
 
 	// 3D描画時のZバッファを無効化して、ロックオンUIを描画する
 	SetUseZBuffer3D(FALSE);
 	DrawBillboard3D(
-		*targetPos_,
-		0.5f, 0.5f,
-		LOCON_UI_SIZE, 0.0f,
+		target->GetCenter(),
+		LOCKON_UI_C_X, LOCKON_UI_C_Y,
+		LOCKON_UI_SIZE, 0.0f,
 		lockOnImg_, true);
 	SetUseZBuffer3D(TRUE);
 }
 
-void Camera::Release(void){}
-
-void Camera::ResetForScene(void)
+void Camera::Release(void)
 {
-	// 前のシーンのオブジェクトを指しているポインタを破棄する
-	followTransform_ = nullptr;
-	targetPos_ = nullptr;
-	targetPoss_.clear();
-
-	// 固定カメラに戻す
-	ChangeMode(MODE::FIXED_POINT);
-
-	// マウス入力を無効化
-	isMouseInput_ = false;
-
-	// シーン切り替えでリソースが解放されるため再読み込み
-	lockOnImg_ = resMng_.Load(ResourceManager::SRC::UI_LOCKON).handleId_;
-
-	// シーン切り替えで当たり判定管理がクリアされるため再登録
-	for (const auto& pair : ownColliders_)
-	{
-		for (const auto& col : pair.second)
-		{
-			CollisionManager::GetInstance().AddCollider(col);
-		}
-	}
+	followActor_.reset();
+	targetCollider_.reset();
+	targetColliders_.clear();
 }
 
-void Camera::InitLoad(void) {}
+void Camera::ClearTargetColliders(void)
+{
+	targetColliders_.clear();
+}
+
+void Camera::InitLoad(void)
+{
+	// シーン切り替えでリソースが解放されるため再読み込み
+	lockOnImg_ = resMng_.Load(ResourceManager::SRC::UI_LOCKON).handleId_;
+}
 
 void Camera::InitCollider(void)
 {
@@ -125,7 +110,7 @@ void Camera::InitCollider(void)
 		targetTags,
 		&transform_,
 		AsoUtility::VECTOR_ZERO,
-		COL_CAPSULE_SPHERE
+		COL_SPHERE_RADIUS
 	);
 
 	// コライダーを所有コライダーに登録
@@ -137,11 +122,6 @@ void Camera::InitPost(void)
 {
 	// カメラモードの初期化
 	ChangeMode(MODE::FIXED_POINT);
-	auto& ins = InputManager::GetInstance();
-	mouseX = static_cast<float>(ins.GetMousePos().x);
-	mouseY = static_cast<float>(ins.GetMousePos().y);
-	preMouseX = static_cast<float>(ins.GetMousePos().x);
-	preMouseY = static_cast<float>(ins.GetMousePos().y);
 
 	// ロックオン画像ロード
 	lockOnImg_ = resMng_.Load(ResourceManager::SRC::UI_LOCKON).handleId_;
@@ -150,18 +130,19 @@ void Camera::InitPost(void)
 void Camera::UpdateHitCollider(void)
 {
 	// 追従対象がいなければ処理しない
-	if (followTransform_ == nullptr) return;
+	auto follow = followActor_.lock();
+	if (!follow) return;
 
 	// カメラ自身の球体コライダーリストを取得
 	int sphereType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
 	if (ownColliders_.count(sphereType) == 0) return;
 
 	// プレイヤーの座標を取得
-	VECTOR startPos = followTransform_->pos;
+	VECTOR startPos = follow->GetTransform().pos;
 	for (const auto& col : ownColliders_.at(sphereType))
 	{
 		// コライダーが有効でなければ処理しない
-		if (!col->GetIsCollier()) continue;
+		if (!col->GetIsCollider()) continue;
 
 		// 形状はSPHEREと確定しているため static_pointer_cast でダウンキャスト
 		auto colliderSphere = std::static_pointer_cast<ColliderSphere>(col);
@@ -191,20 +172,25 @@ void Camera::UpdateHitCollider(void)
 	}
 }
 
-const VECTOR* Camera::FindLockOnTarget(SWITCH_DIR switchDir) const
+std::weak_ptr<ColliderCapsule> Camera::FindLockOnTarget(SWITCH_DIR switchDir) const
 {
-	const VECTOR& playerPos = followTransform_->pos;
+	auto follow = followActor_.lock();
+	if (!follow) return {};
+
+	const VECTOR& playerPos = follow->GetTransform().pos;
 	VECTOR camForward = VNorm(GetForward());
 	float maxAngleRad = AsoUtility::Deg2RadF(LOCKON_VIEW_ANGLE);
 	float diffMin = (switchDir == SWITCH_DIR::UP) ? FLT_MAX : MAX_LOCKON_DIFF;
 
-	const VECTOR* bestTarget = nullptr;
+	auto currentTarget = targetCollider_.lock();
+	std::weak_ptr<ColliderCapsule> bestTarget;
 
-	for (const VECTOR* candidatePos : targetPoss_) {
+	for (const auto& candidateWeak : targetColliders_) {
 		// 早期リターン
-		if (candidatePos == nullptr || candidatePos == targetPos_) continue;
+		auto candidate = candidateWeak.lock();
+		if (!candidate || candidate == currentTarget) continue;
 
-		VECTOR toEnemy = VSub(*candidatePos, playerPos);
+		VECTOR toEnemy = VSub(candidate->GetCenter(), playerPos);
 		float lockonDiff = VSize(toEnemy);
 		if (lockonDiff >= diffMin) continue;
 
@@ -220,7 +206,7 @@ const VECTOR* Camera::FindLockOnTarget(SWITCH_DIR switchDir) const
 			&& VCross(camForward, toEnemy).y < 0.0f) continue;
 
 		diffMin = lockonDiff;
-		bestTarget = candidatePos;
+		bestTarget = candidate;
 	}
 
 	return bestTarget;
@@ -255,41 +241,11 @@ void Camera::HandleTargetSwitching(void)
 	else if (isNextRight) switchDir = SWITCH_DIR::RIGHT;
 
 	if (switchDir != SWITCH_DIR::NONE) {
-		const VECTOR* nextTarget = FindLockOnTarget(switchDir);
-		if (nextTarget != nullptr) {
-			targetPos_ = nextTarget;
+		auto nextTarget = FindLockOnTarget(switchDir);
+		if (!nextTarget.expired()) {
+			targetCollider_ = nextTarget;
 		}
 	}
-}
-
-const VECTOR& Camera::GetPos(void) const
-{
-	return  transform_.pos;
-}
-
-const VECTOR& Camera::GetAngles(void) const
-{
-	return angles_;
-}
-
-const VECTOR& Camera::GetTargetPos(void) const
-{
-	return fixationPos_;
-}
-
-const Quaternion& Camera::GetQuaRot(void) const
-{
-	return transform_.quaRot;
-}
-
-const Quaternion& Camera::GetQuaRotY(void) const
-{
-	return rotY_;
-}
-
-VECTOR Camera::GetForward(void) const
-{
-	return VNorm(VSub(fixationPos_, transform_.pos));
 }
 
 void Camera::ChangeMode(MODE mode)
@@ -308,47 +264,82 @@ void Camera::ChangeMode(MODE mode)
 		break;
 	case Camera::MODE::FOLLOW:
 		break;
-	case Camera::MODE::TARGET_ROCKE:
+	case Camera::MODE::TARGET_LOCK:
 		break;
 	}
 }
 
-const Camera::MODE& Camera::GetCameraMode(void) const
+void Camera::AddTargetCollider(const std::weak_ptr<ColliderCapsule>& target)
 {
-	return mode_;
+	auto newTarget = target.lock();
+	if (!newTarget) return;
+
+	// 期限切れの候補をリストから除外する
+	targetColliders_.erase(
+		std::remove_if(targetColliders_.begin(), targetColliders_.end(),
+			[](const std::weak_ptr<ColliderCapsule>& wp) {
+				return wp.expired();
+			}),
+		targetColliders_.end()
+	);
+
+	// すでに同じコライダーが格納されていなければ追加
+	auto it = std::find_if(targetColliders_.begin(), targetColliders_.end(),
+		[&newTarget](const std::weak_ptr<ColliderCapsule>& wp) {
+			return wp.lock() == newTarget;
+		});
+	if (it == targetColliders_.end())
+	{
+		targetColliders_.push_back(newTarget);
+	}
 }
 
-void Camera::AddTargetPos(const VECTOR* targetPos)
+const VECTOR* Camera::GetLockOnTargetPos(void) const
 {
-	if (targetPos == nullptr) return;
-
-	// すでに同じ座標ポインタが格納されていなければ追加
-	if (std::find(targetPoss_.begin(),
-		targetPoss_.end(),
-		targetPos) == targetPoss_.end())
+	if (auto target = targetCollider_.lock())
 	{
-		targetPoss_.push_back(targetPos);
+		return &target->GetCenter();
 	}
+	return nullptr;
 }
 
 void Camera::UpdateLockOn(void)
 {
+	// 期限切れのロックオン候補をリストから除外する
+	targetColliders_.erase(
+		std::remove_if(targetColliders_.begin(), targetColliders_.end(),
+			[](const std::weak_ptr<ColliderCapsule>& wp) {
+				return wp.expired();
+			}),
+		targetColliders_.end()
+	);
+
 	// 早期リターン
-	if (followTransform_ == nullptr) return;
+	auto follow = followActor_.lock();
+	if (!follow)
+	{
+		if (mode_ == MODE::FOLLOW || mode_ == MODE::TARGET_LOCK)
+		{
+			targetCollider_.reset();
+			ChangeMode(MODE::FIXED_POINT);
+		}
+		return;
+	}
 
 	auto& inp = InputManager::GetInstance();
 	bool isLockOnTrg = inp.IsTrgMouseMiddle()
 		|| inp.IsPadBtnTrgDown(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::L_TRIGGER);
 
 	// ロックオン中の処理
-	if (mode_ == MODE::TARGET_ROCKE)
+	if (mode_ == MODE::TARGET_LOCK)
 	{
+		auto target = targetCollider_.lock();
 		// 早期リターン
-		if (targetPos_ == nullptr ||
-			VSize(VSub(*targetPos_, followTransform_->pos)) >= MAX_LOCKON_DIFF ||
+		if (!target ||
+			VSize(VSub(target->GetCenter(), follow->GetTransform().pos)) >= MAX_LOCKON_DIFF ||
 			isLockOnTrg)
 		{
-			targetPos_ = nullptr;
+			targetCollider_.reset();
 			ChangeMode(MODE::FOLLOW);
 			return;
 		}
@@ -361,10 +352,10 @@ void Camera::UpdateLockOn(void)
 	// 通常追従中の処理
 	if (mode_ == MODE::FOLLOW && isLockOnTrg)
 	{
-		const VECTOR* newTarget = FindLockOnTarget(SWITCH_DIR::NONE);
-		if (newTarget != nullptr) {
-			targetPos_ = newTarget;
-			ChangeMode(MODE::TARGET_ROCKE);
+		auto newTarget = FindLockOnTarget(SWITCH_DIR::NONE);
+		if (!newTarget.expired()) {
+			targetCollider_ = newTarget;
+			ChangeMode(MODE::TARGET_LOCK);
 		}
 	}
 }
@@ -372,10 +363,10 @@ void Camera::UpdateLockOn(void)
 void Camera::SetDefault(void)
 {
 	// カメラの初期設定
-	transform_.pos = DERFAULT_POS;
+	transform_.pos = DEFAULT_POS;
 
 	// カメラ角
-	angles_ = DERFAULT_ANGLES;
+	angles_ = DEFAULT_ANGLES;
 	transform_.quaRot = Quaternion::Identity();
 
 	// 注視点
@@ -383,14 +374,17 @@ void Camera::SetDefault(void)
 
 	// ロックオン情報をクリア
 	// (前のシーンの敵を指したままにならないように)
-	targetPoss_.clear();
-	targetPos_ = nullptr;
+	targetColliders_.clear();
+	targetCollider_.reset();
 }
 
 void Camera::SyncFollow(void)
 {
+	auto follow = followActor_.lock();
+	if (!follow) return;
+
 	// 同期先の位置
-	VECTOR pos = followTransform_->pos;
+	VECTOR pos = follow->GetTransform().pos;
 
 	// Y軸 + X軸
 	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
@@ -408,24 +402,31 @@ void Camera::SyncFollow(void)
 	transform_.pos = AsoUtility::Lerp(transform_.pos, nextCameraPos, CAMERA_FOLLOW_RATE);
 }
 
-void Camera::SynLockOn(void)
+void Camera::SyncLockOn(void)
 {
-	// それぞれの座標がnullptrの時は処理しない
-	if (followTransform_ == nullptr
-		|| targetPos_ == nullptr) return;
+	// それぞれの対象が破棄されている時は処理しない
+	auto follow = followActor_.lock();
+	auto target = targetCollider_.lock();
+	if (!follow || !target)
+	{
+		targetCollider_.reset();
+		ChangeMode(follow ? MODE::FOLLOW : MODE::FIXED_POINT);
+		return;
+	}
 
 	// プレイヤーからターゲットへのベクトル
-	VECTOR followPos = followTransform_->pos;
-	VECTOR targetPos = *targetPos_;
+	VECTOR followPos = follow->GetTransform().pos;
+	VECTOR targetPos = target->GetCenter();
 	VECTOR toTarget = VSub(targetPos, followPos);
 
+	// プレイヤーからターゲットへのベクトルの水平距離の二乗を計算
 	float horizontalSq = toTarget.x * toTarget.x + toTarget.z * toTarget.z;
 	if (horizontalSq > 1.0f)
 	{
 		angles_.y = atan2f(toTarget.x, toTarget.z);
 	}
 
-	// 回転を角度から再構築
+	// 回転を角度から生成
 	rotY_ = Quaternion::AngleAxis(angles_.y, AsoUtility::AXIS_Y);
 	transform_.quaRot = rotY_.Mult(Quaternion::AngleAxis(angles_.x, AsoUtility::AXIS_X));
 
@@ -443,7 +444,7 @@ void Camera::SynLockOn(void)
 void Camera::ProcessRot(bool isLimit)
 {
 	// 方向回転によるXYZの移動(キーボード)
-	RotKeyboard(isLimit);
+	RotMouse(isLimit);
 	// 方向回転によるXYZの移動(ゲームパッド)
 	RotGamePad(isLimit);
 }
@@ -462,6 +463,7 @@ void Camera::ProcessMove(void)
 	}
 	else
 	{
+		// 接続されているゲームパッド１の情報を取得
 		InputManager::JOYPAD_IN_STATE padState =
 			ins.GetJPadInputState(InputManager::JOYPAD_NO::PAD1);
 
@@ -484,8 +486,6 @@ void Camera::ProcessMove(void)
 	}
 }
 
-void Camera::SetBeforeDrawFixedPoint(void) {}
-
 void Camera::SetBeforeDrawFree(void)
 {
 	// カメラ操作(回転)
@@ -506,14 +506,15 @@ void Camera::SetBeforeDrawFree(void)
 
 void Camera::SetBeforeDrawFollow(void)
 {
-	// 追従対象がいなければ処理しない
-	if (followTransform_ == nullptr) return;
-
-	// カメラ操作はマウス入力が有効な時だけ行う
-	if (isMouseInput_)
+	// 追従対象がいなければ固定視点に戻して処理しない
+	if (followActor_.expired())
 	{
-		ProcessRot(true);
+		ChangeMode(MODE::FIXED_POINT);
+		return;
 	}
+
+	// カメラ操作(回転)
+	ProcessRot(true);
 
 	// 追従対象との相対位置を同期
 	SyncFollow();
@@ -522,30 +523,26 @@ void Camera::SetBeforeDrawFollow(void)
 	Collision();
 }
 
-void Camera::SetBeforeDrawTargetLockeOn(void)
+void Camera::SetBeforeDrawTargetLockOn(void)
 {
 	// 追従対象との相対位置を同期
-	SynLockOn();
+	SyncLockOn();
 
 	// 衝突判定
 	Collision();
 }
 
-void Camera::RotKeyboard(bool isLimit)
+void Camera::RotMouse(bool isLimit)
 {
+	// マウスの移動量を取得
 	auto& ins = InputManager::GetInstance();
-
+	if (ins.GetMouseFlag()) return;
 	auto mouseMove = ins.GetMousePosDistance();
-	if (mouseMove.x != 0.0f || mouseMove.y != 0.0f)
+
+	if (mouseMove.x != 0 || mouseMove.y != 0)
 	{
 		angles_.x += mouseMove.y * MROT_POW_RAD;
 		angles_.y += mouseMove.x * MROT_POW_RAD;
-	}
-
-	if (SceneManager::GetInstance().GetSceneID() == SceneManager::SCENE_ID::GAME
-		&& isMouseInput_)
-	{
-		ins.SetMousePos(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
 	}
 
 	// 角度制限

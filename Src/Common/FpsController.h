@@ -11,7 +11,7 @@ public:
 	FpsController(int fixedFps);
 
 	// デストラクタ
-	~FpsController(void);
+	~FpsController(void) {}
 
 	// 1フレームごとのFPS制御
 	void Wait(void);
@@ -25,7 +25,7 @@ public:
 private:
 
 	// 時間経過割合
-	static constexpr float  WAITMILI = 1000.0f;
+	static constexpr float  WAIT_MILLI = 1000.0f;
 
 	// 最大FPS
 	static constexpr int MAX_FPS = 1200;
@@ -43,13 +43,13 @@ private:
 	// 指定された固定フレームレート
 	const int fixedFps_;
 
-	// 1フレームの理想時間(秒)
+	// 1フレームの理想時間
 	const double idealFrameTime_;
 
 	// 計測用FPS
 	float fps_;
 
-	// 平均FPS計測用)(秒単位)
+	// 平均FPS計測用
 	std::vector<double> timeList_;
 
 	// 前フレームの時間

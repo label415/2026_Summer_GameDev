@@ -28,7 +28,7 @@ public:
 	Resource(TYPE type, const std::wstring& path, int numX, int numY, int sizeX, int sizeY);
 
 	// デストラクタ
-	~Resource(void);
+	~Resource(void) {}
 
 	// 読み込み
 	void Load(void);

@@ -12,6 +12,12 @@ class CollisionUtility
 {
 public:
 
+    // デフォルトの押し出し判定パラメータ
+    static constexpr float DEFAULT_PUSH_DISTANCE = 0.5f;
+    static constexpr int DEFAULT_MAX_TRY_CNT = 5;
+    static constexpr int DEFAULT_CAMERA_MAX_TRY_CNT = 10;
+    static constexpr float DEFAULT_CAMERA_PUSH_DISTANCE = 2.0f;
+
     /// <summary>
     /// カプセル同士の当たり判定を行う
     /// </summary>
@@ -99,7 +105,7 @@ public:
     static VECTOR CalcPushCapsuleCapsule(
         const ColliderCapsule& a,
         const ColliderCapsule& b, 
-        float distance = 0.5f);
+        float distance = DEFAULT_PUSH_DISTANCE);
 
     /// <summary>
     /// カプセルがモデルの複数ポリゴンから受ける総押し戻しベクトルを計算する
@@ -116,8 +122,8 @@ public:
         const ColliderCapsule& capsule,
         const ColliderModel& model,
         const VECTOR& pos,
-        int maxTryCnt = 5,
-        float pushDistance = 0.5f,
+        int maxTryCnt = DEFAULT_MAX_TRY_CNT,
+        float pushDistance = DEFAULT_PUSH_DISTANCE,
         bool isExclude = false,
         bool isTarget = false);
 
@@ -136,8 +142,8 @@ public:
         const ColliderSphere& sphere,
         const ColliderModel& model,
         const VECTOR& pos,
-        int maxTryCnt = 5,
-        float pushDistance = 0.5f,
+        int maxTryCnt = DEFAULT_MAX_TRY_CNT,
+        float pushDistance = DEFAULT_PUSH_DISTANCE,
         bool isExclude = false,
         bool isTarget = false);
 
@@ -176,12 +182,18 @@ public:
         const ColliderModel& model,
         const VECTOR& startPos,
         const VECTOR& cameraPos,
-        int maxTryCnt = 10,
-        float pushDistance = 2.0f,
+        int maxTryCnt = DEFAULT_CAMERA_MAX_TRY_CNT,
+        float pushDistance = DEFAULT_CAMERA_PUSH_DISTANCE,
         bool isExclude = false,
         bool isTarget = false);
 
 private:
+
+    // 三角ポリゴンの頂点インデックス
+    static constexpr int TRIANGLE_VERTEX_0 = 0;
+    static constexpr int TRIANGLE_VERTEX_1 = 1;
+    static constexpr int TRIANGLE_VERTEX_2 = 2;
+
     /// <summary>
     /// カプセルが三角ポリゴンから受ける法線方向への押し戻しベクトルを計算する
     /// </summary>
@@ -195,8 +207,8 @@ private:
         const ColliderCapsule& capsule,
         const MV1_COLL_RESULT_POLY& poly,
         const VECTOR& pos,
-        int maxTryCnt = 5,
-        float pushDistance = 0.5f);
+        int maxTryCnt = DEFAULT_MAX_TRY_CNT,
+        float pushDistance = DEFAULT_PUSH_DISTANCE);
 
     /// <summary>
     /// 球体が三角ポリゴンから受ける法線方向への押し戻しベクトルを計算する
@@ -211,8 +223,8 @@ private:
         const ColliderSphere& sphere,
         const MV1_COLL_RESULT_POLY& poly,
         const VECTOR& pos,
-        int maxTryCnt = 5,
-        float pushDistance = 0.5f);
+        int maxTryCnt = DEFAULT_MAX_TRY_CNT,
+        float pushDistance = DEFAULT_PUSH_DISTANCE);
 
     /// <summary>
     /// ラインがモデルのポリゴンと交差する最近接ポリゴンを取得する
@@ -235,11 +247,11 @@ private:
     /// <summary>
     /// 線分上の指定位置に最も近い点を取得する
     /// </summary>
-    /// <param name="statePos">線分の開始位置</param>
+    /// <param name="startPos">線分の開始位置</param>
     /// <param name="endPos">線分の終了位置</param>
     /// <param name="targetPos">比較対象位置</param>
     /// <returns>線分上の最近接点</returns>
-    static VECTOR GetNearestPointOnSegment(const VECTOR& statePos,
+    static VECTOR GetNearestPointOnSegment(const VECTOR& startPos,
         const VECTOR& endPos, const VECTOR& targetPos);
 
 };

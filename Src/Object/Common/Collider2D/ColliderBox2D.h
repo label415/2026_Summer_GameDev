@@ -15,7 +15,7 @@ public:
 		float width, float height);
 
 	// デストラクタ
-	~ColliderBox2D(void) override;
+	~ColliderBox2D(void) override {}
 
 	// 境界座標の取得
 	float Left(void)   const { return boxPos_.x; }

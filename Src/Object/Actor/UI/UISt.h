@@ -12,23 +12,23 @@ public:
     static constexpr float MIN_ST = -15.0f;
 
     // コンストラクタ
-    UISt(float posX, float posY, float flameScl = 1.0f,
+    UISt(float posX, float posY, float frameScl = 1.0f,
         float stSclX = 1.0f, float stSclY = 1.0f, float st = MAX_ST);
 
     // デストラクタ
-    ~UISt(void) override;
+    ~UISt(void) override {}
 
     // 更新
-    void Update(void) override;
+    void Update(void) override {}
 
     // 描画
     void Draw(void) override;
 
     // ダメージ
-    void SetSt(float delta);
+    void ConsumeSt(float delta);
 
     // 回復
-    void SetHpAbsolute(float hp);
+    void RecoverSt(float st);
 
 	// スタミナの取得
     const float GetSt(void)const { return stCurrent_; }
@@ -39,7 +39,7 @@ protected:
     void InitLoad(void) override;
 
     // 大きさ、回転、座標の初期化
-    void InitTransform(void) override;
+    void InitTransform(void) override {}
 
     // 衝突判定の初期化
     void InitCollider(void) override {}
@@ -48,7 +48,7 @@ protected:
     void InitAnimation(void) override {}
 
     // 初期化後の個別処理
-    void InitPost(void) override;
+    void InitPost(void) override {}
 
 private:
 
@@ -60,16 +60,16 @@ private:
     Vector2 stPos_;
 
 	// 枠ハンドルID
-    int flameImg_;
+    int frameImg_;
 
 	// スタミナハンドルID
-    int suUiImg_;
+    int stUiImg_;
     
     // スタミナの値
     float stCurrent_;
 
     // 枠のスケール
-    float flameScl_;
+    float frameScl_;
 
     // スタミナバーのスケール
     float stSclX_;

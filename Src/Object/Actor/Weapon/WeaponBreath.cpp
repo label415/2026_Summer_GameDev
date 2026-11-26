@@ -7,12 +7,12 @@
 #include "../../../Libs/ImGui/imgui.h"
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "../../Common/EffectController.h"
-#include "WeaponBracelet.h"
+#include "WeaponBreath.h"
 
-WeaponBracelet::WeaponBracelet(
+WeaponBreath::WeaponBreath(
 	const Transform& followTransform,
 	const VECTOR moveDir, int followFrameId)
-	: WeaponBase(WeaponBase::WEAPON_TYPE::BRACELET, followTransform, followFrameId)
+	: WeaponBase(WeaponBase::WEAPON_TYPE::BREATH, followTransform, followFrameId)
 	, moveDir_(moveDir)
 	, isAttack_(false)
 	, isEnd_(false)
@@ -22,9 +22,7 @@ WeaponBracelet::WeaponBracelet(
 {
 }
 
-WeaponBracelet::~WeaponBracelet(void) {}
-
-void WeaponBracelet::Update(void)
+void WeaponBreath::Update(void)
 {
 	// 生存していない時は処理しない
 	if (!isAlive_) return;
@@ -34,15 +32,21 @@ void WeaponBracelet::Update(void)
 
 	// エフェクト更新
 	if (effect_) {
-		effect_->Update(static_cast<int>(EFFECT_TYPE::BRACELET));
+		effect_->Update(static_cast<int>(EFFECT_TYPE::BREATH));
 	}
 }
 
-void WeaponBracelet::InitLoad(void) {}
+void WeaponBreath::Draw(void)
+{
+	ActorBase::Draw();
+}
 
-void WeaponBracelet::InitTransform(void) {}
+void WeaponBreath::Release(void)
+{
+	ActorBase::Release();
+}
 
-void WeaponBracelet::InitCollider(void)
+void WeaponBreath::InitCollider(void)
 {
 	// 衝突判定のターゲットタグを設定
 	std::vector<ColliderBase::TAG> targetTags = {
@@ -60,16 +64,14 @@ void WeaponBracelet::InitCollider(void)
 	);
 
 	// 初期状態では当たり判定を無効化
-	colliderCapsule->SetIsCollier(false);
+	colliderCapsule->SetIsCollider(false);
 
 	// コライダーを所有コライダーに追加
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colliderCapsule);
 	CollisionManager::GetInstance().AddCollider(colliderCapsule);
 }
 
-void WeaponBracelet::InitAnimation(void) {}
-
-void WeaponBracelet::InitPost(void)
+void WeaponBreath::InitPost(void)
 {
 	// 初期座標を設定
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
@@ -77,32 +79,32 @@ void WeaponBracelet::InitPost(void)
 	// エフェクトコントローラを作成してエフェクトを登録
 	effect_ = std::make_unique<EffectController>();
 	effect_->Add(
-		static_cast<int>(EFFECT_TYPE::BRACELET),
+		static_cast<int>(EFFECT_TYPE::BREATH),
 		(Application::PATH_EFFECT + L"Breath.efkefc"));
-	effect_->Stop(static_cast<int>(EFFECT_TYPE::BRACELET));
+	effect_->Stop(static_cast<int>(EFFECT_TYPE::BREATH));
 
 	// コライダーを初期化
 	ClearCollider();
 }
 
-void WeaponBracelet::SetCollider(void)
+void WeaponBreath::SetCollider(void)
 {
 	// カプセルコライダーを有効化
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	for (const auto& col : ownColliders_.at(capsuleType))
 	{
-		col->SetIsCollier(true);
+		col->SetIsCollider(true);
 	}
 }
 
-void WeaponBracelet::ClearCollider(void)
+void WeaponBreath::ClearCollider(void)
 {
 	// カプセルコライダーを無効化して初期座標に戻す
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	for (const auto& col : ownColliders_.at(capsuleType))
 	{
 		auto* capsule = static_cast<ColliderCapsule*>(col.get());
-		capsule->SetIsCollier(false);
+		capsule->SetIsCollider(false);
 		capsule->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);
 		capsule->SetLocalPosDown(COL_CAPSULE_DOWN_LOCAL_POS);
 		capsule->SetRadius(COL_CAPSULE_RADIUS);
@@ -115,7 +117,7 @@ void WeaponBracelet::ClearCollider(void)
 	isEnd_ = false;
 }
 
-void WeaponBracelet::SetIsAttack(bool isAttack)
+void WeaponBreath::SetIsAttack(bool isAttack)
 {
 	// 攻撃フラグが切り替わった場合にエフェクトを再生
 	if (!isAttack_ && isAttack) {
@@ -127,15 +129,15 @@ void WeaponBracelet::SetIsAttack(bool isAttack)
 		float yaw = atan2f(moveDir_.x, moveDir_.z);
 		float pitch = -asinf(moveDir_.y);
 		VECTOR euler = { pitch, yaw, 0.0f };
-		euler = VAdd(euler, WeaponBracelet::DEFAULT_ROT);
+		euler = VAdd(euler, WeaponBreath::DEFAULT_ROT);
 		VECTOR effPos = transform_.pos;
-		effPos.y -= 250.0f;
+		effPos.y -= EFFECT_OFFSET_Y;
 
 		// エフェクトを再生
 		effect_->Play(
-			static_cast<int>(EFFECT_TYPE::BRACELET),
+			static_cast<int>(EFFECT_TYPE::BREATH),
 			effPos,
-			euler, VGet(400.0f, 400.0f, LENGTH / 2.2f));
+			euler, VGet(EFFECT_SCALE_XY, EFFECT_SCALE_XY, LENGTH / EFFECT_LENGTH_DIV));
 
 		// 攻撃開始時にコライダーを設定
 		SetCollider();
@@ -145,7 +147,7 @@ void WeaponBracelet::SetIsAttack(bool isAttack)
 	isAttack_ = isAttack;
 }
 
-void WeaponBracelet::Move(void)
+void WeaponBreath::Move(void)
 {
 	// 追従対象のフレーム座標を取得して武器の座標を更新
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
@@ -177,14 +179,4 @@ void WeaponBracelet::Move(void)
 		capsuleCollider->SetLocalPosTop(topPos_);
 		capsuleCollider->SetLocalPosDown(downPos_);
 	}
-}
-
-void WeaponBracelet::Draw(void)
-{
-	ActorBase::Draw();
-}
-
-void WeaponBracelet::Release(void)
-{
-	ActorBase::Release();
 }

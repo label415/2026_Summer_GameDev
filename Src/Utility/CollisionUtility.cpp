@@ -4,7 +4,7 @@
 #include "../Object/Common/Collider/ColliderModel.h"
 #include "../Object/Common/Transform.h"
 #include "AsoUtility.h"
-#include "ColliderUtility.h"
+#include "CollisionUtility.h"
 
 bool CollisionUtility::IsHit(
 	const ColliderCapsule& capsule1,
@@ -171,11 +171,11 @@ VECTOR CollisionUtility::CalcPushCapsuleCapsule(
 	if (distance >= totalRadius) { return AsoUtility::VECTOR_ZERO; }
 
 	// 距離がほぼ0の場合
-	if (distance < 1e-6f)
+	if (distance < AsoUtility::EPSILON)
 	{
 		// デフォルト方向を右向きにして、距離を最小値に設定
 		vBA = AsoUtility::DIR_R;
-		distance = 1e-6f;
+		distance = AsoUtility::EPSILON;
 	}
 
 	// 押し出し量を計算
@@ -216,9 +216,9 @@ VECTOR CollisionUtility::CalcPushCapsuleTriangle(
 		// カプセルとポリゴンの衝突判定
 		if (!HitCheck_Capsule_Triangle(
 			topPos, downPos, radius,
-			poly.Position[0],
-			poly.Position[1],
-			poly.Position[2]))break;
+			poly.Position[TRIANGLE_VERTEX_0],
+			poly.Position[TRIANGLE_VERTEX_1],
+			poly.Position[TRIANGLE_VERTEX_2]))break;
 
 		// 衝突していたら法線方向に押し戻す
 		pushedPos = VAdd(pushedPos, pushVec);
@@ -253,9 +253,9 @@ VECTOR CollisionUtility::CalcPushSphereTriangle(
 		// 球体とポリゴンの衝突判定
 		if (!HitCheck_Sphere_Triangle(
 			pushedPos, radius,
-			poly.Position[0],
-			poly.Position[1],
-			poly.Position[2]))break;
+			poly.Position[TRIANGLE_VERTEX_0],
+			poly.Position[TRIANGLE_VERTEX_1],
+			poly.Position[TRIANGLE_VERTEX_2]))break;
 
 		// 衝突していたら法線方向に押し戻す
 		pushedPos = VAdd(pushedPos, pushVec);
@@ -475,22 +475,22 @@ VECTOR CollisionUtility::CalcCameraPushBack(
 }
 
 VECTOR CollisionUtility::GetNearestPointOnSegment(
-	const VECTOR& statePos, const VECTOR& endPos, const VECTOR& targetPos)
+	const VECTOR& startPos, const VECTOR& endPos, const VECTOR& targetPos)
 {
 	// 線分の始点から終点へのベクトルを計算
-	VECTOR segmentVec = VSub(endPos, statePos);
+	VECTOR segmentVec = VSub(endPos, startPos);
 	
 	// 線分の始点からターゲットへのベクトルを計算
-	VECTOR toTargetVec = VSub(targetPos, statePos);
+	VECTOR toTargetVec = VSub(targetPos, startPos);
 
 	// 線分の長さの二乗を計算
 	float lenSquare = static_cast<float>(VSquareSize(segmentVec));
 	
 	// 線分の長さがほぼ0の場合
-	if (lenSquare < 1e-6)
+	if (lenSquare < AsoUtility::EPSILON)
 	{
 		// 始点をそのまま返す
-		return statePos;
+		return startPos;
 	}
 	
 	// 線分上の最近接点の割合を計算
@@ -503,7 +503,7 @@ VECTOR CollisionUtility::GetNearestPointOnSegment(
 	if (segmentRatio > 1.0f) { segmentRatio = 1.0f; }
 
 	// 線分上の最近接点を計算して返す
-	VECTOR nearestPos = VAdd(statePos, VScale(segmentVec, segmentRatio));
+	VECTOR nearestPos = VAdd(startPos, VScale(segmentVec, segmentRatio));
 
 	// 最近接点を返す
 	return nearestPos;

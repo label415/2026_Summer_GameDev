@@ -6,13 +6,8 @@
 #include "EnemyDragon.h"
 #include "EnemyManager.h"
 
-EnemyManager::EnemyManager(void){}
-
-EnemyManager::~EnemyManager(void){}
-
 void EnemyManager::Load(void)
 {
-	// エネミーのデータ読み込み
 	LoadCsvData();
 }
 

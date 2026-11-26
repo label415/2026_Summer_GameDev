@@ -18,11 +18,6 @@ void ImGuiWrapper::CreateInstance(void)
 	instance_->Init();
 }
 
-ImGuiWrapper& ImGuiWrapper::GetInstance(void)
-{
-	return *instance_;
-}
-
 void ImGuiWrapper::Init(void)
 {
 	// ウインドウへのメッセージ(イベント)を
@@ -84,7 +79,7 @@ LRESULT ImGuiWrapper::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			return 0;
 		return 0;
 	case WM_SYSCOMMAND:
-		if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
+		if ((wParam & SYSCOMMAND_MASK) == SC_KEYMENU) // Disable ALT application menu
 			return 0;
 		break;
 	case WM_DESTROY:
@@ -92,10 +87,6 @@ LRESULT ImGuiWrapper::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 	return ::DefWindowProcW(hWnd, msg, wParam, lParam);
-}
-
-ImGuiWrapper::~ImGuiWrapper(void)
-{
 }
 
 void ImGuiWrapper::UpdateInputMouse(void)
@@ -115,9 +106,5 @@ void ImGuiWrapper::UpdateNewFrame(void)
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-}
-
-ImGuiWrapper::ImGuiWrapper(void)
-{
 }
 

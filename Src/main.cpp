@@ -29,7 +29,7 @@ int WINAPI WinMain(
 	// リソースの破棄
 	if (!instance.Release())
 	{
-		// 初期化失敗
+		// リソースの破棄失敗
 		return -1;
 	}
 

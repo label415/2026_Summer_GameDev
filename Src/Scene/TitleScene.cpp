@@ -14,23 +14,19 @@ TitleScene::TitleScene(void)
 	, isStickInput_(false)
 	, titleImg_(-1)
 	, selectImg_(-1)
-	, pauseFont_(-1)
-{
-}
-
-TitleScene::~TitleScene(void)
+	, titleFont_(-1)
 {
 }
 
 void TitleScene::Load(void)
 {
-	// BGM読み込み(再生は読み込み完了後のLoadEndで行う)
+	// BGM読み込み
 	bgm_ = resMng_.Load(ResourceManager::SRC::BGM_TITLE).handleId_;
 	volume_ = BGM_VOLUME;
 
 	// フォントのロード
 	resMng_.Load(ResourceManager::SRC::FONT);
-	pauseFont_ = fontMng_.GetInstance().CreateMyFont(
+	titleFont_ = fontMng_.GetInstance().CreateMyFont(
 		fontName_, static_cast<int>(FONT_SIZE), static_cast<int>(FONT_THICKNESS));
 
 	// 画像のロード
@@ -53,6 +49,9 @@ void TitleScene::LoadEnd(void)
 {
 	// BGM再生
 	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
+
+	// マウスカーソル表示を有効化
+	InputManager::GetInstance().SetMouseFlag(true);
 }
 
 void TitleScene::Update(void)
@@ -66,7 +65,7 @@ void TitleScene::Update(void)
 	{
 		if (uiBoxs_[i] && uiBoxs_[i]->Contains(static_cast<float>(mPos.x), static_cast<float>(mPos.y)))
 		{
-			ins.SetMouseFlage(true);
+			ins.SetMouseFlag(true);
 			selectIndex_ = i;
 			isHovered = true;
 			break;
@@ -81,7 +80,7 @@ void TitleScene::Update(void)
 	// スティック入力があった場合、選択インデックスを更新
 	if (dirY != 0)
 	{
-		ins.SetMouseFlage(false);
+		ins.SetMouseFlag(false);
 
 		if (!isStickInput_)
 		{
@@ -129,6 +128,7 @@ void TitleScene::Draw(void)
 			+ (uiBoxs_[selectIndex_]->Bottom()
 				- uiBoxs_[selectIndex_]->Top()) * SELECT_IMG_ADJUST_Y;
 
+		// カーソル画像描画
 		DrawRotaGraph(
 			Application::HALF_SCREEN_SIZE_X,
 			static_cast<int>(centerY),
@@ -140,22 +140,22 @@ void TitleScene::Draw(void)
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
 		// 文字描画
-		int strW = GetDrawStringWidthToHandle(pauseList_[i].c_str(), -1, pauseFont_);
+		int strW = GetDrawStringWidthToHandle(titleList_[i].c_str(), -1, titleFont_);
 		int posX = static_cast<int>((Application::SCREEN_SIZE_X - strW) / FONT_ADJUST_X);
 		int posY = static_cast<int>(
 			(Application::HALF_SCREEN_SIZE_Y + FONT_ADJUST_Y) + (FONT_INTERVAL * i));
 
+		// 文字描画
 		DrawFormatStringToHandle(
 			posX, posY,
 			FONT_COLOR,
-			pauseFont_,
-			pauseList_[i].c_str());
+			titleFont_,
+			titleList_[i].c_str());
 
 	}
 }
 
 void TitleScene::Release(void)
 {
-	// フォントハンドル削除
-	pauseFont_ = -1;
-}
+	titleFont_ = -1;
+}

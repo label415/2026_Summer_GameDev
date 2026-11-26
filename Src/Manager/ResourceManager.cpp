@@ -15,11 +15,6 @@ void ResourceManager::CreateInstance(void)
 	instance_->Init();
 }
 
-ResourceManager& ResourceManager::GetInstance(void)
-{
-	return *instance_;
-}
-
 void ResourceManager::Init(void)
 {
 	// ÉäÉ\Å[ÉXÇÃèâä˙âª
@@ -123,7 +118,7 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::SOUND, PATH_SND + L"PlayerSE/PlayerEvasionSE.mp3");
 	resourcesMap_.emplace(SRC::SE_PLAYER_EVASION, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"PlayerSE/PlayerWakeSE.mp3");
-	resourcesMap_.emplace(SRC::SE_PLAYER_WAKE, res);
+	resourcesMap_.emplace(SRC::SE_PLAYER_WALK, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"PlayerSE/PlayerRunSE.mp3");
 	resourcesMap_.emplace(SRC::SE_PLAYER_RUN, res);
 
@@ -131,19 +126,19 @@ void ResourceManager::Init(void)
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonRoarSE.mp3");
 	resourcesMap_.emplace(SRC::SE_ENEMY_ROAR, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonBreathSE1.mp3");
-	resourcesMap_.emplace(SRC::SE_ENEMY_BREASE_1, res);
+	resourcesMap_.emplace(SRC::SE_ENEMY_BREATH_1, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonBreathSE2.mp3");
-	resourcesMap_.emplace(SRC::SE_ENEMY_BREASE_2, res);
+	resourcesMap_.emplace(SRC::SE_ENEMY_BREATH_2, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonFlapSE.mp3");
 	resourcesMap_.emplace(SRC::SE_ENEMY_FLAP, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonAttackSE.mp3");
-	resourcesMap_.emplace(SRC::SE_ENEMY_ATTCEK, res);
+	resourcesMap_.emplace(SRC::SE_ENEMY_ATTACK, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonWakeSE.mp3");
-	resourcesMap_.emplace(SRC::SE_ENEMY_WAKE, res);
+	resourcesMap_.emplace(SRC::SE_ENEMY_WALK, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonFliyerAttSE1.mp3");
-	resourcesMap_.emplace(SRC::SE_ENEMY_ARE_BREASE_1, res);
+	resourcesMap_.emplace(SRC::SE_ENEMY_AIR_BREATH_1, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonFliyerAttSE2.mp3");
-	resourcesMap_.emplace(SRC::SE_ENEMY_ARE_BREASE_2, res);
+	resourcesMap_.emplace(SRC::SE_ENEMY_AIR_BREATH_2, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/DragonFallSE.mp3");
 	resourcesMap_.emplace(SRC::SE_ENEMY_FALL, res);
 	res = new RES(RES_T::SOUND, PATH_SND + L"EnemySE/EnemyHItDamageSE.mp3");
@@ -201,8 +196,6 @@ int ResourceManager::LoadModelDuplicate(SRC src)
 
 	return duId;
 }
-
-ResourceManager::ResourceManager(void){}
 
 Resource& ResourceManager::_Load(SRC src)
 {

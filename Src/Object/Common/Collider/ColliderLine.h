@@ -15,22 +15,22 @@ public:
 		const VECTOR& localPosStart, const VECTOR& localPosEnd, int partTag = 0);
 
 	// デストラクタ
-	~ColliderLine(void) override;
+	~ColliderLine(void) override {}
 
 	// ローカル座標での設定
-	void SetLocalPosStart(const VECTOR& pos);
-	void SetLocalPosEnd(const VECTOR& pos);
+	void SetLocalPosStart(const VECTOR& pos) { localPosStart_ = pos; }
+	void SetLocalPosEnd(const VECTOR& pos) { localPosEnd_ = pos; }
 
 	// ローカル座標の取得
-	const VECTOR& GetLocalPosStart(void) const;
-	const VECTOR& GetLocalPosEnd(void) const;
+	const VECTOR& GetLocalPosStart(void) const { return localPosStart_; }
+	const VECTOR& GetLocalPosEnd(void) const { return localPosEnd_; }
 
 	// ワールド座標の取得
 	VECTOR GetPosStart(void) const;
 	VECTOR GetPosEnd(void) const;
 
 	// ラインコライダーの長さの取得
-	float GetLinelength(void)const;
+	float GetLineLength(void) const { return VSize(VSub(GetPosEnd(), GetPosStart())); }
 
 protected:
 

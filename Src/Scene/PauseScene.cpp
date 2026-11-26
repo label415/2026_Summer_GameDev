@@ -12,16 +12,11 @@ PauseScene::PauseScene(void)
 	: SceneBase()
 	, selectIndex_(0)
 	, isHovered(true)
-	, isPauseScene_(false)
 	, isStickInput_(false)
 	, pauseFont_(-1)
 	, selectImg_(-1)
 	, uiBoxs_()
 {}
-
-PauseScene::~PauseScene(void)
-{
-}
 
 void PauseScene::LoadEnd(void)
 {
@@ -44,10 +39,8 @@ void PauseScene::LoadEnd(void)
 			BOX_WIDTH, BOX_HEIGHT);
 	}
 
-	// カメラのマウス入力を無効化
-	sceMng_.GetCamera().get()->SetIsMouseInput(false);
 	// マウス入力を有効化
-	InputManager::GetInstance().SetMouseFlage(true);
+	InputManager::GetInstance().SetMouseFlag(true);
 }
 
 void PauseScene::Update(void)
@@ -66,7 +59,7 @@ void PauseScene::Update(void)
 		if (uiBoxs_[i] && uiBoxs_[i]->Contains(static_cast<float>(mPos.x), static_cast<float>(mPos.y)))
 		{
 			// マウス入力を有効化
-			ins.SetMouseFlage(true);
+			ins.SetMouseFlag(true);
 			selectIndex_ = i;
 			isHovered = true;
 			break;
@@ -82,7 +75,7 @@ void PauseScene::Update(void)
 	if (dirY != 0)
 	{
 		// マウス入力を無効化
-		ins.SetMouseFlage(false);
+		ins.SetMouseFlag(false);
 
 		// スティック入力が初めての入力である場合、選択インデックスを更新
 		if (!isStickInput_)
@@ -106,6 +99,7 @@ void PauseScene::Update(void)
 		// 選択肢に応じてシーン遷移またはアプリ終了
 		if (selectIndex_ == static_cast<int>(LIST::ゲームに戻る))
 		{
+			InputManager::GetInstance().SetMouseFlag(false);
 			sceMng_.PopScene();
 		}
 		// タイトルに戻るを選択した場合、タイトルシーンに遷移する
@@ -166,7 +160,7 @@ void PauseScene::Draw(void)
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
 		// 文字の描画位置を計算
-		int strW = GetDrawStringWidthToHandle(pasueList_[i].c_str(), -1, pauseFont_);
+		int strW = GetDrawStringWidthToHandle(pauseList_[i].c_str(), -1, pauseFont_);
 		int posX = static_cast<int>((Application::SCREEN_SIZE_X - strW) / FONT_ADJUST_X);
 		int posY = static_cast<int>(
 			(Application::HALF_SCREEN_SIZE_Y - FONT_ADJUST_Y) + (FONT_INTERVAL * i));
@@ -176,7 +170,7 @@ void PauseScene::Draw(void)
 			posX, posY,
 			FONT_COLOR,
 			pauseFont_,
-			pasueList_[i].c_str());
+			pauseList_[i].c_str());
 	}
 }
 

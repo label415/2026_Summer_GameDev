@@ -21,7 +21,7 @@ public:
 	PauseScene(void);
 
 	// デストラクタ
-	~PauseScene(void) override;
+	~PauseScene(void) override {}
 
 	// 読み込み
 	void Load(void)override {}
@@ -37,12 +37,6 @@ public:
 
 	// 解放
 	void Release(void) override;
-
-	// 生存フラグの設定
-	void SetIsAlive(bool isPauseScene) { isPauseScene_ = isPauseScene; }
-
-	// 生存フラグの取得
-	bool GetIsAlive(void) const { return isPauseScene_; }
 
 private:
 
@@ -120,9 +114,6 @@ private:
 	// スティック入力の判定
 	bool isStickInput_;
 
-	// ポーズシーンの生存フラグ
-	bool isPauseScene_;
-
 	// フォントハンドル
 	int pauseFont_;
 
@@ -133,7 +124,7 @@ private:
 	int selectImg_;
 
 	// 選択リスト
-	std::wstring pasueList_[LIST_MAX] =
+	std::wstring pauseList_[LIST_MAX] =
 	{
 		L"ゲームに戻る",
 		L"タイトルに戻る",

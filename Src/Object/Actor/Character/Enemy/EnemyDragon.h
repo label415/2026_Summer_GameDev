@@ -3,8 +3,8 @@
 #include <vector>
 #include "EnemyBase.h"
 
-class WeaponBracelet;
-class WeaponFlameThrower;
+class WeaponBreath;
+class WeaponFireball;
 
 class EnemyDragon : public EnemyBase
 {
@@ -21,12 +21,12 @@ public:
 		PATROL,			//探索
 		FLYING,			//飛行中
 		FALLING_ATTACK, //落下攻撃
-		FLYING_ATTACK,	//空中ブレス
-		BRACELET_ATTACK,//地上ブレス
+		FLYING_ATTACK,	//空中火球攻撃
+		BREATH_ATTACK,//地上ブレス
 		MELEE_ATTACK,	//噛みつき攻撃
 		HOVER,			//空中停止
 		TAKEOFF,		//上昇
-		LANDS,			//降下
+		LANDING,			//降下
 		DEAD,			//死亡
 		END				//終了
 	};
@@ -49,10 +49,10 @@ public:
 		FLYING = 5,
 		FALLING_ATTACK = 2,
 		FLYING_ATTACK = 6,
-		BRACELET_ATTACK = 4,
+		BREATH_ATTACK = 4,
 		MELEE_ATTACK = 2,
 		HOVER = 7,
-		LANDS = 11,
+		LANDING = 11,
 		TAKEOFF = 12,
 		DIE = 3
 	};
@@ -91,10 +91,10 @@ public:
 	static constexpr float ANIM_SPEED_WALK = 30.0f;
 	static constexpr float ANIM_SPEED_CHARGE = 50.0f;
 	static constexpr float ANIM_SPEED_FLYING = 30.0f;
-	static constexpr float ANIM_SPEED_BRACELET_ATTACK = 17.0f;
+	static constexpr float ANIM_SPEED_BREATH_ATTACK = 17.0f;
 	static constexpr float ANIM_SPEED_HOVER = 30.0f;
 	static constexpr float ANIM_SPEED_TAKEOFF = 30.0f;
-	static constexpr float ANIM_SPEED_LANDS = 30.0f;
+	static constexpr float ANIM_SPEED_LANDING = 30.0f;
 	static constexpr float ANIM_SPEED_DIE = 30.0f;
 	static constexpr float ANIM_SPEED_FLYING_ATTACK = 15.0f;
 	static constexpr float ANIM_SPEED_ROAR = 30.0f;
@@ -123,7 +123,7 @@ public:
 	static constexpr int AI_PROB_MELEE_IN_NEAR = 40;
 	static constexpr int AI_PROB_PATROL_IN_MID = 20;
 	static constexpr int AI_PROB_CHARGE_IN_MID = 60;
-	static constexpr int AI_PROB_LANDS = 20;
+	static constexpr int AI_PROB_LANDING = 20;
 
 	// 突進移行ステップ
 	static constexpr float CHARGE_SE_START_STEP = 107.0f;
@@ -190,7 +190,7 @@ public:
 	EnemyDragon(const EnemyBase::EnemyData& data);
 
 	// デストラクタ
-	~EnemyDragon(void) override;
+	~EnemyDragon(void) override {}
 
 	// 描画処理
 	void Draw(void) override;
@@ -199,7 +199,7 @@ public:
 	void Release(void) override;
 
 	// HPUI表示
-	void DrawHp(void) override;
+	void DrawUI(void) override;
 
 protected:
 
@@ -257,7 +257,7 @@ private:
 	static constexpr float BODY_RADIUS = 100.0f;
 
 	// 最高高度
-	static constexpr float MAX_TAKE = 500.0f;
+	static constexpr float MAX_HEIGHT = 500.0f;
 
 	//噛みつき攻撃判定発生時間
 	static constexpr float MELEE_ATTACK_COLLIDER = 22.0f;
@@ -291,7 +291,7 @@ private:
 	};
 
 	// ボスの選択距離
-	static constexpr float ENEMY_ATTACK[] = { 500.0f,1000.0f, 1500.0f };
+	static constexpr float ATTACK_RANGE_DISTANCES[] = { 500.0f,1000.0f, 1500.0f };
 
 	// 状態
 	STATE state_;
@@ -325,13 +325,13 @@ private:
 	void ChangeStateMeleeAttack(void);
 	void ChangeStateHover(void);
 	void ChangeStateTakeOff(void);
-	void ChangeStateLands(void);
+	void ChangeStateLanding(void);
 	void ChangeStateDead(void);
 	void ChangeStateEnd(void);
 
 	
 	// 各ステート更新ハンドラ
-	void UpdateNone(void);
+	void UpdateNone(void) {}
 	void UpdateThink(void);
 	void UpdateIdle(void);
 	void UpdateRoar(void);
@@ -344,23 +344,20 @@ private:
 	void UpdateMeleeAttack(void);
 	void UpdateHover(void);
 	void UpdateTakeOff(void);
-	void UpdateLands(void);
+	void UpdateLanding(void);
 	void UpdateDead(void);
 	void UpdateEnd(void);
-
-    // プレイヤーのコライダー情報をキャッシュする
-	void SetTargetCollider(void);
 
 	// コライダートランスフォーム
 	Transform colTransform_;
 
 	// ImGuiデバッグ表示の更新
-	void UpdateDebugImGui(void);
+	void UpdateDebugImGui(void) {}
 
 	// 前回の移動方向
 	VECTOR preMoveDir_;
 
-	// 被弾後の無敵時間（秒）
+	// 被弾後の無敵時間
 	static constexpr float INVINCIBLE_TIME = 1.0f;
 
 	// 無敵フラグ

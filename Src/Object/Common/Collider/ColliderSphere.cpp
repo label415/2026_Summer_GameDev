@@ -11,11 +11,3 @@ ColliderSphere::ColliderSphere(
 	, radius_(radius)
 {
 }
-
-ColliderSphere::~ColliderSphere(void) {}
-
-void ColliderSphere::DrawDebug(int color)
-{
-	// デバッグ用に球体を描画
-	DrawSphere3D(GetPos(), GetRadius(), DIV_NUM, color, color, false);
-}

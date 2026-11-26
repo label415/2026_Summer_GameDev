@@ -12,8 +12,8 @@ public:
 	enum class WEAPON_TYPE
 	{
 		BLADE,
-		BRACELET,
-		FLAME,
+		BREATH,
+		FIREBALL,
 		MAX
 	};
 
@@ -21,7 +21,7 @@ public:
 	WeaponBase(WEAPON_TYPE weaponType, const Transform& followTransform, int followFrameId);
 
 	// デストラクタ
-	virtual ~WeaponBase(void) override;
+	virtual ~WeaponBase(void) override {}
 
 	// 更新
 	virtual void Update(void) override;

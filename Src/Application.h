@@ -16,14 +16,14 @@ public:
 	static constexpr int SCREEN_SIZE_X = 1280;
 	static constexpr int SCREEN_SIZE_Y = 720;
 
-	//ハーフスクリーンサイズ
+	// ハーフスクリーンサイズ
 	static constexpr int HALF_SCREEN_SIZE_X = SCREEN_SIZE_X / 2;
 	static constexpr int HALF_SCREEN_SIZE_Y = SCREEN_SIZE_Y / 2;
 
 	// カラービット数
 	static constexpr int COLOR_BIT = 32;
 
-	//FPSレート
+	// FPSレート
 	static constexpr int FRAME_RATE = 60;
 
 	// データパス関連
@@ -64,6 +64,9 @@ public:
 	void SetIsEnd(void);
 
 private:
+
+	// Effekseerの最大パーティクル数
+	static constexpr int EFFEKSEER_MAX_PARTICLES = 8000;
 
 	// FPSコントローラー
 	std::unique_ptr<FpsController> fpsController_;

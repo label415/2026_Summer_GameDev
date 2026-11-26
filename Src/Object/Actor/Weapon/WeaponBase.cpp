@@ -12,8 +12,6 @@ WeaponBase::WeaponBase(WEAPON_TYPE weaponType, const Transform& followTransform,
 	localRot_(AsoUtility::VECTOR_ZERO)
 {}
 
-WeaponBase::~WeaponBase(void){}
-
 void WeaponBase::Update(void)
 {
 	// 対象フレームの位置にtargetを配置し、

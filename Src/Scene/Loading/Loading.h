@@ -1,4 +1,5 @@
 #pragma once
+#include <DxLib.h>
 #include "../../Template/Vector2Template.h"
 
 class Loading
@@ -9,7 +10,7 @@ public:
 	Loading();
 
 	//デストラクタ
-	~Loading();
+	~Loading() {}
 
 	// ロード
 	void Load(void);
@@ -23,18 +24,14 @@ public:
 	//解放
 	void Release(void);
 
-	// ロード画面の表示開始
-	void StartLoading(void);
-
-	// 非同期ロードの開始・終了
+	// 非同期ロードの開始
 	void StartAsyncLoad(void);
+
+	// 非同期ロードの終了
 	void EndAsyncLoad(void);
 
-	// ロード中かを返す
-	bool GetIsLoading(void) const { return isLoading_; }
-
-	// ロードが終わったか返す
-	bool GetIsLoadEnd(void) const { return isLoadEnd_; }
+	// ロード中かを返す。
+	bool GetIsLoading(void) { return isLoading_; }
 
 private:
 
@@ -60,17 +57,18 @@ private:
 	// 最低でもロード画面を表示する時間
 	static constexpr int MIN_LOAD_TIME = 70;
 
-	// 現在ロード中かどうかのフラグ
-	bool isLoading_;
-
-	// ロードが終わったフレームだけ立つフラグ
-	bool isLoadEnd_;
+	// ロード中ドットアニメーション間隔・周期
+	static constexpr int DOT_ANIM_INTERVAL = 20;
+	static constexpr int DOT_ANIM_CYCLE = 4;
 
 	// 最低でもロード画面を表示する時間の範囲
 	int loadTimer_;
 
 	//ポーズフォント
-	int pauseFont_;
+	int loadingFont_;
+
+	// ロード中の判定用
+	bool isLoading_;
 
 };
 

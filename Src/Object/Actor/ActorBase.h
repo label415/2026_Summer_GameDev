@@ -19,7 +19,7 @@ public:
 	// デストラクタ
 	virtual ~ActorBase(void);
 
-	//読み込み
+	// 読み込み
 	void Load(void);
 
 	// 読み取り後
@@ -37,7 +37,7 @@ public:
 	// 大きさ、回転、座標等の取得
 	const Transform& GetTransform(void) const { return transform_; }
 
-	//生存フラグ取得
+	// 生存フラグ取得
 	const bool GetIsAlive(void)const { return isAlive_; }
 
 	// 特定の自身の衝突情報取得

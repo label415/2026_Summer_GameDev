@@ -10,12 +10,8 @@ AnimationController::AnimationController(int modelId)
 	, SpecificLoop_(false)
 	, isReversing_(false)
 	, isStop_(false)
-	, SpState_(0.0f)
-	, SpEnd_(0.0f)
-{
-}
-
-AnimationController::~AnimationController(void)
+	, spStart_(0.0f)
+	, spEnd_(0.0f)
 {
 }
 
@@ -29,11 +25,11 @@ void AnimationController::Add(int type, float speed, const std::wstring path)
 	Add(type, speed, animation);
 }
 
-void AnimationController::Add(int type, float speed, int handlId)
+void AnimationController::Add(int type, float speed, int handleId)
 {
 	// ハンドルIDからアニメーションを追加する
 	Animation animation;
-	animation.model = handlId;
+	animation.model = handleId;
 	animation.animIndex = -1;
 
 	Add(type, speed, animation);
@@ -100,19 +96,19 @@ void AnimationController::Update(void)
 
 	if (SpecificLoop_)
 	{
-		// 1. 反転の判定（境界チェック）
-		if (playAnim_.step >= SpEnd_)
+		// 反転の判定
+		if (playAnim_.step >= spEnd_)
 		{
-			playAnim_.step = SpEnd_;
-			isReversing_ = true;  // 端に達したので「逆再生」にする
+			playAnim_.step = spEnd_;
+			isReversing_ = true;
 		}
-		else if (playAnim_.step <= SpState_)
+		else if (playAnim_.step <= spStart_)
 		{
-			playAnim_.step = SpState_;
-			isReversing_ = false; // 開始点に戻ったので「通常再生」にする
+			playAnim_.step = spStart_;
+			isReversing_ = false;
 		}
 
-		// 2. 現在の方向に基づいてステップを進める/戻す
+		// 現在の方向に基づいてステップを進める/戻す
 		if (isReversing_)
 		{
 			playAnim_.step -= (deltaTime * playAnim_.speed);
@@ -149,26 +145,13 @@ void AnimationController::Update(void)
 
 void AnimationController::Release(void)
 {
-	// 外部FBXのモデル(アニメーション)解放
-	for (const std::pair<int, Animation>& pair : animations_)
-	{
-		if (pair.second.model != -1)
-		{
-			MV1DeleteModel(pair.second.model);
-		}
-	}
-	
 	// 可変長配列をクリアする
 	animations_.clear();
 }
 
-int AnimationController::GetPlayType(void) const
-{
-	return playType_;
-}
-
 int AnimationController::GetPlayType(int type) const
 {
+	// 指定されたアニメーションが存在しない場合は処理しない
 	auto it = animations_.find(type);
 	if (it == animations_.end()) {
 		return -1;
@@ -223,11 +206,6 @@ bool AnimationController::IsEnd(int type) const
 
 }
 
-const AnimationController::Animation& AnimationController::GetPlayAnim(void) const
-{
-	return playAnim_;
-}
-
 const AnimationController::Animation& AnimationController::GetPlayAnim(int type) const
 {
 	// 指定されたアニメーションが存在しない場合は処理しない
@@ -239,24 +217,12 @@ const AnimationController::Animation& AnimationController::GetPlayAnim(int type)
 	return playAnim_;
 }
 
-void AnimationController::SetSpecificTime(float state, float end, bool SpecificLoop)
+void AnimationController::SetSpecificTime(float start, float end, bool SpecificLoop)
 {
 	// 特定の時間をループするアニメーションを再生
-	SpState_ = state;
-	SpEnd_ = end;
+	spStart_ = start;
+	spEnd_ = end;
 	SpecificLoop_ = SpecificLoop;
-}
-
-void AnimationController::SetStateTime(float state)
-{
-	// アニメーションを始める時間を設定
-	playAnim_.step = state;
-}
-
-void AnimationController::SetIsStopFlager(bool isStop)
-{
-	// アニメーションを止めるフラグを設定
-	isStop_ = isStop;
 }
 
 void AnimationController::Add(int type, float speed, Animation& animation)

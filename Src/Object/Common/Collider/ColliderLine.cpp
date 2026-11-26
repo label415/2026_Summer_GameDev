@@ -12,30 +12,9 @@ ColliderLine::ColliderLine(
 {
 }
 
-ColliderLine::~ColliderLine(void) {}
-
-void ColliderLine::SetLocalPosStart(const VECTOR& pos)
-{
-	localPosStart_ = pos;
-}
-
-void ColliderLine::SetLocalPosEnd(const VECTOR& pos)
-{
-	localPosEnd_ = pos;
-}
-
-const VECTOR& ColliderLine::GetLocalPosStart(void) const
-{
-	return localPosStart_;
-}
-
-const VECTOR& ColliderLine::GetLocalPosEnd(void) const
-{
-	return localPosEnd_;
-}
-
 VECTOR ColliderLine::GetPosStart(void) const
 {
+	// 追従先が設定されていれば、ローカル座標をワールド座標に変換して返す
 	if (follow_ != nullptr)
 	{
 		return GetRotPos(localPosStart_);
@@ -45,16 +24,12 @@ VECTOR ColliderLine::GetPosStart(void) const
 
 VECTOR ColliderLine::GetPosEnd(void) const
 {
+	// 追従先が設定されていれば、ローカル座標をワールド座標に変換して返す
 	if (follow_ != nullptr)
 	{
 		return GetRotPos(localPosEnd_);
 	}
 	return localPosEnd_;
-}
-
-float ColliderLine::GetLinelength(void) const
-{
-	return VSize(VSub(GetPosEnd(), GetPosStart()));
 }
 
 void ColliderLine::DrawDebug(int color)

@@ -1,6 +1,11 @@
 #include <DxLib.h>
 #include "SoundManager.h"
 
+SoundManager::SoundManager(void)
+{
+	Init();
+}
+
 void SoundManager::Init(void)
 {
     bgm_ = -1;
@@ -157,11 +162,4 @@ void SoundManager::PlaySlowSE(SeId id, int handle, int volume,int slow)
         PlaySoundMem(newSe, DX_PLAYTYPE_BACK, TRUE);
         seMap_[id] = newSe;
     }
-}
-
-SoundManager::SoundManager(void)
-{
-	// メンバ変数の初期化
-	// (未初期化のままだと、最初のStopBGMで不定なハンドルを削除してしまう)
-	Init();
 }

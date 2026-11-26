@@ -9,12 +9,12 @@
 #include "../../../Manager/SceneManager.h"
 #include "../../../Application.h"
 #include "../../../Libs/ImGui/imgui.h"
-#include "WeaponFlameThrower.h"
+#include "WeaponFireball.h"
 
-WeaponFlameThrower::WeaponFlameThrower(
+WeaponFireball::WeaponFireball(
 	const Transform& followTransform,
 	const VECTOR moveDir, int followFrameId)
-	: WeaponBase(WeaponBase::WEAPON_TYPE::FLAME,followTransform,followFrameId)
+	: WeaponBase(WeaponBase::WEAPON_TYPE::FIREBALL,followTransform,followFrameId)
 	, moveDir_(moveDir)
 	, prePos_(AsoUtility::VECTOR_ZERO)
 	, radius_(MIN_RADIUS)
@@ -23,9 +23,7 @@ WeaponFlameThrower::WeaponFlameThrower(
 	, moveSpeed_(SPEED)
 {}
 
-WeaponFlameThrower::~WeaponFlameThrower(void){}
-
-void WeaponFlameThrower::Update(void)
+void WeaponFireball::Update(void)
 {
 	// 生存フラグが立っていなければ処理しない
 	if (!isAlive_) return;
@@ -45,11 +43,17 @@ void WeaponFlameThrower::Update(void)
 	effect_->Update(static_cast<int>(effectType_));
 }
 
-void WeaponFlameThrower::InitLoad(void){}
+void WeaponFireball::Draw(void)
+{
+	ActorBase::Draw();
+}
 
-void WeaponFlameThrower::InitTransform(void){}
+void WeaponFireball::Release(void)
+{
+	ActorBase::Release();
+}
 
-void WeaponFlameThrower::InitCollider(void)
+void WeaponFireball::InitCollider(void)
 {
 	// 衝突判定の対象タグを設定
 	std::vector<ColliderBase::TAG> targetTags = {
@@ -67,16 +71,14 @@ void WeaponFlameThrower::InitCollider(void)
 	);
 
 	// 初期状態では当たり判定を無効化
-	colliderSphere->SetIsCollier(false);
+	colliderSphere->SetIsCollider(false);
 
 	// コライダーを所有コライダーに追加
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::SPHERE)].push_back(colliderSphere);
 	CollisionManager::GetInstance().AddCollider(colliderSphere);
 }
 
-void WeaponFlameThrower::InitAnimation(void){}
-
-void WeaponFlameThrower::InitPost(void)
+void WeaponFireball::InitPost(void)
 {
 	// 追従元の座標へリセット
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
@@ -94,7 +96,7 @@ void WeaponFlameThrower::InitPost(void)
 	isAlive_ = false;
 }
 
-void WeaponFlameThrower::Move(void)
+void WeaponFireball::Move(void)
 {
 	bool isHitStage = false;
 
@@ -108,7 +110,7 @@ void WeaponFlameThrower::Move(void)
 		{
 			// 衝突したコライダーを取得
 			auto hitCol = hit.lock();
-			if (hitCol && hitCol->GetIsCollier()
+			if (hitCol && hitCol->GetIsCollider()
 				&& hitCol->GetTag() == ColliderBase::TAG::STAGE)
 			{
 				// 衝突フラグを立てる
@@ -125,8 +127,8 @@ void WeaponFlameThrower::Move(void)
 		if (effectType_ != EFFECT_TYPE::EXPLOSION)
 		{
 			// 着弾SE再生
-			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ARE_BREASE_2).handleId_;
-			SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ARE_ENEMY_BREASE2, bgm_, 100);
+			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_AIR_BREATH_2).handleId_;
+			SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_AIR_BREATH2, bgm_, SoundManager::MaxVolumeValue);
 
 			// 爆発エフェクトに切り替え
 			transform_.pos = prePos_;
@@ -157,7 +159,7 @@ void WeaponFlameThrower::Move(void)
 	}
 }
 
-void WeaponFlameThrower::ChangeEffect(EFFECT_TYPE effectType)
+void WeaponFireball::ChangeEffect(EFFECT_TYPE effectType)
 {
 	// すでに同じエフェクトが再生中なら何もしない
 	if (effectType_ == effectType)return;
@@ -178,30 +180,18 @@ void WeaponFlameThrower::ChangeEffect(EFFECT_TYPE effectType)
 	effectType_ = effectType;
 }
 
-void WeaponFlameThrower::Draw(void)
-{
-	// 基底クラスの描画処理
-	ActorBase::Draw();
-}
-
-void WeaponFlameThrower::Release(void)
-{
-	// 基底クラスの解放処理
-	ActorBase::Release();
-}
-
-void WeaponFlameThrower::SetCollider(void)
+void WeaponFireball::SetCollider(void)
 {
 	// 球体コライダーの当たり判定を有効化
 	int colliderType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
 	for (const auto& col : ownColliders_.at(colliderType))
 	{
 		auto* sphere = static_cast<ColliderSphere*>(col.get());
-		sphere->SetIsCollier(true);
+		sphere->SetIsCollider(true);
 	}
 }
 
-void WeaponFlameThrower::ClearCollider(void)
+void WeaponFireball::ClearCollider(void)
 {
 	// 球体コライダーの当たり判定を無効化
 	int colliderType = static_cast<int>(ColliderBase::SHAPE::SPHERE);
@@ -209,7 +199,7 @@ void WeaponFlameThrower::ClearCollider(void)
 	{
 		auto* sphere = static_cast<ColliderSphere*>(col.get());
 		// 当たり判定をオフにする
-		sphere->SetIsCollier(false);
+		sphere->SetIsCollider(false);
 		sphere->SetRadius(MIN_RADIUS);
 	}
 
@@ -231,7 +221,7 @@ void WeaponFlameThrower::ClearCollider(void)
 	isAlive_ = false;
 }
 
-void WeaponFlameThrower::Shot(const VECTOR& dir)
+void WeaponFireball::Shot(const VECTOR& dir)
 {
 	// コライダーをクリアして初期状態に戻す
 	ClearCollider();

@@ -81,12 +81,17 @@ void InputManager::Init(void)
 	info.keyTrgDown = false;
 	info.keyTrgUp = false;
 	mouseInfos_.emplace(info.key, info);
-	SetMousePoint(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
+
+	constexpr int centerX = Application::HALF_SCREEN_SIZE_X;
+	constexpr int centerY = Application::HALF_SCREEN_SIZE_Y;
+	SetMousePoint(centerX, centerY);
+	mousePos_ = { centerX, centerY };
+	mouseMoveDist_ = AsoUtility::VECTOR2_ZERO;
+	SetMouseDispFlag(isMouseFlag_);
 }
 
 void InputManager::Update(void)
 {
-
 	// キーボード検知
 	for (auto& p : keyInfos_)
 	{
@@ -98,9 +103,18 @@ void InputManager::Update(void)
 
 	// マウス検知
 	mouseInput_ = GetMouseInput();
-	mousePrePos_ = mousePos_;
 	mouseWheelRotVolF_ = GetMouseWheelRotVolF();
-	GetMousePoint(&mousePos_.x, &mousePos_.y);
+	if (isMouseFlag_) { GetMousePoint(&mousePos_.x, &mousePos_.y); }
+	else
+	{
+		constexpr int centerX = Application::HALF_SCREEN_SIZE_X;
+		constexpr int centerY = Application::HALF_SCREEN_SIZE_Y;
+		Vector2 currentPos = AsoUtility::VECTOR2_ZERO;
+		GetMousePoint(&currentPos.x, &currentPos.y);
+		mouseMoveDist_ = { currentPos.x - centerX, currentPos.y - centerY };
+		SetMousePoint(centerX, centerY);
+		mousePos_ = { centerX, centerY };
+	}
 
 	for (auto& p : mouseInfos_)
 	{
@@ -116,19 +130,16 @@ void InputManager::Update(void)
 	SetJPadInState(JOYPAD_NO::PAD2);
 	SetJPadInState(JOYPAD_NO::PAD3);
 	SetJPadInState(JOYPAD_NO::PAD4);
-
 }
 
 void InputManager::Destroy(void)
 {
-
 	// キー情報のクリア
 	keyInfos_.clear();
 	mouseInfos_.clear();
 
 	// インスタンスのメモリ解放
 	delete instance_;
-
 }
 
 void InputManager::Add(int key)
@@ -147,72 +158,19 @@ void InputManager::Clear(void)
 	keyInfos_.clear();
 }
 
-bool InputManager::IsNew(int key) const
-{
-	return Find(key).keyNew;
-}
-
-bool InputManager::IsTrgDown(int key) const
-{
-	return Find(key).keyTrgDown;
-}
-
-bool InputManager::IsTrgUp(int key) const
-{
-	return Find(key).keyTrgUp;
-}
-
-Vector2 InputManager::GetMousePos(void) const
-{
-	return mousePos_;
-}
-
-int InputManager::GetMouse(void) const
-{
-	return mouseInput_;
-}
-
-bool InputManager::IsClickMouseLeft(void) const
-{
-	return mouseInput_ == MOUSE_INPUT_LEFT;
-}
-
-bool InputManager::IsClickMouseRight(void) const
-{
-	return mouseInput_ == MOUSE_INPUT_RIGHT;
-}
-
-bool InputManager::IsTrgMouseLeft(void) const
-{
-	return FindMouse(MOUSE_INPUT_LEFT).keyTrgDown;
-}
-
-bool InputManager::IsTrgMouseRight(void) const
-{
-	return FindMouse(MOUSE_INPUT_RIGHT).keyTrgDown;
-}
-
-bool InputManager::IsTrgMouseMiddle(void) const
-{
-	return FindMouse(MOUSE_INPUT_MIDDLE).keyTrgDown;
-}
-
-float InputManager::GetMouseWheelRot(void) const
-{
-	return mouseWheelRotVolF_;
-}
-
 InputManager::InputManager(void)
-	:
-	keyInfos_(),
-	mouseInfos_(),
-	infoEmpty_(),
-	mouseInfoEmpty_(),
-	mousePos_(),
-	mouseInput_(-1),
-	padInfos_(),
-	joyDInState_(),
-	joyXInState_()
+	: keyInfos_()
+	, mouseInfos_()
+	, infoEmpty_()
+	, mouseInfoEmpty_()
+	, mousePos_()
+	, mouseMoveDist_()
+	, mouseWheelRotVolF_(0.0f)
+	, mouseInput_(-1)
+	, padInfos_()
+	, joyDInState_()
+	, joyXInState_()
+	, isMouseFlag_(true)
 {
 }
 
@@ -236,11 +194,6 @@ const InputManager::MouseInfo& InputManager::FindMouse(int key) const
 	}
 
 	return mouseInfoEmpty_;
-}
-
-InputManager::JOYPAD_TYPE InputManager::GetJPadType(JOYPAD_NO no) const
-{
-	return static_cast<InputManager::JOYPAD_TYPE>(GetJoypadType(static_cast<int>(no)));
 }
 
 DINPUT_JOYSTATE InputManager::GetJPadDInputState(JOYPAD_NO no)
@@ -285,21 +238,20 @@ void InputManager::SetJPadInState(JOYPAD_NO jpNo)
 	stateNow.AKeyRY = stateNew.AKeyRY;
 }
 
-void InputManager::SetMouseFlage(bool isFlage)
+void InputManager::SetMouseFlag(bool isFlag)
 {
-	SetMouseDispFlag(isFlage);
-}
+	if (isMouseFlag_ == isFlag)return;
 
-void InputManager::SetMousePos(int posX, int posY)
-{
-	mousePos_ = { posX, posY };
-	mousePrePos_ = { posX, posY };
-	SetMousePoint(Application::SCREEN_SIZE_X / 2, Application::SCREEN_SIZE_Y / 2);
-}
-
-Vector2 InputManager::GetMousePosDistance(void) const
-{
-	return { mousePos_.x - mousePrePos_.x ,mousePos_.y - mousePrePos_.y };
+	isMouseFlag_ = isFlag;
+	mouseMoveDist_ = AsoUtility::VECTOR2_ZERO;
+	if (!isMouseFlag_)
+	{
+		constexpr int centerX = Application::HALF_SCREEN_SIZE_X;
+		constexpr int centerY = Application::HALF_SCREEN_SIZE_Y;
+		SetMousePoint(centerX, centerY);
+		mousePos_ = { centerX, centerY };
+	}
+	SetMouseDispFlag(isMouseFlag_);
 }
 
 InputManager::JOYPAD_IN_STATE InputManager::GetJPadInputState(JOYPAD_NO no)
@@ -329,19 +281,19 @@ InputManager::JOYPAD_IN_STATE InputManager::GetJPadInputState(JOYPAD_NO no)
 		//   A
 
 		idx = static_cast<int>(JOYPAD_BTN::TOP);
-		ret.ButtonsNew[idx] = d.Buttons[3];// Y
+		ret.ButtonsNew[idx] = d.Buttons[DINPUT_XBOX_BTN_Y];// Y
 
 		idx = static_cast<int>(JOYPAD_BTN::LEFT);
-		ret.ButtonsNew[idx] = d.Buttons[2];// X
+		ret.ButtonsNew[idx] = d.Buttons[DINPUT_XBOX_BTN_X];// X
 
 		idx = static_cast<int>(JOYPAD_BTN::RIGHT);
-		ret.ButtonsNew[idx] = d.Buttons[1];// B
+		ret.ButtonsNew[idx] = d.Buttons[DINPUT_XBOX_BTN_B];// B
 
 		idx = static_cast<int>(JOYPAD_BTN::DOWN);
-		ret.ButtonsNew[idx] = d.Buttons[0];// A
+		ret.ButtonsNew[idx] = d.Buttons[DINPUT_XBOX_BTN_A];// A
 
 		idx = static_cast<int>(JOYPAD_BTN::START);
-		ret.ButtonsNew[idx] = d.Buttons[6];// A
+		ret.ButtonsNew[idx] = d.Buttons[DINPUT_XBOX_BTN_START];// START
 
 		idx = static_cast<int>(JOYPAD_BTN::R_TRIGGER);
 		ret.ButtonsNew[idx] = x.RightTrigger;// R_TRIGGER
@@ -371,22 +323,22 @@ InputManager::JOYPAD_IN_STATE InputManager::GetJPadInputState(JOYPAD_NO no)
 		//   ×
 
 		idx = static_cast<int>(JOYPAD_BTN::TOP);
-		ret.ButtonsNew[idx] = d.Buttons[3];// △
+		ret.ButtonsNew[idx] = d.Buttons[DINPUT_PS_BTN_TRIANGLE];// △
 
 		idx = static_cast<int>(JOYPAD_BTN::LEFT);
-		ret.ButtonsNew[idx] = d.Buttons[0];// □
+		ret.ButtonsNew[idx] = d.Buttons[DINPUT_PS_BTN_SQUARE];// □
 
 		idx = static_cast<int>(JOYPAD_BTN::RIGHT);
-		ret.ButtonsNew[idx] = d.Buttons[2];// 〇
+		ret.ButtonsNew[idx] = d.Buttons[DINPUT_PS_BTN_CIRCLE];// 〇
 
 		idx = static_cast<int>(JOYPAD_BTN::DOWN);
-		ret.ButtonsNew[idx] = d.Buttons[1];// ×
+		ret.ButtonsNew[idx] = d.Buttons[DINPUT_PS_BTN_CROSS];// ×
 
 		idx = static_cast<int>(JOYPAD_BTN::R_TRIGGER);
-		ret.ButtonsNew[idx] = d.Buttons[7];// R_TRIGGER
+		ret.ButtonsNew[idx] = d.Buttons[DINPUT_PS_BTN_R2];// R_TRIGGER
 
 		idx = static_cast<int>(JOYPAD_BTN::L_TRIGGER);
-		ret.ButtonsNew[idx] = d.Buttons[6]; // L_TRIGGER
+		ret.ButtonsNew[idx] = d.Buttons[DINPUT_PS_BTN_L2]; // L_TRIGGER
 
 		// 左スティック
 		ret.AKeyLX = d.X;
@@ -409,21 +361,6 @@ InputManager::JOYPAD_IN_STATE InputManager::GetJPadInputState(JOYPAD_NO no)
 	}
 
 	return ret;
-}
-
-bool InputManager::IsPadBtnNew(JOYPAD_NO no, JOYPAD_BTN btn) const
-{
-	return padInfos_[static_cast<int>(no)].IsNew[static_cast<int>(btn)];
-}
-
-bool InputManager::IsPadBtnTrgDown(JOYPAD_NO no, JOYPAD_BTN btn) const
-{
-	return padInfos_[static_cast<int>(no)].IsTrgDown[static_cast<int>(btn)];
-}
-
-bool InputManager::IsPadBtnTrgUp(JOYPAD_NO no, JOYPAD_BTN btn) const
-{
-	return padInfos_[static_cast<int>(no)].IsTrgUp[static_cast<int>(btn)];
 }
 
 VECTOR InputManager::GetDirectionXZAKey(int aKeyX, int aKeyY) const

@@ -7,14 +7,13 @@ class Vector2Template
 public:
 
 	// テンプレート変数
-	T x;
-	T y;
+	T x, y;
 
 	// コンストラクタ
-	Vector2Template(void) : x(0), y(0) {}
+	constexpr Vector2Template(void) : x(static_cast<T>(0)), y(static_cast<T>(0)) {}
 
 	// コンストラクタ
-	Vector2Template(T vX, T vY) : x(vX), y(vY){}
+	constexpr Vector2Template(T vX, T vY) : x(vX), y(vY) {}
 
 	// デストラクタ
 	~Vector2Template(void) = default;

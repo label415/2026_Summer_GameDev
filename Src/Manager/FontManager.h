@@ -10,7 +10,7 @@ public:
 	static void CreateInstance(void);
 
 	// インスタンスの取得
-	static FontManager& GetInstance(void);
+	static FontManager& GetInstance(void) { return *instance_; }
 
 	/// <summary>
 	/// オリジナルフォントの生成

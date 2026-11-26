@@ -8,9 +8,7 @@ ColliderModel::ColliderModel(
 {
 }
 
-ColliderModel::~ColliderModel(void) {}
-
-void ColliderModel::AddExcludeFrameIds(const std::wstring& name)
+void ColliderModel::AddExcludeFrameId(const std::wstring& name)
 {
 	// フレーム数を取得
 	int num = MV1GetFrameNum(follow_->modelId);
@@ -45,7 +43,7 @@ bool ColliderModel::IsExcludeFrame(int frameIdx) const
 	return false;
 }
 
-void ColliderModel::AddTargetFrameIds(const std::wstring& name)
+void ColliderModel::AddTargetFrameId(const std::wstring& name)
 {
 	// フレーム数を取得
 	int num = MV1GetFrameNum(follow_->modelId);

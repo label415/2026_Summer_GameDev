@@ -21,7 +21,7 @@ public:
 	TitleScene(void);
 
 	// デストラクタ  
-	~TitleScene(void) override;
+	~TitleScene(void) override {}
 
 	// 読み込み  
 	void Load(void)override;
@@ -91,7 +91,7 @@ private:
 	static constexpr int BGM_VOLUME = 50;
 
 	// 選択リスト  
-	std::wstring pauseList_[LIST_MAX] =
+	std::wstring titleList_[LIST_MAX] =
 	{
 		L"GAME START",	// 続ける
 		L"QUIT",		// ゲームの終了  
@@ -104,7 +104,7 @@ private:
 	std::unique_ptr<ColliderBox2D> uiBoxs_[LIST_MAX];
 
 	// フォントハンドル
-	int pauseFont_;
+	int titleFont_;
 
 	//ポーズリストの選択  
 	int selectIndex_;

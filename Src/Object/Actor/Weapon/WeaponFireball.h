@@ -3,7 +3,7 @@
 
 class Transform;
 
-class WeaponFlameThrower :public WeaponBase
+class WeaponFireball :public WeaponBase
 {
 public:
 
@@ -16,12 +16,12 @@ public:
 	};
 
 	// コンストラクタ
-	WeaponFlameThrower(
+	WeaponFireball(
 		const Transform& followTransform,
 		const VECTOR moveDir, int followFrameId);
 
 	// デストラクタ
-	~WeaponFlameThrower(void) override;
+	~WeaponFireball(void) override {}
 
 	// 更新
 	void Update(void) override;
@@ -51,16 +51,16 @@ protected:
 	static constexpr float EXPLOSION_START_TIME = 1.0f;
 
 	// リソースロード
-	void InitLoad(void) override;
+	void InitLoad(void) override {}
 
 	// 大きさ、回転、座標の初期化
-	void InitTransform(void) override;
+	void InitTransform(void) override {}
 
 	// 衝突判定の初期化
 	void InitCollider(void) override;
 
 	// アニメーションの初期化
-	void InitAnimation(void) override;
+	void InitAnimation(void) override {}
 
 	// 初期化後の個別処理
 	void InitPost(void) override;

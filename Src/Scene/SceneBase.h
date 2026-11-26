@@ -52,3 +52,5 @@ protected:
 	int volume_;
 
 };
+
+inline SceneBase::~SceneBase(void) {}

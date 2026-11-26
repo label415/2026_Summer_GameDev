@@ -37,7 +37,7 @@ public:
     EnemyBase(const EnemyBase::EnemyData& data);
 
     // デストラクタ
-    virtual ~EnemyBase(void) override;
+    virtual ~EnemyBase(void) override {}
 
     // 描画
     virtual void Draw(void) override;
@@ -46,7 +46,7 @@ public:
     const int GetState(void)const { return stateBase_; }
 
 	// 死亡演出タイム取得
-    const float GetDeath(void)const { return deathAnimationTime_; }
+    const float GetDeathAnimTime(void)const { return deathAnimationTime_; }
 
 protected:
 

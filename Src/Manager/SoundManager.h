@@ -12,20 +12,20 @@ public:
     {
         PLAYER_WEAPON_SE1,
         PLAYER_WEAPON_SE2,
-        PLAYER_WAKE,
-        PLAYER_RAN,
-        PLAYER_HER,
-        PLAYER_AVE,
-        PLAYER_DMAGE,
+        PLAYER_WALK,
+        PLAYER_RUN,
+        PLAYER_HEAL,
+        PLAYER_EVASION,
+        PLAYER_DAMAGE,
 
         ENEMY_ROAR,
-        ENEMY_WAKE,
-        ENEMY_BREASE1,
-        ENEMY_BREASE2,
-        ENEMY_ATTCEK,
-        ENEMY_ARE,
-        ENEMY_ARE_ENEMY_BREASE1,
-        ENEMY_ARE_ENEMY_BREASE2,
+        ENEMY_WALK,
+        ENEMY_BREATH1,
+        ENEMY_BREATH2,
+        ENEMY_ATTACK,
+        ENEMY_AIR,
+        ENEMY_AIR_BREATH1,
+        ENEMY_AIR_BREATH2,
         ENEMY_FALL,
         Max,
     };
@@ -36,6 +36,7 @@ public:
     // --- 定数定義 ---
     static constexpr int MaxVolumeValue = 100;   // ユーザーが指定する最大音量
     static constexpr int DxLibMaxVolume = 255;  // DxLib内部で扱われる最大音量
+    static constexpr int DEFAULT_SLOW_RATE = 2;  // デフォルトのスロー再生倍率
 
     // --- BGM機能 ---
     void PlayBGM(int handle, int volume = MaxVolumeValue); // BGMのループ再生
@@ -43,12 +44,12 @@ public:
     void ResumeBGM();                                      // BGMの再開（停止位置から）
     void StopBGM();                                        // BGMの完全停止とメモリ解放
     void SetBGMVolume(int volume);                         // 再生中のBGM音量変更
-    void PlaySlowBGM(int handle,int slow=2);                          // BGMのスロー再生
+    void PlaySlowBGM(int handle, int slow = DEFAULT_SLOW_RATE); // BGMのスロー再生
 
     // --- SE機能 ---
     void PlaySE(SeId id, int handle, int volume = MaxVolumeValue);      // SEの再生
     void PlayLoopSE(SeId id, int handle, int volume = MaxVolumeValue);      // SEのループ再生
-    void PlaySlowSE(SeId id, int handle, int volume = MaxVolumeValue,int slow=2);  // スローSE再生
+    void PlaySlowSE(SeId id, int handle, int volume = MaxVolumeValue, int slow = DEFAULT_SLOW_RATE);  // スローSE再生
     void StopSE(SeId id);                                               // 特定のSEを停止
     void AllStopSE();                                                   // 全てのSEを停止
     void SetSESpeed(SeId id, float speed);                              // SEの再生速度を設定

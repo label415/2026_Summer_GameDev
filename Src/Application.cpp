@@ -27,6 +27,7 @@ bool Application::Init(void)
 	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, COLOR_BIT);
 	ChangeWindowMode(true);
 	SetMultiThreadFlag(true);
+
 	// FPSêßå‰èâä˙âª
 	fpsController_ = std::make_unique<FpsController>(FRAME_RATE);
 
@@ -129,7 +130,7 @@ Application::Application(void)
 void Application::InitEffekseer(void)
 {
 	// EffekseerÇÃèâä˙âª
-	if (Effekseer_Init(8000) == -1)
+	if (Effekseer_Init(EFFEKSEER_MAX_PARTICLES) == -1)
 	{
 		DxLib_End();
 	}
@@ -139,7 +140,6 @@ void Application::InitEffekseer(void)
 
 void Application::SetIsEnd(void)
 {
-	//ÉQÅ[ÉÄèIóπ
 	isGameEnd_ = true;
 }
 

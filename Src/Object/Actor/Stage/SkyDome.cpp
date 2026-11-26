@@ -6,7 +6,7 @@ void SkyDome::Update(void)
 {
 	// スカイドームをゆっくり回転させる
 	transform_.quaRot = Quaternion::Mult(transform_.quaRot,
-		Quaternion::AngleAxis(AsoUtility::Deg2RadF(-0.01f), AsoUtility::AXIS_Y));
+		Quaternion::AngleAxis(AsoUtility::Deg2RadF(ROT_SPEED_DEG), AsoUtility::AXIS_Y));
 
 	// モデル制御更新
 	transform_.Update();
@@ -30,12 +30,12 @@ void SkyDome::InitLoad(void)
 void SkyDome::InitTransform(void)
 {
 	// スカイドームの大きさ、回転、座標の初期化
-	transform_.scl = { 100.0f, 100.0f, 100.0f };
+	transform_.scl = DEFAULT_SCALE;
 	transform_.quaRot = Quaternion::Identity();
 	transform_.quaRotLocal = Quaternion::Identity();
 	transform_.quaRotLocal =
 		Quaternion::Mult(transform_.quaRotLocal,
-			Quaternion::AngleAxis(AsoUtility::Deg2RadF(180.0f), AsoUtility::AXIS_Y));
+			Quaternion::AngleAxis(AsoUtility::Deg2RadF(AsoUtility::DEG_180), AsoUtility::AXIS_Y));
 	transform_.pos = { 0.0f, 0.0f, 0.0f };
 	transform_.Update();
 }

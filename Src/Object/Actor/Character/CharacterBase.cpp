@@ -1,6 +1,6 @@
 #include "../../../Application.h"
 #include "../../../Utility/AsoUtility.h"
-#include "../../../Utility/ColliderUtility.h"
+#include "../../../Utility/CollisionUtility.h"
 #include "../../../Manager/SceneManager.h"
 #include "../../../Manager/ResourceManager.h"
 #include "../../Common/Collider/ColliderLine.h"
@@ -24,8 +24,6 @@ CharacterBase::CharacterBase(void)
 {
 	weapons_.clear();
 }
-
-CharacterBase::~CharacterBase(void) {}
 
 void CharacterBase::Update(void)
 {
@@ -101,7 +99,7 @@ void CharacterBase::DelayRotate(void)
 	Quaternion goalRot = Quaternion::LookRotation(moveDir_);
 	// 回転の補間
 	transform_.quaRot =
-		Quaternion::Slerp(transform_.quaRot, goalRot, 0.2f);
+		Quaternion::Slerp(transform_.quaRot, goalRot, ROT_SLERP_RATE);
 }
 
 void CharacterBase::CalcGravityPow(void)
@@ -143,14 +141,14 @@ void CharacterBase::Collision(void)
 void CharacterBase::CollisionGravity(void)
 {
 	// 落下中しか判定しない
-	if (!(VDot(AsoUtility::DIR_D, jumpPow_) > 0.9f))return;
+	if (!(VDot(AsoUtility::DIR_D, jumpPow_) > FALL_DOT_THRESHOLD))return;
 
 	int lineType = static_cast<int>(ColliderBase::SHAPE::LINE);
 	if (ownColliders_.count(lineType) == 0) return;
 
 	for (const auto& col : ownColliders_.at(lineType))
 	{
-		if (!col->GetIsCollier()) continue;
+		if (!col->GetIsCollider()) continue;
 
 		// カプセルコライダ情報  
 		std::shared_ptr<ColliderLine> colliderLine =
@@ -159,7 +157,7 @@ void CharacterBase::CollisionGravity(void)
 
 		for (const auto& hit : col->GetHitColliders())
 		{
-			if (hit.lock()->GetIsCollier()
+			if (hit.lock()->GetIsCollider()
 				&& hit.lock()->GetTag() == ColliderBase::TAG::STAGE)
 			{
 				std::shared_ptr<ColliderModel> colliderModel =
@@ -170,7 +168,7 @@ void CharacterBase::CollisionGravity(void)
 				transform_.pos =
 					CollisionUtility::CalcPushUpLineModel(
 						*colliderLine, *colliderModel,
-						transform_.pos.y, 2.0f,
+						transform_.pos.y, GROUND_PUSH_UP_OFFSET,
 						false, true);
 
 				isJump_ = false;
@@ -188,7 +186,7 @@ void CharacterBase::CollisionCapsule(void)
 
 	for (const auto& col : ownColliders_.at(capsuleType))
 	{
-		if (!col->GetIsCollier()) continue;
+		if (!col->GetIsCollider()) continue;
 
 		// カプセルコライダ情報  
 		std::shared_ptr<ColliderCapsule> colliderCapsule =

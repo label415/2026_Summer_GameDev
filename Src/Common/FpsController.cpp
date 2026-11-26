@@ -19,8 +19,6 @@ FpsController::FpsController(int fixedFps)
 	SetWaitVSyncFlag(false);
 }
 
-FpsController::~FpsController(void) {}
-
 void FpsController::Wait()
 {
 	// Œ»ÝŽžŠÔ
@@ -37,7 +35,7 @@ void FpsController::Wait()
 	{
 
 		// ‘Ò‚Â‚×‚«ŽžŠÔ(ƒ~ƒŠ•b)
-		double waitMiliSecond = (idealFrameTime_ - deltaTime) * WAITMILI;
+		double waitMiliSecond = (idealFrameTime_ - deltaTime) * WAIT_MILLI;
 
 		// Sleep‚Å‘Ò‚¿ŽžŠÔ•ª‚ð‘Ò‹@
 		if (waitMiliSecond >= 1.0)
@@ -79,7 +77,7 @@ void FpsController::Wait()
 	fps_ = static_cast<float>(timeList_.size() / total);
 }
 
-void FpsController::Draw()
+void FpsController::Draw(void)
 {
 	DrawFormatString(POS_X, POS_Y, COLOR, L"FPS : %.2f", fps_);
 }

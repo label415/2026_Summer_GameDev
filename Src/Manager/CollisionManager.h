@@ -3,7 +3,7 @@
 #include <memory>
 #include <functional>
 #include "../Template/Singleton.h"
-#include "../Utility/ColliderUtility.h"
+#include "../Utility/CollisionUtility.h"
 
 class ActorBase;
 class ColliderBase;
@@ -16,7 +16,7 @@ class CollisionManager : public Singleton<CollisionManager>
 public:
 
 	// コライダー登録
-	void AddCollider(const std::shared_ptr<ColliderBase>& col);
+	void AddCollider(const std::shared_ptr<ColliderBase>& col) { colliders_.push_back(col); }
 
 	// 判定更新
 	void Update(void);

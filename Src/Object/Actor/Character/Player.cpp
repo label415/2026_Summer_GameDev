@@ -6,7 +6,7 @@
 #include "../../../Manager/InputManager.h"
 #include "../../../Manager/SoundManager.h"
 #include "../../../Utility/AsoUtility.h"
-#include "../../../Utility/ColliderUtility.h"
+#include "../../../Utility/CollisionUtility.h"
 #include "../../../Utility/MatrixUtility.h"
 #include "../../../Application.h"
 #include "../../../Common/Quaternion.h"
@@ -51,11 +51,10 @@ void Player::Draw(void)
 
 void Player::Release(void)
 {
-	// 基底クラスの解放処理
 	CharacterBase::Release();
 }
 
-void Player::DrawHp(void)
+void Player::DrawUI(void)
 {
 	// HPとスタミナのUI描画
 	if (uiHp_) { uiHp_->Draw(); }
@@ -292,8 +291,8 @@ void Player::ProcessMove(void)
 	if (state_ != STATE::IDLE
 		&& state_ != STATE::RUN
 		&& state_ != STATE::FAST_RUN) {
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WAKE);
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
+		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WALK);
+		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RUN);
 		return;
 	}
 
@@ -314,36 +313,28 @@ void Player::ProcessMove(void)
 		if (isR && stRecoverTime_ <= 0.0f) {
 			moveSpeed_ = SPEED_DASH;
 			state_ = STATE::FAST_RUN;
-			uiSt_->SetSt(CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
+			uiSt_->ConsumeSt(CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
 			animationController_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
-			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WAKE);
+			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WALK);
 			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_RUN).handleId_;
-			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_RAN, bgm_, SE_VOLUME_RUN);
+			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_RUN, bgm_, SE_VOLUME_RUN);
 		}
 		else {
 			moveSpeed_ = SPEED_MOVE;
 			animationController_->Play(static_cast<int>(ANIM_TYPE::RUN));
-			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
-			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_WAKE).handleId_;
-			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_WAKE, bgm_, SE_VOLUME_WALK);
+			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RUN);
+			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_WALK).handleId_;
+			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_WALK, bgm_, SE_VOLUME_WALK);
 		}
 
 		movePow_ = VAdd(movePow_, VScale(moveDir_, moveSpeed_));
-		float currentSpeed = VSize(movePow_);
-		if (currentSpeed > 100.0f)
-		{
-			movePow_ = VScale(VNorm(movePow_), 100.0f);
-		}
 	}
 	else {
 		state_ = STATE::IDLE;
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WAKE);
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RAN);
+		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WALK);
+		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RUN);
 		animationController_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 	}
-
-	//移動量の減速処理
-	movePow_ = AsoUtility::Lerp(movePow_, AsoUtility::VECTOR_ZERO, 0.0001f);
 }
 
 void Player::ProcessAttack(void)
@@ -371,7 +362,7 @@ void Player::ProcessAttack(void)
 		auto& comboData = atkComboData_.at(stateAtkCombo_);
 		comboData.isNextCombo = false;
 
-		uiSt_->SetSt(CONSUMPTION_ST_ATTACK);
+		uiSt_->ConsumeSt(CONSUMPTION_ST_ATTACK);
 
 		// 追加の初期処理があれば実行
 		if (comboData.extraInit) {
@@ -468,7 +459,7 @@ void Player::ProcessAttack(void)
 			auto& nextData = atkComboData_.at(stateAtkCombo_);
 			nextData.isNextCombo = false;
 
-			uiSt_->SetSt(CONSUMPTION_ST_ATTACK);
+			uiSt_->ConsumeSt(CONSUMPTION_ST_ATTACK);
 
 			if (nextData.extraInit) {
 				nextData.extraInit();
@@ -511,9 +502,9 @@ void Player::ProcessEvasion(void)
 				Quaternion::AngleAxis(
 					AsoUtility::Deg2RadF(AVOIDANCE_ANGLE_AXIS_Y), AsoUtility::AXIS_Y));
 
-		uiSt_->SetSt(CONSUMPTION_ST_EVASION);
+		uiSt_->ConsumeSt(CONSUMPTION_ST_EVASION);
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_EVASION).handleId_;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_AVE, bgm_, SE_VOLUME_EVASION);
+		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_EVASION, bgm_, SE_VOLUME_EVASION);
 
 		isInvincible_ = true;
 	}
@@ -586,7 +577,7 @@ void Player::ProcessRecovery(void)
 		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
 
 	// 回復入力があり、かつ回復瓶が残っている場合、かつ回復アニメーションが再生されていない場合に回復開始
-	if (isP && uiRecovery_->GetBottlcCnt() > 0
+	if (isP && uiRecovery_->GetBottleCnt() > 0
 		&& animationController_->GetPlayType() != static_cast<int>(EFFECT::HP_ABSOLUTE)
 		&& state_ != STATE::RECOVERY) {
 
@@ -607,17 +598,17 @@ void Player::ProcessRecovery(void)
 
 	// 回復アニメーションの特定のステップで回復処理を実行
 	if (animationController_->GetPlayAnim().step == RECOVERY_TRIGGER_STEP) {
-		uiHp_->SetHpAbsolute(HEAL_HP_AMOUNT);
+		uiHp_->Heal(HEAL_HP_AMOUNT);
 		uiRecovery_->SetBottleCnt(CONSUME_RECOVERY_BOTTLE_COUNT);
 		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_RECOVERY).handleId_;
 		SoundManager::GetInstance().PlaySE(
-			SoundManager::SeId::PLAYER_HER, bgm_, SE_VOLUME_RECOVERY);
+			SoundManager::SeId::PLAYER_HEAL, bgm_, SE_VOLUME_RECOVERY);
 	}
 
 	// 回復アニメーションが終了したら通常状態に遷移
 	if (animationController_->IsEnd()) {
 		state_ = STATE::IDLE;
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_HER);
+		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_HEAL);
 	}
 }
 
@@ -636,7 +627,7 @@ void Player::ApplyDamage(float damageAmount)
 {
 	animationController_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 	state_ = STATE::DOWN;
-	uiHp_->SetHp(damageAmount);
+	uiHp_->Damage(damageAmount);
 
 	effType_ = EFFECT::BLOOD;
 	effect_->Play(static_cast<int>(effType_));
@@ -644,7 +635,7 @@ void Player::ApplyDamage(float damageAmount)
 
 	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
 	SoundManager::GetInstance().PlaySE(
-		SoundManager::SeId::PLAYER_DMAGE, bgm_, SE_VOLUME_DAMAGE);
+		SoundManager::SeId::PLAYER_DAMAGE, bgm_, SE_VOLUME_DAMAGE);
 }
 
 void Player::UpdateProcess(void)
@@ -680,7 +671,7 @@ void Player::UpdateProcess(void)
 		|| state_ == STATE::DOWN
 		|| state_ == STATE::UP
 		|| state_ == STATE::RECOVERY) {
-		uiSt_->SetHpAbsolute(RECOVERY_ST_SPEED 
+		uiSt_->RecoverSt(RECOVERY_ST_SPEED 
 			* SceneManager::GetInstance().GetDeltaTime());
 	}
 
@@ -766,14 +757,14 @@ void Player::UpdateHitCollider(void)
 	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
 		auto playerCapsule = std::dynamic_pointer_cast<ColliderCapsule>(vec);
-		if (!playerCapsule || !playerCapsule->GetIsCollier()) continue;
+		if (!playerCapsule || !playerCapsule->GetIsCollider()) continue;
 
 		const auto& hitList = playerCapsule->GetHitColliders();
 
 		for (const auto& hitCol : hitList)
 		{
 			auto targetCol = hitCol.lock();
-			if (!targetCol || !targetCol->GetIsCollier()) continue;
+			if (!targetCol || !targetCol->GetIsCollider()) continue;
 
 			auto shape = targetCol->GetShape();
 			auto tag = targetCol->GetTag();

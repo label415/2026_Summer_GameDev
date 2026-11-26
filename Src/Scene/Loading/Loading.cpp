@@ -7,14 +7,11 @@
 
 // コンストラクタ
 Loading::Loading()
-	: pauseFont_(-1)
+	: loadingFont_(-1)
 	, loadTimer_(0)
 	, isLoading_(false)
-	, isLoadEnd_(false)
-{}
-
-// デストラクタ
-Loading::~Loading(){}
+{
+}
 
 // 読み込み
 void Loading::Load(void)
@@ -25,39 +22,32 @@ void Loading::Load(void)
 
 	// フォントハンドルの作成
 	auto& font = FontManager::GetInstance();
-	pauseFont_ = font.CreateMyFont(
+	loadingFont_ = font.CreateMyFont(
 		FONT_NAME, static_cast<int>(FONT_SIZE), static_cast<int>(FONT_THICKNESS));
 }
 
 // 更新
 void Loading::Update(void)
 {
-	// 前フレームで立てた完了フラグを下ろす
-	isLoadEnd_ = false;
-
-	// ロード中でないときは処理しない
 	if (!isLoading_) return;
 
-	// ロード時間更新
 	loadTimer_++;
 
-	// 非同期読み込みがすべて完了し、
-	// かつ最低表示時間を過ぎたらロード終了
+	// 読込中のものがなくなったら or 最低ロード時間経過
 	if (GetASyncLoadNum() == 0 && loadTimer_ >= MIN_LOAD_TIME)
 	{
+		loadTimer_ = 0;
 		isLoading_ = false;
-		isLoadEnd_ = true;
 	}
 }
 
 // 描画
 void Loading::Draw(void)
 {
-	// ロード中でないときは処理しない
 	if (!isLoading_) return;
 
 	// ロード中のドットアニメーションを作成
-	int dotCount = (loadTimer_ / 20) % 4;
+	int dotCount = (loadTimer_ / DOT_ANIM_INTERVAL) % DOT_ANIM_CYCLE;
 	std::wstring text = 
 		std::wstring(LOADING_TEXT) + std::wstring(dotCount, L'.');
 
@@ -70,26 +60,20 @@ void Loading::Draw(void)
 		x, y,
 		text.c_str(),
 		FONT_COLOR,
-		pauseFont_);
+		loadingFont_);
 }
 
 // 解放
 void Loading::Release(void)
 {
-	// フォントハンドル削除
-	pauseFont_ = -1;
-}
-
-void Loading::StartLoading(void)
-{
-	// ロード画面の表示開始
-	isLoading_ = true;
-	loadTimer_ = 0;
+	loadingFont_ = -1;
 }
 
 // 非同期読み込みに切り替える
 void Loading::StartAsyncLoad(void)
 {
+	isLoading_ = true;
+
 	// 非同期読み込み開始
 	SetUseASyncLoadFlag(true);
 }

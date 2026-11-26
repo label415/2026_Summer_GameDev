@@ -12,11 +12,8 @@ WeaponBlade::WeaponBlade(const Transform& followTransform, int followFrameId)
 	isAlive_ = false;
 }
 
-WeaponBlade::~WeaponBlade(void){}
-
 void WeaponBlade::Update(void)
 {
-	// 基底クラスを更新
 	WeaponBase::Update();
 }
 
@@ -34,11 +31,11 @@ void WeaponBlade::InitTransform(void)
 	transform_.quaRot = Quaternion();
 	transform_.quaRotLocal = Quaternion();
 	transform_.pos = AsoUtility::VECTOR_ZERO;
-	localPos_ = { -2.0f, 0.0f, -3.0f };
+	localPos_ = DEFAULT_LOCAL_POS;
 	localRot_ = {
 	AsoUtility::Deg2RadF(0.0f),
 	AsoUtility::Deg2RadF(0.0f),
-	AsoUtility::Deg2RadF(-90.0f)
+	AsoUtility::Deg2RadF(DEFAULT_LOCAL_ROT_Z_DEG)
 	};
 }
 
@@ -60,16 +57,12 @@ void WeaponBlade::InitCollider(void)
 	);
 
 	// 初期状態は当たり判定を無効化
-	colliderCapsule->SetIsCollier(false);
+	colliderCapsule->SetIsCollider(false);
 
 	// コライダーを所有コライダーに登録
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::CAPSULE)].push_back(colliderCapsule);
 	CollisionManager::GetInstance().AddCollider(colliderCapsule);
 }
-
-void WeaponBlade::InitAnimation(void){}
-
-void WeaponBlade::InitPost(void){}
 
 void WeaponBlade::SetCollider(void)
 {
@@ -77,7 +70,7 @@ void WeaponBlade::SetCollider(void)
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	for (const auto& vec : ownColliders_.at(capsuleType))
 	{
-		vec->SetIsCollier(true);
+		vec->SetIsCollider(true);
 	}
 }
 
@@ -89,7 +82,7 @@ void WeaponBlade::ClearCollider(void)
 	{
 		auto capsuleCollider = std::dynamic_pointer_cast<ColliderCapsule>(vec);
 		// 当たり判定をオフにする
-		capsuleCollider->SetIsCollier(false);
+		capsuleCollider->SetIsCollider(false);
 
 		// 生成時の初期座標・初期サイズに戻す
 		capsuleCollider->SetLocalPosTop(COL_CAPSULE_TOP_LOCAL_POS);

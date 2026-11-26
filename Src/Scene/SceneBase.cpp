@@ -13,5 +13,3 @@ SceneBase::SceneBase(void)
 	, volume_(0)
 {
 }
-
-SceneBase::~SceneBase(void){}

@@ -6,22 +6,12 @@
 #include "../Object/Common/Transform.h"
 #include "CollisionManager.h"
 
-void CollisionManager::AddCollider(const std::shared_ptr<ColliderBase>& col)
-{
-	colliders_.push_back(col);
-}
-
-void CollisionManager::Release(void)
-{
-	colliders_.clear();
-}
-
 void CollisionManager::DrawDebug(void)
 {
 #ifdef _DEBUG
 	for (auto& collider : colliders_)
 	{
-		if (collider.lock() && collider.lock()->GetIsCollier())
+		if (collider.lock() && collider.lock()->GetIsCollider())
 		{
 			collider.lock()->Draw();
 		}
@@ -54,8 +44,8 @@ void CollisionManager::Update(void)
 			auto colB = colliders_[j].lock();
 
 			// コライダーが無効化されている場合はスキップ
-			if (!colA->GetIsCollier()
-				|| !colB->GetIsCollier()) continue;
+			if (!colA->GetIsCollider()
+				|| !colB->GetIsCollider()) continue;
 
 			// お互いが対象タグに含まれているか確認
 			if (!CanCollide(*colA, *colB))continue;
@@ -154,24 +144,25 @@ bool CollisionManager::CheckWallOcclusion(const VECTOR& start, const VECTOR& end
 
 	ColliderLine tempLine(
 		ColliderBase::TAG::NONE,
-		targetTags,
-		nullptr,
-		start,
-		end
-	);
+		targetTags, nullptr, start,end);
 
 	// ステージコライダーを探して線コライダーとの交差を判定
 	for (const auto& col : colliders_)
 	{
 		if (col.lock()->GetShape() != ColliderBase::SHAPE::MODEL
-			&& col.lock()->GetTag() != ColliderBase::TAG::STAGE)continue;
+			|| col.lock()->GetTag() != ColliderBase::TAG::STAGE)continue;
 
 		auto modelCol = std::static_pointer_cast<ColliderModel>(col.lock());
-		if (!modelCol || !modelCol->GetIsCollier()) continue;
+		if (!modelCol || !modelCol->GetIsCollider()) continue;
 
 		// CollisionUtility の線分 vs モデル交差判定
 		if (CollisionUtility::IsHit(
 			tempLine, *modelCol))return true;
 	}
 	return false;
+}
+
+void CollisionManager::Release(void)
+{
+	colliders_.clear();
 }

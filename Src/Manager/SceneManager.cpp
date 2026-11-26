@@ -31,8 +31,8 @@ void SceneManager::Init(void)
 	// 3D用の設定
 	Init3D();
 
-	// 初期シーン(ロード画面を経由して読み込む)
-	ChangeScene(SCENE_ID::TITLE);
+	// 初期シーン
+	PushScene(SCENE_ID::TITLE);
 }
 
 void SceneManager::Init3D(void)
@@ -79,9 +79,6 @@ void SceneManager::ChangeScene(SCENE_ID sceneId)
 
 void SceneManager::PushScene(SCENE_ID sceneId)
 {
-	// ロード中は受け付けない
-	if (load_->GetIsLoading()) return;
-
 	scenes_.push_back(CreateScene(sceneId));
 
 	scenes_.back()->Load();
@@ -96,34 +93,12 @@ void SceneManager::PopScene(void)
 	// 末尾のシーンを解放して削除する
 	scenes_.back()->Release();
 	scenes_.pop_back();
-
-	// ポーズはゲームシーンの上にしか積まないため、
-	// ゲームシーンに戻す
-	sceneId_ = SCENE_ID::GAME;
-	camera_->SetIsMouseInput(true);
-	InputManager::GetInstance().SetMouseFlage(false);
 }
 
 void SceneManager::Update(void)
 {
-	// ロード画面の更新(完了フラグを1フレームで下ろすため毎フレーム呼ぶ)
+	// ロード画面の更新
 	load_->Update();
-
-	// ロード画面を表示した次のフレームで、非同期読み込みを開始する
-	if (isLoadStart_)
-	{
-		isLoadStart_ = false;
-		load_->StartAsyncLoad();
-		scenes_.back()->Load();
-		load_->EndAsyncLoad();
-		return;
-	}
-
-	// ロードが終わったフレームで一度だけ、読み込み後の初期化を行う
-	if (load_->GetIsLoadEnd())
-	{
-		scenes_.back()->LoadEnd();
-	}
 
 	// ロード中はシーンを更新しない
 	if (load_->GetIsLoading()) return;
@@ -145,11 +120,10 @@ void SceneManager::Draw(void)
 	ClearDrawScreen();
 
 	// ロード中はロード画面のみ描画する
-	if (load_->GetIsLoading())
-	{
-		load_->Draw();
-		return;
-	}
+	load_->Draw();
+
+	// ロード中はシーンを更新しない
+	if (load_->GetIsLoading()) return;
 
 	// カメラの描画前設定を行う
 	camera_->SetBeforeDraw();
@@ -199,14 +173,16 @@ void SceneManager::DoChangeScene(void)
 	ReleaseAllScenes();
 
 	// サウンド・リソース・当たり判定・カメラのリセット
-	ResetResource();
+	ResetSceneResources();
 
-	// 新しいシーンを生成(読み込みは次のフレームで行う)
+	// 新しいシーンを生成
 	scenes_.push_back(CreateScene(nextSceneId_));
 
-	// ロード画面の表示開始
-	load_->StartLoading();
-	isLoadStart_ = true;
+	// 読み込み
+	load_->StartAsyncLoad();
+	scenes_.back()->Load();
+	load_->EndAsyncLoad();
+	scenes_.back()->LoadEnd();
 }
 
 void SceneManager::ReleaseAllScenes(void)
@@ -216,10 +192,11 @@ void SceneManager::ReleaseAllScenes(void)
 	{
 		scene->Release();
 	}
+
 	scenes_.clear();
 }
 
-void SceneManager::ResetResource(void)
+void SceneManager::ResetSceneResources(void)
 {
 	SoundManager::GetInstance().Release();
 	ResourceManager::GetInstance().Release();
@@ -229,11 +206,9 @@ void SceneManager::ResetResource(void)
 	camera_->Release();
 }
 
-SceneManager::SceneManager(void) :
-	sceneId_(SCENE_ID::TITLE)
-	, nextSceneId_(SCENE_ID::TITLE)
-	, isChangeRequest_(false)
-	, isLoadStart_(false)
+SceneManager::SceneManager(void)
+	: sceneId_(SCENE_ID::NONE)
+	, nextSceneId_(SCENE_ID::NONE)
 	, deltaTime_(0.0f)
 {
 }

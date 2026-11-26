@@ -9,10 +9,10 @@ public:
     UIRecovery(int cnt);
 
     // デストラクタ
-    ~UIRecovery(void) override;
+    ~UIRecovery(void) override {}
 
     // 更新
-    void Update(void) override;
+    void Update(void) override {}
 
     // 描画
     void Draw(void) override;
@@ -24,7 +24,7 @@ public:
     void SetBottleCnt(int cnt);
 
 	//回復瓶の数を取得
-    const int GetBottlcCnt(void)const{ return bottleCount_; }
+    const int GetBottleCnt(void)const{ return bottleCount_; }
 
 protected:
 
@@ -32,7 +32,7 @@ protected:
     void InitLoad(void) override;
 
     // 大きさ、回転、座標の初期化
-    void InitTransform(void) override;
+    void InitTransform(void) override {}
 
     // 衝突判定の初期化
     void InitCollider(void) override {}

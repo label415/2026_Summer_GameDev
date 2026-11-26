@@ -24,7 +24,7 @@ public:
 	ColliderBase2D(SHAPE shape, TAG tag);
 
 	// デストラクタ
-	virtual ~ColliderBase2D(void);
+	virtual ~ColliderBase2D(void) {}
 
 	// 描画
 	void Draw(void);
@@ -36,7 +36,7 @@ public:
 	TAG GetTag(void) const { return tag_; }
 
 	//色変更
-	void SetValid(bool isValid);
+	void SetValid(bool isValid) { isValid_ = isValid; }
 
 protected:
 

@@ -10,12 +10,6 @@ MATRIX MatrixUtility::GetMatrixRotateXYZ(const VECTOR& euler)
 	return ret;
 }
 
-MATRIX MatrixUtility::Multiplication(const MATRIX& child, const MATRIX& parent)
-{
-	// 親子の回転行列を合成する
-	return MMult(child, parent);
-}
-
 MATRIX MatrixUtility::Multiplication(const VECTOR& childEuler, const VECTOR& parentEuler)
 {
 	// 親子のオイラー角を合成する

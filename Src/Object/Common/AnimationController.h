@@ -27,11 +27,11 @@ public:
 	AnimationController(int modelId);
 
 	// デストラクタ
-	~AnimationController(void);
+	~AnimationController(void) {}
 
 	// 外部FBXからアニメーション追加
 	void Add(int type, float speed, const std::wstring path);
-	void Add(int type, float speed, int handlId);
+	void Add(int type, float speed, int handleId);
 	
 	// 同じFBX内のアニメーションを準備
 	void AddInFbx(int type, float speed, int animIndex);
@@ -46,7 +46,7 @@ public:
 	void Release(void);
 
 	// 再生中のアニメーション
-	int GetPlayType(void) const;
+	int GetPlayType(void) const { return playType_; }
 	int GetPlayType(int type) const;
 
 	// 再生終了
@@ -54,17 +54,17 @@ public:
 	bool IsEnd(int type) const;
 
 	// 再生中のアニメーション情報を取得
-	const Animation& GetPlayAnim(void) const;
+	const Animation& GetPlayAnim(void) const { return playAnim_; }
 	const Animation& GetPlayAnim(int type) const;
 
 	// 特定の時間をループするアニメーションを再生
-	void SetSpecificTime(float state, float end, bool SpecificLoop);
+	void SetSpecificTime(float start, float end, bool SpecificLoop);
 
 	// アニメーションを始める時間を設定
-	void SetStateTime(float state);
+	void SetStep(float step) { playAnim_.step = step; }
 
 	// アニメーションを止めるフラグを設定
-	void SetIsStopFlager(bool isStop);
+	void SetIsStop(bool isStop) { isStop_ = isStop; }
 
 private:
 
@@ -75,10 +75,10 @@ private:
 	Animation playAnim_;
 
 	//特定の開始時間
-	float SpState_;
+	float spStart_;
 
 	//特定の終了時間
-	float SpEnd_;
+	float spEnd_;
 
 	// アニメーションするモデルのハンドルID
 	int modelId_;

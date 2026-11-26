@@ -13,11 +13,6 @@ void FontManager::CreateInstance()
 	}
 }
 
-FontManager& FontManager::GetInstance(void)
-{
-	return *instance_;
-}
-
 int FontManager::CreateMyFont(const std::wstring& fontName, const int size, const int thickness)
 {
 	FontKey key{ fontName, size, thickness };  // ÉLÅ[

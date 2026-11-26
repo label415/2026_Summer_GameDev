@@ -14,7 +14,7 @@ public:
     CharacterBase(void);
 
     // デストラクタ
-    virtual ~CharacterBase(void) override;
+    virtual ~CharacterBase(void) override {}
 
     // 更新
     virtual void Update(void) override;
@@ -26,7 +26,7 @@ public:
     virtual void Release(void) override;
 
 	//HP描画
-    virtual void DrawHp(void){}
+    virtual void DrawUI(void){}
 
     // 追尾対象の取得
     void SetTargetPos(const VECTOR* targetTrans) { targetPos_ = targetTrans; }
@@ -40,6 +40,13 @@ protected:
     static constexpr int CNT_TRY_COLLISION = 20;
     // 衝突時の押し戻し量
     static constexpr float COLLISION_BACK_DIS = 1.0f;
+
+    // 回転の球面線形補間率
+    static constexpr float ROT_SLERP_RATE = 0.2f;
+    // 落下判定の内積しきい値
+    static constexpr float FALL_DOT_THRESHOLD = 0.9f;
+    // 地面押し上げオフセット量
+    static constexpr float GROUND_PUSH_UP_OFFSET = 2.0f;
 
 	//HP UI
 	std::unique_ptr<UIHp> uiHp_;

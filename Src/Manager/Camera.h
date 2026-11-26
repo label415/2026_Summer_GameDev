@@ -1,8 +1,11 @@
 #pragma once
 #include <map>
+#include <memory>
 #include <vector>
 #include "../Common/Quaternion.h"
 #include "../Object/Actor/ActorBase.h"
+
+class ColliderCapsule;
 
 class Camera : public ActorBase
 {
@@ -15,17 +18,17 @@ public:
 		FIXED_POINT,
 		FREE,
 		FOLLOW,
-		TARGET_ROCKE,
+		TARGET_LOCK,
 	};
 
 	// コンストラクタ
 	Camera(void);
 
 	// デストラクタ
-	~Camera(void)override;
+	~Camera(void) override {}
 
 	// 更新
-	void Update(void)override;
+	void Update(void) override {}
 
 	// 描画前のカメラ設定
 	void SetBeforeDraw(void);
@@ -37,50 +40,41 @@ public:
 	void Release(void)override;
 
 	// 座標の取得
-	const VECTOR& GetPos(void) const;
+	const VECTOR& GetPos(void) const { return transform_.pos; }
 
 	// 角度の取得
-	const VECTOR& GetAngles(void) const;
-	const Quaternion& GetQuaRot(void) const;
+	const VECTOR& GetAngles(void) const { return angles_; }
+	const Quaternion& GetQuaRot(void) const { return transform_.quaRot; }
 
 	// X回転を抜いたY軸のみのカメラ角度
-	const Quaternion& GetQuaRotY(void) const;
+	const Quaternion& GetQuaRotY(void) const { return rotY_; }
 
 	// 注視点の取得
-	const VECTOR& GetTargetPos(void) const;
+	const VECTOR& GetTargetPos(void) const { return fixationPos_; }
 
 	// カメラの前方方向
-	VECTOR GetForward(void) const;
+	VECTOR GetForward(void) const { return VNorm(VSub(fixationPos_, transform_.pos)); }
 
 	// カメラモードの変更
 	void ChangeMode(MODE mode);
 
 	//カメラモードの取得
-	const MODE& GetCameraMode(void)const;
+	const MODE& GetCameraMode(void) const { return mode_; }
 
 	// 追従対象の設定
-	void SetFollow(const Transform* follow) { followTransform_ = follow; }
+	void SetFollow(const std::weak_ptr<const ActorBase>& follow) { followActor_ = follow; }
 
-	// ロックオン候補の座標ポインタを格納する
-	void AddTargetPos(const VECTOR* targetPos);
+	// ロックオン候補のコライダーを格納する
+	void AddTargetCollider(const std::weak_ptr<ColliderCapsule>& target);
 
 	// ロックオン候補リストをクリアする
-	void ClearTargetPoss(void) { targetPoss_.clear(); }
+	void ClearTargetColliders(void);
 
 	// 現在ロックオンしている対象の座標ポインタを取得（非ロックオン時は nullptr）
-	const VECTOR* GetLockOnTargetPos(void) const { return targetPos_; }
+	const VECTOR* GetLockOnTargetPos(void) const;
 
 	// ロックオン対象の選別・切り替え更新
 	void UpdateLockOn(void);
-
-	// マウス入力の有効無効設定
-	void SetIsMouseInput(bool isMouseInput) { isMouseInput_ = isMouseInput; }
-
-	// マウス入力の有効無効取得
-	bool GetIsMouseInput(void) { return isMouseInput_; }
-
-	// シーン切り替え時のリセット
-	void ResetForScene(void);
 
 protected:
 
@@ -105,19 +99,21 @@ protected:
 private:
 
 	// カメラの初期座標
-	static constexpr VECTOR DERFAULT_POS = { 0.0f, 200.0f, -500.0f };
+	static constexpr VECTOR DEFAULT_POS = { 0.0f, 200.0f, -500.0f };
 
 	// カメラの初期角度
-	static constexpr VECTOR DERFAULT_ANGLES = { 0.0f, 0.0f, 0.0f };
+	static constexpr VECTOR DEFAULT_ANGLES = { 0.0f, 0.0f, 0.0f };
 
 	// ロックオン最大距離・視野角
 	static constexpr float MAX_LOCKON_DIFF = 2000.0f;
 	static constexpr float LOCKON_VIEW_ANGLE = 80.0f;
 
 	// ロックオンUIのX座標
-	static constexpr float LOCON_UI_C_X = 0.5f;
+	static constexpr float LOCKON_UI_C_X = 0.5f;
+	// ロックオンUIのY座標
+	static constexpr float LOCKON_UI_C_Y = 0.5f;
 	//ロックオンUIの大きさ
-	static constexpr float LOCON_UI_SIZE = 50.0f;
+	static constexpr float LOCKON_UI_SIZE = 50.0f;
 
 	// カメラの回転量（キーボード・パッド）
 	const float ROT_POW_DEG = 2.0f;
@@ -168,16 +164,16 @@ private:
 	// 衝突時の押し戻し量
 	static constexpr float COLLISION_BACK_DIS = 1.0f;
 	// 衝突判定用球体半径
-	static constexpr float COL_CAPSULE_SPHERE = 50.0f;
+	static constexpr float COL_SPHERE_RADIUS = 50.0f;
 
-	// ロックオン候補のTransformリスト（敵クラスに依存せず格納）
-	std::vector<const VECTOR*> targetPoss_;
+	// ロックオン候補のカプセルコライダーリスト
+	std::vector<std::weak_ptr<ColliderCapsule>> targetColliders_;
 
-	// 現在ロックオンしている対象のTransform
-	const VECTOR* targetPos_;
+	// 現在ロックオンしている対象のカプセルコライダー
+	std::weak_ptr<ColliderCapsule> targetCollider_;
 
-	// カメラが追従対象とするTransform
-	const Transform* followTransform_;
+	// カメラが追従対象とするアクター
+	std::weak_ptr<const ActorBase> followActor_;
 
 	// カメラモード
 	MODE mode_;
@@ -194,20 +190,9 @@ private:
 	// ロックオンUIハンドル
 	int lockOnImg_;
 
-	// マウス入力の有効無効
-	float mouseX;
-	float mouseY;
-
-	// マウス入力の前回位置
-	float preMouseX;
-	float preMouseY;
-
 	// 右スティックの前回入力保持用
 	float prevStickX_;
 	float prevStickZ_;
-
-	// マウス入力の有効無効フラグ
-	bool isMouseInput_;
 
 	// カメラを初期位置に戻す
 	void SetDefault(void);
@@ -216,26 +201,26 @@ private:
 	void SyncFollow(void);
 
 	// ターゲットとの位置同期を取る
-	void SynLockOn(void);
+	void SyncLockOn(void);
 
 	// カメラ操作
 	void ProcessRot(bool isLimit);
 	void ProcessMove(void);
 
 	// カメラ回転(キーボード)
-	void RotKeyboard(bool isLimit);
+	void RotMouse(bool isLimit);
 
 	// カメラ回転(ゲームパッド)
 	void RotGamePad(bool isLimit);
 
 	// モード別更新ステップ
-	void SetBeforeDrawFixedPoint(void);
+	void SetBeforeDrawFixedPoint(void) {}
 	void SetBeforeDrawFree(void);
 	void SetBeforeDrawFollow(void);
-	void SetBeforeDrawTargetLockeOn(void);
+	void SetBeforeDrawTargetLockOn(void);
 
-	// 格納されたTransformリストから条件に合う対象を検索する
-	const VECTOR* FindLockOnTarget(SWITCH_DIR switchDir) const;
+	// 格納されたコライダーリストから条件に合う対象を検索する
+	std::weak_ptr<ColliderCapsule> FindLockOnTarget(SWITCH_DIR switchDir) const;
 
 	// ターゲット切り替え入力
 	void HandleTargetSwitching(void);

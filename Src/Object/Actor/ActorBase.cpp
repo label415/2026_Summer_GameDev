@@ -14,15 +14,7 @@ ActorBase::ActorBase(void)
 	ownColliders_.clear();
 }
 
-ActorBase::~ActorBase(void)
-{
-}
-
-void ActorBase::Load(void)
-{
-	// リソースロード
-	InitLoad();
-}
+ActorBase::~ActorBase(void){}
 
 void ActorBase::LoadEnd(void)
 {
@@ -48,12 +40,6 @@ void ActorBase::Draw(void)
 	}
 }
 
-void ActorBase::Release(void)
-{
-	// 自身のTransformを解放
-	transform_.Release();
-}
-
 const std::vector<std::shared_ptr<ColliderBase>> ActorBase::GetOwnCollider(int key) const
 {
 	// 自身のコライダーが存在しているとき、
@@ -65,8 +51,17 @@ const std::vector<std::shared_ptr<ColliderBase>> ActorBase::GetOwnCollider(int k
 	return ownColliders_.at(key);
 }
 
+void ActorBase::Load(void)
+{
+	InitLoad();
+}
+
+void ActorBase::Release(void)
+{
+	transform_.Release();
+}
+
 void ActorBase::Collision(void)
 {
-	// 衝突している自身のコライダーを更新
 	UpdateHitCollider();
 }

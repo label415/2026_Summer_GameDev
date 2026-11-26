@@ -58,10 +58,10 @@ private:
 	std::vector<int> frameOpacityRate_;
 
 	// 対象フレームの不透明度率を設定
-	void RateFrameIds(const std::wstring& name);
+	void AddOpacityFrameIds(const std::wstring& name);
 
 	// 対象フレームかどうかを判定
-	bool IsRateFrame(int frameIdx) const;
+	bool IsOpacityFrame(int frameIdx) const;
 
 };
 

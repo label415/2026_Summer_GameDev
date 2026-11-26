@@ -10,10 +10,10 @@ class EnemyManager
 public:
 
 	// コンストラクタ
-	EnemyManager(void);
+	EnemyManager(void) {}
 
 	// デストラクタ
-	~EnemyManager(void);
+	~EnemyManager(void) {}
 
 	// 読み込み
 	void Load(void);
@@ -31,7 +31,7 @@ public:
 	void Release(void);
 
 	// エネミー
-	const std::vector<std::shared_ptr<EnemyBase>>& GetEnemys() const {return enemys_;}
+	const std::vector<std::shared_ptr<EnemyBase>>& GetEnemies() const {return enemys_;}
 
 	// CSVから敵情報の読取を行う
 	void LoadCsvData(void);

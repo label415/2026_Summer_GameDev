@@ -19,6 +19,7 @@ public:
 	// シーン名
 	enum class SCENE_ID
 	{
+		NONE,
 		TITLE,
 		GAME,
 		PAUSE,
@@ -69,7 +70,7 @@ public:
 	void PopScene(void);
 
 	// デルタタイムの取得
-	float GetDeltaTime(void) const { return 1.0f / 60.0f; }
+	float GetDeltaTime(void) const { return FIXED_DELTA_TIME; }
 
 	// カメラの取得
 	std::shared_ptr<Camera> GetCamera(void) const { return camera_; }
@@ -79,16 +80,9 @@ public:
 
 private:
 
-	// ロード状態
-	enum class LOAD_STATE
-	{
-		NONE,		// ロードしていない(通常更新)
-		START,		// ロード画面を表示した直後(次のフレームで読み込み開始)
-		LOADING,	// 非同期読み込み中
-	};
-
-	// 現在のロード状態
-	LOAD_STATE loadState_;
+	// 固定フレームレートと固定デルタタイム
+	static constexpr float FIXED_FPS = 60.0f;
+	static constexpr float FIXED_DELTA_TIME = 1.0f / FIXED_FPS;
 
 	// 現在のシーンID
 	SCENE_ID sceneId_;
@@ -96,17 +90,8 @@ private:
 	// 次に遷移するシーンID
 	SCENE_ID nextSceneId_;
 
-	// ロード画面を表示した次のフレームで読み込みを開始するフラグ
-	bool isLoadStart_;
-
-	// シーン遷移要求フラグ
-	bool isChangeRequest_;
-
 	// 各種シーン
 	std::vector<std::unique_ptr<SceneBase>> scenes_;
-
-	// 各種シーンのID(scenes_と同じ並び)
-	std::vector<SCENE_ID> sceneIds_;
 
 	// カメラ
 	std::shared_ptr<Camera> camera_;
@@ -117,7 +102,7 @@ private:
 	// デルタタイム
 	std::chrono::system_clock::time_point preTime_;
 
-	// フレーム間の経過時間（デルタタイム）
+	// フレーム間の経過時間
 	float deltaTime_;
 
 	// デフォルトコンストラクタをprivateにして、外部から生成できない様にする
@@ -139,9 +124,6 @@ private:
 	void ReleaseAllScenes(void);
 
 	// リソース解放
-	void ResetResource(void);
-
-	// ロード中か
-	bool IsLoading(void) const { return loadState_ != LOAD_STATE::NONE; }
+	void ResetSceneResources(void);
 
 };

@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Utility\ColliderUtility.cpp" />
+    <ClCompile Include="Src\Utility\CollisionUtility.cpp" />
     <ClCompile Include="Src\Manager\CollisionManager.cpp" />
     <ClCompile Include="Src\Object\Actor\UI\UIBase.cpp" />
     <ClCompile Include="Src\Object\Actor\UI\UIHp.cpp" />
@@ -74,11 +74,11 @@
     <ClCompile Include="Src\Utility\MatrixUtility.cpp" />
     <ClCompile Include="Src\Object\Actor\Weapon\WeaponBase.cpp" />
     <ClCompile Include="Src\Object\Actor\Weapon\WeaponBlade.cpp" />
-    <ClCompile Include="Src\Object\Actor\Weapon\WeaponBracelet.cpp" />
-    <ClCompile Include="Src\Object\Actor\Weapon\WeaponFlameThrower.cpp" />
+    <ClCompile Include="Src\Object\Actor\Weapon\WeaponBreath.cpp" />
+    <ClCompile Include="Src\Object\Actor\Weapon\WeaponFireball.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Utility\ColliderUtility.h" />
+    <ClInclude Include="Src\Utility\CollisionUtility.h" />
     <ClInclude Include="Src\Manager\CollisionManager.h" />
     <ClInclude Include="Src\Object\Actor\UI\UIBase.h" />
     <ClInclude Include="Src\Object\Actor\UI\UIHp.h" />
@@ -119,7 +119,6 @@
     <ClInclude Include="Src\Application.h" />
     <ClInclude Include="Src\Common\Fader.h" />
     <ClInclude Include="Src\Common\Quaternion.h" />
-    <ClInclude Include="Src\main.h" />
     <ClInclude Include="Src\Manager\Camera.h" />
     <ClInclude Include="Src\Manager\InputManager.h" />
     <ClInclude Include="Src\Manager\Resource.h" />
@@ -135,8 +134,8 @@
     <ClInclude Include="Src\Utility\MatrixUtility.h" />
     <ClInclude Include="Src\Object\Actor\Weapon\WeaponBase.h" />
     <ClInclude Include="Src\Object\Actor\Weapon\WeaponBlade.h" />
-    <ClInclude Include="Src\Object\Actor\Weapon\WeaponBracelet.h" />
-    <ClInclude Include="Src\Object\Actor\Weapon\WeaponFlameThrower.h" />
+    <ClInclude Include="Src\Object\Actor\Weapon\WeaponBreath.h" />
+    <ClInclude Include="Src\Object\Actor\Weapon\WeaponFireball.h" />
     <ClInclude Include="Src\Template\Vector2Template.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

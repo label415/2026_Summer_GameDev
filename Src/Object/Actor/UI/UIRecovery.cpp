@@ -14,14 +14,6 @@ UIRecovery::UIRecovery(int cnt)
 {
 }
 
-UIRecovery::~UIRecovery(void)
-{
-}
-
-void UIRecovery::Update(void)
-{
-}
-
 void UIRecovery::Draw(void)
 {
 	// アイテムボックスを描画
@@ -56,11 +48,8 @@ void UIRecovery::InitLoad(void)
 	imgBottle_ = resMng_.Load(ResourceManager::SRC::UI_RECOVERY_BOTTLE).handleId_;
 }
 
-void UIRecovery::InitTransform(void){}
-
 void UIRecovery::InitPost(void)
 {
-	// 回復瓶の数を文字列に変換
 	cntfont_ = std::to_wstring(bottleCount_);
 }
 

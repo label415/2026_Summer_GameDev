@@ -10,8 +10,6 @@ Fader::Fader(void)
 {
 }
 
-Fader::~Fader(void) {}
-
 void Fader::SetFade(STATE state)
 {
 	state_ = state;
@@ -21,8 +19,6 @@ void Fader::SetFade(STATE state)
 		isEnd_ = false;
 	}
 }
-
-void Fader::Init(void) {}
 
 void Fader::Update(void)
 {
@@ -77,6 +73,6 @@ void Fader::Draw(void)
 		0, 0,
 		Application::SCREEN_SIZE_X,
 		Application::SCREEN_SIZE_Y,
-		0x000000, true);
+		FADE_COLOR, true);
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }

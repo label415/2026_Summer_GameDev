@@ -1,4 +1,5 @@
 #pragma once
+#include <DxLib.h>
 
 class ShadowMap
 {
@@ -8,16 +9,16 @@ public:
 	ShadowMap(int x, int y);
 
 	// デストラクタ
-	~ShadowMap(void);
+	~ShadowMap(void) {}
 
 	// シャドウマップの光源を設定
-	void AddShadowMapLight(VECTOR lightPos);
+	void AddShadowMapLight(VECTOR lightPos) { SetShadowMapLightDirection(shadowId_, lightPos); }
 
 	// シャドウマップの描画範囲を設定
-	void AddShadowMapDrawArea(VECTOR minPos, VECTOR maxPos);
+	void AddShadowMapDrawArea(VECTOR minPos, VECTOR maxPos) { SetShadowMapDrawArea(shadowId_, minPos, maxPos); }
 
 	// シャドウマップの深度を調整	
-	void AddShadowMapAdjustDepth(float depth);
+	void AddShadowMapAdjustDepth(float depth) { SetShadowMapAdjustDepth(shadowId_, depth); }
 
 	// シャドウマップへの描画の準備
 	void DrawSetup(void);
@@ -38,6 +39,9 @@ public:
 	void Release(void);
 
 private:
+
+	// テスト描画幅の縮小除数
+	static constexpr int TEST_DRAW_WIDTH_DIV = 2;
 
 	// シャドウマップのID
 	int shadowId_;

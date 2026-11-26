@@ -21,41 +21,6 @@ float AsoUtility::Clamp(float v, float min, float max)
 	return v;
 }
 
-int AsoUtility::Round(float v)
-{
-	return static_cast<int>(roundf(v));
-}
-
-double AsoUtility::Rad2DegD(double rad)
-{
-	return rad * (DEG_180 / DX_PI);
-}
-
-float AsoUtility::Rad2DegF(float rad)
-{
-	return rad * (DEG_180 / DX_PI_F);
-}
-
-int AsoUtility::Rad2DegI(int rad)
-{
-	return rad * Round(DEG_180 / DX_PI_F);
-}
-
-double AsoUtility::Deg2RadD(double deg)
-{
-	return deg * (DX_PI / DEG_180);
-}
-
-float AsoUtility::Deg2RadF(float deg)
-{
-	return deg * (DX_PI_F / DEG_180);
-}
-
-int AsoUtility::Deg2RadI(int deg)
-{
-	return deg * Round(DX_PI_F / DEG_180);
-}
-
 double AsoUtility::DegIn360(double deg)
 {
 	deg = fmod(deg, DEG_360);
@@ -288,51 +253,6 @@ VECTOR AsoUtility::RotXZPos(const VECTOR& centerPos, const VECTOR& radiusPos, fl
 	return VGet(centerPos.x + x, radiusPos.y, centerPos.z + z);
 }
 
-double AsoUtility::Magnitude(const Vector2& v)
-{
-	return sqrt((v.x * v.x) + (v.y * v.y));
-}
-
-double AsoUtility::Magnitude(const VECTOR& v)
-{
-	return sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
-}
-
-float AsoUtility::MagnitudeF(const VECTOR& v)
-{
-	return sqrtf((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
-}
-
-int AsoUtility::SqrMagnitude(const Vector2& v)
-{
-	return v.x * v.x + v.y * v.y;
-}
-
-float AsoUtility::SqrMagnitudeF(const VECTOR& v)
-{
-	return v.x * v.x + v.y * v.y + v.z * v.z;
-}
-
-double AsoUtility::SqrMagnitude(const VECTOR& v)
-{
-	return v.x * v.x + v.y * v.y + v.z * v.z;
-}
-
-double AsoUtility::SqrMagnitude(const VECTOR& v1, const VECTOR& v2)
-{
-	return pow(v2.x - v1.x, 2) + pow(v2.y - v1.y, 2) + pow(v2.z - v1.z, 2);
-}
-
-double AsoUtility::Distance(const Vector2& v1, const Vector2& v2)
-{
-	return sqrt(pow(v2.x - v1.x, 2) + pow(v2.y - v1.y, 2));
-}
-
-double AsoUtility::Distance(const VECTOR& v1, const VECTOR& v2)
-{
-	return sqrt(pow(v2.x - v1.x, 2) + pow(v2.y - v1.y, 2) + pow(v2.z - v1.z, 2));
-}
-
 bool AsoUtility::IsHitSpheres(const VECTOR& pos1, float radius1, const VECTOR& pos2, float radius2)
 {
 	// ãÖëÃìØémÇÃè’ìÀîªíË
@@ -503,15 +423,15 @@ void AsoUtility::DrawLineXYZ(const VECTOR& pos, const MATRIX& rot, float len)
 
 	// X
 	dir = VTransform(AsoUtility::DIR_R, rot);
-	DrawLineDir(pos, dir, 0xff0000, len);
+	DrawLineDir(pos, dir, COLOR_RED, len);
 
 	// Y
 	dir = VTransform(AsoUtility::DIR_U, rot);
-	DrawLineDir(pos, dir, 0x00ff00, len);
+	DrawLineDir(pos, dir, COLOR_GREEN, len);
 
 	// Z
 	dir = VTransform(AsoUtility::DIR_F, rot);
-	DrawLineDir(pos, dir, 0x0000ff, len);
+	DrawLineDir(pos, dir, COLOR_BLUE, len);
 }
 
 void AsoUtility::DrawLineXYZ(const VECTOR& pos, const Quaternion& rot, float len)
@@ -520,15 +440,15 @@ void AsoUtility::DrawLineXYZ(const VECTOR& pos, const Quaternion& rot, float len
 
 	// X
 	dir = rot.GetRight();
-	DrawLineDir(pos, dir, 0xff0000, len);
+	DrawLineDir(pos, dir, COLOR_RED, len);
 
 	// Y
 	dir = rot.GetUp();
-	DrawLineDir(pos, dir, 0x00ff00, len);
+	DrawLineDir(pos, dir, COLOR_GREEN, len);
 
 	// Z
 	dir = rot.GetForward();
-	DrawLineDir(pos, dir, 0x0000ff, len);
+	DrawLineDir(pos, dir, COLOR_BLUE, len);
 }
 
 std::vector<std::string> AsoUtility::Split(std::string& line, char delimiter)

@@ -10,7 +10,7 @@ public:
 	static void CreateInstance(void);
 
 	// インスタンスの取得
-	static ImGuiWrapper& GetInstance(void);
+	static ImGuiWrapper& GetInstance(void) { return *instance_; }
 
 	// 初期化
 	void Init(void);
@@ -26,6 +26,9 @@ public:
 
 private:
 
+	// WM_SYSCOMMAND下位4ビットマスク
+	static constexpr WPARAM SYSCOMMAND_MASK = 0xfff0;
+
 	// 静的インスタンス
 	static ImGuiWrapper* instance_;
 
@@ -35,13 +38,13 @@ private:
 
 	// デフォルトコンストラクタをprivateにして、
 	// 外部から生成できない様にする
-	ImGuiWrapper(void);
+	ImGuiWrapper(void) {}
 
 	// コピーコンストラクタも同様
 	ImGuiWrapper(const ImGuiWrapper&);
 
 	// デストラクタも同様
-	~ImGuiWrapper(void);
+	~ImGuiWrapper(void) {}
 
 	// マウス入力の更新
 	void UpdateInputMouse(void);
