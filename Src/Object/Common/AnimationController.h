@@ -27,7 +27,7 @@ public:
 	AnimationController(int modelId);
 
 	// デストラクタ
-	~AnimationController(void) {}
+	~AnimationController(void) = default;
 
 	// 外部FBXからアニメーション追加
 	void Add(int type, float speed, const std::wstring path);

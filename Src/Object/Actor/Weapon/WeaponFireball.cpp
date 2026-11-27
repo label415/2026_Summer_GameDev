@@ -1,11 +1,11 @@
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Utility/ModelFrameUtility.h"
-#include "../../../Manager/ResourceManager.h"
-#include "../../../Manager/SoundManager.h"
+#include "../../../Manager/Common/ResourceManager.h"
+#include "../../../Manager/Common/SoundManager.h"
 #include "../../Common/Collider/ColliderSphere.h"
 #include "../../Common/Collider/ColliderModel.h"
-#include "../../Common/EffectController.h"
-#include "../../../Manager/SceneManager.h"
+#include "../../../Manager/Common/SceneManager.h"
+#include "../../../Manager/Common/EffectManager.h"
 #include "../../../Application.h"
 #include "../../../Libs/ImGui/imgui.h"
 #include "WeaponFireball.h"
@@ -18,6 +18,7 @@ WeaponFireball::WeaponFireball(
 	, prePos_(AsoUtility::VECTOR_ZERO)
 	, radius_(MIN_RADIUS)
 	, effectType_(EFFECT_TYPE::NONE)
+	, effHandle_(-1)
 	, exState_(EXPLOSION_START_TIME)
 	, moveSpeed_(SPEED)
 {}
@@ -37,9 +38,8 @@ void WeaponFireball::Update(void)
 	if (effectType_ == EFFECT_TYPE::NONE) return;
 
 	// エフェクト更新
-	effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
-	effect_->SetEffectScl(static_cast<int>(effectType_), VScale(AsoUtility::VECTOR_ONE, radius_));
-	effect_->Update(static_cast<int>(effectType_));
+	EffectManager::GetInstance().SetPos(effHandle_, transform_.pos);
+	EffectManager::GetInstance().SetScl(effHandle_, VScale(AsoUtility::VECTOR_ONE, radius_));
 }
 
 void WeaponFireball::Draw(void)
@@ -49,6 +49,8 @@ void WeaponFireball::Draw(void)
 
 void WeaponFireball::Release(void)
 {
+	EffectManager::GetInstance().Stop(effHandle_);
+	effHandle_ = -1;
 	ActorBase::Release();
 }
 
@@ -81,14 +83,8 @@ void WeaponFireball::InitPost(void)
 	// 追従元の座標へリセット
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
 
-	// エフェクトコントローラの作成とエフェクトの追加
-	effect_ = std::make_unique<EffectController>();
-	effect_->Add(
-		static_cast<int>(EFFECT_TYPE::BULLET),
-		(Application::PATH_EFFECT + L"FireBall_Bullet.efkefc"));
-	effect_->Add(
-		static_cast<int>(EFFECT_TYPE::EXPLOSION),
-		(Application::PATH_EFFECT + L"FireBall_Explosion.efkefc"));
+	// 再生ハンドルを初期化
+	effHandle_ = -1;
 
 	// 生存フラグを初期化
 	isAlive_ = false;
@@ -125,8 +121,7 @@ void WeaponFireball::Move(void)
 		if (effectType_ != EFFECT_TYPE::EXPLOSION)
 		{
 			// 着弾SE再生
-			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_AIR_BREATH_2).handleId_;
-			SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_AIR_BREATH2, bgm_, SoundManager::MaxVolumeValue);
+			SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::ENEMY_AIR_BREATH2);
 
 			// 爆発エフェクトに切り替え
 			transform_.pos = prePos_;
@@ -163,16 +158,22 @@ void WeaponFireball::ChangeEffect(EFFECT_TYPE effectType)
 	if (effectType_ == effectType)return;
 
 	// すでに再生中のエフェクトがあれば停止する
-	if(effectType_ != EFFECT_TYPE::NONE){
-		effect_->Stop(static_cast<int>(effectType_));
-	}
+	EffectManager::GetInstance().Stop(effHandle_);
+	effHandle_ = -1;
 
 	// 新しいエフェクトを再生する
-	effect_->Play(
-		static_cast<int>(effectType),
-		transform_.pos,
-		VGet(0.0f, 0.0f, 0.0f),
-		VGet(radius_, radius_, radius_));
+	if (effectType != EFFECT_TYPE::NONE)
+	{
+		EffectManager::EFFECT_ID id = (effectType == EFFECT_TYPE::BULLET)
+			? EffectManager::EFFECT_ID::FIREBALL_BULLET
+			: EffectManager::EFFECT_ID::FIREBALL_EXPLOSION;
+
+		effHandle_ = EffectManager::GetInstance().PlayEffect(
+			id,
+			transform_.pos,
+			AsoUtility::VECTOR_ZERO,
+			VGet(radius_, radius_, radius_));
+	}
 
 	// 現在のエフェクトタイプを更新
 	effectType_ = effectType;
@@ -209,11 +210,9 @@ void WeaponFireball::ClearCollider(void)
 	prePos_ = transform_.pos;
 
 	// 再生中のエフェクトがあれば停止する
-	if (effectType_ != EFFECT_TYPE::NONE)
-	{
-		effect_->Stop(static_cast<int>(effectType_));
-		effectType_ = EFFECT_TYPE::NONE;
-	}
+	EffectManager::GetInstance().Stop(effHandle_);
+	effHandle_ = -1;
+	effectType_ = EFFECT_TYPE::NONE;
 
 	// 生存フラグをリセット
 	isAlive_ = false;

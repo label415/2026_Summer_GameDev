@@ -67,15 +67,6 @@ public:
 		NECK,
 	};
 
-	// エフェクト
-	enum class EFFECT {
-		NONE,
-		ROAR,
-		FALLING_ATTACK,
-		CHARGE,
-		BLOOD
-	};
-
 	//部位のカプセルフレーム
 	struct FramePair {
 		// 部位タグ
@@ -100,11 +91,7 @@ public:
 	static constexpr float ANIM_SPEED_ROAR = 30.0f;
 	static constexpr float ANIM_SPEED_MELEE_ATTACK = 20.0f;
 
-	// サウンド音量・ピッチ
-	static constexpr int SE_VOLUME_DEFAULT = 50;
-	static constexpr int SE_VOLUME_TAKEOFF = 70;
-	static constexpr int SE_VOLUME_PATROL = 80;
-	static constexpr int SE_VOLUME_FALLING = 100;
+	// サウンドピッチ
 	static constexpr float SE_SPEED_PATROL = 1.2f;
 
 	// エフェクト定数
@@ -173,12 +160,6 @@ public:
 
 	// プレイヤー攻撃による被ダメージ量
 	static constexpr float DAMAGE_HIT_PLAYER_WEAPON = 8.0f;
-	// HP UI Y座標オフセット
-	static constexpr float UI_HP_OFFSET_Y = 75.0f;
-	// HP UI スケール
-	static constexpr float UI_HP_SCALE_X = 1.3f;
-	static constexpr float UI_HP_SCALE_Y = 1.57f;
-	static constexpr float UI_HP_SCALE_Z = 2.0f;
 
 	//行動乱数
 	static constexpr int STATE_RAND = 100;
@@ -190,16 +171,13 @@ public:
 	EnemyDragon(const EnemyBase::EnemyData& data);
 
 	// デストラクタ
-	~EnemyDragon(void) override {}
+	~EnemyDragon(void) override = default;
 
 	// 描画処理
 	void Draw(void) override;
 
 	// 解放処理
 	void Release(void) override;
-
-	// HPUI表示
-	void DrawUI(void) override;
 
 protected:
 
@@ -299,8 +277,8 @@ private:
 	//属性
 	ATTRIBUTE attribute_;
 
-	//エフェクト
-	EFFECT effectType_;
+	//再生中エフェクトハンドル
+	int effHandle_;
 
 	//攻撃時間
 	float attackCnt_;

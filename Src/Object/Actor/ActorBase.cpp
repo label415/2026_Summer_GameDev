@@ -1,8 +1,7 @@
 #include <algorithm>
-#include "../../Manager/ResourceManager.h"
-#include "../../Manager/SceneManager.h"
+#include "../../Manager/Common/ResourceManager.h"
+#include "../../Manager/Common/SceneManager.h"
 #include "../Common/Collider/ColliderBase.h"
-#include "../Common/EffectController.h"
 #include "ActorBase.h"
 
 ActorBase::ActorBase(void)
@@ -11,10 +10,9 @@ ActorBase::ActorBase(void)
 	, transform_(Transform())
 	, isAlive_(true)
 {
+	// 所有コライダーマップを空に初期化
 	ownColliders_.clear();
 }
-
-ActorBase::~ActorBase(void){}
 
 void ActorBase::LoadEnd(void)
 {
@@ -53,15 +51,18 @@ const std::vector<std::shared_ptr<ColliderBase>> ActorBase::GetOwnCollider(int k
 
 void ActorBase::Load(void)
 {
+	// 派生クラスごとのリソース読み込みを実行
 	InitLoad();
 }
 
 void ActorBase::Release(void)
 {
+	// 保持しているモデルリソースを解放
 	transform_.Release();
 }
 
 void ActorBase::Collision(void)
 {
+	// 衝突したコライダーの結果を更新
 	UpdateHitCollider();
 }

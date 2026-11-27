@@ -10,7 +10,9 @@ WeaponBase::WeaponBase(WEAPON_TYPE weaponType, const Transform& followTransform,
 	followFrameId_(followFrameId),
 	localPos_(AsoUtility::VECTOR_ZERO),
 	localRot_(AsoUtility::VECTOR_ZERO)
-{}
+{
+	// 武器種別と追従先フレーム情報を初期化
+}
 
 void WeaponBase::Update(void)
 {
@@ -28,5 +30,6 @@ void WeaponBase::Update(void)
 
 void WeaponBase::Collision(void)
 {
+	// 衝突したコライダーの結果を更新
 	UpdateHitCollider();
 }

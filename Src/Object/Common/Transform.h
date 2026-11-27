@@ -37,7 +37,7 @@ public:
 	Transform(void);
 
 	// デストラクタ
-	~Transform(void) {}
+	~Transform(void) = default;
 
 	// モデル制御の基本情報更新
 	void Update(void);

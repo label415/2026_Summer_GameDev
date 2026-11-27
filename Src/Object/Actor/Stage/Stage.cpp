@@ -1,11 +1,12 @@
-#include "../../../Manager/ResourceManager.h"
-#include "../../../Manager/SceneManager.h"
+#include "../../../Manager/Common/ResourceManager.h"
+#include "../../../Manager/Common/SceneManager.h"
 #include "../../Common/Collider/ColliderModel.h"
 #include "../../Common/Collider/ColliderSphere.h"
 #include "Stage.h"
 
 void Stage::Update(void)
 {
+	// ステージの衝突応答処理を実行
 	Collision();
 }
 
@@ -47,27 +48,32 @@ void Stage::InitTransform(void)
 
 void Stage::InitCollider(void)
 {
+	// DxLib側のモデル衝突判定情報を構築
 	MV1SetupCollInfo(transform_.modelId);
 
 	// ステージモデルが反応する対象タグ
 	std::vector<ColliderBase::TAG> targetTags = { ColliderBase::TAG::NONE };
 
+	// モデルコライダーを生成
 	auto colModel_ = std::make_shared<ColliderModel>(
 		ColliderBase::TAG::STAGE,
 		targetTags,
 		&transform_
 	);
 
+	// 衝突判定から除外するフレーム名を登録
 	for (const std::wstring& name : EXCLUDE_FRAME_NAMES)
 	{
 		colModel_->AddExcludeFrameId(name);
 	}
 
+	// 衝突判定対象とするフレーム名を登録
 	for (const std::wstring& name : TARGET_FRAME_NAMES)
 	{
 		colModel_->AddTargetFrameId(name);
 	}
 
+	// モデル形状として所有コライダーへ格納
 	ownColliders_[static_cast<int>(ColliderBase::SHAPE::MODEL)].push_back(colModel_);
 }
 

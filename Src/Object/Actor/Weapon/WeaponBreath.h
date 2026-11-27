@@ -8,19 +8,13 @@ class WeaponBreath : public WeaponBase
 {
 public:
 
-	//攻撃エフェクト
-	enum class EFFECT_TYPE
-	{
-		BREATH,
-	};
-
 	// コンストラクタ
 	WeaponBreath(
 		const Transform& followTransform,
 		const VECTOR moveDir, int followFrameId);
 
 	// デストラクタ
-	~WeaponBreath(void) override {}
+	~WeaponBreath(void) override = default;
 
 	// 更新
 	void Update(void) override;
@@ -104,6 +98,9 @@ private:
 
 	// 終了フラグ
 	bool isEnd_;
+
+	// 再生中エフェクトハンドル
+	int effHandle_;
 
 	//移動処理
 	void Move(void);

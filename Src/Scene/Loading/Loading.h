@@ -7,13 +7,13 @@ class Loading
 public:
 
 	// コンストラクタ
-	Loading();
+	Loading(void);
 
 	//デストラクタ
-	~Loading() {}
+	~Loading(void) = default;
 
 	// ロード
-	void Load(void);
+	void Load(void){}
 
 	// 更新
 	void Update(void);
@@ -22,7 +22,7 @@ public:
 	void Draw(void);
 
 	//解放
-	void Release(void);
+	void Release(void){}
 
 	// 非同期ロードの開始
 	void StartAsyncLoad(void);
@@ -35,24 +35,18 @@ public:
 
 private:
 
-	// フォント名
-	static constexpr const wchar_t* FONT_NAME = L"KazukiReiwa";
-
 	//表示するフォント
 	static constexpr const wchar_t* LOADING_TEXT = L"Loading";
 
 	// フォント座標調整値
-	static constexpr float FONT_ADJUST_X = 200.0f;
-	static constexpr float FONT_ADJUST_Y = 70.0f;
-
-	// フォントのサイズ
-	static constexpr float FONT_SIZE = 40.0f;
-
-	// フォントの太さ
-	static constexpr float FONT_THICKNESS = 20.0f;
+	static constexpr Vector2F FONT_ADJUST = { 200.0f, 70.0f };
 
 	// フォントの色
 	static constexpr int FONT_COLOR = 0xffffff;
+
+	// フォントサイズ・太さ
+	static constexpr int FONT_SIZE = 40;
+	static constexpr int FONT_THICKNESS = 20;
 
 	// 最低でもロード画面を表示する時間
 	static constexpr int MIN_LOAD_TIME = 70;
@@ -63,9 +57,6 @@ private:
 
 	// 最低でもロード画面を表示する時間の範囲
 	int loadTimer_;
-
-	//ポーズフォント
-	int loadingFont_;
 
 	// ロード中の判定用
 	bool isLoading_;

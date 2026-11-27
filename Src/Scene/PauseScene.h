@@ -4,6 +4,8 @@
 #include "../Application.h"
 #include "SceneBase.h"
 
+class UiManager;
+
 class PauseScene :public SceneBase
 {
 public:
@@ -21,7 +23,7 @@ public:
 	PauseScene(void);
 
 	// デストラクタ
-	~PauseScene(void) override {}
+	~PauseScene(void) override = default;
 
 	// 読み込み
 	void Load(void)override {}
@@ -41,17 +43,10 @@ public:
 private:
 
 	// フォント座標調整値
-	static constexpr float FONT_ADJUST_X = 2.0f;
-	static constexpr float FONT_ADJUST_Y = 90.0f;
+	static constexpr Vector2F FONT_ADJUST = { 2.0f, 90.0f };
 
 	// フォント同士のY座標間隔
 	static constexpr float FONT_INTERVAL = 70.0f;
-
-	// フォントのサイズ
-	static constexpr float FONT_SIZE = 30.0f;
-
-	// フォントの太さ
-	static constexpr float FONT_THICKNESS = 30.0f;
 
 	// ポーズ画面の高さ
 	static constexpr float PAUSE_HEIGHT = 200.0f;
@@ -62,21 +57,17 @@ private:
 	//ポーズ画面枠大きさ
 	static constexpr float PAUSE_FRAME_SIZE = 3.0f;
 
-	// ボックスコライダ-座標調整値
-	static constexpr float BOX_ADJUST_X = 150.0f;
-	static constexpr float BOX_ADJUST_Y = 105.0f;
+	// ボックスコライダー座標調整値
+	static constexpr Vector2F BOX_ADJUST = { 150.0f, 105.0f };
 
-	// ボックスコライダーの高さ
-	static constexpr float BOX_HEIGHT = 60.0f;
-
-	// ボックスコライダーの幅
-	static constexpr float BOX_WIDTH = 300.0f;
+	// ボックスコライダーのサイズ
+	static constexpr Vector2F BOX_SIZE = { 300.0f, 60.0f };
 
 	// ボックスコライダー同士のY座標間隔
 	static constexpr float BOX_Y_INTERVAL = 70.0f;
 
 	// UIカーソル画像サイズ
-	static constexpr float SELECT_IMG_SIZE = 0.2f;
+	static constexpr Vector2F SELECT_IMG_SIZE = { 0.2f, 0.2f };
 
 	// UIカーソル画像Y座標調整値
 	static constexpr float SELECT_IMG_ADJUST_Y = 0.5f;
@@ -86,9 +77,6 @@ private:
 
 	// ポーズ画面枠色
 	static constexpr int PAUSE_FRAME_COLOR = 0xffffff;
-
-	// BGMの音量
-	static constexpr int BGM_VOLUME = 50;
 
 	// ポーズ画面のブレンドパラメータ
 	static constexpr int PAUSE_BLENDPARAM = 168;
@@ -102,11 +90,18 @@ private:
 	// フォントの色
 	static constexpr int FONT_COLOR = 0xffffff;
 
-	//　使用するフォント
-	std::wstring fontName_ = L"KazukiReiwa";
+	// フォントサイズ・太さ
+	static constexpr int FONT_SIZE = 30;
+	static constexpr int FONT_THICKNESS = 30;
+
+	// UI識別ID
+	static constexpr int UI_ID_CURSOR = 0;
 
 	// ボックスコライダーの配列
 	std::unique_ptr<ColliderBox2D> uiBoxs_[LIST_MAX];
+
+	// UI管理
+	std::unique_ptr<UiManager> uiManager_;
 
 	// 選択されているかの判定
 	bool isHovered;
@@ -114,14 +109,11 @@ private:
 	// スティック入力の判定
 	bool isStickInput_;
 
-	// フォントハンドル
-	int pauseFont_;
-
 	//ポーズリストの選択  
 	int selectIndex_;
 
-	// UIカーソル画像
-	int selectImg_;
+	// ポーズフォント
+	int pauseFont_;
 
 	// 選択リスト
 	std::wstring pauseList_[LIST_MAX] =

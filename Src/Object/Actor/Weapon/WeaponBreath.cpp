@@ -1,11 +1,11 @@
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Utility/ModelFrameUtility.h"
-#include "../../../Manager/ResourceManager.h"
-#include "../../../Manager/SceneManager.h"
+#include "../../../Manager/Common/ResourceManager.h"
+#include "../../../Manager/Common/SceneManager.h"
+#include "../../../Manager/Common/EffectManager.h"
 #include "../../../Application.h"
 #include "../../../Libs/ImGui/imgui.h"
 #include "../../Common/Collider/ColliderCapsule.h"
-#include "../../Common/EffectController.h"
 #include "WeaponBreath.h"
 
 WeaponBreath::WeaponBreath(
@@ -18,6 +18,7 @@ WeaponBreath::WeaponBreath(
 	, topPos_(COL_CAPSULE_TOP_LOCAL_POS)
 	, downPos_(COL_CAPSULE_DOWN_LOCAL_POS)
 	, moveSpeed_(SPEED)
+	, effHandle_(-1)
 {
 }
 
@@ -28,11 +29,6 @@ void WeaponBreath::Update(void)
 
 	// 移動処理
 	Move();
-
-	// エフェクト更新
-	if (effect_) {
-		effect_->Update(static_cast<int>(EFFECT_TYPE::BREATH));
-	}
 }
 
 void WeaponBreath::Draw(void)
@@ -42,6 +38,8 @@ void WeaponBreath::Draw(void)
 
 void WeaponBreath::Release(void)
 {
+	EffectManager::GetInstance().Stop(effHandle_);
+	effHandle_ = -1;
 	ActorBase::Release();
 }
 
@@ -73,13 +71,6 @@ void WeaponBreath::InitPost(void)
 {
 	// 初期座標を設定
 	transform_.pos = MV1GetFramePosition(followTransform_.modelId, followFrameId_);
-
-	// エフェクトコントローラを作成してエフェクトを登録
-	effect_ = std::make_unique<EffectController>();
-	effect_->Add(
-		static_cast<int>(EFFECT_TYPE::BREATH),
-		(Application::PATH_EFFECT + L"Breath.efkefc"));
-	effect_->Stop(static_cast<int>(EFFECT_TYPE::BREATH));
 
 	// コライダーを初期化
 	ClearCollider();
@@ -113,6 +104,10 @@ void WeaponBreath::ClearCollider(void)
 	downPos_ = COL_CAPSULE_DOWN_LOCAL_POS;
 	isAttack_ = false;
 	isEnd_ = false;
+
+	// 再生中のブレスエフェクトを停止
+	EffectManager::GetInstance().Stop(effHandle_);
+	effHandle_ = -1;
 }
 
 void WeaponBreath::SetIsAttack(bool isAttack)
@@ -132,8 +127,9 @@ void WeaponBreath::SetIsAttack(bool isAttack)
 		effPos.y -= EFFECT_OFFSET_Y;
 
 		// エフェクトを再生
-		effect_->Play(
-			static_cast<int>(EFFECT_TYPE::BREATH),
+		EffectManager::GetInstance().Stop(effHandle_);
+		effHandle_ = EffectManager::GetInstance().PlayEffect(
+			EffectManager::EFFECT_ID::BREATH,
 			effPos,
 			euler, VGet(EFFECT_SCALE_XY, EFFECT_SCALE_XY, LENGTH / EFFECT_LENGTH_DIV));
 
@@ -153,6 +149,7 @@ void WeaponBreath::Move(void)
 	// フラグがどちらも立っていない場合は移動処理を行わない
 	if (!isAttack_ && !isEnd_) return;
 
+	// 攻撃中は先端を伸ばし、終了フェーズでは根元側を縮めて追いつかせる
 	if (isAttack_ && !isEnd_)
 	{
 		if (VSize(VSub(topPos_, downPos_)) < LENGTH) {
@@ -163,6 +160,7 @@ void WeaponBreath::Move(void)
 	{
 		downPos_ = VAdd(downPos_, VScale(moveDir_, moveSpeed_));
 
+		// 先端と根元が交差・到達したらブレスを完全終了
 		VECTOR remainVec = VSub(topPos_, downPos_);
 		if (VSize(remainVec) <= moveSpeed_ || VDot(remainVec, moveDir_) <= 0.0f) {
 			ClearCollider();
@@ -170,6 +168,7 @@ void WeaponBreath::Move(void)
 		}
 	}
 
+	// 更新後の先端・根元座標をカプセルコライダーへ反映
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	for (const auto& vec : ownColliders_.at(capsuleType))
 	{

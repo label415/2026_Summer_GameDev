@@ -1,4 +1,4 @@
-#include "../../../Manager/ResourceManager.h"
+#include "../../../Manager/Common/ResourceManager.h"
 #include "../../../Utility/AsoUtility.h"
 #include "SkyDome.h"
 

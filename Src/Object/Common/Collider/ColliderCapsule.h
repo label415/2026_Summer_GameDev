@@ -18,7 +18,7 @@ public:
 		float radius, int partTag = 0);
 
 	// デストラクタ
-	~ColliderCapsule(void) {}
+	~ColliderCapsule(void) override = default;
 
 	// 親Transformからの相対位置を取得
 	const VECTOR& GetLocalPosTop(void) const { return localPosTop_; }

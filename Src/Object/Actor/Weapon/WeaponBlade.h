@@ -7,11 +7,13 @@ class Transform;
 class WeaponBlade : public WeaponBase
 {
 public:
+
 	// コンストラクタ
 	WeaponBlade(const Transform& followTransform, int followFrameId);
 
 	// デストラクタ
-	~WeaponBlade(void) override {}
+	~WeaponBlade(void) override = default;
+
 	// 更新
 	void Update(void) override;
 
@@ -20,7 +22,9 @@ public:
 
 	// コライダーをクリア
 	void ClearCollider(void) override;
+
 protected:
+
 	// リソースロード
 	void InitLoad(void) override;
 
@@ -35,7 +39,9 @@ protected:
 
 	// 初期化後の個別処理
 	void InitPost(void) override {}
+
 private:
+
 	// モデルの大きさ
 	static constexpr float SCALE = 1.3f;
 
@@ -47,5 +53,6 @@ private:
 	static constexpr VECTOR COL_CAPSULE_TOP_LOCAL_POS = { 0.0f, 150.0f, 0.0f };
 	static constexpr VECTOR COL_CAPSULE_DOWN_LOCAL_POS = { 0.0f, 20.0f, 0.0f };
 	static constexpr float COL_CAPSULE_RADIUS = 20.0f;
+
 };
 

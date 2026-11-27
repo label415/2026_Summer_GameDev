@@ -1,37 +1,51 @@
 #include <DxLib.h>
-#include "../Manager/InputManager.h"
-#include "../Manager/SceneManager.h"
-#include "../Manager/ResourceManager.h"
-#include "../Manager/SoundManager.h"
-#include "../Manager/FontManager.h"
+#include "../Manager/Common/InputManager.h"
+#include "../Manager/Common/SceneManager.h"
+#include "../Manager/Common/ResourceManager.h"
+#include "../Manager/Common/SoundManager.h"
+#include "../Manager/Game/UiManager.h"
+#include "../UI/ImgUI.h"
 #include "../Utility/AsoUtility.h"
 #include "TitleScene.h"
 
 TitleScene::TitleScene(void)
 	: SceneBase()
+	, uiManager_(nullptr)
 	, selectIndex_(0)
 	, isHovered(true)
 	, isStickInput_(false)
-	, titleImg_(-1)
-	, selectImg_(-1)
 	, titleFont_(-1)
 {
 }
 
 void TitleScene::Load(void)
 {
-	// BGM読み込み
-	bgm_ = resMng_.Load(ResourceManager::SRC::BGM_TITLE).handleId_;
-	volume_ = BGM_VOLUME;
+	// UI管理の生成
+	uiManager_ = std::make_unique<UiManager>();
+
+	// 画像のロードとImgUI登録
+	int titleHandle = resMng_.Load(ResourceManager::SRC::IMG_TITLE).handleId_;
+	int selectHandle = resMng_.Load(ResourceManager::SRC::UI_SELECTION_CURSOR).handleId_;
+	constexpr Vector2F halfScreen = Application::HALF_SCREEN_SIZE;
+
+	uiManager_->Add(
+		static_cast<int>(UI_ID::TITLE_LOGO),
+		std::make_unique<ImgUI>(
+			titleHandle,
+			Vector2F(
+				halfScreen.x,
+				halfScreen.y - TITLE_IMG_ADJUST_Y),
+			TITLE_IMG_SIZE));
+
+	uiManager_->Add(
+		static_cast<int>(UI_ID::CURSOR),
+		std::make_unique<ImgUI>(
+			selectHandle,
+			Vector2F(halfScreen.x, 0.0f),
+			SELECT_IMG_SIZE));
 
 	// フォントのロード
-	resMng_.Load(ResourceManager::SRC::FONT);
-	titleFont_ = fontMng_.GetInstance().CreateMyFont(
-		fontName_, static_cast<int>(FONT_SIZE), static_cast<int>(FONT_THICKNESS));
-
-	// 画像のロード
-	titleImg_ = resMng_.Load(ResourceManager::SRC::IMG_TITLE).handleId_;
-	selectImg_ = resMng_.Load(ResourceManager::SRC::UI_SELECTION_CURSOR).handleId_;
+	titleFont_ = resMng_.LoadFont(ResourceManager::SRC::FONT, FONT_SIZE, FONT_THICKNESS);
 
 	// 各UIコライダー生成
 	for (int i = 0; i < LIST_MAX; ++i)
@@ -39,16 +53,16 @@ void TitleScene::Load(void)
 		uiBoxs_[i] = std::make_unique<ColliderBox2D>(
 			ColliderBase2D::TAG::UI,
 			Vector2F(
-				Application::HALF_SCREEN_SIZE_X - BOX_ADJUST_X,
-				(Application::HALF_SCREEN_SIZE_Y + BOX_ADJUST_Y) + (BOX_Y_INTERVAL * i)),
-			BOX_WIDTH, BOX_HEIGHT);
+				Application::HALF_SCREEN_SIZE.x - BOX_ADJUST.x,
+				(Application::HALF_SCREEN_SIZE.y + BOX_ADJUST.y) + (BOX_Y_INTERVAL * i)),
+			BOX_SIZE);
 	}
 }
 
 void TitleScene::LoadEnd(void)
 {
 	// BGM再生
-	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
+	SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::BGM_TITLE, true);
 
 	// マウスカーソル表示を有効化
 	InputManager::GetInstance().SetMouseFlag(true);
@@ -60,10 +74,10 @@ void TitleScene::Update(void)
 	auto& ins = InputManager::GetInstance();
 
 	// マウス判定
-	Vector2 mPos = ins.GetMousePos();
+	Vector2F mPos = ins.GetMousePos();
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
-		if (uiBoxs_[i] && uiBoxs_[i]->Contains(static_cast<float>(mPos.x), static_cast<float>(mPos.y)))
+		if (uiBoxs_[i] && uiBoxs_[i]->Contains(mPos))
 		{
 			ins.SetMouseFlag(true);
 			selectIndex_ = i;
@@ -93,6 +107,25 @@ void TitleScene::Update(void)
 		isStickInput_ = false;
 	}
 
+	// カーソルUIの座標・表示状態更新およびUI一括更新
+	if (uiManager_)
+	{
+		bool showCursor = (isHovered && uiBoxs_[selectIndex_]);
+		uiManager_->SetActive(static_cast<int>(UI_ID::CURSOR), showCursor);
+		if (showCursor)
+		{
+			float centerY =
+				uiBoxs_[selectIndex_]->Top()
+				+ (uiBoxs_[selectIndex_]->Bottom()
+					- uiBoxs_[selectIndex_]->Top()) * SELECT_IMG_ADJUST_Y;
+			constexpr Vector2F halfScreen = Application::HALF_SCREEN_SIZE;
+			uiManager_->SetPos(
+				static_cast<int>(UI_ID::CURSOR),
+				Vector2F(halfScreen.x, centerY));
+		}
+		uiManager_->Update();
+	}
+
 	// シーン遷移
 	bool isDecide = ins.IsTrgMouseLeft()
 		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
@@ -114,26 +147,10 @@ void TitleScene::Update(void)
 
 void TitleScene::Draw(void)
 {
-	// タイトル画像
-	DrawRotaGraph(
-		Application::HALF_SCREEN_SIZE_X,
-		static_cast<int>(Application::HALF_SCREEN_SIZE_Y - TITLE_IMG_ADJUST_Y),
-		TITLE_IMG_SIZE, 0.0f, titleImg_, true);
-
-	// カーソル画像
-	if (isHovered && uiBoxs_[selectIndex_])
+	// 登録されたUI（タイトルロゴ・カーソル）を一括描画
+	if (uiManager_)
 	{
-		float centerY =
-			uiBoxs_[selectIndex_]->Top()
-			+ (uiBoxs_[selectIndex_]->Bottom()
-				- uiBoxs_[selectIndex_]->Top()) * SELECT_IMG_ADJUST_Y;
-
-		// カーソル画像描画
-		DrawRotaGraph(
-			Application::HALF_SCREEN_SIZE_X,
-			static_cast<int>(centerY),
-			SELECT_IMG_SIZE, 0.0f, selectImg_, true
-		);
+		uiManager_->Draw();
 	}
 
 	// 文字とコライダー描画
@@ -141,13 +158,14 @@ void TitleScene::Draw(void)
 	{
 		// 文字描画
 		int strW = GetDrawStringWidthToHandle(titleList_[i].c_str(), -1, titleFont_);
-		int posX = static_cast<int>((Application::SCREEN_SIZE_X - strW) / FONT_ADJUST_X);
-		int posY = static_cast<int>(
-			(Application::HALF_SCREEN_SIZE_Y + FONT_ADJUST_Y) + (FONT_INTERVAL * i));
+		Vector2F pos = {
+			(Application::SCREEN_SIZE.x - strW) / FONT_ADJUST.x,
+			(Application::HALF_SCREEN_SIZE.y + FONT_ADJUST.y) + (FONT_INTERVAL * i)
+		};
 
 		// 文字描画
-		DrawFormatStringToHandle(
-			posX, posY,
+		DrawFormatStringFToHandle(
+			pos.x, pos.y,
 			FONT_COLOR,
 			titleFont_,
 			titleList_[i].c_str());
@@ -157,5 +175,10 @@ void TitleScene::Draw(void)
 
 void TitleScene::Release(void)
 {
+	// UI管理の解放とフォントハンドル参照のリセット
+	if (uiManager_)
+	{
+		uiManager_->Release();
+	}
 	titleFont_ = -1;
 }

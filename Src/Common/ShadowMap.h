@@ -1,12 +1,13 @@
 #pragma once
 #include <DxLib.h>
+#include "../Template/Vector2Template.h"
 
 class ShadowMap
 {
 public:
 
 	// コンストラクタ
-	ShadowMap(int x, int y);
+	ShadowMap(const Vector2& size);
 
 	// デストラクタ
 	~ShadowMap(void) {}

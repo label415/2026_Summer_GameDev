@@ -6,7 +6,6 @@
 
 class ResourceManager;
 class SceneManager;
-class EffectController;
 class ColliderBase;
 
 class ActorBase
@@ -17,7 +16,7 @@ public:
 	ActorBase(void);
 
 	// デストラクタ
-	virtual ~ActorBase(void);
+	virtual ~ActorBase(void) = default;
 
 	// 読み込み
 	void Load(void);
@@ -50,9 +49,6 @@ protected:
 
 	// 所有しているコライダー
 	std::map<int, std::vector<std::shared_ptr<ColliderBase>>> ownColliders_;
-
-	//エフェクトコントローラ
-	std::unique_ptr<EffectController> effect_;
 
 	// シングルトン参照
 	ResourceManager& resMng_;

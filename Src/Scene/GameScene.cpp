@@ -1,38 +1,39 @@
 #include <DxLib.h>
-#include "../Object/Actor/Character/Enemy/EnemyManager.h"
+#include "../Manager/Game/EnemyManager.h"
 #include "../Object/Actor/Character/Enemy/EnemyDragon.h"
 #include "../Object/Actor/Character/Player.h"
 #include "../Object/Common/Collider/ColliderCapsule.h"
 #include "../Object/Actor/Stage/Stage.h"
 #include "../Object/Actor/Stage/SkyDome.h"
 #include "../Common/ShadowMap.h"
-#include "../Manager/Camera.h"
-#include "../Manager/SceneManager.h"
-#include "../Manager/InputManager.h"
-#include "../Manager/FontManager.h"
-#include "../Manager/ResourceManager.h"
-#include "../Manager/SoundManager.h"
-#include "../Manager/CollisionManager.h"
+#include "../Object/Camera.h"
+#include "../Manager/Common/SceneManager.h"
+#include "../Manager/Common/InputManager.h"
+#include "../Manager/Common/ResourceManager.h"
+#include "../Manager/Common/SoundManager.h"
+#include "../Manager/Common/EffectManager.h"
+#include "../Manager/Game/CollisionManager.h"
+#include "../Manager/Game/UiManager.h"
+#include "../UI/BarUI.h"
+#include "../UI/ImgUI.h"
+#include "../UI/UIRecovery.h"
 #include "../Application.h"
 #include "GameScene.h"
 
 GameScene::GameScene(void)
 	: SceneBase()
-	, isResultUI_(false)
-	, resultAlpha_(-1)
-	, resultImg_(-1)
 	, gameClearImg_(-1)
 	, gameOverImg_(-1)
 	, collisionManager_(nullptr)
+	, uiManager_(nullptr)
 {
 }
 
-GameScene::~GameScene(void){}
-
 void GameScene::Load(void)
 {
-	// 衝突管理生成
+	// 衝突管理・UI管理生成
 	collisionManager_ = std::make_unique<CollisionManager>();
+	uiManager_ = std::make_unique<UiManager>();
 	// カメラのインスタンス取得
 	camera_ = SceneManager::GetInstance().GetCamera();
 	camera_->ChangeMode(Camera::MODE::FIXED_POINT);
@@ -54,7 +55,7 @@ void GameScene::Load(void)
 	enemys_->Load();
 
 	// シャドーマップ読み込み
-	shadowMap_ = std::make_unique<ShadowMap>(SHADOW_MAP_RESOLUTION, SHADOW_MAP_RESOLUTION);
+	shadowMap_ = std::make_unique<ShadowMap>(SHADOW_MAP_RESOLUTION);
 
 	// カメラモード変更
 	camera_->SetFollow(player_);
@@ -67,14 +68,15 @@ void GameScene::Load(void)
 	gameClearImg_ = resMng_.Load(ResourceManager::SRC::IMG_GAMECLEAR).handleId_;
 	// ゲームオーバー画像ロード
 	gameOverImg_ = resMng_.Load(ResourceManager::SRC::IMG_GAMEOVER).handleId_;
+
+	// ゲーム内UIをUiManagerへ一括登録
+	RegisterGameUIs();
 }
 
 void GameScene::LoadEnd(void)
 {
 	// BGM再生
-	bgm_ = resMng_.Load(ResourceManager::SRC::BGM_GAME).handleId_;
-	volume_ = BGM_VOLUME;
-	SoundManager::GetInstance().PlayBGM(bgm_, volume_);
+	SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::BGM_GAME, true);
 
 	// スカイドーム初期化
 	skydome_->LoadEnd();
@@ -123,8 +125,8 @@ void GameScene::Update(void)
 	// シーン変更
 	UpdateResult();
 
-	// Effekseerにより再生中のエフェクトを更新する。
-	UpdateEffekseer3D();
+	// 再生中のエフェクトを更新する
+	EffectManager::GetInstance().Update();
 
 	// 追尾対象更新
 	UpdateAutoLockOn();
@@ -140,6 +142,12 @@ void GameScene::Update(void)
 
 	// プレイヤー更新
 	player_->Update();
+
+	// UI一括更新
+	if (uiManager_)
+	{
+		uiManager_->Update();
+	}
 	
 	// シャドーマップ更新
 	shadowMap_->AddShadowMapLight(GetLightDirection());
@@ -168,8 +176,8 @@ void GameScene::Draw(void)
 	// シャドウマップの使用を終了する
 	shadowMap_->EndShadow();
 
-	// Effekseerにより再生中のエフェクトを描画する。
-	DrawEffekseer3D();
+	// 再生中のエフェクトを描画する
+	EffectManager::GetInstance().Draw();
 
 	// 当たり判定デバッグ描画
 	collisionManager_->DrawDebug();
@@ -215,6 +223,12 @@ void GameScene::Release(void)
 	{
 		collisionManager_->Release();
 	}
+
+	// UI管理解放
+	if (uiManager_)
+	{
+		uiManager_->Release();
+	}
 }
 
 void GameScene::UpdateAutoLockOn(void)
@@ -255,6 +269,27 @@ void GameScene::UpdateResult(void)
 		|| InputManager::GetInstance().IsPadBtnTrgDown(
 			InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::START);
 
+	// 敵死亡時のゲームクリアUI表示更新
+	for (const auto& enemy : enemys_->GetEnemies())
+	{
+		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::DEAD) && uiManager_)
+		{
+			int alpha = static_cast<int>(enemy->GetDeathAnimTime() * RESULT_UI_ALPHA_MAGNIFICATION);
+			uiManager_->SetActive(UI_ID_RESULT, true);
+			uiManager_->SetImg(UI_ID_RESULT, gameClearImg_);
+			uiManager_->SetAlpha(UI_ID_RESULT, alpha);
+		}
+	}
+
+	// プレイヤー死亡時のゲームオーバーUI表示更新
+	if (player_->GetState() == Player::STATE::DIE && uiManager_)
+	{
+		int alpha = static_cast<int>(player_->GetDeathAnimTime() * RESULT_UI_ALPHA_MAGNIFICATION);
+		uiManager_->SetActive(UI_ID_RESULT, true);
+		uiManager_->SetImg(UI_ID_RESULT, gameOverImg_);
+		uiManager_->SetAlpha(UI_ID_RESULT, alpha);
+	}
+
 	// プレイヤー死亡判定
 	if (player_->GetState() == Player::STATE::END)isResult = true;
 
@@ -272,50 +307,102 @@ void GameScene::UpdateResult(void)
 
 void GameScene::DrawUI(void)
 {
-	// プレイヤーとエネミーのHP描画
-	player_->DrawUI();
-	for (const auto& enemy : enemys_->GetEnemies()) {
-		enemy->DrawUI();
+	// 登録された全UIを一括描画する
+	if (uiManager_)
+	{
+		uiManager_->Draw();
+	}
+}
+
+void GameScene::RegisterGameUIs(void)
+{
+	if (!uiManager_)
+	{
+		return;
 	}
 
-	// すべての敵が死亡した時、ゲームクリアUIを表示する
-	for (const auto& enemy : enemys_->GetEnemies())
+	// ゲージ用画像ハンドルを取得
+	int frameImg = resMng_.Load(ResourceManager::SRC::UI_BAR_FRAME).handleId_;
+	int hpImg = resMng_.Load(ResourceManager::SRC::UI_HP_BAR).handleId_;
+	int stImg = resMng_.Load(ResourceManager::SRC::UI_ST_BAR).handleId_;
+
+	// プレイヤーのHP・スタミナ・回復瓶UIをモデルにバインドして登録
+	if (player_)
 	{
-		if (enemy->GetState() == static_cast<int>(EnemyDragon::STATE::DEAD))
+		std::weak_ptr<Player> wpPlayer = player_;
+
+		auto playerHp = std::make_unique<BarUI>(
+			hpImg,
+			frameImg,
+			PLAYER_UI_HP_POS,
+			PLAYER_UI_BAR_SCALE,
+			PLAYER_UI_FRAME_SCALE);
+		playerHp->BindRate([wpPlayer](void)
+			{
+				if (auto p = wpPlayer.lock()) { return p->GetHpRate(); }
+				return 0.0f;
+			});
+		uiManager_->Add(std::move(playerHp));
+
+		auto playerSt = std::make_unique<BarUI>(
+			stImg,
+			frameImg,
+			PLAYER_UI_ST_POS,
+			PLAYER_UI_BAR_SCALE,
+			PLAYER_UI_FRAME_SCALE);
+		playerSt->BindRate([wpPlayer](void)
+			{
+				if (auto p = wpPlayer.lock()) { return p->GetStRate(); }
+				return 0.0f;
+			});
+		uiManager_->Add(std::move(playerSt));
+
+		auto playerRecovery = std::make_unique<UIRecovery>(player_->GetRecoveryBottleCnt());
+		playerRecovery->BindBottleCnt([wpPlayer](void)
+			{
+				if (auto p = wpPlayer.lock()) { return p->GetRecoveryBottleCnt(); }
+				return 0;
+			});
+		uiManager_->Add(std::move(playerRecovery));
+	}
+
+	// 各エネミーのHP UIをモデルにバインドして登録
+	if (enemys_)
+	{
+		for (const auto& enemy : enemys_->GetEnemies())
 		{
-			resultAlpha_ = static_cast<int>(
-				enemy->GetDeathAnimTime() * RESULT_UI_ALPHA_MAGNIFICATION);
-			resultImg_ = gameClearImg_;
-			isResultUI_ = true;
+			if (!enemy)
+			{
+				continue;
+			}
+			std::weak_ptr<EnemyBase> wpEnemy = enemy;
+			auto enemyHp = std::make_unique<BarUI>(
+				hpImg,
+				frameImg,
+				ENEMY_UI_HP_POS,
+				ENEMY_UI_BAR_SCALE,
+				ENEMY_UI_FRAME_SCALE);
+			enemyHp->BindRate([wpEnemy](void)
+				{
+					if (auto e = wpEnemy.lock()) { return e->GetHpRate(); }
+					return 0.0f;
+				});
+			uiManager_->Add(std::move(enemyHp));
 		}
 	}
 
-	// プレイヤーが死亡した時、ゲームオーバーUIを表示する
-	if (player_->GetState() == Player::STATE::DIE)
-	{
-		resultAlpha_ = static_cast<int>(
-			player_->GetDeathAnimTime() * RESULT_UI_ALPHA_MAGNIFICATION);
-		resultImg_ = gameOverImg_;
-		isResultUI_ = true;
-	}
-
-	// リザルトフラグがtrueの時、UIを表示する
-	if (isResultUI_)
-	{
-		SetDrawBlendMode(DX_BLENDMODE_ALPHA, resultAlpha_);
-		DrawRotaGraph(
-			Application::HALF_SCREEN_SIZE_X,
-			Application::HALF_SCREEN_SIZE_Y,
-			RESULT_UI_SIZE,
-			0.0f,
-			resultImg_,
-			true);
-		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
-	}
+	// リザルト用画像UIを初期非表示で登録
+	auto resultUi = std::make_unique<ImgUI>(
+		-1,
+		RESULT_UI_POS,
+		RESULT_UI_SIZE);
+	resultUi->SetActive(false);
+	uiManager_->Add(UI_ID_RESULT, std::move(resultUi));
 }
 
 void GameScene::RegisterActorColliders(const ActorBase& actor)
 {
+	// アクターが所有する全形状のコライダーを衝突管理へ登録
 	for (const auto& [shape, colliders] : actor.GetOwnColliders())
 	{
 		for (const auto& collider : colliders)
@@ -330,7 +417,9 @@ void GameScene::RegisterActorColliders(const ActorBase& actor)
 
 void GameScene::RegisterCharacterColliders(const CharacterBase& character)
 {
+	// キャラクター本体のコライダーを登録
 	RegisterActorColliders(character);
+	// 所有している全武器のコライダーを登録
 	for (const auto& weapon : character.GetWeapons())
 	{
 		if (weapon)

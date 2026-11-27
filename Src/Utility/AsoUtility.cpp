@@ -8,6 +8,7 @@
 
 float AsoUtility::Clamp(float v, float min, float max)
 {
+	// 値を指定の最小値?最大値の範囲内に収める
 	if (v > max)
 	{
 		v = max;
@@ -23,6 +24,7 @@ float AsoUtility::Clamp(float v, float min, float max)
 
 double AsoUtility::DegIn360(double deg)
 {
+	// 角度(度)を 0.0?360.0 の範囲に折り返す
 	deg = fmod(deg, DEG_360);
 	if (deg < 0.0f)
 	{
@@ -33,6 +35,7 @@ double AsoUtility::DegIn360(double deg)
 
 double AsoUtility::RadIn2PI(double rad)
 {
+	// 角度(ラジアン)を 0.0?2π の範囲に折り返す
 	rad = fmod(rad, DX_TWO_PI);
 	if (rad < 0.0)
 	{
@@ -164,8 +167,8 @@ Vector2 AsoUtility::Lerp(const Vector2& start, const Vector2& end, float t)
 	}
 
 	Vector2 ret = start;
-	ret.x += Round(t * static_cast<float>((end.x - start.x)));
-	ret.y += Round(t * static_cast<float>((end.y - start.y)));
+	ret.x += Round(t * (end.x - start.x));
+	ret.y += Round(t * (end.y - start.y));
 	return ret;
 }
 
@@ -187,6 +190,7 @@ VECTOR AsoUtility::Lerp(const VECTOR& start, const VECTOR& end, float t)
 
 double AsoUtility::LerpDeg(double start, double end, double t)
 {
+	// 角度差が180度を超える場合は最短経路側へ補正して補間
 	double ret;
 	double diff = end - start;
 
@@ -234,6 +238,7 @@ COLOR_F AsoUtility::Lerp(const COLOR_F& start, const COLOR_F& end, float t)
 
 Vector2 AsoUtility::Bezier(const Vector2& p1, const Vector2& p2, const Vector2& p3, float t)
 {
+	// 2次ベジェ曲線(2D)の補間点を算出
 	Vector2 a = Lerp(p1, p2, t);
 	Vector2 b = Lerp(p2, p3, t);
 	return Lerp(a, b, t);
@@ -241,6 +246,7 @@ Vector2 AsoUtility::Bezier(const Vector2& p1, const Vector2& p2, const Vector2& 
 
 VECTOR AsoUtility::Bezier(const VECTOR& p1, const VECTOR& p2, const VECTOR& p3, float t)
 {
+	// 2次ベジェ曲線(3D)の補間点を算出
 	VECTOR a = Lerp(p1, p2, t);
 	VECTOR b = Lerp(p2, p3, t);
 	return Lerp(a, b, t);
@@ -248,6 +254,7 @@ VECTOR AsoUtility::Bezier(const VECTOR& p1, const VECTOR& p2, const VECTOR& p3, 
 
 VECTOR AsoUtility::RotXZPos(const VECTOR& centerPos, const VECTOR& radiusPos, float rad)
 {
+	// 中心座標を基準にXZ平面上で指定角度回転させた座標を算出
 	float x = ((radiusPos.x - centerPos.x) * cosf(rad)) - ((radiusPos.z - centerPos.z) * sinf(rad));
 	float z = ((radiusPos.x - centerPos.x) * sinf(rad)) + ((radiusPos.z - centerPos.z) * cosf(rad));
 	return VGet(centerPos.x + x, radiusPos.y, centerPos.z + z);
@@ -337,6 +344,7 @@ bool AsoUtility::IsHitSphereCapsule(
 
 bool AsoUtility::Equals(const VECTOR& v1, const VECTOR& v2)
 {
+	// 各軸成分が完全一致しているかを判定
 	if (v1.x == v2.x && v1.y == v2.y && v1.z == v2.z)
 	{
 		return true;
@@ -346,6 +354,7 @@ bool AsoUtility::Equals(const VECTOR& v1, const VECTOR& v2)
 
 bool AsoUtility::EqualsVZero(const VECTOR& v1)
 {
+	// ゼロベクトルと一致しているかを判定
 	const VECTOR& v2 = VECTOR_ZERO;
 	if (v1.x == v2.x && v1.y == v2.y && v1.z == v2.z)
 	{
@@ -356,9 +365,11 @@ bool AsoUtility::EqualsVZero(const VECTOR& v1)
 
 VECTOR AsoUtility::Normalize(const Vector2& v)
 {
+	// 2Dベクトルを3D形式(Z=0)に変換して正規化
+	Vector2F vf = v;
 	VECTOR ret = VGet(
-		static_cast<float>(v.x),
-		static_cast<float>(v.y),
+		vf.x,
+		vf.y,
 		0.0f
 	);
 	float len = static_cast<float>(Magnitude(v));
@@ -370,6 +381,7 @@ VECTOR AsoUtility::Normalize(const Vector2& v)
 
 VECTOR AsoUtility::VNormalize(const VECTOR& v)
 {
+	// ゼロベクトルでなければ正規化を実行
 	if (AsoUtility::EqualsVZero(v))
 	{
 		// Quaternion計算でゼロを渡して、
@@ -407,6 +419,7 @@ double AsoUtility::AngleDeg(const VECTOR& from, const VECTOR& to)
 
 void AsoUtility::DrawLineDir(const VECTOR& pos, const VECTOR& dir, int color, float len)
 {
+	// 方向ベクトルに沿って線分と先端の球体マーカーを描画
 	constexpr float radius = 5.0f;
 	constexpr int divNum = 5;
 
@@ -419,6 +432,7 @@ void AsoUtility::DrawLineDir(const VECTOR& pos, const VECTOR& dir, int color, fl
 
 void AsoUtility::DrawLineXYZ(const VECTOR& pos, const MATRIX& rot, float len)
 {
+	// 回転行列からXYZローカル軸方向を求めてデバッグ線分を描画
 	VECTOR dir;
 
 	// X
@@ -436,6 +450,7 @@ void AsoUtility::DrawLineXYZ(const VECTOR& pos, const MATRIX& rot, float len)
 
 void AsoUtility::DrawLineXYZ(const VECTOR& pos, const Quaternion& rot, float len)
 {
+	// クォータニオンからXYZローカル軸方向を求めてデバッグ線分を描画
 	VECTOR dir;
 
 	// X
@@ -453,6 +468,7 @@ void AsoUtility::DrawLineXYZ(const VECTOR& pos, const Quaternion& rot, float len
 
 std::vector<std::string> AsoUtility::Split(std::string& line, char delimiter)
 {
+	// 指定区切り文字で文字列を分割して配列へ格納
 	std::istringstream stream(line);
 	std::string field;
 	std::vector<std::string> result;

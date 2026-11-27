@@ -1,11 +1,10 @@
 #include "../../../Utility/AsoUtility.h"
-#include "../../../Manager/ResourceManager.h"
+#include "../../../Manager/Common/ResourceManager.h"
 #include "../../Common/Collider/ColliderCapsule.h"
 #include "WeaponBlade.h"
 
 WeaponBlade::WeaponBlade(const Transform& followTransform, int followFrameId)
-	:
-	WeaponBase(WeaponBase::WEAPON_TYPE::BLADE, followTransform, followFrameId)
+	: WeaponBase(WeaponBase::WEAPON_TYPE::BLADE, followTransform, followFrameId)
 {
 	// 生存フラグを無効にする
 	isAlive_ = false;
@@ -13,6 +12,7 @@ WeaponBlade::WeaponBlade(const Transform& followTransform, int followFrameId)
 
 void WeaponBlade::Update(void)
 {
+	// 基底クラスの追従更新処理を実行
 	WeaponBase::Update();
 }
 
@@ -64,6 +64,7 @@ void WeaponBlade::InitCollider(void)
 
 void WeaponBlade::SetCollider(void)
 {
+	// 生存フラグを有効化し、全カプセルコライダーをオンにする
 	isAlive_ = true;
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	for (const auto& vec : ownColliders_.at(capsuleType))
@@ -74,6 +75,7 @@ void WeaponBlade::SetCollider(void)
 
 void WeaponBlade::ClearCollider(void)
 {
+	// 生存フラグを無効化し、全カプセルコライダーを初期状態へ戻す
 	isAlive_ = false;
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	for (const auto& vec : ownColliders_.at(capsuleType))

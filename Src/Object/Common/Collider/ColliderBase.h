@@ -43,7 +43,7 @@ public:
 		int partTag = 0);
 
 	// デストラクタ
-	virtual ~ColliderBase(void) {}
+	virtual ~ColliderBase(void) = default;
 
 	// 描画
 	void Draw(void);

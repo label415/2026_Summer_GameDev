@@ -1,32 +1,40 @@
 #include <DxLib.h>
-#include "../Manager/InputManager.h"
-#include "../Manager/SceneManager.h"
-#include "../Manager/ResourceManager.h"
-#include "../Manager/SoundManager.h"
-#include "../Manager/FontManager.h"
-#include "../Manager/Camera.h"
+#include "../Manager/Common/InputManager.h"
+#include "../Manager/Common/SceneManager.h"
+#include "../Manager/Common/ResourceManager.h"
+#include "../Manager/Common/SoundManager.h"
+#include "../Object/Camera.h"
+#include "../Manager/Game/UiManager.h"
+#include "../UI/ImgUI.h"
 #include "../Utility/AsoUtility.h"
 #include "PauseScene.h"
 
 PauseScene::PauseScene(void)
 	: SceneBase()
+	, uiManager_(nullptr)
 	, selectIndex_(0)
 	, isHovered(true)
 	, isStickInput_(false)
 	, pauseFont_(-1)
-	, selectImg_(-1)
 	, uiBoxs_()
-{}
+{
+}
 
 void PauseScene::LoadEnd(void)
 {
-	// フォントハンドルの作成
-	resMng_.Load(ResourceManager::SRC::FONT);
-	pauseFont_ = fontMng_.GetInstance().CreateMyFont(
-		fontName_, static_cast<int>(FONT_SIZE), static_cast<int>(FONT_THICKNESS));
+	// UI管理の生成およびカーソルImgUIの登録
+	uiManager_ = std::make_unique<UiManager>();
+	int selectHandle = resMng_.Load(ResourceManager::SRC::UI_SELECTION_CURSOR).handleId_;
+	constexpr Vector2F halfScreen = Application::HALF_SCREEN_SIZE;
+	uiManager_->Add(
+		UI_ID_CURSOR,
+		std::make_unique<ImgUI>(
+			selectHandle,
+			Vector2F(halfScreen.x, 0.0f),
+			SELECT_IMG_SIZE));
 
-	// 画像のロード
-	selectImg_ = resMng_.Load(ResourceManager::SRC::UI_SELECTION_CURSOR).handleId_;
+	// フォントのロード
+	pauseFont_ = resMng_.LoadFont(ResourceManager::SRC::FONT, FONT_SIZE, FONT_THICKNESS);
 
 	// 各UIコライダー生成
 	for (int i = 0; i < LIST_MAX; ++i)
@@ -34,9 +42,9 @@ void PauseScene::LoadEnd(void)
 		uiBoxs_[i] = std::make_unique<ColliderBox2D>(
 			ColliderBase2D::TAG::UI,
 			Vector2F(
-				Application::HALF_SCREEN_SIZE_X - BOX_ADJUST_X,
-				(Application::HALF_SCREEN_SIZE_Y - BOX_ADJUST_Y) + (BOX_Y_INTERVAL * i)),
-			BOX_WIDTH, BOX_HEIGHT);
+				Application::HALF_SCREEN_SIZE.x - BOX_ADJUST.x,
+				(Application::HALF_SCREEN_SIZE.y - BOX_ADJUST.y) + (BOX_Y_INTERVAL * i)),
+			BOX_SIZE);
 	}
 
 	// マウス入力を有効化
@@ -52,11 +60,11 @@ void PauseScene::Update(void)
 	auto& ins = InputManager::GetInstance();
 
 	// マウス判定
-	Vector2 mPos = ins.GetMousePos();
+	Vector2F mPos = ins.GetMousePos();
 	for (int i = 0; i < LIST_MAX; ++i)
 	{
 		// マウスがUIコライダー内にあるか判定
-		if (uiBoxs_[i] && uiBoxs_[i]->Contains(static_cast<float>(mPos.x), static_cast<float>(mPos.y)))
+		if (uiBoxs_[i] && uiBoxs_[i]->Contains(mPos))
 		{
 			// マウス入力を有効化
 			ins.SetMouseFlag(true);
@@ -91,6 +99,25 @@ void PauseScene::Update(void)
 		isStickInput_ = false;
 	}
 
+	// カーソルUIの表示・座標更新およびUI一括更新
+	if (uiManager_)
+	{
+		bool showCursor = (isHovered && uiBoxs_[selectIndex_]);
+		uiManager_->SetActive(UI_ID_CURSOR, showCursor);
+		if (showCursor)
+		{
+			float centerY =
+				uiBoxs_[selectIndex_]->Top()
+				+ (uiBoxs_[selectIndex_]->Bottom()
+					- uiBoxs_[selectIndex_]->Top()) * SELECT_IMG_ADJUST_Y;
+			constexpr Vector2F halfScreen = Application::HALF_SCREEN_SIZE;
+			uiManager_->SetPos(
+				UI_ID_CURSOR,
+				Vector2F(halfScreen.x, centerY));
+		}
+		uiManager_->Update();
+	}
+
 	// 決定入力があり、かつ選択中のUIが表示されている時
 	bool isDecide = ins.IsTrgMouseLeft()
 		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::DOWN);
@@ -121,9 +148,9 @@ void PauseScene::Draw(void)
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, PAUSE_BLENDPARAM);
 	DrawBoxAA(
 		PAUSE_HEIGHT,
-		Application::HALF_SCREEN_SIZE_Y - PAUSE_HEIGHT,
-		Application::SCREEN_SIZE_X - PAUSE_HEIGHT,
-		Application::HALF_SCREEN_SIZE_Y + PAUSE_HEIGHT,
+		Application::HALF_SCREEN_SIZE.y - PAUSE_HEIGHT,
+		Application::SCREEN_SIZE.x - PAUSE_HEIGHT,
+		Application::HALF_SCREEN_SIZE.y + PAUSE_HEIGHT,
 		PAUSE_COLOR,
 		true, PAUSE_SIZE
 	);
@@ -132,28 +159,17 @@ void PauseScene::Draw(void)
 	// ポーズ画面枠
 	DrawBoxAA(
 		PAUSE_HEIGHT,
-		Application::HALF_SCREEN_SIZE_Y - PAUSE_HEIGHT,
-		Application::SCREEN_SIZE_X - PAUSE_HEIGHT,
-		Application::HALF_SCREEN_SIZE_Y + PAUSE_HEIGHT,
+		Application::HALF_SCREEN_SIZE.y - PAUSE_HEIGHT,
+		Application::SCREEN_SIZE.x - PAUSE_HEIGHT,
+		Application::HALF_SCREEN_SIZE.y + PAUSE_HEIGHT,
 		PAUSE_FRAME_COLOR,
 		false,
 		PAUSE_FRAME_SIZE);
 
-	// カーソル画像
-	if (isHovered && uiBoxs_[selectIndex_])
+	// カーソルUIを一括描画
+	if (uiManager_)
 	{
-		// カーソル画像の中心座標を計算
-		float centerY =
-			uiBoxs_[selectIndex_]->Top()
-			+ (uiBoxs_[selectIndex_]->Bottom()
-				- uiBoxs_[selectIndex_]->Top()) * SELECT_IMG_ADJUST_Y;
-
-		// カーソル画像描画
-		DrawRotaGraph(
-			Application::HALF_SCREEN_SIZE_X,
-			static_cast<int>(centerY),
-			SELECT_IMG_SIZE, 0.0f, selectImg_, true
-		);
+		uiManager_->Draw();
 	}
 
 	// 各ポーズフォント
@@ -161,13 +177,14 @@ void PauseScene::Draw(void)
 	{
 		// 文字の描画位置を計算
 		int strW = GetDrawStringWidthToHandle(pauseList_[i].c_str(), -1, pauseFont_);
-		int posX = static_cast<int>((Application::SCREEN_SIZE_X - strW) / FONT_ADJUST_X);
-		int posY = static_cast<int>(
-			(Application::HALF_SCREEN_SIZE_Y - FONT_ADJUST_Y) + (FONT_INTERVAL * i));
+		Vector2F pos = {
+			(Application::SCREEN_SIZE.x - strW) / FONT_ADJUST.x,
+			(Application::HALF_SCREEN_SIZE.y - FONT_ADJUST.y) + (FONT_INTERVAL * i)
+		};
 
 		// ポーズフォント描画
-		DrawFormatStringToHandle(
-			posX, posY,
+		DrawFormatStringFToHandle(
+			pos.x, pos.y,
 			FONT_COLOR,
 			pauseFont_,
 			pauseList_[i].c_str());
@@ -176,5 +193,10 @@ void PauseScene::Draw(void)
 
 void PauseScene::Release(void)
 {
+	// UI管理の解放とポーズ画面解放時のフォントハンドル参照リセット
+	if (uiManager_)
+	{
+		uiManager_->Release();
+	}
 	pauseFont_ = -1;
 }

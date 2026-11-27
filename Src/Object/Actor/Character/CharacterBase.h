@@ -1,8 +1,6 @@
 #pragma once
 #include "../../Common/AnimationController.h"
-#include "../../Common/EffectController.h"
 #include "../Weapon/WeaponBase.h"
-#include "../UI/UIHp.h"
 #include "../ActorBase.h"
 
 class CharacterBase :
@@ -14,7 +12,7 @@ public:
     CharacterBase(void);
 
     // デストラクタ
-    virtual ~CharacterBase(void) override {}
+    ~CharacterBase(void) override = default;
 
     // 更新
     virtual void Update(void) override;
@@ -25,16 +23,24 @@ public:
     // 解放
     virtual void Release(void) override;
 
-	//HP描画
-    virtual void DrawUI(void){}
-
     // 追尾対象の取得
     void SetTargetPos(const VECTOR* targetTrans) { targetPos_ = targetTrans; }
 
     // 所有武器一覧取得
     const std::vector<std::unique_ptr<WeaponBase>>& GetWeapons(void) const { return weapons_; }
 
+    // HPモデル情報取得・操作
+    float GetHp(void) const { return hp_; }
+    float GetMaxHp(void) const { return maxHp_; }
+    float GetHpRate(void) const { return (maxHp_ > 0.0f && hp_ > 0.0f) ? (hp_ / maxHp_) : 0.0f; }
+    bool IsDead(void) const { return hp_ <= 0.0f; }
+    void TakeDamage(float amount);
+    void HealHp(float amount);
+
 protected:
+
+    // デフォルト最大HP
+    static constexpr float DEFAULT_MAX_HP = 100.0f;
 
     // 最大落下速度
     static constexpr float MAX_FALL_SPEED = -30.0f;
@@ -51,8 +57,9 @@ protected:
     // 地面押し上げオフセット量
     static constexpr float GROUND_PUSH_UP_OFFSET = 2.0f;
 
-	//HP UI
-	std::unique_ptr<UIHp> uiHp_;
+    // HPモデル値
+    float hp_;
+    float maxHp_;
 
     //アニメーションコントローラ
     std::unique_ptr<AnimationController> animationController_;

@@ -15,7 +15,7 @@ public:
 		const VECTOR& localPosStart, const VECTOR& localPosEnd, int partTag = 0);
 
 	// デストラクタ
-	~ColliderLine(void) override {}
+	~ColliderLine(void) override = default;
 
 	// ローカル座標での設定
 	void SetLocalPosStart(const VECTOR& pos) { localPosStart_ = pos; }
@@ -45,10 +45,10 @@ private:
 	// デバッグ表示の球体ポリゴン分割数
 	static constexpr int DIV_NUM = 6;
 
-	// 線分の開始座標(ローカル)
+	// 線分の開始座標
 	VECTOR localPosStart_;
 
-	// 線分の終了座標(ローカル)
+	// 線分の終了座標
 	VECTOR localPosEnd_;
 
 };

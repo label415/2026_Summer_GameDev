@@ -20,17 +20,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Utility\CollisionUtility.cpp" />
-    <ClCompile Include="Src\Manager\CollisionManager.cpp" />
-    <ClCompile Include="Src\Object\Actor\UI\UIBase.cpp" />
-    <ClCompile Include="Src\Object\Actor\UI\UIHp.cpp" />
-    <ClCompile Include="Src\Object\Actor\UI\UIRecovery.cpp" />
-    <ClCompile Include="Src\Object\Actor\UI\UISt.cpp" />
+    <ClCompile Include="Src\Manager\Game\CollisionManager.cpp" />
+    <ClCompile Include="Src\Manager\Game\UiManager.cpp" />
+    <ClCompile Include="Src\UI\BarUI.cpp" />
+    <ClCompile Include="Src\UI\ImgUI.cpp">
+      <ObjectFileName>$(IntDir)UI_ImgUI.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Src\UI\UIBase.cpp" />
+    <ClCompile Include="Src\UI\UIRecovery.cpp" />
     <ClCompile Include="Src\Object\Common\Collider2D\ColliderBase2D.cpp" />
     <ClCompile Include="Src\Object\Common\Collider2D\ColliderBox2D.cpp" />
     <ClCompile Include="Src\Scene\PauseScene.cpp" />
     <ClCompile Include="Src\Common\ShadowMap.cpp" />
-    <ClCompile Include="Src\Manager\SoundManager.cpp" />
-    <ClCompile Include="Src\Object\Common\EffectController.cpp" />
+    <ClCompile Include="Src\Manager\Common\SoundManager.cpp" />
+    <ClCompile Include="Src\Manager\Common\EffectManager.cpp" />
     <ClCompile Include="Src\Libs\ImGuiWrapper.cpp" />
     <ClCompile Include="Src\Libs\ImGui\backends\imgui_impl_dx11.cpp" />
     <ClCompile Include="Src\Libs\ImGui\backends\imgui_impl_win32.cpp" />
@@ -41,9 +44,8 @@
     <ClCompile Include="Src\Libs\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Src\Object\Actor\Character\Enemy\EnemyDragon.cpp" />
     <ClCompile Include="Src\Scene\Loading\Loading.cpp" />
-    <ClCompile Include="Src\Manager\FontManager.cpp" />
     <ClCompile Include="Src\Utility\ModelFrameUtility.cpp" />
-    <ClCompile Include="Src\Object\Actor\Character\Enemy\EnemyManager.cpp" />
+    <ClCompile Include="Src\Manager\Game\EnemyManager.cpp" />
     <ClCompile Include="Src\Object\Actor\Character\Enemy\EnemyBase.cpp" />
     <ClCompile Include="Src\Object\Common\Collider\ColliderSphere.cpp" />
     <ClCompile Include="Src\Object\Common\Collider\ColliderCapsule.cpp" />
@@ -59,11 +61,17 @@
     <ClCompile Include="Src\Common\Fader.cpp" />
     <ClCompile Include="Src\Common\Quaternion.cpp" />
     <ClCompile Include="Src\main.cpp" />
-    <ClCompile Include="Src\Manager\Camera.cpp" />
-    <ClCompile Include="Src\Manager\InputManager.cpp" />
-    <ClCompile Include="Src\Manager\Resource.cpp" />
-    <ClCompile Include="Src\Manager\ResourceManager.cpp" />
-    <ClCompile Include="Src\Manager\SceneManager.cpp" />
+    <ClCompile Include="Src\Object\Camera.cpp" />
+    <ClCompile Include="Src\Manager\Common\InputManager.cpp" />
+    <ClCompile Include="Src\Resource\ResourceBase.cpp" />
+    <ClCompile Include="Src\Resource\ResourceEffect.cpp" />
+    <ClCompile Include="Src\Resource\ResourceFont.cpp" />
+    <ClCompile Include="Src\Resource\ResourceImage.cpp" />
+    <ClCompile Include="Src\Resource\ResourceImages.cpp" />
+    <ClCompile Include="Src\Resource\ResourceModel.cpp" />
+    <ClCompile Include="Src\Resource\ResourceSound.cpp" />
+    <ClCompile Include="Src\Manager\Common\ResourceManager.cpp" />
+    <ClCompile Include="Src\Manager\Common\SceneManager.cpp" />
     <ClCompile Include="Src\Object\Actor\Stage\Stage.cpp" />
     <ClCompile Include="Src\Object\Common\AnimationController.cpp" />
     <ClCompile Include="Src\Object\Common\Transform.cpp" />
@@ -79,17 +87,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Utility\CollisionUtility.h" />
-    <ClInclude Include="Src\Manager\CollisionManager.h" />
-    <ClInclude Include="Src\Object\Actor\UI\UIBase.h" />
-    <ClInclude Include="Src\Object\Actor\UI\UIHp.h" />
-    <ClInclude Include="Src\Object\Actor\UI\UIRecovery.h" />
-    <ClInclude Include="Src\Object\Actor\UI\UISt.h" />
+    <ClInclude Include="Src\Manager\Game\CollisionManager.h" />
+    <ClInclude Include="Src\Manager\Game\UiManager.h" />
+    <ClInclude Include="Src\UI\BarUI.h" />
+    <ClInclude Include="Src\UI\ImgUI.h" />
+    <ClInclude Include="Src\UI\UIBase.h" />
+    <ClInclude Include="Src\UI\UIRecovery.h" />
     <ClInclude Include="Src\Object\Common\Collider2D\ColliderBase2D.h" />
     <ClInclude Include="Src\Object\Common\Collider2D\ColliderBox2D.h" />
     <ClInclude Include="Src\Scene\PauseScene.h" />
     <ClInclude Include="Src\Common\ShadowMap.h" />
-    <ClInclude Include="Src\Manager\SoundManager.h" />
-    <ClInclude Include="Src\Object\Common\EffectController.h" />
+    <ClInclude Include="Src\Manager\Common\SoundManager.h" />
+    <ClInclude Include="Src\Manager\Common\EffectManager.h" />
     <ClInclude Include="Src\Libs\ImGuiWrapper.h" />
     <ClInclude Include="Src\Libs\ImGui\backends\imgui_impl_dx11.h" />
     <ClInclude Include="Src\Libs\ImGui\backends\imgui_impl_win32.h" />
@@ -101,10 +110,9 @@
     <ClInclude Include="Src\Libs\ImGui\imstb_truetype.h" />
     <ClInclude Include="Src\Object\Actor\Character\Enemy\EnemyDragon.h" />
     <ClInclude Include="Src\Scene\Loading\Loading.h" />
-    <ClInclude Include="Src\Manager\FontManager.h" />
     <ClInclude Include="Src\Template\Singleton.h" />
     <ClInclude Include="Src\Utility\ModelFrameUtility.h" />
-    <ClInclude Include="Src\Object\Actor\Character\Enemy\EnemyManager.h" />
+    <ClInclude Include="Src\Manager\Game\EnemyManager.h" />
     <ClInclude Include="Src\Object\Actor\Character\Enemy\EnemyBase.h" />
     <ClInclude Include="Src\Object\Common\Collider\ColliderSphere.h" />
     <ClInclude Include="Src\Object\Common\Collider\ColliderCapsule.h" />
@@ -119,11 +127,17 @@
     <ClInclude Include="Src\Application.h" />
     <ClInclude Include="Src\Common\Fader.h" />
     <ClInclude Include="Src\Common\Quaternion.h" />
-    <ClInclude Include="Src\Manager\Camera.h" />
-    <ClInclude Include="Src\Manager\InputManager.h" />
-    <ClInclude Include="Src\Manager\Resource.h" />
-    <ClInclude Include="Src\Manager\ResourceManager.h" />
-    <ClInclude Include="Src\Manager\SceneManager.h" />
+    <ClInclude Include="Src\Object\Camera.h" />
+    <ClInclude Include="Src\Manager\Common\InputManager.h" />
+    <ClInclude Include="Src\Resource\ResourceBase.h" />
+    <ClInclude Include="Src\Resource\ResourceEffect.h" />
+    <ClInclude Include="Src\Resource\ResourceFont.h" />
+    <ClInclude Include="Src\Resource\ResourceImage.h" />
+    <ClInclude Include="Src\Resource\ResourceImages.h" />
+    <ClInclude Include="Src\Resource\ResourceModel.h" />
+    <ClInclude Include="Src\Resource\ResourceSound.h" />
+    <ClInclude Include="Src\Manager\Common\ResourceManager.h" />
+    <ClInclude Include="Src\Manager\Common\SceneManager.h" />
     <ClInclude Include="Src\Object\Actor\Stage\Stage.h" />
     <ClInclude Include="Src\Object\Common\AnimationController.h" />
     <ClInclude Include="Src\Object\Common\Transform.h" />

@@ -6,8 +6,6 @@
 
 class Camera;
 class WeaponBase;
-class UISt;
-class UIRecovery;
 
 class Player :
 	public CharacterBase
@@ -43,13 +41,6 @@ public:
 		RECOVERY,
 		DIE,
 		END,
-	};
-
-	//各部位のタグ
-	enum class EFFECT {
-		NONE,
-		BLOOD,
-		HP_ABSOLUTE,
 	};
 
 	// 攻撃コンボ状態
@@ -154,19 +145,6 @@ public:
 	// 1回あたりの回復ボトル消費量
 	static constexpr int CONSUME_RECOVERY_BOTTLE_COUNT = 1;
 
-	// プレイヤー被ダメージSE音量
-	static constexpr int SE_VOLUME_DAMAGE = 50;
-	// 歩きSE音量
-	static constexpr int SE_VOLUME_WALK = 50;
-	// 走りSE音量
-	static constexpr int SE_VOLUME_RUN = 50;
-	// 回避SE音量
-	static constexpr int SE_VOLUME_EVASION = 50;
-	// 攻撃SE音量
-	static constexpr int SE_VOLUME_ATTACK = 30;
-	// 回復SE音量
-	static constexpr int SE_VOLUME_RECOVERY = 50;
-
 	// 被弾時出血エフェクトスケール
 	static constexpr VECTOR EFFECT_BLOOD_SCALE = { 5.0f, 5.0f, 5.0f };
 	// 回復エフェクトスケール
@@ -235,16 +213,9 @@ public:
 	// 起き上がり時LockPosのY軸上昇速度
 	static constexpr float UP_LOCK_POS_Y_ADD = 0.7f;
 
-	// HP UI X座標 (画面幅に対する除数)
-	static constexpr int UI_HP_POS_X_DIV = 4;
-	// HP UI Y座標
-	static constexpr int UI_HP_POS_Y = 20;
-	// スタミナ UI Y座標
-	static constexpr int UI_ST_POS_Y = 60;
-	// UIスケール
-	static constexpr float UI_SCALE_X = 0.7f;
-	static constexpr float UI_SCALE_Y = 2.9f;
-	static constexpr float UI_SCALE_Z = 4.0f;
+	// スタミナ上限・下限値
+	static constexpr float MAX_ST = 100.0f;
+	static constexpr float MIN_ST = -15.0f;
 
 	// 初期スポーン位置
 	static constexpr VECTOR INITIAL_POS = { 0.0f, 0.0f, -1000.0f };
@@ -256,7 +227,7 @@ public:
 	Player(void);
 
 	// デストラクタ
-	~Player(void);
+	~Player(void) override = default;
 
 	// 描画処理
 	void Draw(void) override;
@@ -264,11 +235,14 @@ public:
 	// リソースの解放処理
 	void Release(void) override;
 
-	// HPおよび各種UIの描画
-	void DrawUI(void) override;
-
 	// 状態を取得
 	const STATE GetState(void) const { return state_; }
+
+	// スタミナ割合を取得（0.0f～1.0f）
+	float GetStRate(void) const;
+
+	// 回復ボトル所持数を取得
+	int GetRecoveryBottleCnt(void) const { return recoveryBottleCount_; }
 
 	// 無敵状態かどうかを取得
 	const bool GetIsInvincible(void) const { return isInvincible_; }
@@ -333,18 +307,14 @@ private:
 	// 無敵時間
 	static constexpr float INVINCIBLE_TIME = 2.0f;
 
-	// スタミナ UI
-	std::unique_ptr<UISt> uiSt_;
-	// 回復
-	std::unique_ptr<UIRecovery> uiRecovery_;
 	// 攻撃コンボデータ
 	std::map<STATE_ATTACK_COMBO, ATTACK_COMBO> atkComboData_;
 	// 状態
 	STATE state_;
 	// 初期角度を保存
 	Quaternion lastQrot_;
-	// エフェクト種別
-	EFFECT effType_;
+	// 再生中エフェクトハンドル
+	int effHandle_;
 	// 現在の攻撃コンボ状態
 	STATE_ATTACK_COMBO stateAtkCombo_;
 	// 攻撃コンボの更新ステップ
@@ -359,6 +329,10 @@ private:
 	float stRecoverTime_;
 	// 死亡演出時間
 	float deathAnimationTime_;
+	// スタミナモデル値
+	float st_;
+	// 回復ボトル所持数モデル値
+	int recoveryBottleCount_;
 
 	// 移動入力判定および移動処理
 	void ProcessMove(void);
@@ -376,5 +350,9 @@ private:
 	void ApplyDamage(float damageAmount);
 	// 入力方向を取得
 	VECTOR GetInputDirection(void);
+	// スタミナ消費処理
+	void ConsumeSt(float delta);
+	// スタミナ回復処理
+	void RecoverSt(float amount);
 
 };

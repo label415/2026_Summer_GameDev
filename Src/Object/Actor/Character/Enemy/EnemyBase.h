@@ -37,7 +37,7 @@ public:
     EnemyBase(const EnemyBase::EnemyData& data);
 
     // デストラクタ
-    virtual ~EnemyBase(void) override {}
+    ~EnemyBase(void) override = default;
 
     // 描画
     virtual void Draw(void) override;

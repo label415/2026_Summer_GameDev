@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="ソース ファイル">
@@ -22,6 +22,15 @@
     <Filter Include="ソース ファイル\Manager">
       <UniqueIdentifier>{7f661b68-2ac1-46f0-a72e-2c5b31d1c61f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Manager\Common">
+      <UniqueIdentifier>{4d7d4310-1b85-4c6f-a0e2-5c9b8f1a2d11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Manager\Game">
+      <UniqueIdentifier>{8a3b7e21-9d42-48f3-b1c4-7a2e9c4f5e22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Resource">
+      <UniqueIdentifier>{b8c2a530-9f1c-4c3e-8d14-7e3a210f4b91}</UniqueIdentifier>
+    </Filter>
     <Filter Include="ソース ファイル\Object">
       <UniqueIdentifier>{600f44ad-e11e-4fc6-b165-fde3b508648d}</UniqueIdentifier>
     </Filter>
@@ -40,6 +49,15 @@
     <Filter Include="ヘッダー ファイル\Manager">
       <UniqueIdentifier>{c46d3100-17c5-4849-839b-754795e9709b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\Manager\Common">
+      <UniqueIdentifier>{2f6e1c40-8b34-4a91-9e5d-3b7a6c2d4e33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Manager\Game">
+      <UniqueIdentifier>{6c9a5f12-4e78-43b2-8f1a-9d0c3b5e6f44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Resource">
+      <UniqueIdentifier>{5d4f712b-3e91-4a07-9b85-62a4c109e8f2}</UniqueIdentifier>
+    </Filter>
     <Filter Include="ヘッダー ファイル\Object">
       <UniqueIdentifier>{604e2437-eac4-4057-ad42-8b1af55e7c79}</UniqueIdentifier>
     </Filter>
@@ -55,6 +73,12 @@
     <Filter Include="ソース ファイル\Object\Common">
       <UniqueIdentifier>{e1d2c310-5096-4122-b6f2-acf3b54d243c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\UI">
+      <UniqueIdentifier>{8a7c1b20-3f41-4c9a-9e81-2b4f6a1c8d11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\UI">
+      <UniqueIdentifier>{9b8d2c31-4052-4d8b-af92-3c5e7b2d9e22}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Application.cpp">
@@ -69,14 +93,32 @@
     <ClCompile Include="Src\Common\Quaternion.cpp">
       <Filter>ソース ファイル\Common</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Manager\Resource.cpp">
-      <Filter>ソース ファイル\Manager</Filter>
+    <ClCompile Include="Src\Resource\ResourceBase.cpp">
+      <Filter>ソース ファイル\Resource</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Manager\ResourceManager.cpp">
-      <Filter>ソース ファイル\Manager</Filter>
+    <ClCompile Include="Src\Resource\ResourceEffect.cpp">
+      <Filter>ソース ファイル\Resource</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Manager\SceneManager.cpp">
-      <Filter>ソース ファイル\Manager</Filter>
+    <ClCompile Include="Src\Resource\ResourceFont.cpp">
+      <Filter>ソース ファイル\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Resource\ResourceImage.cpp">
+      <Filter>ソース ファイル\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Resource\ResourceImages.cpp">
+      <Filter>ソース ファイル\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Resource\ResourceModel.cpp">
+      <Filter>ソース ファイル\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Resource\ResourceSound.cpp">
+      <Filter>ソース ファイル\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Manager\Common\ResourceManager.cpp">
+      <Filter>ソース ファイル\Manager\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Manager\Common\SceneManager.cpp">
+      <Filter>ソース ファイル\Manager\Common</Filter>
     </ClCompile>
     <ClCompile Include="Src\Scene\GameScene.cpp">
       <Filter>ソース ファイル\Scene</Filter>
@@ -90,8 +132,8 @@
     <ClCompile Include="Src\Utility\AsoUtility.cpp">
       <Filter>ソース ファイル\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Manager\Camera.cpp">
-      <Filter>ソース ファイル\Manager</Filter>
+    <ClCompile Include="Src\Object\Camera.cpp">
+      <Filter>ソース ファイル\Object</Filter>
     </ClCompile>
     <ClCompile Include="Src\Object\Common\AnimationController.cpp">
       <Filter>ソース ファイル\Object\Common</Filter>
@@ -99,8 +141,8 @@
     <ClCompile Include="Src\Object\Common\Transform.cpp">
       <Filter>ソース ファイル\Object\Common</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Manager\InputManager.cpp">
-      <Filter>ソース ファイル\Manager</Filter>
+    <ClCompile Include="Src\Manager\Common\InputManager.cpp">
+      <Filter>ソース ファイル\Manager\Common</Filter>
     </ClCompile>
     <ClCompile Include="Src\Object\Actor\ActorBase.cpp">
       <Filter>ソース ファイル</Filter>
@@ -141,8 +183,8 @@
     <ClCompile Include="Src\Object\Actor\Character\Enemy\EnemyBase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Object\Actor\Character\Enemy\EnemyManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Src\Manager\Game\EnemyManager.cpp">
+      <Filter>ソース ファイル\Manager\Game</Filter>
     </ClCompile>
     <ClCompile Include="Src\Object\Actor\Weapon\WeaponBase.cpp">
       <Filter>ソース ファイル</Filter>
@@ -151,9 +193,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Src\Utility\ModelFrameUtility.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Manager\FontManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Src\Scene\Loading\Loading.cpp">
@@ -192,14 +231,14 @@
     <ClCompile Include="Src\Common\ShadowMap.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Object\Common\EffectController.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Object\Actor\Weapon\WeaponFireball.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Manager\SoundManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Src\Manager\Common\EffectManager.cpp">
+      <Filter>ソース ファイル\Manager\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Manager\Common\SoundManager.cpp">
+      <Filter>ソース ファイル\Manager\Common</Filter>
     </ClCompile>
     <ClCompile Include="Src\Scene\PauseScene.cpp">
       <Filter>ソース ファイル</Filter>
@@ -210,20 +249,23 @@
     <ClCompile Include="Src\Object\Common\Collider2D\ColliderBase2D.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Object\Actor\UI\UIBase.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Src\UI\BarUI.cpp">
+      <Filter>ソース ファイル\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Object\Actor\UI\UIHp.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Src\UI\ImgUI.cpp">
+      <Filter>ソース ファイル\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Object\Actor\UI\UIRecovery.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Src\UI\UIBase.cpp">
+      <Filter>ソース ファイル\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Object\Actor\UI\UISt.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Src\UI\UIRecovery.cpp">
+      <Filter>ソース ファイル\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Manager\CollisionManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Src\Manager\Game\CollisionManager.cpp">
+      <Filter>ソース ファイル\Manager\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Manager\Game\UiManager.cpp">
+      <Filter>ソース ファイル\Manager\Game</Filter>
     </ClCompile>
     <ClCompile Include="Src\Utility\CollisionUtility.cpp">
       <Filter>ソース ファイル</Filter>
@@ -236,14 +278,32 @@
     <ClInclude Include="Src\Common\Quaternion.h">
       <Filter>ヘッダー ファイル\Common</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Manager\Resource.h">
-      <Filter>ヘッダー ファイル\Manager</Filter>
+    <ClInclude Include="Src\Resource\ResourceBase.h">
+      <Filter>ヘッダー ファイル\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Manager\ResourceManager.h">
-      <Filter>ヘッダー ファイル\Manager</Filter>
+    <ClInclude Include="Src\Resource\ResourceEffect.h">
+      <Filter>ヘッダー ファイル\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Manager\SceneManager.h">
-      <Filter>ヘッダー ファイル\Manager</Filter>
+    <ClInclude Include="Src\Resource\ResourceFont.h">
+      <Filter>ヘッダー ファイル\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Resource\ResourceImage.h">
+      <Filter>ヘッダー ファイル\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Resource\ResourceImages.h">
+      <Filter>ヘッダー ファイル\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Resource\ResourceModel.h">
+      <Filter>ヘッダー ファイル\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Resource\ResourceSound.h">
+      <Filter>ヘッダー ファイル\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Manager\Common\ResourceManager.h">
+      <Filter>ヘッダー ファイル\Manager\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Manager\Common\SceneManager.h">
+      <Filter>ヘッダー ファイル\Manager\Common</Filter>
     </ClInclude>
     <ClInclude Include="Src\Scene\GameScene.h">
       <Filter>ヘッダー ファイル\Scene</Filter>
@@ -257,8 +317,8 @@
     <ClInclude Include="Src\Utility\AsoUtility.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Manager\Camera.h">
-      <Filter>ヘッダー ファイル\Manager</Filter>
+    <ClInclude Include="Src\Object\Camera.h">
+      <Filter>ヘッダー ファイル\Object</Filter>
     </ClInclude>
     <ClInclude Include="Src\Object\Common\AnimationController.h">
       <Filter>ヘッダー ファイル\Object\Common</Filter>
@@ -266,8 +326,8 @@
     <ClInclude Include="Src\Object\Common\Transform.h">
       <Filter>ヘッダー ファイル\Object\Common</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Manager\InputManager.h">
-      <Filter>ヘッダー ファイル\Manager</Filter>
+    <ClInclude Include="Src\Manager\Common\InputManager.h">
+      <Filter>ヘッダー ファイル\Manager\Common</Filter>
     </ClInclude>
     <ClInclude Include="Src\Application.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -311,8 +371,8 @@
     <ClInclude Include="Src\Object\Actor\Character\Enemy\EnemyBase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Object\Actor\Character\Enemy\EnemyManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Src\Manager\Game\EnemyManager.h">
+      <Filter>ヘッダー ファイル\Manager\Game</Filter>
     </ClInclude>
     <ClInclude Include="Src\Object\Actor\Weapon\WeaponBase.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -321,9 +381,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Src\Utility\ModelFrameUtility.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Manager\FontManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Src\Scene\Loading\Loading.h">
@@ -365,14 +422,14 @@
     <ClInclude Include="Src\Common\ShadowMap.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Object\Common\EffectController.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Object\Actor\Weapon\WeaponFireball.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Manager\SoundManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Src\Manager\Common\EffectManager.h">
+      <Filter>ヘッダー ファイル\Manager\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Manager\Common\SoundManager.h">
+      <Filter>ヘッダー ファイル\Manager\Common</Filter>
     </ClInclude>
     <ClInclude Include="Src\Scene\PauseScene.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -383,17 +440,17 @@
     <ClInclude Include="Src\Object\Common\Collider2D\ColliderBase2D.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Object\Actor\UI\UIBase.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Src\UI\BarUI.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Object\Actor\UI\UIHp.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Src\UI\ImgUI.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Object\Actor\UI\UIRecovery.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Src\UI\UIBase.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Object\Actor\UI\UISt.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Src\UI\UIRecovery.h">
+      <Filter>ヘッダー ファイル\UI</Filter>
     </ClInclude>
     <ClInclude Include="Src\Template\Singleton.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -401,8 +458,11 @@
     <ClInclude Include="Src\Template\Vector2Template.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Manager\CollisionManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Src\Manager\Game\CollisionManager.h">
+      <Filter>ヘッダー ファイル\Manager\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Manager\Game\UiManager.h">
+      <Filter>ヘッダー ファイル\Manager\Game</Filter>
     </ClInclude>
     <ClInclude Include="Src\Utility\CollisionUtility.h">
       <Filter>ヘッダー ファイル</Filter>

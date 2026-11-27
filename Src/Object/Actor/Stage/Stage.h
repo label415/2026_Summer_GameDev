@@ -13,7 +13,7 @@ public:
 	Stage(void){}
 
 	// デストラクタ
-	~Stage(void){}
+	~Stage(void) override = default;
 
 	// 更新
 	void Update(void)override;

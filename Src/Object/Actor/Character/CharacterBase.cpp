@@ -1,8 +1,8 @@
 #include "../../../Application.h"
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Utility/CollisionUtility.h"
-#include "../../../Manager/SceneManager.h"
-#include "../../../Manager/ResourceManager.h"
+#include "../../../Manager/Common/SceneManager.h"
+#include "../../../Manager/Common/ResourceManager.h"
 #include "../../Common/Collider/ColliderLine.h"
 #include "../../Common/Collider/ColliderModel.h"
 #include "../../Common/Collider/ColliderCapsule.h"
@@ -12,7 +12,8 @@
 CharacterBase::CharacterBase(void)
 	: ActorBase()
 	, targetPos_(nullptr)
-	, uiHp_(nullptr)
+	, hp_(DEFAULT_MAX_HP)
+	, maxHp_(DEFAULT_MAX_HP)
 	, animationController_(nullptr)
 	, moveDir_(AsoUtility::VECTOR_ZERO)
 	, movePow_(AsoUtility::VECTOR_ZERO)
@@ -22,6 +23,7 @@ CharacterBase::CharacterBase(void)
 	, stepJump_(0.0f)
 	, isJump_(false)
 {
+	// 所有武器配列を初期化
 	weapons_.clear();
 }
 
@@ -143,9 +145,11 @@ void CharacterBase::CollisionGravity(void)
 	// 落下中しか判定しない
 	if (!(VDot(AsoUtility::DIR_D, jumpPow_) > FALL_DOT_THRESHOLD))return;
 
+	// 線分コライダーが存在しなければ終了
 	int lineType = static_cast<int>(ColliderBase::SHAPE::LINE);
 	if (ownColliders_.count(lineType) == 0) return;
 
+	// 各線分コライダーとステージモデルの接地判定を実施
 	for (const auto& col : ownColliders_.at(lineType))
 	{
 		if (!col->GetIsCollider()) continue;
@@ -155,6 +159,7 @@ void CharacterBase::CollisionGravity(void)
 			std::dynamic_pointer_cast<ColliderLine>(col);
 		if (colliderLine == nullptr) return;
 
+		// ステージとの交差点を検出して地面へ押し上げる
 		for (const auto& hit : col->GetHitColliders())
 		{
 			if (hit.lock()->GetIsCollider()
@@ -171,6 +176,7 @@ void CharacterBase::CollisionGravity(void)
 						transform_.pos.y, GROUND_PUSH_UP_OFFSET,
 						false, true);
 
+				// 着地に伴いジャンプ状態と落下速度をリセット
 				isJump_ = false;
 				jumpPow_ = AsoUtility::VECTOR_ZERO;
 				stepJump_ = 0.0f;
@@ -181,9 +187,11 @@ void CharacterBase::CollisionGravity(void)
 
 void CharacterBase::CollisionCapsule(void)
 {
+	// カプセルコライダーが存在しなければ終了
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	if (ownColliders_.count(capsuleType) == 0) return;
 
+	// 有効なカプセルコライダーごとに衝突モデルからの押し戻しを実行
 	for (const auto& col : ownColliders_.at(capsuleType))
 	{
 		if (!col->GetIsCollider()) continue;
@@ -193,6 +201,7 @@ void CharacterBase::CollisionCapsule(void)
 			std::dynamic_pointer_cast<ColliderCapsule>(col);
 		if (colliderCapsule == nullptr) return;
 
+		// 接触したモデルコライダーに対して押し出し補正を適用
 		for (const auto& hit : col->GetHitColliders())
 		{
 			// モデル以外は処理を飛ばす  
@@ -202,6 +211,7 @@ void CharacterBase::CollisionCapsule(void)
 				std::dynamic_pointer_cast<ColliderModel>(hit.lock());
 			if (colliderModel == nullptr) continue;
 
+			// 壁・障害物からのカプセル押し戻し計算
 			transform_.pos =
 				CollisionUtility::CalcPushCapsuleModel(
 					*colliderCapsule, *colliderModel, transform_.pos,
@@ -233,5 +243,25 @@ void CharacterBase::SetFrameUserLocalPos(VECTOR localPos, int frameNo)
 	// 合成した行列を対象フレームにセットし直して、
 	// アニメーションの移動値を無効化
 	MV1SetFrameUserLocalMatrix(transform_.modelId, frameNo, mix);
+}
+
+void CharacterBase::TakeDamage(float amount)
+{
+	// HPを減算し、下限0.0fでクランプする
+	hp_ -= amount;
+	if (hp_ < 0.0f)
+	{
+		hp_ = 0.0f;
+	}
+}
+
+void CharacterBase::HealHp(float amount)
+{
+	// HPを加算し、最大HPでクランプする
+	hp_ += amount;
+	if (hp_ > maxHp_)
+	{
+		hp_ = maxHp_;
+	}
 }
 

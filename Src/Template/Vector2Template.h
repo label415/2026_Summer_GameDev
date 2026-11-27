@@ -15,6 +15,11 @@ public:
 	// コンストラクタ
 	constexpr Vector2Template(T vX, T vY) : x(vX), y(vY) {}
 
+	template <typename U>
+	constexpr Vector2Template(const Vector2Template<U>& v)
+		: x(static_cast<T>(v.x)), y(static_cast<T>(v.y)) {
+	}
+
 	// デストラクタ
 	~Vector2Template(void) = default;
 

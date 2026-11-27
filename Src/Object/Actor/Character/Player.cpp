@@ -1,9 +1,10 @@
 #include <DxLib.h>
-#include "../../../Manager/ResourceManager.h"
-#include "../../../Manager/SceneManager.h"
-#include "../../../Manager/Camera.h"
-#include "../../../Manager/InputManager.h"
-#include "../../../Manager/SoundManager.h"
+#include "../../../Manager/Common/ResourceManager.h"
+#include "../../../Manager/Common/SceneManager.h"
+#include "../../Camera.h"
+#include "../../../Manager/Common/InputManager.h"
+#include "../../../Manager/Common/SoundManager.h"
+#include "../../../Manager/Common/EffectManager.h"
 #include "../../../Utility/AsoUtility.h"
 #include "../../../Utility/CollisionUtility.h"
 #include "../../../Utility/MatrixUtility.h"
@@ -14,28 +15,23 @@
 #include "../../Common/Collider/ColliderSphere.h"
 #include "../../Common/Collider/ColliderModel.h"
 #include "../Weapon/WeaponBlade.h"
-#include "../UI/UISt.h"
-#include "../UI/UIHp.h"
-#include "../UI/UIRecovery.h"
 #include "Enemy/EnemyDragon.h"
 #include "Player.h"
 
 Player::Player(void)
 	: animLockPos_(AsoUtility::VECTOR_ZERO)
 	, stRecoverTime_(0.0f)
-	, effType_(EFFECT::NONE)
+	, effHandle_(-1)
 	, deathAnimationTime_(0.0f)
 	, invincibleTimer_(0.0f)
+	, st_(MAX_ST)
+	, recoveryBottleCount_(INITIAL_RECOVERY_BOTTLE_COUNT)
 	, isComboNext_(false)
 	, isInvincible_(false)
 	, stateAtkCombo_(STATE_ATTACK_COMBO::COMBO_1)
 	, state_(STATE::IDLE)
-	, uiRecovery_(nullptr)
-	, uiSt_(nullptr)
 {
 }
-
-Player::~Player(void) {}
 
 void Player::Draw(void)
 {
@@ -50,17 +46,10 @@ void Player::Draw(void)
 
 void Player::Release(void)
 {
+	// 再生中エフェクトを停止してから基底クラスの解放処理を実行
+	EffectManager::GetInstance().Stop(effHandle_);
+	effHandle_ = -1;
 	CharacterBase::Release();
-}
-
-void Player::DrawUI(void)
-{
-	// HPとスタミナのUI描画
-	if (uiHp_) { uiHp_->Draw(); }
-	if (uiSt_) { uiSt_->Draw(); }
-
-	// 回復瓶のUI描画
-	if (uiRecovery_) { uiRecovery_->Draw(); }
 }
 
 void Player::InitLoad(void)
@@ -78,24 +67,6 @@ void Player::InitLoad(void)
 	for (const auto& weapon : weapons_) {
 		weapon->Load();
 	}
-
-	// 回復瓶UI
-	uiRecovery_ = std::make_unique<UIRecovery>(INITIAL_RECOVERY_BOTTLE_COUNT);
-	uiRecovery_->Load();
-
-	// HP UI を画面左上に表示
-	uiHp_ = std::make_unique<UIHp>(
-		static_cast<float>(Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV),
-		static_cast<float>(UI_HP_POS_Y),
-		UI_SCALE_X, UI_SCALE_Y, UI_SCALE_Z);
-	uiHp_->Load();
-
-	// スタミナUIを HP の下に表示
-	uiSt_ = std::make_unique<UISt>(
-		static_cast<float>(Application::SCREEN_SIZE_X / UI_HP_POS_X_DIV),
-		static_cast<float>(UI_ST_POS_Y),
-		UI_SCALE_X, UI_SCALE_Y, UI_SCALE_Z);
-	uiSt_->Load();
 
 	animationController_ = std::make_unique<AnimationController>(transform_.modelId);
 }
@@ -148,6 +119,7 @@ void Player::InitCollider(void)
 
 void Player::InitAnimation(void)
 {
+	// 各行動用のアニメーションモデルを複製ロードして登録し、待機を再生
 	animationController_->Add(static_cast<int>(ANIM_TYPE::IDLE),
 		ANIM_SPEED_IDLE, resMng_.LoadModelDuplicate(ResourceManager::SRC::ANIM_PLAYER_IDLE));
 	animationController_->Add(static_cast<int>(ANIM_TYPE::RUN),
@@ -188,12 +160,6 @@ void Player::InitPost(void)
 		weapon->LoadEnd();
 	}
 
-	// HPUI
-	uiHp_->LoadEnd();
-
-	// スタミナUI
-	uiSt_->LoadEnd();
-
 	// クールタイム
 	stRecoverTime_ = 0.0f;
 
@@ -203,18 +169,8 @@ void Player::InitPost(void)
 	// 無敵時間
 	invincibleTimer_ = 0.0f;
 
-	// 回復瓶UI
-	uiRecovery_->LoadEnd();
-
-	// エフェクト
-	effType_ = EFFECT::NONE;
-	effect_ = std::make_unique<EffectController>();
-	effect_->Add(
-		static_cast<int>(EFFECT::BLOOD),
-		(Application::PATH_EFFECT + L"Blood.efkefc"));
-	effect_->Add(
-		static_cast<int>(EFFECT::HP_ABSOLUTE),
-		(Application::PATH_EFFECT + L"Absolute.efkefc"));
+	// エフェクトハンドル初期化
+	effHandle_ = -1;
 
 	// 攻撃コンボデータの初期化
 	ATTACK_COMBO data;
@@ -288,8 +244,8 @@ void Player::ProcessMove(void)
 	if (state_ != STATE::IDLE
 		&& state_ != STATE::RUN
 		&& state_ != STATE::FAST_RUN) {
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WALK);
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RUN);
+		SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::PLAYER_WALK);
+		SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::PLAYER_RUN);
 		return;
 	}
 
@@ -310,26 +266,24 @@ void Player::ProcessMove(void)
 		if (isR && stRecoverTime_ <= 0.0f) {
 			moveSpeed_ = SPEED_DASH;
 			state_ = STATE::FAST_RUN;
-			uiSt_->ConsumeSt(CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
+			ConsumeSt(CONSUMPTION_ST_FAST_RUN * SceneManager::GetInstance().GetDeltaTime());
 			animationController_->Play(static_cast<int>(ANIM_TYPE::FAST_RUN));
-			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WALK);
-			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_RUN).handleId_;
-			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_RUN, bgm_, SE_VOLUME_RUN);
+			SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::PLAYER_WALK);
+			SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::PLAYER_RUN, true);
 		}
 		else {
 			moveSpeed_ = SPEED_MOVE;
 			animationController_->Play(static_cast<int>(ANIM_TYPE::RUN));
-			SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RUN);
-			int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_WALK).handleId_;
-			SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::PLAYER_WALK, bgm_, SE_VOLUME_WALK);
+			SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::PLAYER_RUN);
+			SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::PLAYER_WALK, true);
 		}
 
 		movePow_ = VAdd(movePow_, VScale(moveDir_, moveSpeed_));
 	}
 	else {
 		state_ = STATE::IDLE;
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_WALK);
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_RUN);
+		SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::PLAYER_WALK);
+		SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::PLAYER_RUN);
 		animationController_->Play(static_cast<int>(ANIM_TYPE::IDLE));
 	}
 }
@@ -341,13 +295,13 @@ void Player::ProcessAttack(void)
 	bool isAttackInput = false;
 
 	// 攻撃入力判定
-	if (uiSt_->GetSt() >= 0) {
+	if (st_ >= 0.0f) {
 		isAttackInput = ins.IsClickMouseLeft()
 			|| ins.IsPadBtnTrgDown(
 				InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::R_TRIGGER);
 	}
 
-	// 通常状態（移動中など）からの新規攻撃開始
+	// 通常状態からの新規攻撃開始
 	if (isAttackInput && !isJump_
 		&& (state_ == STATE::IDLE || state_ == STATE::RUN || state_ == STATE::FAST_RUN))
 	{
@@ -359,7 +313,7 @@ void Player::ProcessAttack(void)
 		auto& comboData = atkComboData_.at(stateAtkCombo_);
 		comboData.isNextCombo = false;
 
-		uiSt_->ConsumeSt(CONSUMPTION_ST_ATTACK);
+		ConsumeSt(CONSUMPTION_ST_ATTACK);
 
 		// 追加の初期処理があれば実行
 		if (comboData.extraInit) {
@@ -427,9 +381,7 @@ void Player::ProcessAttack(void)
 
 	// SE再生処理
 	if (currentStep == ATTACK_SE_TRIGGER_STEP) {
-		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_WEAPON_1).handleId_;
-		SoundManager::GetInstance().PlaySE(
-			SoundManager::SeId::PLAYER_WEAPON_SE1, bgm_, SE_VOLUME_ATTACK);
+		SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::PLAYER_WEAPON_SE1);
 	}
 
 	// コンボ遷移チェック
@@ -456,7 +408,7 @@ void Player::ProcessAttack(void)
 			auto& nextData = atkComboData_.at(stateAtkCombo_);
 			nextData.isNextCombo = false;
 
-			uiSt_->ConsumeSt(CONSUMPTION_ST_ATTACK);
+			ConsumeSt(CONSUMPTION_ST_ATTACK);
 
 			if (nextData.extraInit) {
 				nextData.extraInit();
@@ -480,15 +432,17 @@ void Player::ProcessAttack(void)
 
 void Player::ProcessEvasion(void)
 {
+	// 回避入力判定とスタミナ残量確認
 	bool isP = false;
 	auto& ins = InputManager::GetInstance();
 
-	if (uiSt_->GetSt() >= 0) {
+	if (st_ >= 0.0f) {
 		isP = ins.IsTrgDown(KEY_INPUT_SPACE)
 			|| ins.IsPadBtnNew(
 				InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::RIGHT);
 	}
 
+	// 地上通常状態から回避へ遷移し、無敵と回転演出・SEを設定
 	if (isP && !isJump_
 		&& (state_ == STATE::IDLE || state_ == STATE::RUN || state_ == STATE::FAST_RUN))
 	{
@@ -499,19 +453,21 @@ void Player::ProcessEvasion(void)
 				Quaternion::AngleAxis(
 					AsoUtility::Deg2RadF(AVOIDANCE_ANGLE_AXIS_Y), AsoUtility::AXIS_Y));
 
-		uiSt_->ConsumeSt(CONSUMPTION_ST_EVASION);
-		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_EVASION).handleId_;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_EVASION, bgm_, SE_VOLUME_EVASION);
+		ConsumeSt(CONSUMPTION_ST_EVASION);
+		SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::PLAYER_EVASION);
 
 		isInvincible_ = true;
 	}
 
+	// 回避状態でなければ以降の移動・終了判定を行わない
 	if (state_ != STATE::EVASION) return;
 
+	// 回避アニメーションと回避速度を適用
 	animationController_->Play(static_cast<int>(ANIM_TYPE::EVASION), false);
 	moveSpeed_ = SPEED_EVASION;
 	movePow_ = VScale(moveDir_, moveSpeed_);
 
+	// アニメーション完了でローカル回転・無敵を戻して待機へ復帰
 	if (animationController_->IsEnd())
 	{
 		transform_.quaRotLocal = lastQrot_;
@@ -528,14 +484,14 @@ void Player::ProcessDownUp(void)
 		isInvincible_ = true;
 		state_ = STATE::DOWN;
 
-		effect_->SetEffectPos(
-			static_cast<int>(effType_),
+		EffectManager::GetInstance().SetPos(
+			effHandle_,
 			MV1GetFramePosition(transform_.modelId, HIT_EFFECT_FRAME_NO));
 
 		if (animationController_->GetPlayType() == static_cast<int>(ANIM_TYPE::DOWN)
 			&& animationController_->IsEnd()) {
 
-			if (!uiHp_->IsActive()) {
+			if (IsDead()) {
 				state_ = STATE::DIE;
 			}
 			else {
@@ -574,13 +530,13 @@ void Player::ProcessRecovery(void)
 		|| ins.IsPadBtnNew(InputManager::JOYPAD_NO::PAD1, InputManager::JOYPAD_BTN::LEFT);
 
 	// 回復入力があり、かつ回復瓶が残っている場合、かつ回復アニメーションが再生されていない場合に回復開始
-	if (isP && uiRecovery_->GetBottleCnt() > 0
-		&& animationController_->GetPlayType() != static_cast<int>(EFFECT::HP_ABSOLUTE)
+	if (isP && recoveryBottleCount_ > 0
+		&& animationController_->GetPlayType() != static_cast<int>(ANIM_TYPE::RECOVERY)
 		&& state_ != STATE::RECOVERY) {
 
 		state_ = STATE::RECOVERY;
-		effect_->Play(
-			static_cast<int>(EFFECT::HP_ABSOLUTE),
+		EffectManager::GetInstance().PlayEffect(
+			EffectManager::EFFECT_ID::HP_ABSOLUTE,
 			VGet(transform_.pos.x, transform_.pos.y 
 				+ EFFECT_RECOVERY_OFFSET_Y, transform_.pos.z),
 			AsoUtility::VECTOR_ZERO,
@@ -595,17 +551,18 @@ void Player::ProcessRecovery(void)
 
 	// 回復アニメーションの特定のステップで回復処理を実行
 	if (animationController_->GetPlayAnim().step == RECOVERY_TRIGGER_STEP) {
-		uiHp_->Heal(HEAL_HP_AMOUNT);
-		uiRecovery_->SetBottleCnt(CONSUME_RECOVERY_BOTTLE_COUNT);
-		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_RECOVERY).handleId_;
-		SoundManager::GetInstance().PlaySE(
-			SoundManager::SeId::PLAYER_HEAL, bgm_, SE_VOLUME_RECOVERY);
+		HealHp(HEAL_HP_AMOUNT);
+		if (recoveryBottleCount_ > 0)
+		{
+			recoveryBottleCount_ -= CONSUME_RECOVERY_BOTTLE_COUNT;
+		}
+		SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::PLAYER_HEAL);
 	}
 
 	// 回復アニメーションが終了したら通常状態に遷移
 	if (animationController_->IsEnd()) {
 		state_ = STATE::IDLE;
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::PLAYER_HEAL);
+		SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::PLAYER_HEAL);
 	}
 }
 
@@ -624,15 +581,15 @@ void Player::ApplyDamage(float damageAmount)
 {
 	animationController_->Play(static_cast<int>(ANIM_TYPE::DOWN), false);
 	state_ = STATE::DOWN;
-	uiHp_->Damage(damageAmount);
+	TakeDamage(damageAmount);
 
-	effType_ = EFFECT::BLOOD;
-	effect_->Play(static_cast<int>(effType_));
-	effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
+	effHandle_ = EffectManager::GetInstance().PlayEffect(
+		EffectManager::EFFECT_ID::BLOOD,
+		transform_.pos,
+		AsoUtility::VECTOR_ZERO,
+		EFFECT_BLOOD_SCALE);
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_PLAYER_DAMAGE).handleId_;
-	SoundManager::GetInstance().PlaySE(
-		SoundManager::SeId::PLAYER_DAMAGE, bgm_, SE_VOLUME_DAMAGE);
+	SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::PLAYER_DAMAGE);
 }
 
 void Player::UpdateProcess(void)
@@ -645,7 +602,7 @@ void Player::UpdateProcess(void)
 	}
 
 	// エフェクトの位置をプレイヤーの位置に設定
-	effect_->SetEffectPos(static_cast<int>(effType_), transform_.pos);
+	EffectManager::GetInstance().SetPos(effHandle_, transform_.pos);
 
 	// 無敵時間の処理
 	if (isInvincible_ && invincibleTimer_ >= 0.0f)
@@ -658,7 +615,7 @@ void Player::UpdateProcess(void)
 	}
 
 	// スタミナ回復処理
-	if (uiSt_->GetSt() <= UISt::MIN_ST) {
+	if (st_ <= MIN_ST) {
 		stRecoverTime_ = CT;
 	}
 
@@ -668,7 +625,7 @@ void Player::UpdateProcess(void)
 		|| state_ == STATE::DOWN
 		|| state_ == STATE::UP
 		|| state_ == STATE::RECOVERY) {
-		uiSt_->RecoverSt(RECOVERY_ST_SPEED 
+		RecoverSt(RECOVERY_ST_SPEED 
 			* SceneManager::GetInstance().GetDeltaTime());
 	}
 
@@ -730,6 +687,7 @@ void Player::UpdateProcess(void)
 
 void Player::UpdateProcessPost(void)
 {
+	// ロックオン対象が未設定なら回転追従を行わない
 	if (targetPos_ == nullptr)return;
 
 	// ターゲットに向かって回転
@@ -743,6 +701,7 @@ void Player::UpdateProcessPost(void)
 
 void Player::UpdateHitCollider(void)
 {
+	// 無敵時間中は当たり判定による被ダメージ処理を行わない
 	if (isInvincible_) return;
 
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
@@ -867,4 +826,34 @@ VECTOR Player::GetInputDirection(void)
 		worldDir = Quaternion::PosAxis(cameraRot, dir);
 	}
 	return worldDir;
+}
+
+float Player::GetStRate(void) const
+{
+	// 現在のスタミナ割合を 0.0f〜1.0f で返す（負値は描画上0として扱う）
+	if (MAX_ST <= 0.0f || st_ <= 0.0f)
+	{
+		return 0.0f;
+	}
+	return st_ / MAX_ST;
+}
+
+void Player::ConsumeSt(float delta)
+{
+	// スタミナを消費し、下限値でクランプする
+	st_ -= delta;
+	if (st_ < MIN_ST)
+	{
+		st_ = MIN_ST;
+	}
+}
+
+void Player::RecoverSt(float amount)
+{
+	// スタミナを回復し、上限値でクランプする
+	st_ += amount;
+	if (st_ > MAX_ST)
+	{
+		st_ = MAX_ST;
+	}
 }

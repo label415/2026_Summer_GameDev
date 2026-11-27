@@ -8,8 +8,9 @@ class Singleton
 public:
 
     // インスタンスの生成
-    static void CreateInstance()
+    static void CreateInstance(void)
     {
+		// すでにインスタンスが存在する場合は何もしない
         if (!instance_)
         {
             instance_ = new T();
@@ -17,16 +18,18 @@ public:
     }
 
     // インスタンスへのアクセス
-    static T& GetInstance()
+    static T& GetInstance(void)
     {
+		// インスタンスが生成されていない場合はエラー
         assert(instance_ != nullptr 
             && "シングルトンクラスが生成されていない");
         return *instance_;
     }
 
 	// 解放処理
-	static void Destroy()
+	static void Destroy(void)
 	{
+		// インスタンスが存在する場合のみ解放
 		if (instance_)
 		{
             delete instance_;
@@ -34,19 +37,16 @@ public:
 		}
 	}   
 
-    // コピーコンストラクタを削除
-    Singleton(const Singleton&) = delete;
-
-    // コピー代入演算子を削除
-    Singleton& operator=(const Singleton&) = delete;
-
 protected:
 
     // デフォルトコンストラクタは protected にして外部生成を防止
-    Singleton() = default;
+    Singleton(void) = default;
+
+    // コピーコンストラクタを削除
+    Singleton(const Singleton&) = delete;
 
     // デストラクタも protected
-    virtual ~Singleton() = default;
+    virtual ~Singleton(void) = default;
 
 private:
 

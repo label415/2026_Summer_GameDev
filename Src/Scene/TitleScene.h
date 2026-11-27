@@ -4,6 +4,7 @@
 #include "SceneBase.h"  
 
 class SkyDome;
+class UiManager;
 
 class TitleScene : public SceneBase
 {
@@ -21,7 +22,7 @@ public:
 	TitleScene(void);
 
 	// デストラクタ  
-	~TitleScene(void) override {}
+	~TitleScene(void) override = default;
 
 	// 読み込み  
 	void Load(void)override;
@@ -41,39 +42,28 @@ public:
 private:
 
 	// タイトル画像サイズ
-	static constexpr float TITLE_IMG_SIZE = 1.0f;
+	static constexpr Vector2F TITLE_IMG_SIZE = { 1.0f, 1.0f };
 
 	// タイトル画像Y座標調整値
 	static constexpr float TITLE_IMG_ADJUST_Y = 100.0f;
 
 	// フォント座標調整値
-	static constexpr float FONT_ADJUST_X = 2.0f;
-	static constexpr float FONT_ADJUST_Y = 90.0f;
+	static constexpr Vector2F FONT_ADJUST = { 2.0f, 90.0f };
 
 	// フォント同士のY座標間隔
 	static constexpr float FONT_INTERVAL = 70.0f;
 
-	// フォントのサイズ
-	static constexpr float FONT_SIZE = 30.0f;
+	// ボックスコライダー座標調整値
+	static constexpr Vector2F BOX_ADJUST = { 150.0f, 75.0f };
 
-	// フォントの太さ
-	static constexpr float FONT_THICKNESS = 30.0f;
-
-	// ボックスコライダ-座標調整値
-	static constexpr float BOX_ADJUST_X = 150.0f;
-	static constexpr float BOX_ADJUST_Y = 75.0f;
-
-	// ボックスコライダーの高さ
-	static constexpr float BOX_HEIGHT = 60.0f;
-
-	// ボックスコライダーの幅
-	static constexpr float BOX_WIDTH = 300.0f;
+	// ボックスコライダーのサイズ
+	static constexpr Vector2F BOX_SIZE = { 300.0f, 60.0f };
 
 	// ボックスコライダー同士のY座標間隔
 	static constexpr float BOX_Y_INTERVAL = 70.0f;
 
 	// UIカーソル画像サイズ
-	static constexpr float SELECT_IMG_SIZE = 0.2f;
+	static constexpr Vector2F SELECT_IMG_SIZE = { 0.2f, 0.2f };
 
 	//UIカーソル画像Y座標調整値
 	static constexpr float SELECT_IMG_ADJUST_Y = 0.5f;
@@ -87,8 +77,9 @@ private:
 	// フォントの色
 	static constexpr int FONT_COLOR = 0xffffff;
 
-	// BGMの音量
-	static constexpr int BGM_VOLUME = 50;
+	// フォントサイズ・太さ
+	static constexpr int FONT_SIZE = 30;
+	static constexpr int FONT_THICKNESS = 30;
 
 	// 選択リスト  
 	std::wstring titleList_[LIST_MAX] =
@@ -97,23 +88,24 @@ private:
 		L"QUIT",		// ゲームの終了  
 	};
 
-	//　使用するフォント
-	std::wstring fontName_ = L"KazukiReiwa";
+	// UI識別ID
+	enum class UI_ID
+	{
+		TITLE_LOGO,
+		CURSOR
+	};
 
 	// ボックスコライダーの配列
 	std::unique_ptr<ColliderBox2D> uiBoxs_[LIST_MAX];
 
-	// フォントハンドル
-	int titleFont_;
+	// UI管理
+	std::unique_ptr<UiManager> uiManager_;
 
 	//ポーズリストの選択  
 	int selectIndex_;
 
-	// タイトル画像
-	int titleImg_;
-
-	// UIカーソル画像
-	int selectImg_;
+	// タイトルフォント
+	int titleFont_;
 
 	// 選択されているかの判定
 	bool isHovered;

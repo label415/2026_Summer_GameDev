@@ -26,6 +26,7 @@ void ColliderModel::AddExcludeFrameId(const std::wstring& name)
 
 void ColliderModel::ClearExcludeFrame(void)
 {
+	// 除外対象フレームIDリストをクリア
 	excludeFrameIds_.clear();
 }
 
@@ -61,6 +62,7 @@ void ColliderModel::AddTargetFrameId(const std::wstring& name)
 
 void ColliderModel::ClearTargetFrame(void)
 {
+	// 判定対象フレームIDリストをクリア
 	targetFrameIds_.clear();
 }
 

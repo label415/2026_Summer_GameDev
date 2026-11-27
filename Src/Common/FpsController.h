@@ -2,6 +2,7 @@
 #include <vector>
 #include <chrono>
 #include <DxLib.h>
+#include "../Template/Vector2Template.h"
 
 class FpsController
 {
@@ -37,8 +38,7 @@ private:
 	const unsigned int COLOR = GetColor(255, 255, 255);
 
 	// 平均FPSの描画位置
-	const int POS_X = 20;
-	const int POS_Y = 20;
+	static constexpr Vector2 POS = { 20, 20 };
 
 	// 指定された固定フレームレート
 	const int fixedFps_;

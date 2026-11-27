@@ -21,7 +21,7 @@ public:
 		const VECTOR moveDir, int followFrameId);
 
 	// デストラクタ
-	~WeaponFireball(void) override {}
+	~WeaponFireball(void) override = default;
 
 	// 更新
 	void Update(void) override;
@@ -75,6 +75,9 @@ private:
 
 	// エフェクトタイプ
 	EFFECT_TYPE effectType_;
+
+	// 再生中エフェクトハンドル
+	int effHandle_;
 
 	// 移動方向
 	VECTOR moveDir_;

@@ -1,10 +1,9 @@
 #include <DxLib.h>
-#include <EffekseerForDXLib.h>
-#include "Manager/InputManager.h"
-#include "Manager/SoundManager.h"
-#include "Manager/ResourceManager.h"
-#include "Manager/SceneManager.h"
-#include "Manager/FontManager.h"
+#include "Manager/Common/InputManager.h"
+#include "Manager/Common/SoundManager.h"
+#include "Manager/Common/EffectManager.h"
+#include "Manager/Common/ResourceManager.h"
+#include "Manager/Common/SceneManager.h"
 #include "Common/FpsController.h"
 #include "Libs/ImGuiWrapper.h"
 #include "Application.h"
@@ -23,7 +22,7 @@ bool Application::Init(void)
 	SetWindowText(L"HOT SOULS");
 
 	// ウィンドウサイズ
-	SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, COLOR_BIT);
+	SetGraphMode(SCREEN_SIZE.x, SCREEN_SIZE.y, COLOR_BIT);
 	ChangeWindowMode(true);
 	SetMultiThreadFlag(true);
 
@@ -32,13 +31,7 @@ bool Application::Init(void)
 
 	// DxLibの初期化
 	SetUseDirect3DVersion(DX_DIRECT3D_11);
-	if (DxLib_Init() == -1)
-	{
-		return false;
-	}
-
-	// Effekseerの初期化
-	InitEffekseer();
+	if (DxLib_Init() == -1)return false;
 
 	// 乱数のシード値を設定する
 	DATEDATA date;
@@ -53,10 +46,16 @@ bool Application::Init(void)
 	// 各インスタンス生成
 	InputManager::CreateInstance();
 	ResourceManager::CreateInstance();
-	FontManager::CreateInstance();
 	SoundManager::CreateInstance();
+	EffectManager::CreateInstance();
 	ImGuiWrapper::CreateInstance();
 	SceneManager::CreateInstance();
+
+	// 各インスタンス初期化
+	InputManager::GetInstance().Init();
+	ResourceManager::GetInstance().Init();
+	SoundManager::GetInstance().Init();
+	EffectManager::GetInstance().Init();
 	SceneManager::GetInstance().Init();
 
 	return true;
@@ -81,6 +80,7 @@ void Application::Run(void)
 		sceneManager.Draw();
 		imGuiWrapper.Draw();
 
+		// 描画実行
 		RenderVertex();
 		ScreenFlip();
 
@@ -92,19 +92,21 @@ void Application::Run(void)
 bool Application::Release(void)
 {
 	// 各インスタンス解放
+	InputManager::GetInstance().Release();
 	SceneManager::GetInstance().Release();
+	EffectManager::GetInstance().Release();
 	SoundManager::GetInstance().Release();
+	ResourceManager::GetInstance().Reset();
+	ResourceManager::GetInstance().Release();
 
 	// 各インスタンス破棄
 	InputManager::GetInstance().Destroy();
 	SceneManager::GetInstance().Destroy();
+	EffectManager::GetInstance().EndEffekseer();
+	EffectManager::GetInstance().Destroy();
 	SoundManager::GetInstance().Destroy();
 	ResourceManager::GetInstance().Destroy();
-	FontManager::GetInstance().Destroy();
 	ImGuiWrapper::GetInstance().Destroy();
-
-	// Effekseerを終了する。
-	Effkseer_End();
 
 	// DxLib終了
 	if (DxLib_End() == -1)
@@ -120,19 +122,9 @@ Application::Application(void)
 {
 }
 
-void Application::InitEffekseer(void)
-{
-	// Effekseerの初期化
-	if (Effekseer_Init(EFFEKSEER_MAX_PARTICLES) == -1)
-	{
-		DxLib_End();
-	}
-	SetChangeScreenModeGraphicsSystemResetFlag(FALSE);
-	Effekseer_SetGraphicsDeviceLostCallbackFunctions();
-}
-
 void Application::SetIsEnd(void)
 {
+	// ゲームループ終了フラグを立てる
 	isGameEnd_ = true;
 }
 

@@ -17,12 +17,14 @@ ColliderBase::ColliderBase(
 
 void ColliderBase::Draw(void)
 {
+	// 有効・無効に応じたデバッグ描画色を選択
 	int color = COLOR_INVALID;
 	if (isCollider_)
 	{
 		color = COLOR_VALID;
 	}
 
+	// 派生クラスごとの形状デバッグ描画を実行
 	DrawDebug(color);
 }
 
@@ -36,5 +38,6 @@ VECTOR ColliderBase::GetRotPos(const VECTOR& localPos) const
 
 void ColliderBase::ClearHitCollider(void)
 {
+	// 前フレームの衝突相手リストをクリア
 	hitCollider_.clear();
 }

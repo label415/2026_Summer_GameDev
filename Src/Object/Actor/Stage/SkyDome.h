@@ -10,7 +10,7 @@ public:
 	SkyDome(void){}
 
 	// デストラクタ
-	~SkyDome(void){}
+	~SkyDome(void) override = default;
 
 	// 更新
 	void Update(void)override;

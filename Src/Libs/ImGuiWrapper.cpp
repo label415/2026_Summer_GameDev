@@ -1,5 +1,5 @@
 #include <DxLib.h>
-#include "../Manager/InputManager.h"
+#include "../Manager/Common/InputManager.h"
 #include "ImGui/backends/imgui_impl_dx11.h"
 #include "ImGui/backends/imgui_impl_win32.h"
 #include "ImGuiWrapper.h"
@@ -11,6 +11,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 void ImGuiWrapper::CreateInstance(void)
 {
+	// 未生成ならインスタンスを生成して初期化
 	if (instance_ == nullptr)
 	{
 		instance_ = new ImGuiWrapper();
@@ -28,6 +29,7 @@ void ImGuiWrapper::Init(void)
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	
+	// Win32 および Direct3D11 バックエンドを初期化
 	ImGui_ImplWin32_Init(DxLib::GetMainWindowHandle());
 	ImGui_ImplDX11_Init(
 		(ID3D11Device*)DxLib::GetUseDirect3D11Device(),
@@ -72,6 +74,7 @@ LRESULT ImGuiWrapper::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return true;
 	}
 
+	// 主要なシステムメッセージを処理
 	switch (msg)
 	{
 	case WM_SIZE:
@@ -86,6 +89,7 @@ LRESULT ImGuiWrapper::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		::PostQuitMessage(0);
 		return 0;
 	}
+	// 未処理メッセージは既定のウィンドウプロシージャへ委譲
 	return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
@@ -94,8 +98,8 @@ void ImGuiWrapper::UpdateInputMouse(void)
 	// マウス情報をImGuiに渡す
 	ImGuiIO& io = ImGui::GetIO();
 	auto& input = InputManager::GetInstance();
-	auto mousePos = input.GetMousePos();
-	io.AddMousePosEvent(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+	Vector2F mousePos = input.GetMousePos();
+	io.AddMousePosEvent(mousePos.x, mousePos.y);
 	io.AddMouseButtonEvent(ImGuiMouseButton_Left, input.IsClickMouseLeft());
 	io.AddMouseButtonEvent(ImGuiMouseButton_Right, input.IsClickMouseRight());
 }

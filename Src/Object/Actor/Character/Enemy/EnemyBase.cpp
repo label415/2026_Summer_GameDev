@@ -40,5 +40,6 @@ bool EnemyBase::InMovableRange(void) const
 
 void EnemyBase::Draw(void)
 {
+	// 基底クラスのモデル・武器描画を実行
 	CharacterBase::Draw();
 }

@@ -3,7 +3,6 @@
 
 class ResourceManager;
 class SceneManager;
-class FontManager;	
 class SoundManager;
 
 class SceneBase
@@ -14,7 +13,7 @@ public:
 	SceneBase(void);
 
 	// デストラクタ
-	virtual ~SceneBase(void) = 0;
+	virtual ~SceneBase(void) = default;
 
 	// 読み込み
 	virtual void Load(void) = 0;
@@ -39,18 +38,7 @@ protected:
 	// シーン管理
 	SceneManager& sceMng_;
 
-	// フォント管理
-	FontManager& fontMng_;
-
 	// サウンド管理
 	SoundManager& sonMng_;
 
-	// BGMのハンドル
-	int bgm_;
-
-	// BGMの音量
-	int volume_;
-
 };
-
-inline SceneBase::~SceneBase(void) {}

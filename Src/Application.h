@@ -2,6 +2,7 @@
 #include <string>
 #include <memory>
 #include "Template/Singleton.h"
+#include "Template/Vector2Template.h"
 
 class FpsController;
 
@@ -13,12 +14,10 @@ class Application : public Singleton<Application>
 public:
 
 	// スクリーンサイズ
-	static constexpr int SCREEN_SIZE_X = 1280;
-	static constexpr int SCREEN_SIZE_Y = 720;
+	static constexpr Vector2 SCREEN_SIZE = {1280, 720};
 
 	// ハーフスクリーンサイズ
-	static constexpr int HALF_SCREEN_SIZE_X = SCREEN_SIZE_X / 2;
-	static constexpr int HALF_SCREEN_SIZE_Y = SCREEN_SIZE_Y / 2;
+	static constexpr Vector2 HALF_SCREEN_SIZE = { SCREEN_SIZE.x / 2, SCREEN_SIZE.y / 2 };
 
 	// カラービット数
 	static constexpr int COLOR_BIT = 32;
@@ -57,16 +56,10 @@ public:
 	// 重力の取得
 	float GetGravityPow(void) const { return GRAVITY * GRAVITY_SCALE; }
 
-	// エフェクシアの初期化
-	void InitEffekseer(void);
-
 	// ゲーム終了フラグ設定
 	void SetIsEnd(void);
 
 private:
-
-	// Effekseerの最大パーティクル数
-	static constexpr int EFFEKSEER_MAX_PARTICLES = 8000;
 
 	// FPSコントローラー
 	std::unique_ptr<FpsController> fpsController_;
@@ -82,6 +75,6 @@ private:
 	Application(const Application& instance) = default;
 
 	// デストラクタも同様
-	~Application(void) = default;
+	~Application(void) override = default;
 
 };

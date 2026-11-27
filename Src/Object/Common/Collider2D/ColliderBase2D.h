@@ -24,7 +24,7 @@ public:
 	ColliderBase2D(SHAPE shape, TAG tag);
 
 	// デストラクタ
-	virtual ~ColliderBase2D(void) {}
+	virtual ~ColliderBase2D(void) = default;
 
 	// 描画
 	void Draw(void);

@@ -1,9 +1,9 @@
 #include <DxLib.h>
 #include "../../../../Utility/AsoUtility.h"
 #include "../../../../Utility/CollisionUtility.h"
-#include "../../../../Manager/ResourceManager.h"
-#include "../../../../Manager/SoundManager.h"
-#include "../../../../Manager/SceneManager.h"
+#include "../../../../Manager/Common/ResourceManager.h"
+#include "../../../../Manager/Common/SoundManager.h"
+#include "../../../../Manager/Common/SceneManager.h"
 #include "../../../Common/AnimationController.h"
 #include "../../../Common/Collider/ColliderLine.h"
 #include "../../../Common/Collider/ColliderCapsule.h"
@@ -16,9 +16,8 @@
 #include "../../Weapon/WeaponBreath.h"
 #include "../../Weapon/WeaponBase.h"
 #include "../../Weapon/WeaponFireball.h"
-#include "../../UI/UIHp.h"
 #include "../../../../Application.h"
-#include "../../../Common/EffectController.h"
+#include "../../../../Manager/Common/EffectManager.h"
 #include "EnemyDragon.h"
 
 EnemyDragon::EnemyDragon(const EnemyBase::EnemyData& data)
@@ -26,7 +25,8 @@ EnemyDragon::EnemyDragon(const EnemyBase::EnemyData& data)
 	EnemyBase(data),
 	state_(STATE::NONE),
 	step_(0.0f),
-	attribute_(ATTRIBUTE::NONE)
+	attribute_(ATTRIBUTE::NONE),
+	effHandle_(-1)
 {
 }
 
@@ -37,13 +37,6 @@ void EnemyDragon::InitLoad(void)
 	// モデルのロード
 	transform_.SetModel(
 		resMng_.LoadModelDuplicate(ResourceManager::SRC::MODEL_ENEMY_DRAGON));
-
-	// 敵HP
-	uiHp_ = std::make_unique<UIHp>(
-		static_cast<float>(Application::HALF_SCREEN_SIZE_X),
-		static_cast<float>(Application::SCREEN_SIZE_Y) - UI_HP_OFFSET_Y,
-		UI_HP_SCALE_X, UI_HP_SCALE_Y, UI_HP_SCALE_Z);
-	uiHp_->Load();
 
 	// 2つの武器を初期化時に生成
 	VECTOR defaultDir = transform_.GetForward();
@@ -195,23 +188,7 @@ void EnemyDragon::InitPost(void)
 	stateChanges_.emplace(static_cast<int>(STATE::END),
 		std::bind(&EnemyDragon::ChangeStateEnd, this));
 
-	effectType_ = EFFECT::NONE;
-
-	effect_ = std::make_unique<EffectController>();
-	effect_->Add(
-		static_cast<int>(EFFECT::FALLING_ATTACK),
-		(Application::PATH_EFFECT + L"Fall.efkefc"));
-	effect_->Add(
-		static_cast<int>(EFFECT::ROAR),
-		(Application::PATH_EFFECT + L"RoarEff.efkefc"));
-	effect_->Add(
-		static_cast<int>(EFFECT::CHARGE),
-		(Application::PATH_EFFECT + L"Charge.efkefc"));
-	effect_->Add(
-		static_cast<int>(EFFECT::BLOOD),
-		(Application::PATH_EFFECT + L"Blood.efkefc"));
-
-	uiHp_->LoadEnd();
+	effHandle_ = -1;
 
 	// 武器
 	for (const auto& weapon : weapons_) {
@@ -224,7 +201,7 @@ void EnemyDragon::InitPost(void)
 
 void EnemyDragon::UpdateProcess(void)
 {
-	effect_->SetEffectPos(static_cast<int>(effectType_), transform_.pos);
+	EffectManager::GetInstance().SetPos(effHandle_, transform_.pos);
 	preMoveDir_ = moveDir_;
 	//ターゲットの方向更新
 	moveDir_ = GetTargetDir();
@@ -307,9 +284,11 @@ void EnemyDragon::UpdateProcess(void)
 
 void EnemyDragon::CollisionCapsule(void)
 {
+	// 地面判定用カプセルコライダーがなければ終了
 	int capsuleType = static_cast<int>(ColliderBase::SHAPE::CAPSULE);
 	if (ownColliders_.count(capsuleType) == 0) return;
 
+	// GROUND タグのカプセルに対してステージモデルとの押し戻しを実施
 	for (const auto& col : ownColliders_.at(capsuleType))
 	{
 		if (!col->GetIsCollider()) continue;
@@ -321,6 +300,7 @@ void EnemyDragon::CollisionCapsule(void)
 			std::dynamic_pointer_cast<ColliderCapsule>(col);
 		if (colliderCapsule == nullptr) return;
 
+		// 接触中のモデルコライダーから順番に押し戻し量を算出
 		for (const auto& hit : col->GetHitColliders())
 		{
 			// モデル以外は処理を飛ばす  
@@ -384,28 +364,31 @@ void EnemyDragon::UpdateHitCollider(void)
 void EnemyDragon::ApplyDamage(const VECTOR& hitPos, float damageAmount)
 {
 	// HP減算と無敵時間の設定
-	uiHp_->Damage(damageAmount);
+	TakeDamage(damageAmount);
 	isInvincible_ = true;
 	invincibleTimer_ = INVINCIBLE_TIME;
 
-	// 出血エフェクトの再生・座標設定
-	effect_->Play(static_cast<int>(EFFECT::BLOOD));
-	effect_->SetEffectScl(static_cast<int>(EFFECT::BLOOD), EFFECT_BLOOD_SCALE);
-	effect_->SetEffectPos(static_cast<int>(EFFECT::BLOOD), hitPos);
+	// 出血エフェクトの再生・座標・スケール設定
+	EffectManager::GetInstance().PlayEffect(
+		EffectManager::EFFECT_ID::BLOOD,
+		hitPos,
+		AsoUtility::VECTOR_ZERO,
+		EFFECT_BLOOD_SCALE);
 
 	// 被弾SEの再生
-	int seHandle = resMng_.Load(ResourceManager::SRC::SE_ENEMY_HIT_DAMAGE).handleId_;
-	SoundManager::GetInstance().PlaySE(SoundManager::SeId::PLAYER_WEAPON_SE2, seHandle, SE_VOLUME_DEFAULT);
+	SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::PLAYER_WEAPON_SE2);
 }
 
 void EnemyDragon::ChangeState(STATE state)
 {
+	// 自身の状態列挙を更新し、基底クラス側の状態遷移を実行
 	state_ = state;
 	EnemyBase::ChangeState(static_cast<int>(state_));
 }
 
 void EnemyDragon::ChangeStateThink(void)
 {
+	// 思考状態へ遷移し、待機モーション再生後に距離・乱数で次行動を決定
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateThink, this);
 
 	animationController_->Play(
@@ -413,6 +396,7 @@ void EnemyDragon::ChangeStateThink(void)
 
 	const VECTOR& targetPos = *targetPos_;
 	float diff = VSize(VSub(targetPos, transform_.pos));
+	// 地上状態時の行動分岐
 	if (attribute_ == ATTRIBUTE::ABOVE_GROUND)
 	{
 		// 思考
@@ -501,12 +485,14 @@ void EnemyDragon::ChangeStateRoar(void)
 	// 移動量ゼロ
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	effectType_ = EFFECT::ROAR;
-	effect_->Play(static_cast<int>(effectType_));
-	effect_->SetEffectScl(static_cast<int>(effectType_), EFFECT_ROAR_SCALE);
+	// 咆哮エフェクト再生
+	effHandle_ = EffectManager::GetInstance().PlayEffect(
+		EffectManager::EFFECT_ID::ROAR,
+		MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH),
+		AsoUtility::VECTOR_ZERO,
+		EFFECT_ROAR_SCALE);
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ROAR).handleId_;
-	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ROAR, bgm_, SE_VOLUME_DEFAULT);
+	SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::ENEMY_ROAR);
 
 	// 待機アニメーション再生
 	animationController_->Play(
@@ -523,8 +509,7 @@ void EnemyDragon::ChangeStateCharge(void)
 	// ランダムな待機時間 (2.0f ? 4.0f)
 	step_ = 1.0f + static_cast<float>(GetRand(STATE_END_RAND));
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ROAR).handleId_;
-	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ROAR, bgm_, SE_VOLUME_DEFAULT);
+	SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::ENEMY_ROAR);
 
 	// 歩きアニメーション再生
 	animationController_->Play(
@@ -538,9 +523,8 @@ void EnemyDragon::ChangeStatePatrol(void)
 	// 移動量ゼロ
 	movePow_ = AsoUtility::VECTOR_ZERO;
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_WALK).handleId_;
-	SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_WALK, bgm_, SE_VOLUME_PATROL);
-	SoundManager::GetInstance().SetSESpeed(SoundManager::SeId::ENEMY_WALK, SE_SPEED_PATROL);
+	SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::ENEMY_WALK, true);
+	SoundManager::GetInstance().SetSpeed(SoundManager::SOUND_ID::ENEMY_WALK, SE_SPEED_PATROL);
 	// 歩きアニメーション再生
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::WALK), true);
@@ -576,8 +560,7 @@ void EnemyDragon::ChangeStateFlyingAttack(void)
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateFlyingAttack, this);
 	attackCnt_ = 0.0f;
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_AIR_BREATH_1).handleId_;
-	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_AIR_BREATH1, bgm_, SE_VOLUME_DEFAULT);
+	SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::ENEMY_AIR_BREATH1);
 
 	// 歩きアニメーション再生
 	animationController_->Play(
@@ -603,8 +586,7 @@ void EnemyDragon::ChangeStateBreathAttack(void)
 		weaponBreath->SetMoveDir(dir);
 	}
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_BREATH_1).handleId_;
-	SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREATH1, bgm_, SE_VOLUME_DEFAULT);
+	SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::ENEMY_BREATH1);
 
 	animationController_->Play(static_cast<int>(ANIM_TYPE::BREATH_ATTACK), false);
 }
@@ -637,8 +619,7 @@ void EnemyDragon::ChangeStateTakeOff(void)
 {
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateTakeOff, this);
 
-	int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_FLAP).handleId_;
-	SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_AIR, bgm_, SE_VOLUME_TAKEOFF);
+	SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::ENEMY_AIR, true);
 
 	animationController_->Play(
 		static_cast<int>(ANIM_TYPE::TAKEOFF), false);
@@ -664,14 +645,14 @@ void EnemyDragon::ChangeStateDead(void)
 
 void EnemyDragon::UpdateThink(void)
 {
-	if (!uiHp_->IsActive()) {
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 	}
 }
 
 void EnemyDragon::UpdateIdle(void)
 {
-	if (!uiHp_->IsActive()) {
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 	}
 
@@ -686,12 +667,13 @@ void EnemyDragon::UpdateIdle(void)
 
 void EnemyDragon::UpdateRoar(void)
 {
-	if (!uiHp_->IsActive()) {
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 	}
 
-	effect_->SetEffectPos(static_cast<int>(effectType_), MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH));
-	effect_->Update(static_cast<int>(effectType_));
+	EffectManager::GetInstance().SetPos(
+		effHandle_,
+		MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH));
 
 	if (animationController_->IsEnd()) {
 		// 待機終了
@@ -703,21 +685,21 @@ void EnemyDragon::UpdateRoar(void)
 
 void EnemyDragon::UpdateCharge(void)
 {
-	if (!uiHp_->IsActive()) {
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 	}
 
-	effect_->Stop(static_cast<int>(effectType_));
+	EffectManager::GetInstance().Stop(effHandle_);
+	effHandle_ = -1;
 	ChangeState(STATE::IDLE);
-	SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_WALK);
+	SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::ENEMY_WALK);
 	return;
 
 	if (animationController_->GetPlayAnim().step >= CHARGE_SE_START_STEP
 		&& animationController_->GetPlayAnim().step <= CHARGE_SE_END_STEP)
 	{
-		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_WALK).handleId_;
-		SoundManager::GetInstance().PlayLoopSE(SoundManager::SeId::ENEMY_WALK, bgm_, SE_VOLUME_PATROL);
-		SoundManager::GetInstance().SetSESpeed(SoundManager::SeId::ENEMY_WALK, SE_SPEED_PATROL);
+		SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::ENEMY_WALK, true);
+		SoundManager::GetInstance().SetSpeed(SoundManager::SOUND_ID::ENEMY_WALK, SE_SPEED_PATROL);
 	}
 
 	if (animationController_->GetPlayAnim().step >= CHARGE_TRANS_STEP
@@ -725,15 +707,14 @@ void EnemyDragon::UpdateCharge(void)
 	{
 		animationController_->Play(
 			static_cast<int>(ANIM_TYPE::CHARGE), true);
-		effectType_ = EFFECT::CHARGE;
 		float yaw = atan2f(moveDir_.x, moveDir_.z);
 		float pitch = -asinf(moveDir_.y);
 		VECTOR euler = { pitch, yaw, 0.0f };
 		euler = VAdd(euler, VGet(0.0f, AsoUtility::Deg2RadF(0.0f), 0.0f));
-		effect_->Play(
-			static_cast<int>(effectType_),
+		effHandle_ = EffectManager::GetInstance().PlayEffect(
+			EffectManager::EFFECT_ID::CHARGE,
 			MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH),
-			euler, EFFECT_CHARGE_SCALE);
+			euler, EFFECT_CHARGE_SCALE, true);
 	}
 	else if (animationController_->GetPlayType() == static_cast<int>(ANIM_TYPE::CHARGE)) {
 		moveDir_ = preMoveDir_;
@@ -741,17 +722,20 @@ void EnemyDragon::UpdateCharge(void)
 		moveSpeed_ = SPEED_DASH;
 		movePow_ = VScale(moveDir_, moveSpeed_);
 
-		effect_->SetEffectPos(static_cast<int>(effectType_), MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH));
-		effect_->Update(static_cast<int>(effectType_), true);
+		EffectManager::GetInstance().SetPos(
+			effHandle_,
+			MV1GetFramePosition(transform_.modelId, FRAME_NO_MOUTH));
 	}
 }
 
 void EnemyDragon::UpdatePatrol(void)
 {
-	if (!uiHp_->IsActive()) {
+	// HPが尽きていれば死亡状態へ遷移
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 	}
 
+	// ターゲット方向へ向かって歩行移動
 	step_ -= scnMng_.GetDeltaTime();
 	moveSpeed_ = SPEED_MOVE;
 	movePow_ = VScale(moveDir_, moveSpeed_);
@@ -763,24 +747,27 @@ void EnemyDragon::UpdatePatrol(void)
 	if (diff <= ATTACK_RANGE_DISTANCES[rand])
 	{
 		ChangeState(STATE::IDLE);
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_WALK);
+		SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::ENEMY_WALK);
 		return;
 	}
 }
 
 void EnemyDragon::UpdateFallingAttack(void)
 {
-	if (!uiHp_->IsActive()) {
+	// HPが尽きていれば死亡状態へ遷移
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 		return;
 	}
 
+	// 空中高度を維持したまま落下攻撃モーションを進行
 	isJump_ = true;
 	transform_.pos.y = MAX_HEIGHT;
 	moveDir_ = preMoveDir_;
 
 	const float currentStep = animationController_->GetPlayAnim().step;
 
+	// 発射ステップ到達時に口元から火球を発射
 	if (currentStep >= FLYING_ATTACK_FIRE_STEP && attackCnt_ == 0.0f)
 	{
 		attackCnt_ = 1.0f;
@@ -798,6 +785,7 @@ void EnemyDragon::UpdateFallingAttack(void)
 		}
 	}
 
+	// モーション終了で空中ホバリング状態へ復帰
 	if (currentStep >= FLYING_ATTACK_END_STEP
 		|| animationController_->IsEnd())
 	{
@@ -807,10 +795,12 @@ void EnemyDragon::UpdateFallingAttack(void)
 
 void EnemyDragon::UpdateFlying(void)
 {
-	if (!uiHp_->IsActive()) {
+	// HPが尽きていれば死亡状態へ遷移
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 	}
 
+	// 飛行高度を保ちつつターゲットへ接近
 	isJump_ = true;
 	transform_.pos.y = MAX_HEIGHT;
 	step_ -= scnMng_.GetDeltaTime();
@@ -830,11 +820,13 @@ void EnemyDragon::UpdateFlying(void)
 
 void EnemyDragon::UpdateFlyingAttack(void)
 {
-	if (!uiHp_->IsActive()) {
+	// HPが尽きていれば死亡状態へ遷移
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 		return;
 	}
 
+	// 飛行高度を維持し、発射タイミングに合わせて火球を射出
 	isJump_ = true;
 	transform_.pos.y = MAX_HEIGHT;
 	moveDir_ = preMoveDir_;
@@ -858,6 +850,7 @@ void EnemyDragon::UpdateFlyingAttack(void)
 		}
 	}
 
+	// 発射後のモーション完了でホバリングへ遷移
 	if (attackCnt_ > 0.0f
 		&& (currentStep >= FLYING_ATTACK_END_STEP
 			|| animationController_->IsEnd()))
@@ -868,7 +861,7 @@ void EnemyDragon::UpdateFlyingAttack(void)
 
 void EnemyDragon::UpdateBreathAttack(void)
 {
-	if (!uiHp_->IsActive()) {
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 		return;
 	}
@@ -878,9 +871,8 @@ void EnemyDragon::UpdateBreathAttack(void)
 
 	if (currentStep >= BREATH_SE2_START_STEP && currentStep <= BREATH_SE2_END_STEP)
 	{
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_BREATH1);
-		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_BREATH_2).handleId_;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_BREATH2, bgm_, SE_VOLUME_DEFAULT);
+		SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::ENEMY_BREATH1);
+		SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::ENEMY_BREATH2);
 	}
 
 	// ★修正：終了ステップ（40.0f）より前の時だけ攻撃ループを行うように条件を明確化
@@ -922,28 +914,31 @@ void EnemyDragon::UpdateBreathAttack(void)
 			if (weapon->GetWeaponType() != WeaponBase::WEAPON_TYPE::BREATH) continue;
 			weapon->ClearCollider();
 		}
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_BREATH2);
+		SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::ENEMY_BREATH2);
 		ChangeState(STATE::IDLE);
 	}
 }
 
 void EnemyDragon::UpdateMeleeAttack(void)
 {
-	if (!uiHp_->IsActive()) {
+	// HPが尽きていれば死亡状態へ遷移
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 	}
 
+	// 噛みつきSE再生区間なら攻撃SEを鳴らす
 	if (animationController_->GetPlayAnim().step >= MELEE_ATTACK_SE_START_STEP
 		&& animationController_->GetPlayAnim().step <= MELEE_ATTACK_COLLIDER) {
-		int bgm_ = resMng_.Load(ResourceManager::SRC::SE_ENEMY_ATTACK).handleId_;
-		SoundManager::GetInstance().PlaySE(SoundManager::SeId::ENEMY_ATTACK, bgm_, SE_VOLUME_DEFAULT);
+		SoundManager::GetInstance().PlaySoundId(SoundManager::SOUND_ID::ENEMY_ATTACK);
 	}
 
+	// 攻撃発生ステップ以降は向きを固定
 	if (animationController_->GetPlayAnim().step >= MELEE_MOVE_DIR_LOCK_STEP)
 	{
 		moveDir_ = preMoveDir_;
 	}
 
+	// モーション終了で待機状態へ戻る
 	if (animationController_->IsEnd())
 	{
 		ChangeState(STATE::IDLE);
@@ -952,10 +947,12 @@ void EnemyDragon::UpdateMeleeAttack(void)
 
 void EnemyDragon::UpdateHover(void)
 {
-	if (!uiHp_->IsActive()) {
+	// HPが尽きていれば死亡状態へ遷移
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 	}
 
+	// 空中高度を維持してホバリングタイマーを減算
 	transform_.pos.y = MAX_HEIGHT;
 
 	step_ -= scnMng_.GetDeltaTime();
@@ -969,10 +966,12 @@ void EnemyDragon::UpdateHover(void)
 
 void EnemyDragon::UpdateTakeOff(void)
 {
-	if (!uiHp_->IsActive()) {
+	// HPが尽きていれば死亡状態へ遷移
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 	}
 
+	// 規定高度に達するまで上昇を続け、到達後に空中状態へ移行
 	isJump_ = true;
 	if (transform_.pos.y <= MAX_HEIGHT)
 	{
@@ -987,20 +986,23 @@ void EnemyDragon::UpdateTakeOff(void)
 
 void EnemyDragon::UpdateLanding(void)
 {
-	if (!uiHp_->IsActive()) {
+	// HPが尽きていれば死亡状態へ遷移
+	if (IsDead()) {
 		ChangeState(STATE::DEAD);
 	}
 
+	// 着地モーション完了で地上属性へ戻し、羽ばたきSEを停止
 	if (animationController_->IsEnd())
 	{
 		attribute_ = ATTRIBUTE::ABOVE_GROUND;
-		SoundManager::GetInstance().StopSE(SoundManager::SeId::ENEMY_AIR);
+		SoundManager::GetInstance().StopSound(SoundManager::SOUND_ID::ENEMY_AIR);
 		ChangeState(STATE::IDLE);
 	}
 }
 
 void EnemyDragon::UpdateDead(void)
 {
+	// 死亡アニメーション終了後にフェード進行タイマーを更新して終了状態へ遷移
 	moveDir_ = preMoveDir_;
 
 	if (animationController_->IsEnd())
@@ -1015,35 +1017,38 @@ void EnemyDragon::UpdateDead(void)
 
 void EnemyDragon::Draw(void)
 {
+	// 基底クラスのモデル・武器描画を実行
 	CharacterBase::Draw();
 }
 
 void EnemyDragon::Release(void)
 {
+	// 再生中エフェクトを停止してから基底クラスの解放処理を実行
+	EffectManager::GetInstance().Stop(effHandle_);
+	effHandle_ = -1;
 	CharacterBase::Release();
-}
-
-void EnemyDragon::DrawUI(void)
-{
-	if (uiHp_) { uiHp_->Draw(); }
 }
 
 void EnemyDragon::UpdateProcessPost(void)
 {
+	// 基底クラス側の後更新処理を実行
 	EnemyBase::UpdateProcessPost();
 }
 
 void EnemyDragon::ChangeStateNone(void)
 {
+	// 無状態用更新ハンドラを設定
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateNone, this);
 }
 
 void EnemyDragon::ChangeStateEnd(void)
 {
+	// 終了状態用更新ハンドラを設定
 	stateUpdate_ = std::bind(&EnemyDragon::UpdateEnd, this);
 }
 
 void EnemyDragon::UpdateEnd(void)
 {
+	// 終了状態では直前の向きを維持して待機
 	moveDir_ = preMoveDir_;
 }

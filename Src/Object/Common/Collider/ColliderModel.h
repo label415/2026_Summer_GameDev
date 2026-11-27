@@ -13,7 +13,7 @@ public:
 		const Transform*, int partTag = 0);
 
 	// デストラクタ
-	~ColliderModel(void) override {}
+	~ColliderModel(void) override = default;
 
 	// 指定された文字を含むフレームを衝突判定から除外
 	void AddExcludeFrameId(const std::wstring& name);

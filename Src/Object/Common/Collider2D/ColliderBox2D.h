@@ -12,21 +12,21 @@ public:
 	// コンストラクタ
 	ColliderBox2D(
 		TAG tag, const Vector2F& pos,
-		float width, float height);
+		const Vector2F& size);
 
 	// デストラクタ
-	~ColliderBox2D(void) override {}
+	~ColliderBox2D(void) override = default;
 
 	// 境界座標の取得
 	float Left(void)   const { return boxPos_.x; }
-	float Right(void)  const { return boxPos_.x + boxWidth_; }
+	float Right(void)  const { return boxPos_.x + boxSize_.x; }
 	float Top(void)    const { return boxPos_.y; }
-	float Bottom(void) const { return boxPos_.y + boxHeight_; }
+	float Bottom(void) const { return boxPos_.y + boxSize_.y; }
 
 	// 点が含まれているか判定
-	bool Contains(float px, float py) const
+	bool Contains(const Vector2F& pos) const
 	{
-		return (px >= boxPos_.x && px <= Right() && py >= boxPos_.y && py <= Bottom());
+		return (pos.x >= boxPos_.x && pos.x <= Right() && pos.y >= boxPos_.y && pos.y <= Bottom());
 	}
 
 protected:
@@ -40,8 +40,7 @@ private:
 	Vector2F boxPos_;
 
 	// ボックスの幅と高さ
-	float boxWidth_;
-	float boxHeight_;
+	Vector2F boxSize_;
 
 };
 

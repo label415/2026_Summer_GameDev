@@ -1,5 +1,5 @@
 #include <DxLib.h>
-#include "../../Manager/SceneManager.h"
+#include "../../Manager/Common/SceneManager.h"
 #include "AnimationController.h"
 
 AnimationController::AnimationController(int modelId)
@@ -182,6 +182,7 @@ bool AnimationController::IsEnd(void) const
 
 bool AnimationController::IsEnd(int type) const
 {
+	// 指定アニメーションが未登録なら終了していない扱いとする
 	auto it = animations_.find(type);
 	if (it == animations_.end()) {
 		return false;

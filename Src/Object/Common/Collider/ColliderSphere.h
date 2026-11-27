@@ -18,7 +18,7 @@ public:
         int partTag = 0);
 
     // デストラクタ
-    ~ColliderSphere(void) {}
+	~ColliderSphere(void)override = default;
 
     // 親Transformからの相対位置を取得
     const VECTOR& GetLocalPos(void) const { return localPos_; }
@@ -45,7 +45,7 @@ private:
     // デバッグ表示の球体ポリゴン分割数
     static constexpr int DIV_NUM = 6;
 
-    // 親Transformからの相対位置(下側)
+    // 親Transformからの相対位置
     VECTOR localPos_;
 
     // 半径
